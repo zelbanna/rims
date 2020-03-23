@@ -1,33 +1,33 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, TableHead, TableRow } from './infra/Generic.js';
-import { ListBase, ReportBase, InfoBase, MainBase } from './infra/Base.jsx';
+import { rest_call, rnd,  } from './infra/Functions.js';
+import { RimsContext, Spinner, InfoCol2, TableHead, TableRow, ContentList, ContentData, ContentReport, Result } from './infra/Generic.js';
+import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { InfoButton } from './infra/Buttons.jsx';
 
 // CONVERTED ENTIRELY
 
 // *************** Main ***************
 //
-export class Main extends MainBase {
+export class Main extends Component {
  constructor(props){
   super(props)
-  this.state.content = <DomainList key='domain_list' />
+  this.state = <DomainList key='domain_list' />
+ }
+
+ changeContent = (elem) => this.setState(elem)
+
+ render(){
+  return  <Fragment key='main_base'>{this.state}</Fragment>
  }
 }
+Main.contextType = RimsContext;
 
 // *************** Domain List ***************
 //
-export class DomainList extends ListBase {
+export class DomainList extends Component {
  constructor(props){
   super(props)
-  this.header='Domains'
-  this.thead = ['ID','Domain','Server','']
-  this.buttons = [
-   <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } />,
-   <InfoButton key='sync' type='sync' onClick={() => this.syncDomains()} />,
-   <InfoButton key='document' type='document' onClick={() => this.changeContent(<Status key='domain_status' />)} />
-  ]
+  this.state = {}
  }
 
  componentDidMount(){
@@ -50,45 +50,67 @@ export class DomainList extends ListBase {
    <InfoButton key={'net_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/dns/domain_delete',row.id,'Really delete domain') } />
    </Fragment>
   ]
+
+ changeContent = (elem) => this.setState({content:elem})
+ deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+
+ render(){
+  return <Fragment key='dl_fragment'>
+   <ContentList key='dl_cl' header='Domains' thead={['ID','Domain','Server','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+    <InfoButton key='dl_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+    <InfoButton key='dl_btn_add' type='add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } />
+    <InfoButton key='dl_btn_sync' type='sync' onClick={() => this.syncDomains()} />
+    <InfoButton key='dl_btn_document' type='document' onClick={() => this.changeContent(<Status key='domain_status' />)} />
+   </ContentList>
+   <ContentData key='dl_cd'>{this.state.content}</ContentData>
+  </Fragment>
+ }
 }
 
 // *************** Domain Info ***************
 //
-class DomainInfo extends InfoBase {
+class DomainInfo extends Component {
+ constructor(props){
+  super(props);
+  this.state = {data:null, found:true };
+ }
+
+ changeHandler = (e) => {
+  var data = {...this.state.data};
+  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
+  this.setState({data:data});
+ }
+
+ changeContent = (elem) => this.setState({content:elem})
+
+ updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   rest_call('api/dns/domain_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
- infoItems = () => {
-  let items = []
-  if (this.state.data.id !== "new") {
-   items.push({tag:'span', id:'node', text:'Node', value:this.state.infra.node})
-   items.push({tag:'span', id:'service', text:'Service', value:this.state.infra.service})
-   items.push({tag:'span', id:'foreign_id', text:'Foreign ID', value:this.state.infra.foreign_id})
-  } else
-   items.push({tag:'select', id:'server_id', text:'Server', value:this.state.data.server_id, options:this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))})
-  items.push(
-   {tag:'input', type:'text', id:'name', text:'Name', value:this.state.data.name},
-   {tag:'input', type:'text', id:'master', text:'Master', value:this.state.data.master},
-   {tag:'input', type:'text', id:'type', text:'Type', value:this.state.data.type},
-   {tag:'input', type:'text', id:'notified_serial', text:'Notified_serial', value:this.state.data.notified_serial},
-  )
-  return items;
- }
-
  render() {
   if (!this.state.found)
    return <article>Domain with id: {this.props.id} removed</article>
-  else if (this.state.data)
+  else if (this.state.data) {
+   const old = (this.state.data.id !== "new");
    return (
     <article className='info'>
      <h1>Domain Info</h1>
-     <InfoCol2 key='domain_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
+     <InfoCol2 key='domain_content'>
+      {old && <TextLine key='node' id='node' text={this.state.infra.node} />}
+      {old && <TextLine key='service' id='service' text={this.state.infra.service} />}
+      {old && <TextLine key='foreign_id' id='foreign_id' label='Foreign ID' text={this.state.infra.foreign_id} />}
+      {!old && <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} options={this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))} changeHandler={this.changeHandler} />}
+      <TextInput key='name' id='name' value={this.state.data.name} changeHandler={this.changeHandler} />
+      <TextInput key='master' id='master' value={this.state.data.master} changeHandler={this.changeHandler} />
+      <TextInput key='type' id='type' value={this.state.data.type} changeHandler={this.changeHandler} />
+      <TextInput key='notified_serial' id='notified_serial' label='Notified Serial' value={this.state.data.notified_serial} changeHandler={this.changeHandler} />
+     </InfoCol2>
      <InfoButton key='domain_save' type='save' onClick={() => this.updateInfo('api/dns/domain_info')} />
     </article>
    );
-  else
+  } else
    return <Spinner />
  }
 }
@@ -150,15 +172,10 @@ class Status extends Component {
 
 // *************** Record List ***************
 //
-class RecordList extends ReportBase {
+class RecordList extends Component {
  constructor(props){
   super(props)
-  this.header = "Records"
-  this.thead = ['ID','Name','Content','Type','TTL','']
-  this.buttons = [
-   <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='add' type='add' onClick={() => this.props.changeSelf(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} id='new' />)} />,
-  ]
+  this.state = {}
  }
 
  componentDidMount(){
@@ -167,44 +184,54 @@ class RecordList extends ReportBase {
 
  listItem = (row) => {
   var buttons = [<InfoButton key={'record_info_btn_' + row.id} type='info' onClick={() => this.props.changeSelf(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} />]
-  if (['A','CNAME','PTR'].includes(row.type)) {
+  if (['A','CNAME','PTR'].includes(row.type))
    buttons.push(<InfoButton key={'record_del_btn_' + row.id} type='delete' onClick={() => this.deleteList('api/dns/record_delete',row.id,'Really delete record?')} />)
-  }
   return [row.id,row.name,row.content,row.type,row.ttl,<Fragment key={'record_buttons_'+row.id}>{buttons}</Fragment>]
  }
 
- deleteList = (api,id,msg) => {
-  if (window.confirm(msg))
-   rest_call(api, {domain_id:this.props.domain_id,id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))}))
- }
+ deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {domain_id:this.props.domain_id,id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
+ render(){
+  return <ContentReport key='rl_cr' header='Records' thead={['ID','Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+   <InfoButton key='rl_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+   <InfoButton key='rl_btn_add' type='add' onClick={() => this.props.changeSelf(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} id='new' />)} />
+  </ContentReport>
+ }
 }
 
 // *************** Record Info ***************
 //
-class RecordInfo extends InfoBase {
+class RecordInfo extends Component {
+ constructor(props){
+  super(props);
+  this.state = {data:null, found:true };
+ }
+
+ changeHandler = (e) => { var data = {...this.state.data}; data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];  this.setState({data:data}); }
+
+ updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
+  this.setState({info:undefined})
   rest_call('api/dns/record_info',{id:this.props.id,domain_id:this.props.domain_id}).then(result => this.setState(result))
  }
 
- infoItems = () => [
-  {tag:'input', type:'text', id:'name', text:'Name', value:this.state.data.name, title:'E.g. A:FQDN, PTR:x.y.z.in-addr.arpa'},
-  {tag:'input', type:'text', id:'content', text:'Content', value:this.state.data.content, title:'E.g. A:IP, PTR:FQDN'},
-  {tag:'input', type:'text', id:'ttl', text:'TTL', value:this.state.data.ttl},
-  {tag:'input', type:'text', id:'type', text:'Type', value:this.state.data.type}
- ]
-
  render() {
-  if (this.state.data)
+  if (this.state.data) {
    return (
     <article className='info'>
      <h1>Record Info</h1>
-     <InfoCol2 key='record_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
+     <InfoCol2 key='record_content'>
+      <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' changeHandler={this.changeHandler} />
+      <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' changeHandler={this.changeHandler} />
+      <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} changeHandler={this.changeHandler} />
+      <TextInput key='type' id='type' value={this.state.data.type} changeHandler={this.changeHandler} placeholder={'A, PTR or CNAME typically'} />
+     </InfoCol2>
      <InfoButton key='record_save' type='save' onClick={() => this.updateInfo('api/dns/record_info')} />
+     <Result key='record_result' result={this.state.hasOwnProperty('info') ? `${this.state.status} ${this.state.info}` : this.state.status} />
     </article>
    );
-  else
+  } else
    return <Spinner />
  }
 }

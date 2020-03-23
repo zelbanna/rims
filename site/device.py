@@ -377,7 +377,7 @@ def model_info(aWeb):
 #
 def logs(aWeb):
  args = aWeb.args()
- res = aWeb.rest_call("device/logs_get",args)
+ res = aWeb.rest_call("device/log_get",args)
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Time</DIV><DIV>Event</DIV></DIV><DIV CLASS=tbody>")
  for row in res['logs']:
@@ -517,14 +517,14 @@ def interface_list(aWeb):
  op = args.pop('op',None)
  if   op == 'delete':
   interfaces = [val for intf,val in args.items() if intf[0:10] == "interface_"]
-  opres = aWeb.rest_call("device/interface_delete",{'interfaces':interfaces})
+  opres = aWeb.rest_call("interface/delete",{'interfaces':interfaces})
  elif op == 'cleanup':
-  opres = aWeb.rest_call("device/interface_delete",{'device_id':id})
+  opres = aWeb.rest_call("interface/delete",{'device_id':id})
  elif op == 'discover':
-  opres = aWeb.rest_call("device/interface_snmp",{'device_id':id})
+  opres = aWeb.rest_call("interface/snmp",{'device_id':id})
  else:
   opres = ""
- res = aWeb.rest_call("device/interface_list",{'device_id':id})
+ res = aWeb.rest_call("interface/list",{'device_id':id})
  aWeb.wr("<ARTICLE><P>Interfaces</P>")
  aWeb.wr(aWeb.button('reload', DIV='div_dev_data',URL='device_interface_list?device_id=%s'%id))
  aWeb.wr(aWeb.button('add',    DIV='div_dev_data',URL='device_interface_info?device_id=%s&interface_id=new'%id))
@@ -547,7 +547,7 @@ def interface_list(aWeb):
 
 #
 def interface_lldp(aWeb):
- res = aWeb.rest_call('device/lldp_mapping',{'device_id':aWeb['device_id']})
+ res = aWeb.rest_call('interface/lldp_mapping',{'device_id':aWeb['device_id']})
  aWeb.wr("<ARTICLE><P>Interface</P>")
  aWeb.wr(aWeb.button('back', DIV='div_dev_data', URL='device_interface_list?device_id=%s'%aWeb['device_id']))
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Chassis ID</DIV><DIV>Type</DIV><DIV>Name</DIV><DIV>Port ID</DIV><DIV>Type</DIV><DIV>Description</DIV><DIV>SNMP Index</DIV><DIV>SNMP Name</DIV><DIV>Conn</DIV><DIV>Status</DIV></DIV><DIV CLASS=tbody>")
@@ -562,9 +562,9 @@ def interface_info(aWeb):
  op   = args.pop('op',None)
  opres = ""
  if   op == 'connect':
-  opres = aWeb.rest_call("device/interface_connect",{'a_id':args['interface_id'],'b_id':args['peer_interface'],'map':True if args.get('map') else False})
+  opres = aWeb.rest_call("interface/connect",{'a_id':args['interface_id'],'b_id':args['peer_interface'],'map':True if args.get('map') else False})
  elif op == 'disconnect':
-  opres = aWeb.rest_call("device/interface_connect",{'a_id':args['interface_id'],'b_id':args['peer_interface'],'disconnect':True})
+  opres = aWeb.rest_call("interface/connect",{'a_id':args['interface_id'],'b_id':args['peer_interface'],'disconnect':True})
  elif op == 'dns':
   opres = aWeb.rest_call("ipam/address_info",{'op':'update','hostname':args['name'],'id':args['ipam_id']})
  elif op == 'noip':
@@ -575,7 +575,7 @@ def interface_info(aWeb):
  elif op == 'update':
   args['op'] = 'update'
  args['extra'] = ['classes']
- data = aWeb.rest_call("device/interface_info",args)
+ data = aWeb.rest_call("interface/info",args)
  info = data['data']
  extra= data.get('peer')
  opres = data['info'] if data['status'] == 'NOT_OK' else opres
@@ -660,7 +660,7 @@ def interface_connect(aWeb):
   aWeb.wr(aWeb.button('forward', DIV='div_dev_data', URL='device_interface_connect?op=interface', FRM='interface_link'))
  else:
   aWeb.wr("<INPUT TYPE=HIDDEN NAME=peer VALUE=%s>"%aWeb['peer'])
-  res = aWeb.rest_call("device/interface_list",{'device_id':aWeb['peer'],'sort':'name','filter':['connected']})
+  res = aWeb.rest_call("interface/list",{'device_id':aWeb['peer'],'sort':'name','filter':['connected']})
   aWeb.wr("Connect '%s' to device id: %s on <SELECT NAME=peer_interface REQUIRED>"%(aWeb['name'],aWeb['peer']))
   for intf in res.get('data',[]):
    aWeb.wr("<OPTION VALUE=%s>%s (%s - %s)</OPTION>"%(intf['interface_id'],intf['interface_id'],intf['name'],intf['description']))
@@ -674,7 +674,7 @@ def interface_connect(aWeb):
 #
 #
 def connection_info(aWeb):
- data = aWeb.rest_call("device/connection_info",{"connection_id":aWeb['id']})['data']
+ data = aWeb.rest_call("interface/connection_info",{"connection_id":aWeb['id']})['data']
  aWeb.wr("<ARTICLE CLASS='info'><P>Connection</P>")
  aWeb.wr("<FORM id='connection_info'>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME='id' VALUE='%s'>"%aWeb['id'])

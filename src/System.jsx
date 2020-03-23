@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call} from './infra/Functions.js';
-import { Spinner, TableRow, RimsContext } from './infra/Generic.js';
-import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
+import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/Generic.js';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
 
 import { LogShow, List as NodeList } from './Node.jsx';
@@ -16,7 +15,7 @@ import { Report as InventoryReport } from './Inventory.jsx';
 
 // ************** Main **************
 //
-export class Main extends MainBase {
+export class Main extends Component {
  constructor(props){
   super(props)
   this.state = {navinfo:[], navitems:[], logs:[], services:[] }
@@ -63,16 +62,21 @@ export class Main extends MainBase {
    this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
    this.context.loadNavigation(navitems)
  }
+
+ changeContent = (elem) => this.setState({content:elem})
+
+ render(){
+  return  <Fragment key='main_base'>{this.state.content}</Fragment>
+ }
 }
 Main.contextType = RimsContext;
 
 // ************** Report **************
 //
-export class Report extends ReportBase{
+export class Report extends Component{
  constructor(props){
   super(props)
-  this.header = 'System Report'
-  this.thead = ['Key','Value']
+  this.state = {}
  }
 
  componentDidMount(){
@@ -80,15 +84,18 @@ export class Report extends ReportBase{
  }
 
  listItem = (row) => [row.info,row.value]
+
+ render(){
+  return <ContentReport key='sys_cr' header='System Report' thead={['Key','Value']} trows={this.state.data} listItem={this.listItem} />
+ }
 }
 
 // ************** TaskReport **************
 //
-export class TaskReport extends ReportBase {
+export class TaskReport extends Component {
  constructor(props){
-  super(props);
-  this.header = 'Tasks'
-  this.thead = ['Node','Frequency','Module','Function','Arguments']
+  super(props)
+  this.state = {}
  }
 
  componentDidMount(){
@@ -97,16 +104,18 @@ export class TaskReport extends ReportBase {
 
  listItem = (row) => [row.node,row.frequency,row.module,row.function,row.args]
 
+ render(){
+  return <ContentReport key='task_cr' header='Tasks' thead={['Node','Frequency','Module','Function','Arguments']} trows={this.state.data} listItem={this.listItem} />
+ }
 }
 TaskReport.contextType = RimsContext;
 
 // ************** RestList **************
 //
-class RestList extends ListBase {
+class RestList extends Component {
  constructor(props){
   super(props);
-  this.thead=['API','Function']
-  this.header='REST API'
+  this.state = {}
  }
 
  componentDidMount(){
@@ -120,6 +129,14 @@ class RestList extends ListBase {
 
  listItem = (row) => [row.api,<TextButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
 
+ changeContent = (elem) => this.setState({content:elem})
+
+ render(){
+  return <Fragment key='rest_tp_fragment'>
+   <ContentList key='rest_tp_cl' header='REST API' thead={['API','Function']} trows={this.state.data} listItem={this.listItem} />
+   <ContentData key='rest_tp_cd'>{this.state.content}</ContentData>
+  </Fragment>
+ }
 }
 
 // ************** RestInfo **************
@@ -160,10 +177,10 @@ class RestExecute extends Component {
 // ************************ Controls ********************
 //
 // TODO: List should be dynamic from config and passed through REST engine
-class Controls extends ListBase {
+class Controls extends Component {
  constructor(props){
   super(props);
-  this.state.data = [
+  this.state = {data:[
    {api:'monitor/ipam_init',text:'IPAM status check'},
    {api:'ipam/address_events',text:'IPAM clear status logs',args:{op:'clear'}},
    {api:'monitor/interface_init',text:'Interface status check'},
@@ -172,13 +189,20 @@ class Controls extends ListBase {
    {api:'device/vm_mapping',text:'VM UUID mapping'},
    {api:'master/oui_fetch',text:'Sync OUI database'},
    {api:'reservation/expiration_status',text:'Check reservation status'},
-   {api:'system/sleep',text:'Sleep Test', args:{seconds:20}},
-  ]
-  this.header = ''
-  this.thead = ['Control Function']
+   {api:'system/sleep',text:'Sleep Test', args:{seconds:10}},
+  ]}
  }
 
+ changeContent = (elem) => this.setState({content:elem})
+
  listItem = (row) => [<TextButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
+
+ render(){
+  return <Fragment key='ctl_fragment'>
+   <ContentList key='ctl_cl' header='' thead={['API']} trows={this.state.data} listItem={this.listItem} />
+   <ContentData key='ctl_cd'>{this.state.content}</ContentData>
+  </Fragment>
+ }
 }
 
 // ************** File List **************

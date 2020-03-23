@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
-import { MainBase } from './infra/Base.jsx';
 import { MenuButton } from './infra/Buttons.jsx';
 import { RimsContext } from './infra/Generic.js';
 
@@ -8,11 +7,12 @@ import { RimsContext } from './infra/Generic.js';
 
 // ************** Main **************
 //
-export class Main extends MainBase {
+export class Main extends Component {
+
+ changeContent = (elem) => this.setState(elem)
 
  componentDidMount(){
-  rest_call('api/portal/resources',{type:'tool'})
-   .then((result) => {
+  rest_call('api/portal/resources',{type:'tool'}).then((result) => {
    let buttons = []
    for (let [key, panel] of Object.entries(result.data)){
     let click = null
@@ -25,8 +25,12 @@ export class Main extends MainBase {
     panel.title = key
     buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
    }
-   this.setState({content:<div className='flexdiv centered'>{buttons}</div>})
+   this.setState(<div className='flexdiv centered'>{buttons}</div>)
   })
+ }
+
+ render(){
+  return  <Fragment key='main_base'>{this.state}</Fragment>
  }
 }
 Main.contextType = RimsContext;

@@ -1,7 +1,6 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { StateMap, RimsContext } from './infra/Generic.js';
-import { MainBase, ListBase, ReportBase } from './infra/Base.jsx';
+import { StateMap, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
 import { InfoButton } from './infra/Buttons.jsx';
 
 import { Logs as DeviceLogs } from './Device.jsx';
@@ -9,21 +8,25 @@ import { Logs as DeviceLogs } from './Device.jsx';
 // ************** Main **************
 //
 
-export class Main extends MainBase {
+export class Main extends Component {
  componentDidMount(){
-  this.setState({content:<List key={'hypervisor_list_'+rnd()} />})
+  this.setState(<List key={'hypervisor_list_'+rnd()} />)
+ }
+
+ changeContent = (elem) => this.setState(elem)
+
+ render(){
+  return  <Fragment key='main_base'>{this.state}</Fragment>
  }
 }
 Main.contextType = RimsContext;
 
 // ************** List **************
 //
-export class List extends ListBase {
+export class List extends Component {
  constructor(props){
   super(props)
-  this.thead = ['Hostname','Type','','']
-  this.header = 'Hypervisor'
-  this.buttons = [<InfoButton key='hypervisor_sync' type='sync' onClick={() => this.changeContent(<Sync />) } />]
+  this.state = {}
  }
 
  componentDidMount(){
@@ -37,31 +40,37 @@ export class List extends ListBase {
     buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => this.context.changeMain({content:<Manage key={'hypervisor_manage_'+row.id} id={row.id} />}) } />)
    if (row.url && row.url.length > 0)
     buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => window.open(row.url,'_blank') } />)
-  return [row.hostname,row.type_name,<StateMap key={'hypervisor_state_'+row.id} state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
+  return [row.hostname,row.type_name,<StateMap state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
  }
 
+ changeContent = (elem) => this.setState({content:elem})
+
+ render(){
+  return <Fragment key='hyp_fragment'>
+   <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','','']} trows={this.state.data} listItem={this.listItem}>
+    <InfoButton key='hyp_sync' type='sync' onClick={() => this.changeContent(<Sync />) } />
+   </ContentList>
+   <ContentData key='hyp_cd'>{this.state.content}</ContentData>
+  </Fragment>
+ }
 }
 List.contextType = RimsContext;
+
 // ************** Sync **************
 //
 
-class Sync extends ReportBase{
+class Sync extends Component{
  constructor(props){
   super(props)
-  this.thead = ['Status','Host','Device','VM Name','Device UUID','Config']
-  this.header= 'VM Mapping'
+  this.state = {}
  }
 
  componentDidMount(){
-  rest_call('api/device/vm_mapping')
-   .then(result => {
+  rest_call('api/device/vm_mapping').then(result => {
     let entries = [];
     ["existing","inventory","discovered","database"].forEach(type => {
      if (result.hasOwnProperty(type))
-      result[type].forEach(entry => {
-       entry.type = type
-       entries.push(entry)
-      })
+      result[type].forEach(entry => { entry.type = type; entries.push(entry); })
     })
     this.setState({data:entries})
    })
@@ -69,11 +78,14 @@ class Sync extends ReportBase{
 
  listItem = (row) => [row.type,row.host_id,row.device_id,row.vm,row.device_uuid,row.config]
 
+ render(){
+  return <ContentReport key='hyp_cr' header='VM Mapping' thead={['Status','Host','Device','VM Name','Device UUID','Config']} trows={this.state.data} listItem={this.listItem} />
+ }
 }
 
 // ************** Manage **************
 //
-class Manage extends ListBase {
+class Manage extends Component {
 
  componentDidMount(){
   rest_call('api/device/management',{id:this.props.id})

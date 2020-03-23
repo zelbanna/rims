@@ -2,10 +2,15 @@ import React, { Component } from 'react';
 import { rest_call } from  './infra/Functions.js';
 import Library from './infra/Mapper.js'
 import { InfoCol2, RimsContext } from './infra/Generic.js';
+import { TextInput, PasswordInput } from './infra/Inputs.jsx';
 import { MenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
+
+// ************************* Header ****************************
+//
+const Header = (props) => <header>{props.children}</header>
 
 // ************************* Portal  ****************************
 //
@@ -41,31 +46,28 @@ class Portal extends Component {
    this.setState(panel)
  }
 
- Header(props){
-  let buttons = [
-   <MenuButton key='mb_Logout' className='right warning' onClick={() => { props.clearCookie()}} title='Log out' />,
-   <MenuButton key='mb_System_Main' className='right' onClick={() => {props.changeContent({module:'System',function:'Main'})}} title='System' icon='images/icon-config.png' />,
-   <MenuButton key='mb_User_User' className='right' onClick={() => {props.changeContent({module:'User',function:'User', args:{id:props.id}})}}   title='User'   icon='images/icon-users.png' />
-  ]
-  for (let [key, panel] of Object.entries(props.menu)){
+ render() {
+  let buttons = []
+  for (let [key, panel] of Object.entries(this.state.menu)){
    let click = null
    if (panel.type === 'module')
-    click = () => props.changeContent(panel)
+    click = () => this.changeContent(panel)
    else if (panel.type === 'tab')
     click = () => window.open(panel.tab,'_blank')
    else if (panel.type === 'frame')
-    click = () => props.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>,navigation:null})
+    click = () => this.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>,navigation:null})
    panel.title = key
    buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
   }
-  return <header>{buttons}</header>
- }
-
- render() {
   return (
    <React.Fragment key='portal'>
     <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.context.cookie.theme + '.react.css'} />
-    <this.Header key='portal_header' menu={this.state.menu} changeContent={this.changeContent} clearCookie={this.context.clearCookie} id={this.context.cookie.id} />
+    <Header key='portal_header'>
+     <MenuButton key='mb_Logout' className='right warning' onClick={() => { this.context.clearCookie()}} title='Log out' />
+     <MenuButton key='mb_System_Main' className='right' onClick={() => {this.changeContent({module:'System',function:'Main'})}} title='System' icon='images/icon-config.png' />
+     <MenuButton key='mb_User_User' className='right' onClick={() => {this.changeContent({module:'User',function:'User', args:{id:this.context.cookie.id}})}} title='User' icon='images/icon-users.png' />
+     {buttons}
+    </Header>
     <NavBar key='portal_navigation' items={this.state.navigation} />
     <main>{this.state.content}</main>
   </React.Fragment>
@@ -104,12 +106,14 @@ class Login extends Component {
  }
 
  render() {
-  const griditems = [{tag:'input', type:'text', id:'username', text:'Username'},{tag:'input', type:'password', id:'password', text:'Password'}]
   return (
    <div className='login'>
     <article className='login'>
      <h1 className='centered'>{this.state.message}</h1>
-     <InfoCol2 griditems={griditems} changeHandler={this.changeHandler} className={'left'}/>
+     <InfoCol2 className={'left'}>
+      <TextInput key='username' id='username' changeHandler={this.changeHandler} />
+      <PasswordInput key='password' id='password' changeHandler={this.changeHandler} />
+     </InfoCol2>
      <MenuButton icon='images/icon-start.png' title='Start' onClick={this.handleSubmit}/>
     </article>
    </div>

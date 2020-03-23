@@ -58,7 +58,8 @@ def show(aCTX, aArgs = None):
    data = db.get_row()
    ret['data'] = {'id':data['id'],'name':data['name']}
    for var in ['nodes','edges','options']:
-    ret['data'][var] = loads(data[var])
+    try:    ret['data'][var] = loads(data[var])
+    except: ret['data'][var] = data[var]
  return ret
 
 #
@@ -91,25 +92,26 @@ def network(aCTX, aArgs = None):
  args = dict(aArgs)
  op = args.pop('op',None)
  id = int(args.get('id',0))
- ret = {'data':{'type':args.pop('type','map')}}
+ type = args.pop('type','map')
+ ret = {}
  with aCTX.db as db:
   if op == 'update':
-   for type in ['options','nodes','edges']:
-    args[type] = dumps(args[type])
-   if id == 'new' or ret['data']['type'] == 'device':
+   for tp in ['options','nodes','edges']:
+    args[tp] = dumps(args[tp])
+   if id == 'new' or type == 'device':
     ret['insert']= (db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args) > 0)
     id = db.get_last_id()
-    ret['data']['type']  = 'map'
+    type  = 'map'
     ret['status']= 'OK'
    else:
     ret['update']= (db.do("UPDATE visualize SET name='%(name)s',options='%(options)s',nodes='%(nodes)s',edges='%(edges)s' WHERE id = %(id)s"%args) > 0)
     ret['status']= 'OK'
 
-  if ret['data']['type'] == 'map':
+  if type == 'map':
    ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %s"%id) == 1)
    if ret['found']:
     data = db.get_row()
-    ret['data'].update({'id':id,'name':data.get('name',"")})
+    ret['data'] = {'id':id,'name':data.get('name',"N/A"),'type':'map'}
     try:
      ret['data']['nodes'] = loads(data.get('nodes','[]'))
      ret['data']['edges'] = loads(data.get('edges','[]'))
@@ -126,7 +128,7 @@ def network(aCTX, aArgs = None):
 
    nodes = {id:{'processed':False,'distance':0,'connected':0}}
    edges = []
-   ret['data'] = {'id':id,'options':{'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}}
+   ret['data'] = {'id':id,'type':'device','options':{'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}}
    sql_connected = "SELECT di.device_id AS a_device, di.interface_id AS a_if, di.name AS a_name, di.snmp_index AS a_index, peer.device_id AS b_device, peer.interface_id AS b_if, peer.snmp_index AS b_index, peer.name AS b_name FROM device_interfaces AS di RIGHT JOIN device_interfaces AS peer ON di.connection_id = peer.connection_id AND peer.device_id <> {0} LEFT JOIN device_connections AS dc ON di.connection_id = dc.id WHERE dc.map = 1 AND di.device_id = {0}"
    for lvl in range(0,args.get('diameter',2)):
     level_ids = list(nodes.keys())

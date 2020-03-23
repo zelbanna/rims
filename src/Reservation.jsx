@@ -1,8 +1,8 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
-import { Spinner, InfoCol2, RimsContext } from './infra/Generic.js';
-import { ListBase, ReportBase, InfoBase }    from './infra/Base.jsx';
+import { Spinner, InfoCol2, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
 import { InfoButton, TextButton }  from './infra/Buttons.jsx';
+import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 
 import { Info as UserInfo } from './User.jsx';
 
@@ -10,13 +10,10 @@ import { Info as UserInfo } from './User.jsx';
 
 // ************** List **************
 //
-export class List extends ListBase {
+export class List extends Component {
  constructor(props){
   super(props);
-  this.thead = ['User','Device','Until','']
-  this.header = 'Reservations'
-  this.buttons = [<InfoButton key='reload' type='reload' onClick={() => this.componentDidMount()} />]
-
+  this.state = {}
  }
 
  componentDidMount(){
@@ -27,15 +24,8 @@ export class List extends ListBase {
   rest_call('api/reservation/update',{op:'extend', device_id:device_id,user_id:user_id,days:days}).then(result => this.componentDidMount())
  }
 
- deleteItem = (device_id,user_id,msg)  => {
-  if (window.confirm(msg)){
-   rest_call('api/reservation/update',{op:'delete', device_id:device_id,user_id:user_id})
-    .then((result) => {
-     if(result.result)
-      this.setState({data:this.state.data.filter((row,index,arr) => row.device_id !== device_id),content:null})
-    })
-  }
- }
+ changeContent = (elem) => this.setState({content:elem})
+ deleteItem = (dev,user) => (window.confirm('Remove reservation?') && rest_call('api/reservation/update',{op:'delete', device_id:dev, user_id:user}).then(result => result.result && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
 
  listItem = (row) => {
   const cells = [
@@ -48,37 +38,57 @@ export class List extends ListBase {
     <Fragment key='reservation_buttons'>
      <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
      <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
-     <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id,'Remove reservatin?') }} title='Remove reservation' />
+     <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />
     </Fragment>
    )
   }
   return cells;
+ }
+
+ render(){
+  return <Fragment key='rsv_fragment'>
+   <ContentList key='rsv_cl' header='Reservations' thead={['User','Device','Until','']} trows={this.state.data} listItem={this.listItem}>
+    <InfoButton key='rsv_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+   </ContentList>
+   <ContentData key='rsv_cd'>{this.state.content}</ContentData>
+  </Fragment>
  }
 }
 List.contextType = RimsContext;
 
 // ************** Info **************
 //
-class Info extends InfoBase {
+class Info extends Component {
+ constructor(props){
+  super(props);
+  this.state = {data:null, found:true};
+ }
 
  componentDidMount(){
   rest_call('api/reservation/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
+ changeHandler = (e) => {
+  var data = {...this.state.data};
+  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
+  this.setState({data:data});
+ }
+
+ updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+
  render() {
   if (this.state.data){
-   const griditems = [
-    {tag:'span',  id:'alias', text:'Alias', value:this.state.data.alias},
-    {tag:'span',  id:'time_start', text:'Start', value:this.state.data.time_start},
-    {tag:'span',  id:'time_end',   text:'End',   value:this.state.data.time_end},
-    {tag:'input', type:'radio', id:'shutdown', text:'Shutdown', value:this.state.data.shutdown, options:[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]},
-    {tag:'input', type:'text', id:'info', text:'Info', value:this.state.data.info}
-   ]
    return (
     <article className='info'>
      <h1>Reservation</h1>
-     <InfoCol2 key={'reservation_content'} griditems={griditems} changeHandler={this.changeHandler} />
-     <InfoButton key='reservation_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
+     <InfoCol2 key={'reservation_content'}>
+      <TextLine key='alias' id='alias' text={this.state.data.alias} />
+      <TextLine key='time_start' id='Start' text={this.state.data.time_start} />
+      <TextLine key='time_end' id='End' text={this.state.data.time_end} />
+      <RadioInput key='shutdown' id='shutdown' value={this.state.data.shutdown} options={[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]} changeHandler={this.changeHandler} />
+      <TextInput key='info' id='info' value={this.state.data.info} changeHandler={this.changeHandler} />
+     </InfoCol2>
+     <InfoButton key='rsv_btn_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>
    );
   } else
@@ -88,11 +98,10 @@ class Info extends InfoBase {
 
 // ************** Report **************
 //
-export class Report extends ReportBase {
+export class Report extends Component {
  constructor(props){
   super(props);
-  this.header = 'Reservations'
-  this.thead = ['User','Device','Start','End','Info']
+  this.state = {}
  }
 
  componentDidMount(){
@@ -100,4 +109,8 @@ export class Report extends ReportBase {
  }
 
  listItem = (row) => [row.alias,row.hostname,row.start,row.end,row.info]
+
+ render(){
+  return <ContentReport key='rsv_cr' header='Reservations' thead={['User','Device','Start','End','Info']} trows={this.state.data} listItem={this.listItem} />
+ }
 }

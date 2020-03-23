@@ -526,6 +526,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.auth()
   elif path == 'system':
    self.system(query)
+  elif path in ['infra','images','files']:
+   # Use caching here :-)
+   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
+    self._headers['X-Code'] = 304
+   else:
+    self.files(path,query)
   elif len(path) == 0:
    self._headers.update({'X-Process':'no route','X-Code':404})
   else:

@@ -10,27 +10,9 @@ import { List as LocationList } from './Location.jsx';
 import { List as ServerList } from './Server.jsx';
 import { NetworkList as IPAMNetworkList } from './IPAM.jsx';
 import { DomainList as DNSDomainList } from './DNS.jsx';
-import { List as VisualizeList } from './Visualize.jsx';
+import { List as VisualizeList, Edit as VisualizeEdit } from './Visualize.jsx';
 import { List as RackList, Inventory as RackInventory, Infra as RackInfra } from './Rack.jsx';
-
-/*
-
-def info(aWeb):
-def extended(aWeb):
-def control(aWeb):
-def function(aWeb):
-def logs(aWeb):
-def to_console(aWeb):
-def conf_gen(aWeb):
-
-def interface_list(aWeb):
-def interface_lldp(aWeb):
-def interface_info(aWeb):
-def interface_ipam(aWeb):
-def interface_connect(aWeb):
-def connection_info(aWeb):
-
-*/
+import { List as InterfaceList } from './Interface.jsx';
 
 // **************** Main ****************
 //
@@ -48,10 +30,10 @@ export class Main extends MainBase {
  compileNavItems = (state) => {
   const navitems = [
    {title:'Devices', type:'dropdown', items:[
-    {title:'List', onClick:() => this.changeContent(<List key='device_list' changeSelf={this.changeContent} rack_id={state.rack_id} />)},
-    {title:'Search', onClick:() => this.changeContent(<Search key='device_search' changeSelf={this.changeContent} />)},
-    {title:'Types', onClick:() => this.changeContent(<TypeList key='device_type_list' changeSelf={this.changeContent} />)},
-    {title:'Models', onClick:() => this.changeContent(<ModelList key='device_model_list' />)}
+    {title:'List', onClick:() => this.changeContent(<List key='dl' changeSelf={this.changeContent} rack_id={state.rack_id} />)},
+    {title:'Search', onClick:() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)},
+    {title:'Types', onClick:() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)},
+    {title:'Models', onClick:() => this.changeContent(<ModelList key='dml' />)}
    ]},
    {title:'Reservations', className:'right', onClick:() => this.changeContent(<ReservationList key='reservation_list' />)},
    {title:'Locations', className:'right', onClick:() => this.changeContent(<LocationList key='location_list' />)},
@@ -117,7 +99,7 @@ class Search extends Component {
       </select>:
       <input type='text' id='search' name='search' required='required' onChange={this.changeHandler} value={this.state.search} placeholder='search' />
      </span>
-     <InfoButton type='search' title='Search' onClick={() => this.props.changeSelf(<List key='dl_list' {...this.state} changeSelf={this.props.changeSelf} />)} />
+     <InfoButton key='ds_btn_search' type='search' title='Search' onClick={() => this.props.changeSelf(<List key='dl' {...this.state} changeSelf={this.props.changeSelf} />)} />
     </div>
    </article>
   )
@@ -151,7 +133,12 @@ class List extends Component {
   this.setState({sort:method})
  }
 
- listItem = (row) => [row.ip,<TextButton key={'dev_list_item_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'dev_info_'+row.id} id={row.id} />)} />,StateMap({state:row.state}),<InfoButton key={'delete_'+row.id} type='delete' onClick={() => { this.deleteList('api/device/delete',row.id,'Really delete device?'); }} />]
+ listItem = (row) => [
+  row.ip,
+  <TextButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} />,
+  StateMap({state:row.state}),
+  <InfoButton key={'dl_btn_del_'+row.id} type='delete' onClick={() => { this.deleteList('api/device/delete',row.id,'Really delete device?'); }} />
+ ]
 
  deleteList = (api,id,msg) => {
   if (window.confirm(msg))
@@ -163,30 +150,136 @@ class List extends Component {
    return <Spinner />
   else {
    let device_list = this.state.data.filter(row => row.hostname.includes(this.state.searchfield));
-   const buttons = [
-    <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />,
-    <InfoButton key='items' type='items'   onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='All items' />,
-    <InfoButton key='add' type='add'       onClick={() => this.changeContent(<New key={'device_new_' + rnd()} id='new' />) } />,
-    <InfoButton key='devices' type='devices' onClick={() => this.changeContent(<Discover key='device_discover' />) } title='Discovery' />,
-    <SearchField key='searchfield' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
-   ];
-   const thead = [
-    <TextButton key='dl_btn_ip' text='IP' className={(this.state.sort === 'ip') ? 'highlight':''} onClick={() => { this.sortList('ip') }} />,
-    <TextButton key='dl_btn_hostname' text='Hostname' className={(this.state.sort === 'hostname') ? 'highlight':''} onClick={() => { this.sortList('hostname') }} />,
-    '',
-    ''
-   ];
+   const thead = [<TextButton key='dl_btn_ip' text='IP' className={(this.state.sort === 'ip') ? 'highlight':''} onClick={() => { this.sortList('ip') }} />,<TextButton key='dl_btn_hostname' text='Hostname' className={(this.state.sort === 'hostname') ? 'highlight':''} onClick={() => { this.sortList('hostname') }} />,'',''];
    return <Fragment key={'dl_fragment'}>
-    <section className='content-left'>
-     <ContentList key='dl_list' header='Device List' thead={thead} buttons={buttons} listItem={this.listItem} trows={device_list} />
-    </section>
-    <section className='content-right'>
-     <ContentData key='dl_content' content={this.state.content} />
-    </section>
+    <ContentList key='dl_list' header='Device List' thead={thead}listItem={this.listItem} trows={device_list}>
+     <InfoButton key='dl_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+     <InfoButton key='dl_btn_items' type='items'   onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='All items' />
+     <InfoButton key='dl_btn_add' type='add'       onClick={() => this.changeContent(<New key={'dn_' + rnd()} id='new' />) } />
+     <InfoButton key='dl_btn_devices' type='devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discovery' />
+     <SearchField key='dl_searchfield' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
+    </ContentList>
+    <ContentData key='dl_content'>{this.state.content}</ContentData>
    </Fragment>
   }
  }
 }
+
+// ************** Info **************
+//
+export class Info extends Component {
+ constructor(props){
+  super(props)
+  this.state = {data:undefined, found:true, content:null}
+ }
+
+ changeHandler = (e) => {
+  var data = {...this.state.data}
+  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
+  this.setState({data:data})
+ }
+
+ changeContent = (elem) => this.setState({content:elem})
+
+ updateInfo = (api) => {
+  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ }
+
+ componentDidMount(){
+  rest_call("api/device/info",{id:this.props.id, extra:["types","classes"]}).then(result => this.setState(result))
+ }
+
+ lookupInfo = () => {
+  setTimeout(() => window.alert('lookup'),3000)
+ }
+
+ render() {
+  if(this.state.data){
+   const info =  [
+    {tag:'span', id:'name', text:'Name', value:this.state.data.hostname},
+    {tag:'input', type:'text', id:'mac', text:'Sys MAC', value:this.state.data.mac, title:'System MAC'},
+    {tag:'span', id:'if_mac', text:'Mgmt MAC', value:this.state.extra.interface_mac, title:'Management Interface MAC'},
+    {tag:'span', id:'if_ip', text:'Mgmt IP', value:this.state.extra.interface_ip},
+    {tag:'span', id:'snmp', text:'SNMP', value:this.state.data.snmp},
+    {tag:'state', id:'state', text:'State', value:[this.state.extra.if_state,this.state.extra.ip_state]}
+   ];
+   const extra = [
+    {tag:'span', id:'id', text:'ID', value:this.props.id},
+    {tag:'select', id:'class', text:'Class', value:this.state.data.class, options:this.state.classes.map(row => ({value:row, text:row}))},
+    {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map(row => ({value:row.id, text:row.name}))},
+    {tag:'input', type:'text', id:'model', text:'Model', value:this.state.data.model, extra:this.state.data.model},
+    {tag:'span', id:'version', text:'Version', value:this.state.data.version},
+    {tag:'input', type:'text', id:'serial', text:'S/N', value:this.state.data.serial}
+   ];
+   let vm = [];
+   if (this.state.vm)
+    vm = [
+    {tag:'span', id:'vm_name', text:'VM Name', value:this.state.vm.name},
+    {tag:'span', id:'vm_host', text:'VM Host', value:this.state.vm.host},
+    {tag:'span', id:'vm_uuid', text:'VM UUID', value:this.state.vm.device_uuid, style:{maxWidth:170}, extra:this.state.vm.device_uuid},
+    {tag:'span', id:'vm_uhost', text:'Host UUID', value:this.state.vm.server_uuid, style:{maxWidth:170}, extra:this.state.vm.server_uuid}
+    ]
+   let rack = [];
+   if (this.state.rack){
+    rack = [
+     {tag:'span', id:'rack_pos', text:'Rack/Pos', value:`${this.state.rack.rack_name} (${this.state.rack.rack_unit})`},
+     {tag:'span', id:'rack_size', text:'Size (U)', value:this.state.rack.rack_name},
+     {tag:'span', id:'rack_con', text:'TS/Port', value:`${this.state.rack.console_name} (${this.state.rack.console_port})`}
+    ];
+    this.state.pems.map(pem => rack.push({tag:'span', id:'pem_'+pem.id, text:pem.name+' PDU', value:`${pem.pdu_name} (${pem.pdu_unit})`}));
+   }
+   const text = [
+    {tag:'input', type:'text', id:'comment', text:'Comments', value:this.state.data.comment},
+    {tag:'input', type:'url', id:'url', text:'URL', value:this.state.data.url}
+   ];
+   const buttons = [
+    <InfoButton key='di_btn_save' type='save' onClick={() => this.updateInfo('api/device/info')} />,
+    <InfoButton key='di_btn_conn' type='connections' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />,
+    <InfoButton key='di_btn_cont' type='start' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />,
+    <InfoButton key='di_btn_conf' type='document' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
+   ]
+   if(this.props.changeSelf)
+    buttons.push(
+     <InfoButton key='di_btn_edit' type='edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />,
+     <InfoButton key='di_btn_netw' type='network' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />
+    )
+   if(this.state.extra.interface_ip)
+    buttons.push(
+     <InfoButton key='di_btn_srch' type='search' onClick={() => this.lookupInfo()} />,
+     <InfoButton key='di_btn_logs' type='logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />,
+     <InfoButton key='di_btn_ssh'  type='term' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} />
+    )
+   return (
+    <Fragment key='di_fragment'>
+     <article className='info'>
+     <h1>Device Info</h1>
+     <InfoCol2 key='di_info'  griditems={info} changeHandler={this.changeHandler} className='left' />
+     <InfoCol2 key='di_extra' griditems={extra} changeHandler={this.changeHandler} className='left' />
+     <InfoCol2 key='di_rack'  griditems={rack} changeHandler={this.changeHandler} className='left' />
+     <InfoCol2 key='di_vm'    griditems={vm}   changeHandler={this.changeHandler} className='left' />
+     <br />
+     <InfoCol2 key='di_text'  griditems={text} changeHandler={this.changeHandler} />
+     <br />
+     {buttons}
+     <span className='results'>{JSON.stringify(this.state.update)}</span>
+    </article>
+    <NavBar key='di_navbar' items='' />
+    {this.state.content}
+    </Fragment>
+   )
+  } else
+   return <Spinner />
+ }
+}
+
+/*
+ if dev.get('rack') and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
+  # Hardcoded port to 60xx
+  aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
+ if dev_info.get('url'):
+  aWeb.wr(aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev_info['url']))
+ aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('update','')))
+*/
 
 // ************** New **************
 //
@@ -442,15 +535,40 @@ class OUIList extends Component {
 // ************** TODO **************
 //
 export class Logs extends Component {
-
  render() {
   return (<div>Device Logs (TODO)</div>);
  }
 }
 
-export class Info extends Component {
-
+class Extended extends Component {
  render() {
-  return (<div>Device Info (TODO)</div>);
+  return (<div>Device Extended (TODO)</div>);
  }
 }
+
+class Control extends Component {
+ render() {
+  return (<div>Device Control (TODO)</div>);
+ }
+}
+
+class Function extends Component {
+ render() {
+  return (<div>Device Function (TODO)</div>);
+ }
+}
+
+class Configuration extends Component {
+ render() {
+  return (<div>Device Configuration (TODO)</div>);
+ }
+}
+
+class ToConsole extends Component {
+ render() {
+  return (<div>Device To Console (TODO)</div>);
+ }
+}
+
+
+

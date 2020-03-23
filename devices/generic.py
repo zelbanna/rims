@@ -35,7 +35,7 @@ class Device(object):
 
  def __exit__(self, *ctx_info): pass
 
- def log(self, aMsg): self._ctx.node_function('master','device','log')(aArgs = {'message':aMsg, 'id':self._id})
+ def log(self, aMsg): self._ctx.node_function('master','device','log_put')(aArgs = {'message':aMsg, 'id':self._id})
 
  def get_ip(self): return self._ip
 

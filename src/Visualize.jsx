@@ -1,27 +1,31 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
-import { MainBase, ListBase, InfoBase } from './infra/Base.jsx';
+import { ContentData, ContentList } from './infra/Generic.js';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
 import { DataSet, Network } from 'vis';
 import { Info as DeviceInfo } from './Device.jsx';
 
 // ************** Main **************
 //
-export class Main extends MainBase {
+export class Main extends Component {
  constructor(props){
   super(props)
-  this.state.content = <List key='viz_list' />
+  this.state = <List key='viz_list' />
+ }
+
+ changeContent = (elem) => this.setState(elem)
+
+ render(){
+  return  <Fragment key='main_base'>{this.state}</Fragment>
  }
 }
 
 // ************** List **************
 //
-export class List extends ListBase {
+export class List extends Component {
  constructor(props){
   super(props)
-  this.header = 'Maps'
-  this.thead = ['ID','Name','']
-  this.buttons = [<InfoButton key='viz_reload' type='reload' onClick={() => {this.componentDidMount()}} />]
+  this.state = {}
  }
 
  componentDidMount(){
@@ -34,6 +38,18 @@ export class List extends ListBase {
   <InfoButton key={'viz_net_'+row.id} type='network' onClick={() => { this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)}} />
   <InfoButton key={'viz_del_'+row.id} type='delete' onClick={() => { this.deleteList('api/visualize/delete',row.id,'Really delete map?')}} />
  </Fragment>]
+
+ changeContent = (elem) => this.setState({content:elem})
+ deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+
+ render(){
+  return <Fragment key='viz_fragment'>
+   <ContentList key='viz_cl' header='Maps' thead={['ID','NAme','']} trows={this.state.data} listItem={this.listItem}>
+    <InfoButton key='viz_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+   </ContentList>
+   <ContentData key='viz_cd'>{this.state.content}</ContentData>
+  </Fragment>
+ }
 }
 
 // ************** Show **************
@@ -55,10 +71,9 @@ class Show extends Component {
  doubleClick = (params) => {
   console.log("DoubleClick",params.nodes);
   if (params.nodes[0]){
-   rest_call("api/device/management",{id:params.nodes[0]})
-   .then(result => {
+   rest_call("api/device/management",{id:params.nodes[0]}).then(result => {
     if (result && result.status === "OK"){
-     if(result.data.url)
+     if(result.data.url && result.data.url.length > 0)
       window.open(result.data.url);
      else
       window.open("ssh://" + result.data.username + "@" + result.data.ip,"_self");
@@ -75,12 +90,13 @@ class Show extends Component {
 
 // ************** Edit **************
 //
-class Edit extends InfoBase {
+export class Edit extends Component {
  constructor(props){
   super(props)
-  this.state = {edit:false, physics:false, name:"",content:'network', physics_button:'start'}
-  this.state.data = {options:{physics:{enabled:false}},nodes:null,edges:null,name:''}
+  this.state = {content:'network', physics_button:'start', found:true, data:{name:'N/A'}}
   this.viz = {network:null,nodes:null,edges:null}
+  this.results = React.createRef();
+  this.edit = false;
  }
 
  componentDidMount(){
@@ -88,42 +104,53 @@ class Edit extends InfoBase {
    .then((result) => {
     this.viz.nodes = new DataSet(result.data.nodes);
     this.viz.edges = new DataSet(result.data.edges);
+    result.data.options.physics.enabled = true;
     this.viz.network = new Network(this.refs.edit_canvas, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
     this.viz.network.on('stabilizationIterationsDone', () => this.viz.network.setOptions({ physics: false }))
     this.viz.network.on('doubleClick', (params) => this.doubleClick(params))
-    this.viz.network.on('dragEnd', (params) => this.networkSync())
+    this.viz.network.on('dragEnd', (params) => this.networkSync(params))
     result.data.options.physics.enabled = false;
     this.setState(result)
   })
  }
 
+ changeHandler = (e) => {
+  var data = {...this.state.data}
+  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
+  this.setState({data:data})
+ }
+
+ updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+
  doubleClick = (params) => {
   console.log("DoubleClick",params.nodes[0]);
-  this.props.changeSelf(<DeviceInfo id={params.nodes[0]} />)
+  if(this.props.changeSelf)
+   this.props.changeSelf(<DeviceInfo key={'di_' + params.nodes[0]} id={params.nodes[0]} changeSelf={this.props.changeSelf} />)
  }
 
  togglePhysics = () => {
   const data = this.state.data;
   data.options.physics.enabled = !data.options.physics.enabled;
-  this.setState({data:data})
-  this.setState({physics_button:(data.options.physics.enabled) ? 'stop':'start'})
-  console.log("Vizualize physics: " + data.options.physics.enabled)
   this.viz.network.setOptions({ physics:data.options.physics.enabled })
+  this.results.current.textContent="Physics:"+data.options.physics.enabled;
+  this.setState({data:data,physics_button:(data.options.physics.enabled) ? 'stop':'start'})
  }
 
  toggleEdit = () => {
-  this.state.edit = !this.state.edit;
-  console.log("Vizualize edit: " + this.state.edit)
-  this.viz.network.setOptions({ manipulation:{ enabled:this.state.edit }})
+  this.edit = !this.edit;
+  this.results.current.textContent="Edit:"+!this.edit;
+  this.viz.network.setOptions({ manipulation:{ enabled:this.edit }})
  }
 
  toggleFix = () => {
-  console.log("Fix positions")
   this.viz.nodes.forEach((node,id) => this.viz.nodes.update({id:id,fixed:!(node.fixed)}) );
+  this.results.current.textContent="Fix/Unfix positions";
+  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get()}})
  }
 
- networkSync = () => {
+ networkSync = (params) => {
   this.viz.network.storePositions();
+  this.results.current.textContent="Moved " + this.viz.nodes.get(params.nodes[0]).label;
   this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}})
  }
 
@@ -142,7 +169,7 @@ class Edit extends InfoBase {
  render(){
   return(
    <article className='network'>
-    <h1>Info for {this.state.name}</h1>
+    <h1>Network Map</h1>
     <InfoButton key='viz_reload' type='reload' onClick={() => this.componentDidMount()} />
     <InfoButton key='viz_edit' type='edit' onClick={() => this.toggleEdit()} />
     <InfoButton key='viz_physics' type={this.state.physics_button} onClick={() => this.togglePhysics()} />
@@ -153,10 +180,11 @@ class Edit extends InfoBase {
     <TextButton key='viz_nodes' text='Nodes' className='info' onClick={() => this.setState({content:'nodes'})} />
     <TextButton key='viz_edges' text='Edges' className='info' onClick={() => this.setState({content:'edges'})} />
     <label className='network' htmlFor='name'>Name:</label><input type='text' id='name' name='name' value={this.state.data.name} onChange={this.changeHandler} />
-    <div id='div_network' className={this.showDiv('network')} ref='edit_canvas' />
-    <div id='div_options' className={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>
-    <div id='div_nodes'   className={this.showDiv('nodes')}><textarea id='nodes' name='nodes' value={JSON.stringify(this.state.data.nodes,undefined,2)} onChange={this.jsonHandler} /></div>
-    <div id='div_edges'   className={this.showDiv('edges')}><textarea id='edged' name='edges' value={JSON.stringify(this.state.data.edges,undefined,2)} onChange={this.jsonHandler} /></div>
+    <span ref={this.results} className='results'></span>
+    <div className={this.showDiv('network')} ref='edit_canvas' />
+    <div className={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>
+    <div className={this.showDiv('nodes')}><textarea id='nodes' name='nodes' value={JSON.stringify(this.state.data.nodes,undefined,2)} onChange={this.jsonHandler} /></div>
+    <div className={this.showDiv('edges')}><textarea id='edged' name='edges' value={JSON.stringify(this.state.data.edges,undefined,2)} onChange={this.jsonHandler} /></div>
    </article>
   )
  }

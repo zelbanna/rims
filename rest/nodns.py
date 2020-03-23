@@ -1,7 +1,7 @@
 """NoDNS API module. Backend in case no DNS is available, only on master node, records can be exported :-)
 
 TODO: Add notified_serial to domain_cache and enable domain update
- 
+
 """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
@@ -112,21 +112,25 @@ def record_info(aCTX, aArgs = None):
 
  Output:
  """
+ print(aArgs)
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  aArgs.pop('change_date',None)
+ aArgs.pop('foreign_id',None)
  ret = {'status':'OK'}
  with aCTX.db as db:
   if op:
-   if str(id) in ['new','0'] and op == 'insert':
-    aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'domain_id':str(aArgs['domain_id'])})
-    ret['insert'] = 'OK'
-    db.insert_dict('domain_records',aArgs,"ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)")
-    id = db.get_last_id()
-   elif op == 'update':
-    ret['update'] = (db.update_dict('domain_records',aArgs,"id='%s'"%id) == 1)
-  ret['status'] = 'OK' if (op is None) or ret.get('insert') or ret.get('update') else 'NOT_OK'
-  ret['found'] = (db.do("SELECT id,domain_id,name,content,type,ttl FROM domain_records WHERE id = %s AND domain_id = %s"%(id,aArgs['domain_id'])) > 0)
+   try:
+    if str(id) in ['new','0']:
+     aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'domain_id':str(aArgs['domain_id'])})
+     ret['update'] = (db.insert_dict('domain_records',aArgs,"ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
+     id = db.get_last_id()
+    elif op == 'update':
+     ret['update'] = (db.update_dict('domain_records',aArgs,"id='%s'"%id) == 1)
+   except Exception as e:
+    ret['info'] = str(e)
+    ret['status'] = 'NOT_OK'
+  ret['found'] = (db.do("SELECT id,domain_id,name,content,type,ttl FROM domain_records WHERE id = '%s' AND domain_id = %s"%(id,aArgs['domain_id'])) > 0)
   ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
  return ret
 
