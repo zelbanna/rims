@@ -11,11 +11,18 @@ export const NavBar = (props) => {
 }
 
 class NavDropDown extends Component{
+ constructor(props){
+  super(props)
+  this.state = {height:0};
+ }
+
+ changeSize = (size) => this.setState({height:size});
+
  render(){
   return (
-   <li className={(this.props.className) ? 'dropdown ' + this.props.className : 'dropdown'}>
+   <li className={(this.props.className) ? 'dropdown ' + this.props.className : 'dropdown'} onMouseEnter={() => this.changeSize(`calc(var(--nav-height) * ${this.props.children.length})`)} onMouseLeave={() => this.changeSize(0)}>
     <label>{this.props.title}</label>
-    <ul>{this.props.children.map((row) => <NavButton key={'ndb_'+this.props.title+'_'+row.title} {...row} /> )}</ul>
+    <ul style={{maxHeight:this.state.height}}>{this.props.children.map((row) => <NavButton key={'ndb_'+this.props.title+'_'+row.title} {...row} /> )}</ul>
    </li>
   );
  }

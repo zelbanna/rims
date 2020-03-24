@@ -19,6 +19,10 @@ import { List as InterfaceList } from './Interface.jsx';
 // TODO - proper PDU and Console action for rack devices
 //
 export class Main extends Component {
+ constructor(props){
+  super(props)
+  this.state = {content:null}
+ }
 
  componentDidMount(){
   if (this.props.rack_id)
@@ -62,14 +66,14 @@ export class Main extends Component {
    navitems.push({title:'Consoles', type:'dropdown', items:state.console.map(row => ({title:row.hostname, onClick:() => alert('implement Console')}))})
   if (state.rack_id)
    navitems.push({title:state.name, onClick:() => this.changeContent(<RackInventory key='rack_inventory' id={state.rack_id} />)})
-  navitems.push({ onClick:() => this.setState({content:null}), className:'reload' })
+  navitems.push({ onClick:() => this.changeContent(null), className:'reload' })
   this.context.loadNavigation(navitems)
  }
 
- changeContent = (elem) => this.setState(elem)
+ changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <Fragment key='main_base'>{this.state.content}</Fragment>
  }
 }
 Main.contextType = RimsContext;
@@ -187,7 +191,8 @@ export class Info extends Component {
  }
 
  lookupInfo = () => {
-  setTimeout(() => window.alert('lookup'),3000)
+  this.setState({content:<Spinner />,result:''})
+  rest_call("api/device/info",{id:this.props.id, op:'lookup'}).then(result => this.setState({...result,content:null}))
  }
 
  render() {
@@ -196,6 +201,7 @@ export class Info extends Component {
    const rack = (this.state.rack && this.state.data.class !== 'vm') ? this.state.rack : false;
    const change_self = (this.props.changeSelf);
    const has_ip = (this.state.extra.interface_ip);
+   const functions = this.state.extra.functions.split(',');
    return (
     <Fragment key='di_fragment'>
      <article className='info'>
@@ -242,10 +248,12 @@ export class Info extends Component {
      {change_self && <InfoButton key='di_btn_netw' type='network' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
      {has_ip && <InfoButton key='di_btn_srch' type='search' onClick={() => this.lookupInfo()} />}
      {has_ip && <InfoButton key='di_btn_logs' type='logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />}
-     {has_ip && <InfoButton key='di_btn_ssh'  type='term' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} />}
+     {has_ip && <InfoButton key='di_btn_ssh'  type='term' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} title='SSH connection' />}
+     {rack && rack.console_ip && rack.console_port && <InfoButton key='di_btn_console' type='term' onClick={() => { const termWin = window.open(`telnet://${rack.console_ip}:${6000 +rack.console_port}`,'_blank'); termWin.close();}} title='Serial Connection' /> }
+     {this.state.data.url && <InfoButton key='di_btn_ui' type='ui' onClick={() => window.open(this.state.data.url,'_blank')} />}
      <Result key='dev_result' result={JSON.stringify(this.state.update)} />
     </article>
-    <NavBar key='di_navbar' items='' />
+    <NavBar key='di_navbar'>{functions.map(row => ({title:row, onClick:() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} />)}))}</NavBar>
     {this.state.content}
     </Fragment>
    )
@@ -254,14 +262,7 @@ export class Info extends Component {
  }
 }
 
-/*
- if dev.get('rack') and dev['rack'].get('console_ip') and dev['rack'].get('console_port'):
-  # Hardcoded port to 60xx
-  aWeb.wr(aWeb.button('term',TITLE='Console', HREF='telnet://%s:%i'%(dev['rack']['console_ip'],6000+dev['rack']['console_port'])))
- if dev_info.get('url'):
-  aWeb.wr(aWeb.button('ui',TITLE='WWW', TARGET='_blank', HREF=dev_info['url']))
- aWeb.wr("<SPAN CLASS='results' ID=update_results>%s</SPAN>"%str(dev.get('update','')))
-*/
+// TODO: NAvBar from functions
 
 // ************** New **************
 //
@@ -338,7 +339,7 @@ class Discover extends Component {
  }
 
  render() {
-  if (!this.state.discover && this.state.networks && this.state.domains){
+  if (this.state.networks && this.state.domains){
    return (
     <Fragment key='dd_fragment'>
      <article className="info">

@@ -77,8 +77,8 @@ section.content-right { overflow-x:scroll;}
 nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; z-index:1000; }
 nav li {  display:block; float:left; background-color: transparent; }
 nav li:hover{ background-color: var(--head-color); }
-nav li.dropdown ul { position: absolute; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.3); background-color: var(--std-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:300ms; -moz-transition:300ms; transition:300ms;}
-nav li.dropdown:hover > ul, nav li.dropdown:focus > ul { max-height:calc(var(--nav-height) * 15); }
+nav li.dropdown ul { position: absolute; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.3); background-color: var(--std-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
+/* Handled by React:  nav li.dropdown:hover > ul, nav li.dropdown:focus > ul { max-height:calc(var(--nav-height) * 15); } */
 nav li.dropdown > ul > li { clear:left; float:unset; }
 nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
 nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
