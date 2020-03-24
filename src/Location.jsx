@@ -46,7 +46,7 @@ class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -68,7 +68,7 @@ class Info extends Component {
     <article className='info'>
      <h1>Location</h1>
      <InfoCol2 key='location_content'>
-     <TextInput key='name' id='name' value={this.state.data.name} changeHandler={this.changeHandler} />
+     <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='location_save' type='save' onClick={() => this.updateInfo('api/location/info')} />
     </article>

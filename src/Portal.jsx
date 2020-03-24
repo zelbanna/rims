@@ -68,7 +68,7 @@ class Portal extends Component {
      <MenuButton key='mb_User_User' className='right' onClick={() => {this.changeContent({module:'User',function:'User', args:{id:this.context.cookie.id}})}} title='User' icon='images/icon-users.png' />
      {buttons}
     </Header>
-    <NavBar key='portal_navigation' items={this.state.navigation} />
+    <NavBar key='portal_navigation'>{this.state.navigation}</NavBar>
     <main>{this.state.content}</main>
   </React.Fragment>
   )
@@ -90,7 +90,7 @@ class Login extends Component {
   })
  }
 
- changeHandler = (e) => this.setState({[e.target.name]:e.target.value});
+ onChange = (e) => this.setState({[e.target.name]:e.target.value});
 
  handleSubmit = (event) => {
   event.preventDefault();
@@ -111,8 +111,8 @@ class Login extends Component {
     <article className='login'>
      <h1 className='centered'>{this.state.message}</h1>
      <InfoCol2 className={'left'}>
-      <TextInput key='username' id='username' changeHandler={this.changeHandler} />
-      <PasswordInput key='password' id='password' changeHandler={this.changeHandler} />
+      <TextInput key='username' id='username' onChange={this.onChange} />
+      <PasswordInput key='password' id='password' onChange={this.onChange} />
      </InfoCol2>
      <MenuButton icon='images/icon-start.png' title='Start' onClick={this.handleSubmit}/>
     </article>

@@ -23,7 +23,7 @@ export class Main extends Component {
 
  componentDidMount(){
   rest_call('api/system/service_list').then(result => {
-   this.state.services = result.services
+   Object.assign(this.state,result)
    this.compileNavItems()
   })
   rest_call('api/master/inventory',{node:this.context.cookie.node, user_id:this.context.cookie.id}).then(result => {
@@ -66,7 +66,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return  <Fragment key='main_base'>{this.state.content}</Fragment>
+  return <Fragment key='main_base'>{this.state.content}</Fragment>
  }
 }
 Main.contextType = RimsContext;

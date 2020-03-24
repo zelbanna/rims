@@ -112,7 +112,6 @@ def record_info(aCTX, aArgs = None):
 
  Output:
  """
- print(aArgs)
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  aArgs.pop('change_date',None)

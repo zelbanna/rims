@@ -68,7 +68,7 @@ class Info extends Component {
   rest_call('api/reservation/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -85,8 +85,8 @@ class Info extends Component {
       <TextLine key='alias' id='alias' text={this.state.data.alias} />
       <TextLine key='time_start' id='Start' text={this.state.data.time_start} />
       <TextLine key='time_end' id='End' text={this.state.data.time_end} />
-      <RadioInput key='shutdown' id='shutdown' value={this.state.data.shutdown} options={[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]} changeHandler={this.changeHandler} />
-      <TextInput key='info' id='info' value={this.state.data.info} changeHandler={this.changeHandler} />
+      <RadioInput key='shutdown' id='shutdown' value={this.state.data.shutdown} options={[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]} onChange={this.onChange} />
+      <TextInput key='info' id='info' value={this.state.data.info} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='rsv_btn_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>

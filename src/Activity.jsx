@@ -66,7 +66,7 @@ class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -88,12 +88,12 @@ class Info extends Component {
     <article className='info'>
      <h1>Activity</h1>
      <InfoCol2 key='activity_content'>
-      <SelectInput key='user_id' id='user_id' label='User' value={this.state.data.user_id} options={this.state.users.map(row => ({value:row.id, text:row.alias}))} changeHandler={this.changeHandler} />
-      <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} options={this.state.types.map(row => ({value:row.id, text:row.type}))} changeHandler={this.changeHandler} />
-      <DateInput key='date' id='date' value={this.state.data.date} changeHandler={this.changeHandler} />
-      <TimeInput key='time' id='time' value={this.state.data.time} changeHandler={this.changeHandler} />
+      <SelectInput key='user_id' id='user_id' label='User' value={this.state.data.user_id} options={this.state.users.map(row => ({value:row.id, text:row.alias}))} onChange={this.onChange} />
+      <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} options={this.state.types.map(row => ({value:row.id, text:row.type}))} onChange={this.onChange} />
+      <DateInput key='date' id='date' value={this.state.data.date} onChange={this.onChange} />
+      <TimeInput key='time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoCol2>
-     <textarea id='event' name='event' className='info' onChange={this.changeHandler} value={this.state.data.event} />
+     <label htmlFor='event'>Info</label><textarea id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
      <InfoButton key='activity_save' type='save' onClick={() => this.updateInfo('api/master/activity_info')} />
     </article>
    );
@@ -163,7 +163,7 @@ class TypeInfo extends Component {
   this.state = {data:null, found:true, content:null};
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -183,7 +183,7 @@ class TypeInfo extends Component {
     <article className='info'>
      <h1>Activity Type</h1>
      <InfoCol2 key='activity_type_content'>
-      <TextInput key='type' id='type' value={this.state.data.type} changeHandler={this.changeHandler} placeholder='name' />
+      <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
      </InfoCol2>
      <InfoButton key='activity_type_save' type='save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
     </article>

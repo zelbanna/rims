@@ -75,7 +75,7 @@ class DomainInfo extends Component {
   this.state = {data:null, found:true };
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -101,11 +101,11 @@ class DomainInfo extends Component {
       {old && <TextLine key='node' id='node' text={this.state.infra.node} />}
       {old && <TextLine key='service' id='service' text={this.state.infra.service} />}
       {old && <TextLine key='foreign_id' id='foreign_id' label='Foreign ID' text={this.state.infra.foreign_id} />}
-      {!old && <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} options={this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))} changeHandler={this.changeHandler} />}
-      <TextInput key='name' id='name' value={this.state.data.name} changeHandler={this.changeHandler} />
-      <TextInput key='master' id='master' value={this.state.data.master} changeHandler={this.changeHandler} />
-      <TextInput key='type' id='type' value={this.state.data.type} changeHandler={this.changeHandler} />
-      <TextInput key='notified_serial' id='notified_serial' label='Notified Serial' value={this.state.data.notified_serial} changeHandler={this.changeHandler} />
+      {!old && <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} options={this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))} onChange={this.onChange} />}
+      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
+      <TextInput key='master' id='master' value={this.state.data.master} onChange={this.onChange} />
+      <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} />
+      <TextInput key='notified_serial' id='notified_serial' label='Notified Serial' value={this.state.data.notified_serial} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='domain_save' type='save' onClick={() => this.updateInfo('api/dns/domain_info')} />
     </article>
@@ -207,7 +207,7 @@ class RecordInfo extends Component {
   this.state = {data:null, found:true };
  }
 
- changeHandler = (e) => { var data = {...this.state.data}; data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];  this.setState({data:data}); }
+ onChange = (e) => { var data = {...this.state.data}; data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];  this.setState({data:data}); }
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
@@ -222,10 +222,10 @@ class RecordInfo extends Component {
     <article className='info'>
      <h1>Record Info</h1>
      <InfoCol2 key='record_content'>
-      <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' changeHandler={this.changeHandler} />
-      <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' changeHandler={this.changeHandler} />
-      <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} changeHandler={this.changeHandler} />
-      <TextInput key='type' id='type' value={this.state.data.type} changeHandler={this.changeHandler} placeholder={'A, PTR or CNAME typically'} />
+      <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' onChange={this.onChange} />
+      <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' onChange={this.onChange} />
+      <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} onChange={this.onChange} />
+      <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder={'A, PTR or CNAME typically'} />
      </InfoCol2>
      <InfoButton key='record_save' type='save' onClick={() => this.updateInfo('api/dns/record_info')} />
      <Result key='record_result' result={this.state.hasOwnProperty('info') ? `${this.state.status} ${this.state.info}` : this.state.status} />

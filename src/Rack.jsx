@@ -62,7 +62,7 @@ class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -80,12 +80,12 @@ class Info extends Component {
     <article className='info'>
      <h1>Rack Info</h1>
      <InfoCol2 key='rack_content'>
-      <TextInput key='name' id='name' value={this.state.data.name} changeHandler={this.changeHandler} />
-      <TextInput key='size' id='size' value={this.state.data.size} changeHandler={this.changeHandler} />
-      <SelectInput key='console' id='console' value={this.state.data.console} options={this.state.consoles.map(row => ({value:row.id, text:row.hostname}))} changeHandler={this.changeHandler} />
-      <SelectInput key='location_id' id='location_id' label='Location' value={this.state.data.location_id} options={this.state.locations.map(row => ({value:row.id, text:row.name}))} changeHandler={this.changeHandler} />
-      <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} changeHandler={this.changeHandler} />
-      <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} changeHandler={this.changeHandler} />
+      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
+      <TextInput key='size' id='size' value={this.state.data.size} onChange={this.onChange} />
+      <SelectInput key='console' id='console' value={this.state.data.console} options={this.state.consoles.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
+      <SelectInput key='location_id' id='location_id' label='Location' value={this.state.data.location_id} options={this.state.locations.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
+      <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
+      <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='rack_save' type='save' onClick={() => this.updateInfo('api/rack/info')} />
     </article>

@@ -54,7 +54,7 @@ class Info extends Component {
   rest_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.device.hostname, device_id:result.device.id}}))
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -74,9 +74,9 @@ class Info extends Component {
     <article className='info'>
      <h1>Node Info</h1>
      <InfoCol2 key='node_content'>
-      <TextInput key='node' id='node' value={this.state.data.node} changeHandler={this.changeHandler} />
-      <UrlInput key='url' id='url' value={this.state.data.url}  changeHandler={this.changeHandler} />
-      <TextInput key='hostname' id='hostname' value={this.state.data.hostname} changeHandler={this.changeHandler} />
+      <TextInput key='node' id='node' value={this.state.data.node} onChange={this.onChange} />
+      <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />
+      <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='node_btn_save' type='save' onClick={() => this.updateInfo('api/master/node_info')} />
      {old && !this.state.data.hostname && <InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />}
@@ -84,7 +84,7 @@ class Info extends Component {
      {old && <InfoButton key='node_btn_logs'  type='logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />) } />}
      {old && <InfoButton key='node_btn_logc'  title='Clear logs' type='delete' className='info'  onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />}
     </article>
-    <NavBar key='node_navbar' items={null} />
+    <NavBar key='node_navbar' />
     {this.state.content}
    </Fragment>
    );

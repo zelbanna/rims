@@ -59,7 +59,7 @@ class Info extends Component {
    })
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -79,16 +79,16 @@ class Info extends Component {
      <h1>Server Info</h1>
      <InfoCol2 key='srv_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
-      <SelectInput key='node' id='node' value={this.state.data.node} options={this.state.nodes.map(row => ({value:row, text:row}))} changeHandler={this.changeHandler} />
-      <SelectInput key='type_id' id='type_id' label='Service'  value={this.state.data.type_id} options={this.state.services.map(row => ({value:row, text:`${row.service} (${row.type})`}))} changeHandler={this.changeHandler} />
-      <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} changeHandler={this.changeHandler} />
+      <SelectInput key='node' id='node' value={this.state.data.node} options={this.state.nodes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
+      <SelectInput key='type_id' id='type_id' label='Service'  value={this.state.data.type_id} options={this.state.services.map(row => ({value:row, text:`${row.service} (${row.type})`}))} onChange={this.onChange} />
+      <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='srv_save' type='save' onClick={() => this.updateInfo('api/master/server_info')} />
      {old && <InfoButton key='srv_sync' type='sync' onClick={() => {      this.changeContent(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />}
      {old && <InfoButton key='srv_restart' type='reload' onClick={() => { this.changeContent(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />}
      {old && <InfoButton key='srv_status'  type='items'  onClick={() => { this.changeContent(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />) }} />}
     </article>
-    <NavBar key='srv_navbar' items={null} />
+    <NavBar key='srv_navbar' />
     {this.state.content}
     </Fragment>
    );

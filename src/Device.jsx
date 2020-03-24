@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, StateMap, SearchField, InfoCol2, RimsContext, ContentList, ContentData } from './infra/Generic.js';
-import { MainBase, ListBase, ReportBase, InfoBase } from './infra/Base.jsx';
+import { Spinner, StateMap, SearchField, InfoCol2, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/Generic.js';
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
+import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
 import { NavBar } from './infra/Navigation.js'
 
 import { List as ReservationList } from './Reservation.jsx';
@@ -18,7 +18,7 @@ import { List as InterfaceList } from './Interface.jsx';
 //
 // TODO - proper PDU and Console action for rack devices
 //
-export class Main extends MainBase {
+export class Main extends Component {
 
  componentDidMount(){
   if (this.props.rack_id)
@@ -66,6 +66,11 @@ export class Main extends MainBase {
   this.context.loadNavigation(navitems)
  }
 
+ changeContent = (elem) => this.setState(elem)
+
+ render(){
+  return  <Fragment key='main_base'>{this.state}</Fragment>
+ }
 }
 Main.contextType = RimsContext;
 
@@ -78,7 +83,7 @@ class Search extends Component {
   this.state = {field:'ip',search:''}
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   this.setState({[e.target.name]:e.target.value})
  }
 
@@ -87,17 +92,9 @@ class Search extends Component {
    <article className='lineinput'>
     <h1>Device Search</h1>
     <div>
-     <span>Field:
-      <select id='field' name='field' onChange={this.changeHandler} value={this.state.field}>
-       <option value='hostname'>Hostname</option>
-       <option value='type'>Type</option>
-       <option value='id'>ID</option>
-       <option value='ip'>IP</option>
-       <option value='mac'>MAC</option>
-       <option value='type'>Type</option>
-       <option value='ipam_id'>IPAM ID</option>
-      </select>:
-      <input type='text' id='search' name='search' required='required' onChange={this.changeHandler} value={this.state.search} placeholder='search' />
+     <span>
+      <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field} options={[{value:'hostname',text:'Hostname'},{value:'type',text:'Type'},{value:'id',text:'ID'},{value:'ip',text:'IP'},{value:'mac',text:'MAC'},{value:'ipam_id',text:'IPAM ID'}]} />
+      <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
      </span>
      <InfoButton key='ds_btn_search' type='search' title='Search' onClick={() => this.props.changeSelf(<List key='dl' {...this.state} changeSelf={this.props.changeSelf} />)} />
     </div>
@@ -173,7 +170,7 @@ export class Info extends Component {
   this.state = {data:undefined, found:true, content:null}
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data}
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data})
@@ -195,73 +192,58 @@ export class Info extends Component {
 
  render() {
   if(this.state.data){
-   const info =  [
-    {tag:'span', id:'name', text:'Name', value:this.state.data.hostname},
-    {tag:'input', type:'text', id:'mac', text:'Sys MAC', value:this.state.data.mac, title:'System MAC'},
-    {tag:'span', id:'if_mac', text:'Mgmt MAC', value:this.state.extra.interface_mac, title:'Management Interface MAC'},
-    {tag:'span', id:'if_ip', text:'Mgmt IP', value:this.state.extra.interface_ip},
-    {tag:'span', id:'snmp', text:'SNMP', value:this.state.data.snmp},
-    {tag:'state', id:'state', text:'State', value:[this.state.extra.if_state,this.state.extra.ip_state]}
-   ];
-   const extra = [
-    {tag:'span', id:'id', text:'ID', value:this.props.id},
-    {tag:'select', id:'class', text:'Class', value:this.state.data.class, options:this.state.classes.map(row => ({value:row, text:row}))},
-    {tag:'select', id:'type_id', text:'Type', value:this.state.data.type_id, options:this.state.types.map(row => ({value:row.id, text:row.name}))},
-    {tag:'input', type:'text', id:'model', text:'Model', value:this.state.data.model, extra:this.state.data.model},
-    {tag:'span', id:'version', text:'Version', value:this.state.data.version},
-    {tag:'input', type:'text', id:'serial', text:'S/N', value:this.state.data.serial}
-   ];
-   let vm = [];
-   if (this.state.vm)
-    vm = [
-    {tag:'span', id:'vm_name', text:'VM Name', value:this.state.vm.name},
-    {tag:'span', id:'vm_host', text:'VM Host', value:this.state.vm.host},
-    {tag:'span', id:'vm_uuid', text:'VM UUID', value:this.state.vm.device_uuid, style:{maxWidth:170}, extra:this.state.vm.device_uuid},
-    {tag:'span', id:'vm_uhost', text:'Host UUID', value:this.state.vm.server_uuid, style:{maxWidth:170}, extra:this.state.vm.server_uuid}
-    ]
-   let rack = [];
-   if (this.state.rack){
-    rack = [
-     {tag:'span', id:'rack_pos', text:'Rack/Pos', value:`${this.state.rack.rack_name} (${this.state.rack.rack_unit})`},
-     {tag:'span', id:'rack_size', text:'Size (U)', value:this.state.rack.rack_name},
-     {tag:'span', id:'rack_con', text:'TS/Port', value:`${this.state.rack.console_name} (${this.state.rack.console_port})`}
-    ];
-    this.state.pems.map(pem => rack.push({tag:'span', id:'pem_'+pem.id, text:pem.name+' PDU', value:`${pem.pdu_name} (${pem.pdu_unit})`}));
-   }
-   const text = [
-    {tag:'input', type:'text', id:'comment', text:'Comments', value:this.state.data.comment},
-    {tag:'input', type:'url', id:'url', text:'URL', value:this.state.data.url}
-   ];
-   const buttons = [
-    <InfoButton key='di_btn_save' type='save' onClick={() => this.updateInfo('api/device/info')} />,
-    <InfoButton key='di_btn_conn' type='connections' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />,
-    <InfoButton key='di_btn_cont' type='start' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />,
-    <InfoButton key='di_btn_conf' type='document' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
-   ]
-   if(this.props.changeSelf)
-    buttons.push(
-     <InfoButton key='di_btn_edit' type='edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />,
-     <InfoButton key='di_btn_netw' type='network' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />
-    )
-   if(this.state.extra.interface_ip)
-    buttons.push(
-     <InfoButton key='di_btn_srch' type='search' onClick={() => this.lookupInfo()} />,
-     <InfoButton key='di_btn_logs' type='logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />,
-     <InfoButton key='di_btn_ssh'  type='term' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} />
-    )
+   const vm = (this.state.data.class === 'vm' && this.state.vm) ? this.state.vm : false;
+   const rack = (this.state.rack && this.state.data.class !== 'vm') ? this.state.rack : false;
+   const change_self = (this.props.changeSelf);
+   const has_ip = (this.state.extra.interface_ip);
    return (
     <Fragment key='di_fragment'>
      <article className='info'>
      <h1>Device Info</h1>
-     <InfoCol2 key='di_info'  griditems={info} changeHandler={this.changeHandler} className='left' />
-     <InfoCol2 key='di_extra' griditems={extra} changeHandler={this.changeHandler} className='left' />
-     <InfoCol2 key='di_rack'  griditems={rack} changeHandler={this.changeHandler} className='left' />
-     <InfoCol2 key='di_vm'    griditems={vm}   changeHandler={this.changeHandler} className='left' />
+     <InfoCol2 key='di_info' className='left'>
+      <TextLine key='hostname' id='hostname' text={this.state.data.hostname} />
+      <TextInput key='mac' id='mac' label='Sys Mac' value={this.state.data.mac} title='System MAC' onChange={this.onChange} />
+      <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={this.state.extra.interface_mac} title='Management Interface MAC' />
+      <TextLine key='if_ip' id='if_ip' label='Mgmt IP' text={this.state.extra.interface_ip} />
+      <TextLine key='snmp' id='snmp' label='SNMP' text={this.state.data.snmp} />
+      <StateLine key='state' id='state' state={[this.state.extra.if_state,this.state.extra.ip_state]} />
+     </InfoCol2>
+     <InfoCol2 key='di_extra' className='left'>
+      <TextLine key='id' id='id' text={this.props.id} />
+      <SelectInput key='class' id='class' value={this.state.data.class} options={this.state.classes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
+      <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} options={this.state.types.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
+      <TextInput key='model' id='model' value={this.state.data.model} onChange={this.onChange} extra={this.state.data.model} />
+      <TextLine key='version' id='version' text={this.state.data.version} onChange={this.onChange} />
+      <TextInput key='serial' id='serial' label='S/N' value={this.state.data.serial} onChange={this.onChange} />
+     </InfoCol2>
+     <InfoCol2 key='di_rack' className='left'>
+      {rack && <TextLine key='rack_pos' id='rack_pos' label='Rack/Pos' text={`${rack.rack_name} (${rack.rack_unit})`} />}
+      {rack && <TextLine key='rack_size' id='rack_size' label='Size (U)' text={rack.rack_size} />}
+      {rack && <TextLine key='rack_con' id='rack_con' label='TS/Port' text={`${rack.console_name} (${rack.console_port})`} />}
+      {rack && this.state.pems.map(pem => <TextLine key={'pem_'+pem.id} id={'pem_'+pem.id} label={pem.name+' PDU'} text={`${pem.pdu_name} (${pem.pdu_unit})`} />)}
+     </InfoCol2>
+     <InfoCol2 key='di_vm' className='left'>
+      {vm && <TextLine key='vm_name' id ='vm_name' label='VM Name' text={vm.name} />}
+      {vm && <TextLine key='vm_host' id ='vm_host' label='VM Host' text={vm.host} />}
+      {vm && <TextLine key='vm_uuid' id ='vm_uuid' label='VM UUID' text={vm.device_uuid} style={{maxWidth:170}} extra={vm.device_uuid} />}
+      {vm && <TextLine key='vm_uuhost' id ='vm_uuhost' label='Host UUID' text={vm.server_uuid} style={{maxWidth:170}} extra={vm.server_uuid} />}
+     </InfoCol2>
      <br />
-     <InfoCol2 key='di_text'  griditems={text} changeHandler={this.changeHandler} />
+     <InfoCol2 key='di_text'>
+      <TextInput key='comment' id='comment' value={this.state.data.comment} onChange={this.onChange} />
+      <UrlInput key='url' id='url' label='URL' value={this.state.data.url} onChange={this.onChange} />
+     </InfoCol2>
      <br />
-     {buttons}
-     <span className='results'>{JSON.stringify(this.state.update)}</span>
+     <InfoButton key='di_btn_save' type='save' onClick={() => this.updateInfo('api/device/info')} />
+     <InfoButton key='di_btn_conn' type='connections' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />
+     <InfoButton key='di_btn_cont' type='start' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />
+     <InfoButton key='di_btn_conf' type='document' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
+     {change_self && <InfoButton key='di_btn_edit' type='edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
+     {change_self && <InfoButton key='di_btn_netw' type='network' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
+     {has_ip && <InfoButton key='di_btn_srch' type='search' onClick={() => this.lookupInfo()} />}
+     {has_ip && <InfoButton key='di_btn_logs' type='logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />}
+     {has_ip && <InfoButton key='di_btn_ssh'  type='term' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} />}
+     <Result key='dev_result' result={JSON.stringify(this.state.update)} />
     </article>
     <NavBar key='di_navbar' items='' />
     {this.state.content}
@@ -283,10 +265,16 @@ export class Info extends Component {
 
 // ************** New **************
 //
-export class New extends InfoBase {
+export class New extends Component {
  constructor(props){
   super(props)
-  this.state.data = {ip:this.props.ip,mac:'00:00:00:00:00:00',class:'device',ipam_network_id:this.props.ipam_network_id,hostname:''}
+  this.state = {data:{ip:this.props.ip,mac:'00:00:00:00:00:00',class:'device',ipam_network_id:this.props.ipam_network_id,hostname:''}, found:true, content:null}
+ }
+
+ onChange = (e) => {
+  var data = {...this.state.data};
+  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
+  this.setState({data:data});
  }
 
  componentDidMount(){
@@ -305,28 +293,26 @@ export class New extends InfoBase {
    rest_call("api/ipam/address_find",{network_id:this.state.data.ipam_network_id}).then(result => this.setState({data:{...this.state.data, ip:result.ip}}))
  }
 
- infoItems = () => [
-    {tag:'input', type:'text', id:'hostname', text:'Hostname', value:this.state.data.hostname, placeholder:'Device hostname'},
-    {tag:'select', id:'class', text:'Class', value:this.state.data.class, options:this.state.classes.map(row => ({value:row, text:row}))},
-    {tag:'select', id:'ipam_network_id', text:'Network', value:this.state.data.ipam_network_id, options:this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))},
-    {tag:'select', id:'a_domain_id', text:'Domain', value:this.state.data.a_domain_id, options:this.state.domains.map(row => ({value:row.id, text:row.name}))},
-    {tag:'input', type:'text', id:'ip', text:'IP', value:this.state.data.ip},
-    {tag:'input', type:'text', id:'mac', text:'MAC', value:this.state.data.mac}
-   ]
-
  render() {
-   if (!this.state.domains || !this.state.classes || !this.state.networks)
-    return <Spinner />
-   else
-    return (
-     <article className='info'>
-      <h1>Device Add</h1>
-      <InfoCol2 key='da_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
-      <InfoButton key='da_start' type='start' onClick={() => this.addDevice()} />
-      <InfoButton key='da_search' type='search' onClick={() => this.searchIP()} />
-      <span className='results'>{this.state.result}</span>
-     </article>
-    )
+  if (!this.state.domains || !this.state.classes || !this.state.networks)
+   return <Spinner />
+  else
+   return (
+    <article className='info'>
+     <h1>Device Add</h1>
+     <InfoCol2 key='dn_content'>
+      <TextInput key='hostname' id='hostname' value={this.state.data.hostname} placeholder='Device hostname' onChange={this.onChange} />
+      <SelectInput key='class' id='class' value={this.state.data.class} options={this.state.classes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
+      <SelectInput key='ipam_network_id' id='ipam_network_id' label='Network' value={this.state.data.ipam_network_id} options={this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))} onChange={this.onChange} />
+      <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
+      <TextInput key='ip' id='ip' label='IP' value={this.state.data.ip} onChange={this.onChange} />
+      <TextInput key='mac' id='mac' label='MAC' value={this.state.data.mac} onChange={this.onChange} />
+     </InfoCol2>
+     <InfoButton key='dn_start' type='start' onClick={() => this.addDevice()} />
+     <InfoButton key='dn_search' type='search' onClick={() => this.searchIP()} />
+     <Result key='dn_result' result={this.state.result} />
+    </article>
+   )
  }
 }
 
@@ -343,14 +329,9 @@ class Discover extends Component {
   rest_call("api/dns/domain_list",{filter:'forward'}).then(result => this.setState({domains:result.data}))
  }
 
- changeHandler = (e) => this.setState({[e.target.name]:e.target.value});
+ onChange = (e) => this.setState({[e.target.name]:e.target.value});
 
  changeContent = (elem) => this.setState({content:elem})
-
- infoItems = () => [
-  {tag:'select', id:'ipam_network_id', text:'Network', value:this.state.ipam_network_id, options:this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))},
-  {tag:'select', id:'a_domain_id', text:'Domain', value:this.state.a_domain_id, options:this.state.domains.map(row => ({value:row.id, text:row.name}))}
- ]
 
  Result(props){
   return  <article className='code'><pre>{JSON.stringify(props.result,null,2)}</pre></article>
@@ -362,7 +343,10 @@ class Discover extends Component {
     <Fragment key='dd_fragment'>
      <article className="info">
       <h1>Device Discovery</h1>
-      <InfoCol2 key='dd_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
+      <InfoCol2 key='dd_content'>
+       <SelectInput key='ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} options={this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))} onChange={this.onChange} />
+       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
+      </InfoCol2>
       <InfoButton key='dd_save' type='start' onClick={() => this.changeContent(<DiscoverRun key={'dd_run_' + this.state.ipam_network_id} ipam_network_id={this.state.ipam_network_id} a_domain_id={this.state.a_domain_id} />)} />
      </article>
      <NavBar key='dd_nav' />
@@ -386,11 +370,10 @@ class DiscoverRun extends Component {
 
 // ************** Report **************
 //
-export class Report extends ReportBase {
+export class Report extends Component {
  constructor(props){
   super(props)
-  this.header = 'Devices'
-  this.thead = ['ID','Hostname','Class','IP','MAC','OUI','Model','OID','Serial','State']
+  this.state ={}
  }
 
  componentDidMount(){
@@ -398,35 +381,42 @@ export class Report extends ReportBase {
  }
 
  listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,StateMap({state:row.state})]
+
+ render(){
+  return <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','Class','IP','MAC','OUI','Model','OID','Serial','State']} trows={this.state.data} listItem={this.listItem} />
+ }
 }
 
 // ************** Type List **************
 //
-class TypeList extends ListBase {
+class TypeList extends Component {
  constructor(props){
-  super(props)
-  this.header = 'Type List'
-  this.thead = ['Class','Name','Icon'];
+  super(props);
+  this.state = {}
  }
 
  componentDidMount(){
   rest_call('api/device/type_list').then(result => this.setState(result))
  }
 
+ changeContent = (elem) => this.setState({content:elem})
+
  listItem = (row) => [row.base,<TextButton text={row.name} onClick={() => this.props.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
+
+ render(){
+  return <Fragment key='dev_tp_fragment'>
+   <ContentList key='dev_tp_cl' header='Device Types' thead={['Class','Name','Icon']} trows={this.state.data} listItem={this.listItem} />
+   <ContentData key='dev_tp_cd'>{this.state.content}</ContentData>
+  </Fragment>
+ }
 }
 
 // ************** Model List **************
 //
-class ModelList extends ListBase {
+class ModelList extends Component {
  constructor(props){
   super(props)
-  this.header = 'Model List'
-  this.thead = ['ID',' Model','Type',''];
-  this.buttons = [
-   <InfoButton key='model_reload' type='reload' onClick={() => this.componentDidMount() } />,
-   <InfoButton key='model_sync'   type='sync' onClick={() => this.syncModels() } title='Resync models' />
-  ]
+  this.state = {}
  }
 
  componentDidMount(){
@@ -441,32 +431,55 @@ class ModelList extends ListBase {
   <InfoButton type='info' onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
   <InfoButton type='delete' onClick={() => this.deleteList('api/device/model_delete',row.id,'Really delete model?') } />
  </Fragment>]
+
+ changeContent = (elem) => this.setState({content:elem})
+ deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+
+ render(){
+  return <Fragment key='dev_ml_fragment'>
+   <ContentList key='dev_ml_cl' header='Device Models' thead={['ID','Model','Type','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+    <InfoButton key='dev_ml_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+    <InfoButton key='dev_ml_btn_sync'   type='sync' onClick={() => this.syncModels() } title='Resync models' />
+   </ContentList>
+   <ContentData key='dev_ml_cd'>{this.state.content}</ContentData>
+  </Fragment>
+ }
 }
 
 // ************** Model Info **************
 //
-export class ModelInfo extends InfoBase {
+export class ModelInfo extends Component {
+ constructor(props){
+  super(props);
+  this.state = {data:null, found:true};
+ }
+
+ onChange = (e) => {
+  var data = {...this.state.data};
+  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
+  this.setState({data:data});
+ }
+
+ updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   rest_call('api/device/model_info',{id:this.props.id}).then(result => this.setState(result))
  }
-
- infoItems = () => [
-    {tag:'span', id:'name', text:'Name', value:this.state.data.name},
-    {tag:'span', id:'type', text:'Type', value:this.state.extra.type},
-    {tag:'input', type:'text', id:'defaults_file', text:'Defaults File', value:this.state.data.defaults_file},
-    {tag:'input', type:'text', id:'image_file', text:'Image File', value:this.state.data.image_file}
-   ]
 
  render() {
   if (this.state.data)
    return (
     <article className='info'>
      <h1>Device Model</h1>
-     <InfoCol2 key='device_model_content' griditems={this.infoItems()} changeHandler={this.changeHandler} />
+     <InfoCol2 key='dm_content'>
+      <TextLine key='name' id='name' text={this.state.data.name} />
+      <TextLine key='type' id='type' text={this.state.extra.type} />
+      <TextInput key='defaults_file' id='defaults_file' label='Default File' value={this.state.data.defaults_file} onChange={this.onChange} />
+      <TextInput key='image_file' id='image_file' label='Image  File' value={this.state.data.image_file} onChange={this.onChange} />
+     </InfoCol2>
      <label htmlFor='parameters'>Parameters:</label>
-     <textarea id='parameters' name='parameters' className='info' onChange={this.changeHandler} value={this.state.data.parameters} />
-     <InfoButton key='device_model_save' type='save' onClick={() => this.updateInfo('api/device/model_info')} />
+     <textarea id='parameters' name='parameters' onChange={this.onChange} value={this.state.data.parameters} />
+     <InfoButton key='dm_save' type='save' onClick={() => this.updateInfo('api/device/model_info')} />
     </article>
    );
   else
@@ -482,7 +495,7 @@ class OUISearch extends Component {
   this.state = {data:{oui:''},content:null}
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data}
   data[e.target.name] = e.target.value
   this.setState({data:data})
@@ -497,7 +510,7 @@ class OUISearch extends Component {
    <article className='lineinput'>
     <h1>OUI Search</h1>
     <div>
-     <span>Type OUI or MAC address to find OUI/company name:<input type='text' id='oui' name='oui' required='required' onChange={this.changeHandler} value={this.state.data.oui} placeholder='00:00:00' /></span>
+     <span>Type OUI or MAC address to find OUI/company name:<input type='text' id='oui' name='oui' required='required' onChange={this.onChange} value={this.state.data.oui} placeholder='00:00:00' /></span>
      <InfoButton type='search' title='Search' onClick={() => this.ouiSearch()} />
     </div>
    </article>
@@ -569,6 +582,3 @@ class ToConsole extends Component {
   return (<div>Device To Console (TODO)</div>);
  }
 }
-
-
-

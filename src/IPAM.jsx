@@ -66,7 +66,7 @@ class NetworkInfo extends Component {
   this.state = {data:null, found:true };
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -87,12 +87,12 @@ class NetworkInfo extends Component {
      <h1>Network Info</h1>
      <InfoCol2 key='network_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
-      <TextInput key='description' id='description'  value={this.state.data.description} changeHandler={this.changeHandler} />
-      <TextInput key='network' id='network' value={this.state.data.network} changeHandler={this.changeHandler} />
-      <TextInput key='mask' id='mask' value={this.state.data.mask} changeHandler={this.changeHandler} />
-      <TextInput key='gateway' id='gateway' value={this.state.data.gateway} changeHandler={this.changeHandler} />
-      <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} options={this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))} changeHandler={this.changeHandler} />
-      <SelectInput key='reverse_zone_id' id='reverse_zone_id' label='Reverse Zone' value={this.state.data.reverse_zone_id} options={this.state.domains.map(row => ({value:row.id, text:`${row.server} (${row.name})`}))} changeHandler={this.changeHandler} />
+      <TextInput key='description' id='description'  value={this.state.data.description} onChange={this.onChange} />
+      <TextInput key='network' id='network' value={this.state.data.network} onChange={this.onChange} />
+      <TextInput key='mask' id='mask' value={this.state.data.mask} onChange={this.onChange} />
+      <TextInput key='gateway' id='gateway' value={this.state.data.gateway} onChange={this.onChange} />
+      <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} options={this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))} onChange={this.onChange} />
+      <SelectInput key='reverse_zone_id' id='reverse_zone_id' label='Reverse Zone' value={this.state.data.reverse_zone_id} options={this.state.domains.map(row => ({value:row.id, text:`${row.server} (${row.name})`}))} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='network_save' type='save' onClick={() => this.updateInfo('api/ipam/network_info')} />
     </article>
@@ -186,7 +186,7 @@ class AddressInfo extends Component {
   this.state = {data:null, found:true};
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -207,11 +207,11 @@ class AddressInfo extends Component {
      <InfoCol2 key='ip_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
       <TextLine key='network' id='network' text={this.state.extra.network} />
-      <TextInput key='ip' id='ip' label='IP'  value={this.state.data.ip} changeHandler={this.changeHandler} />
-      <TextInput key='a_id' id='a_id' label='A_id' value={this.state.data.a_id} changeHandler={this.changeHandler} />
-      <TextInput key='ptr_id' id='ptr_id' label='PTR_id' value={this.state.data.ptr_id} changeHandler={this.changeHandler} />
-      <TextInput key='hostname' id='hostname' value={this.state.data.hostname} changeHandler={this.changeHandler} />
-      <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} changeHandler={this.changeHandler} />
+      <TextInput key='ip' id='ip' label='IP'  value={this.state.data.ip} onChange={this.onChange} />
+      <TextInput key='a_id' id='a_id' label='A_id' value={this.state.data.a_id} onChange={this.onChange} />
+      <TextInput key='ptr_id' id='ptr_id' label='PTR_id' value={this.state.data.ptr_id} onChange={this.onChange} />
+      <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
+      <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='ip_save' type='save' onClick={() => this.updateInfo('api/ipam/address_info')} />
      <Result key='ip_operation' result={this.state.hasOwnProperty('info') ? `${this.state.status} ${this.state.info}` : this.state.status} />

@@ -45,7 +45,7 @@ export class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -70,11 +70,11 @@ export class Info extends Component {
     <article className='info'>
      <h1>User Info</h1>
      <InfoCol2 key='user_content'>
-      <TextInput key='alias' id='alias' value={this.state.data.alias} changeHandler={this.changeHandler} />
-      <PasswordInput key='password' id='password' placeholder='******' changeHandler={this.changeHandler} />
-      <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} changeHandler={this.changeHandler} />
-      <TextInput key='name' id='name' label='Full name' value={this.state.data.name} changeHandler={this.changeHandler} />
-      <SelectInput key='theme' id='theme' value={this.state.data.theme} options={this.state.themes.map(row => ({value:row, text:row}))} changeHandler={this.changeHandler} />
+      <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />
+      <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
+      <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
+      <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
+      <SelectInput key='theme' id='theme' value={this.state.data.theme} options={this.state.themes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
      </InfoCol2>
      <InfoButton key='usr_btn_save' type='save' onClick={() => this.updateInfo('api/master/user_info') } />
     </article>

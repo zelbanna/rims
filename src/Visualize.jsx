@@ -1,6 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
-import { ContentData, ContentList } from './infra/Generic.js';
+import { ContentData, ContentList, Result } from './infra/Generic.js';
+import { TextInput } from './infra/Inputs.jsx'
 import { InfoButton, TextButton } from './infra/Buttons.jsx';
 import { DataSet, Network } from 'vis';
 import { Info as DeviceInfo } from './Device.jsx';
@@ -93,7 +94,7 @@ class Show extends Component {
 export class Edit extends Component {
  constructor(props){
   super(props)
-  this.state = {content:'network', physics_button:'start', found:true, data:{name:'N/A'}}
+  this.state = {content:'network', physics_button:'start', found:true, data:{name:'N/A'}, result:''}
   this.viz = {network:null,nodes:null,edges:null}
   this.results = React.createRef();
   this.edit = false;
@@ -114,7 +115,7 @@ export class Edit extends Component {
   })
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data}
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data})
@@ -132,26 +133,23 @@ export class Edit extends Component {
   const data = this.state.data;
   data.options.physics.enabled = !data.options.physics.enabled;
   this.viz.network.setOptions({ physics:data.options.physics.enabled })
-  this.results.current.textContent="Physics:"+data.options.physics.enabled;
-  this.setState({data:data,physics_button:(data.options.physics.enabled) ? 'stop':'start'})
+  this.setState({data:data, physics_button:(data.options.physics.enabled) ? 'stop':'start', result:"Physics:"+data.options.physics.enabled})
  }
 
  toggleEdit = () => {
   this.edit = !this.edit;
-  this.results.current.textContent="Edit:"+!this.edit;
   this.viz.network.setOptions({ manipulation:{ enabled:this.edit }})
+  this.setState({result:"Edit:"+this.edit});
  }
 
  toggleFix = () => {
   this.viz.nodes.forEach((node,id) => this.viz.nodes.update({id:id,fixed:!(node.fixed)}) );
-  this.results.current.textContent="Fix/Unfix positions";
-  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get()}})
+  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get()}, result:"Fix/Unfix positions"})
  }
 
  networkSync = (params) => {
   this.viz.network.storePositions();
-  this.results.current.textContent="Moved " + this.viz.nodes.get(params.nodes[0]).label;
-  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}})
+  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}, result:"Moved " + this.viz.nodes.get(params.nodes[0]).label})
  }
 
  jsonHandler = (e) => {
@@ -179,8 +177,8 @@ export class Edit extends Component {
     <TextButton key='viz_opt' text='Options' className='info' onClick={() => this.setState({content:'options'})} />
     <TextButton key='viz_nodes' text='Nodes' className='info' onClick={() => this.setState({content:'nodes'})} />
     <TextButton key='viz_edges' text='Edges' className='info' onClick={() => this.setState({content:'edges'})} />
-    <label className='network' htmlFor='name'>Name:</label><input type='text' id='name' name='name' value={this.state.data.name} onChange={this.changeHandler} />
-    <span ref={this.results} className='results'></span>
+    <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} className='network' />
+    <Result key='viz_result' result={this.state.result} />
     <div className={this.showDiv('network')} ref='edit_canvas' />
     <div className={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>
     <div className={this.showDiv('nodes')}><textarea id='nodes' name='nodes' value={JSON.stringify(this.state.data.nodes,undefined,2)} onChange={this.jsonHandler} /></div>

@@ -70,7 +70,7 @@ class Search extends Component {
   this.state = {data:{field:'serial',search:''}}
  }
 
- changeHandler = (e) => {
+ onChange = (e) => {
   var data = {...this.state.data}
   data[e.target.name] = e.target.value
   this.setState({data:data})
@@ -82,8 +82,8 @@ class Search extends Component {
     <h1>Inventory Search</h1>
     <div>
      <span>
-      <SelectInput key='field' id='field' value={this.state.data.field} changeHandler={this.changeHandler} options={[{value:'serial',text:'Serial'},{value:'vendor',text:'Vendor'}]} />
-      <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' changeHandler={this.changeHandler} />
+      <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange} options={[{value:'serial',text:'Serial'},{value:'vendor',text:'Vendor'}]} />
+      <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
      </span>
      <InfoButton type='search' title='Search' onClick={() => this.props.changeSelf(<List key='inventory_list' args={this.state.data} changeSelf={this.props.changeSelf} />)} />
     </div>
@@ -104,7 +104,7 @@ export class Info extends Component {
   rest_call('api/inventory/info',{id:this.props.id}).then(result => this.setState(result))
  }
 
-changeHandler = (e) => {
+onChange = (e) => {
   var data = {...this.state.data};
   data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
   this.setState({data:data});
@@ -121,19 +121,19 @@ changeHandler = (e) => {
     <article className='info'>
      <h1>Inventory Item</h1>
      <InfoCol2 key='inventory_content'>
-      <TextInput key='vendor' id='vendor' value={data.vendor} changeHandler={this.changeHandler} />
-      <TextInput key='serial' id='serial' label='S/N' value={data.serial} changeHandler={this.changeHandler} />
-      <TextInput key='product' id='product' value={data.product} changeHandler={this.changeHandler} />
-      <TextInput key='model' id='model' value={data.model} changeHandler={this.changeHandler} />
-      <TextInput key='description' id='description' value={data.description} changeHandler={this.changeHandler} />
-      <SelectInput key='location_id' id='location_id' label='Location' value={data.location_id} options={this.state.locations.map( row => ({value:row.id, text:row.name}))} changeHandler={this.changeHandler} />
-      <DateInput key='receive_date' id='receive_date' label='Received' value={data.receive_date} changeHandler={this.changeHandler} />
-      <TextInput key='purchase_order' id='purchase_order' label='Purchase Order' value={data.purchase_order} changeHandler={this.changeHandler} />
-      <TextInput key='comments' id='comments' value={data.comments} changeHandler={this.changeHandler} />
-      <CheckboxInput key='license' id='license' value={data.license} changeHandler={this.changeHandler} />
-      {(data.license && <TextInput key='license_key' id='license_key' label='Key' value={data.license_key} changeHandler={this.changeHandler} />)}
-      <CheckboxInput key='support_contract' id='support_contract' value={data.support_contract} changeHandler={this.changeHandler} />
-      {(data.support_contract && <DateInput key='support_end_date' id='support_end_date' label='Contract End' value={data.support_end_date} changeHandler={this.changeHandler} />)}
+      <TextInput key='vendor' id='vendor' value={data.vendor} onChange={this.onChange} />
+      <TextInput key='serial' id='serial' label='S/N' value={data.serial} onChange={this.onChange} />
+      <TextInput key='product' id='product' value={data.product} onChange={this.onChange} />
+      <TextInput key='model' id='model' value={data.model} onChange={this.onChange} />
+      <TextInput key='description' id='description' value={data.description} onChange={this.onChange} />
+      <SelectInput key='location_id' id='location_id' label='Location' value={data.location_id} options={this.state.locations.map( row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
+      <DateInput key='receive_date' id='receive_date' label='Received' value={data.receive_date} onChange={this.onChange} />
+      <TextInput key='purchase_order' id='purchase_order' label='Purchase Order' value={data.purchase_order} onChange={this.onChange} />
+      <TextInput key='comments' id='comments' value={data.comments} onChange={this.onChange} />
+      <CheckboxInput key='license' id='license' value={data.license} onChange={this.onChange} />
+      {(data.license && <TextInput key='license_key' id='license_key' label='Key' value={data.license_key} onChange={this.onChange} />)}
+      <CheckboxInput key='support_contract' id='support_contract' value={data.support_contract} onChange={this.onChange} />
+      {(data.support_contract && <DateInput key='support_end_date' id='support_end_date' label='Contract End' value={data.support_end_date} onChange={this.onChange} />)}
      </InfoCol2>
      <InfoButton key='inventory_reload' type='reload' onClick={() => this.componentDidMount() } />
      <InfoButton key='inventory_save' type='save' onClick={() => this.updateInfo('api/inventory/info') } />
