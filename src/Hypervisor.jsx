@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { StateMap, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
-import { InfoButton } from './infra/Buttons.jsx';
+import { InfoButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 
 import { Logs as DeviceLogs } from './Device.jsx';
 
@@ -34,13 +34,11 @@ export class List extends Component {
  }
 
  listItem = (row) => {
-  let buttons = []
-  if (row.state === 'up')
-   if (row.type_functions === 'manage')
-    buttons.push(<InfoButton key={'hypervisor_info_'+row.id} type='info' onClick={() => this.context.changeMain({content:<Manage key={'hypervisor_manage_'+row.id} id={row.id} />}) } />)
-   if (row.url && row.url.length > 0)
-    buttons.push(<InfoButton key={'hypervisor_ui_'+row.id} type='ui' onClick={() => window.open(row.url,'_blank') } />)
-  return [row.hostname,row.type_name,<StateMap state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>{buttons}</Fragment>]
+  const up =  (row.state === 'up');
+  return [row.hostname,row.type_name,<StateMap state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>
+   {up && row.type_functions === 'manage' && <InfoButton key={'hypervisor_info_'+row.id} onClick={() => this.context.changeMain({content:<Manage key={'hypervisor_manage_'+row.id} id={row.id} />}) } />}
+   {up && row.url && row.url.length > 0 && <UiButton key={'hypervisor_ui_'+row.id} onClick={() => window.open(row.url,'_blank') } />}
+   </Fragment>]
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -48,7 +46,7 @@ export class List extends Component {
  render(){
   return <Fragment key='hyp_fragment'>
    <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='hyp_sync' type='sync' onClick={() => this.changeContent(<Sync />) } />
+    <SyncButton key='hyp_btn_sync' onClick={() => this.changeContent(<Sync />) } />
    </ContentList>
    <ContentData key='hyp_cd'>{this.state.content}</ContentData>
   </Fragment>

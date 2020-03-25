@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, ContentList, ContentData } from './infra/Generic.js';
-import { InfoButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 
 // CONVERTED ENTIRELY
@@ -22,16 +22,16 @@ constructor(props){
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  listItem = (row) => [row.id,row.name,<Fragment key={'location_buttons_'+row.id}>
-   <InfoButton key={'loc_info_'+row.id} type='info'  onClick={() => { this.changeContent(<Info key={'location_'+row.id} id={row.id} />) }} />
-   <InfoButton key={'loc_delete_'+row.id} type='delete' onClick={() => { this.deleteList('api/location/delete',row.id,'Really delete location') }} />
+   <InfoButton key={'loc_btn_info_'+row.id} onClick={() => { this.changeContent(<Info key={'location_'+row.id} id={row.id} />) }} />
+   <DeleteButton key={'loc_btn_delete_'+row.id} onClick={() => { this.deleteList('api/location/delete',row.id,'Really delete location') }} />
    </Fragment>
   ]
 
  render(){
   return <Fragment key='loc_fragment'>
    <ContentList key='loc_cl' header='Locations' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='loc_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='loc_btn_add' type='add' onClick={() => this.changeContent(<Info key={'location_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='loc_btn_reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='loc_btn_add' onClick={() => this.changeContent(<Info key={'location_new_' + rnd()} id='new' />) } />
    </ContentList>
    <ContentData key='loc_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -67,10 +67,10 @@ class Info extends Component {
    return (
     <article className='info'>
      <h1>Location</h1>
-     <InfoCol2 key='location_content'>
+     <InfoCol2 key='loc_content'>
      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='location_save' type='save' onClick={() => this.updateInfo('api/location/info')} />
+     <SaveButton key='loc_btn_save' onClick={() => this.updateInfo('api/location/info')} />
     </article>
    );
   else

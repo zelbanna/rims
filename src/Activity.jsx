@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { InfoCol2, Spinner, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
 import { TextInput, SelectInput, DateInput, TimeInput } from './infra/Inputs.jsx';
-import { InfoButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -39,8 +39,8 @@ class List extends Component {
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
-   <InfoButton key={'act_info_'+row.id} type='info'  onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } />
-   <InfoButton key={'act_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/master/activity_delete',row.id,'Really delete activity') } />
+   <InfoButton key={'act_info_'+row.id} onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } />
+   <DeleteButton key={'act_delete_'+row.id} onClick={() => this.deleteList('api/master/activity_delete',row.id,'Really delete activity') } />
    </Fragment>
   ]
 
@@ -50,8 +50,8 @@ class List extends Component {
  render(){
   return <Fragment key='act_fragment'>
    <ContentList key='act_cl' header='Activities' thead={['Date','Type','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='act_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='act_btn_add' type='add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='act_btn_reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='act_btn_add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } />
    </ContentList>
    <ContentData key='act_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -94,7 +94,7 @@ class Info extends Component {
       <TimeInput key='time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoCol2>
      <label htmlFor='event'>Info</label><textarea id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
-     <InfoButton key='activity_save' type='save' onClick={() => this.updateInfo('api/master/activity_info')} />
+     <SaveButton key='activity_save' onClick={() => this.updateInfo('api/master/activity_info')} />
     </article>
    );
   else
@@ -135,8 +135,8 @@ class TypeList extends Component {
  }
 
  listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_tp_info'   type='info'  onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
-   <InfoButton key='act_tp_delete' type='delete' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
+   <InfoButton key='act_tp_info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
+   <DeleteButton key='act_tp_delete' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
   </Fragment>
  ]
 
@@ -146,8 +146,8 @@ class TypeList extends Component {
  render(){
   return <Fragment key='act_tp_fragment'>
    <ContentList key='act_tp_cl' header='Activity Types' thead={['ID','Type','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='act_tp_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='act_tp_btn_add' type='add' onClick={() => this.changeContent(<TypeInfo key={'act_tp_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='act_tp_btn_reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='act_tp_btn_add' onClick={() => this.changeContent(<TypeInfo key={'act_tp_new_' + rnd()} id='new' />) } />
    </ContentList>
    <ContentData key='act_tp_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -185,7 +185,7 @@ class TypeInfo extends Component {
      <InfoCol2 key='activity_type_content'>
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
      </InfoCol2>
-     <InfoButton key='activity_type_save' type='save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
+     <SaveButton key='activity_type_save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
     </article>
    );
   else

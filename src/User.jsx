@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, RimsContext, ContentList, ContentData } from './infra/Generic.js';
-import { InfoButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput, PasswordInput, SelectInput } from './infra/Inputs.jsx';
 
 // CONVERTED ENTIRELY
@@ -18,21 +18,21 @@ export class List extends Component {
   rest_call('api/master/user_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'user_buttons_'+row.id}>
-   <InfoButton key={'user_info_'+row.id} type='info' onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
-   <InfoButton key={'user_del_'+row.id} type='delete' onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
+ listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'ul_buttons_'+row.id}>
+   <InfoButton key={'ul_btn_info_'+row.id}  onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
+   <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='usr_fragment'>
-   <ContentList key='usr_cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='usr_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='usr_btn_add' type='add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />) } />
+  return <Fragment key='ul_fragment'>
+   <ContentList key='ul_cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
+    <ReloadButton key='ul_btn_reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='ul_btn_add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />) } />
    </ContentList>
-   <ContentData key='usr_cd'>{this.state.content}</ContentData>
+   <ContentData key='ul_cd'>{this.state.content}</ContentData>
   </Fragment>
  }
 }
@@ -69,14 +69,14 @@ export class Info extends Component {
    return (
     <article className='info'>
      <h1>User Info</h1>
-     <InfoCol2 key='user_content'>
+     <InfoCol2 key='ui_content'>
       <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
       <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
       <SelectInput key='theme' id='theme' value={this.state.data.theme} options={this.state.themes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='usr_btn_save' type='save' onClick={() => this.updateInfo('api/master/user_info') } />
+     <SaveButton key='ui_btn_save' onClick={() => this.updateInfo('api/master/user_info') } />
     </article>
    );
   } else

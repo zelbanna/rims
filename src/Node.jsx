@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import {Spinner, InfoCol2, ContentList, ContentData } from './infra/Generic.js';
-import { InfoButton } from './infra/Buttons.jsx';
-import { TextInput, UrlInput } from './infra/Inputs.jsx';
 import { NavBar } from './infra/Navigation.js';
+import { TextInput, UrlInput } from './infra/Inputs.jsx';
+import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -20,8 +20,8 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
-   <InfoButton key='node_info'   type='info'  onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} />
-   <InfoButton key='node_delete' type='delete' onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
+   <InfoButton key={'nl_btn_info'+row.id} onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} />
+   <DeleteButton key={'nl_btn_delete'+row.id} onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
@@ -30,8 +30,8 @@ export class List extends Component {
  render(){
   return <Fragment key='node_fragment'>
    <ContentList key='node_cl' header='Nodes' thead={['Node','URL','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='node_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='node_btn_add' type='add' onClick={() => this.changeContent(<Info key={'node_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='nl_btn_reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<Info key={'node_new_' + rnd()} id='new' />) } />
    </ContentList>
    <ContentData key='node_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -78,13 +78,13 @@ class Info extends Component {
       <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='node_btn_save' type='save' onClick={() => this.updateInfo('api/master/node_info')} />
-     {old && !this.state.data.hostname && <InfoButton key='node_btn_srch' type='search' onClick={this.searchInfo} />}
-     {old && <InfoButton key='node_btn_reload' type='reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) } />}
-     {old && <InfoButton key='node_btn_logs'  type='logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />) } />}
-     {old && <InfoButton key='node_btn_logc'  title='Clear logs' type='delete' className='info'  onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />}
+     <SaveButton key='ni_btn_save' onClick={() => this.updateInfo('api/master/node_info')} />
+     {old && !this.state.data.hostname && <SearchButton key='ni_btn_srch' onClick={this.searchInfo} />}
+     {old && <ReloadButton key='ni_btn_reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) } />}
+     {old && <LogButton key='ni_btn_logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />) } />}
+     {old && <DeleteButton key='ni_btn_logc' title='Clear logs' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />}
     </article>
-    <NavBar key='node_navbar' />
+    <NavBar key='node_navigation' id='node_navigation' />
     {this.state.content}
    </Fragment>
    );

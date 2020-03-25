@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call} from './infra/Functions.js';
 import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/Generic.js';
-import { InfoButton, TextButton } from './infra/Buttons.jsx';
+import { StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
 
 import { LogShow, List as NodeList } from './Node.jsx';
 import { List as ServerList } from './Server.jsx';
@@ -263,36 +263,34 @@ export class FileList extends Component {
 class ServiceInfo extends Component {
  constructor(props){
   super(props)
-  this.state = {state:null}
+  this.state = {state:'inactive'}
  }
 
  componentDidMount(){
-  this.updateService({service:this.props.service})
+  this.updateService({})
  }
 
  updateService(args){
   // Always do a reset (so do a spinner)
-  this.setState({state:null})
-  rest_call('api/system/service_info',args).then(result => {
+  this.setState({spinner:<Spinner />})
+  rest_call('api/system/service_info',{service:this.props.service,...args}).then(result => {
    if (result.status === 'OK')
-    this.setState(result)
+    this.setState({...result,spinner:null})
    else
     window.alert("Error retrieving service state:" + result.info);
   })
  }
 
  render() {
-   if (!this.state.state)
-    return <Spinner />
-   else {
-    const state = (this.state.state === 'inactive') ? 'start' : 'stop'
-    return (
-     <article className='lineinput'>
-      <div>
-       <b>{this.props.name}</b>: {this.state.state} ({this.state.extra}) <InfoButton key={'state_change'} type={state} onClick={() => this.updateService({service:this.props.service,op:state})} />
-      </div>
-     </article>
-    )
-   }
+  const inactive = (this.state.state === 'inactive');
+  const Elem = (inactive) ? StartButton : StopButton;
+  return (
+   <article className='lineinput'>
+    <div>
+     <b>{this.props.name}</b>: {this.state.state} ({this.state.extra}) <Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} />
+    </div>
+    {this.state.spinner}
+   </article>
+   );
  }
 }

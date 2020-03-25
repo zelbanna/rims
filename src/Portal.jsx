@@ -68,7 +68,7 @@ class Portal extends Component {
      <MenuButton key='mb_User_User' className='right' onClick={() => {this.changeContent({module:'User',function:'User', args:{id:this.context.cookie.id}})}} title='User' icon='images/icon-users.png' />
      {buttons}
     </Header>
-    <NavBar key='portal_navigation'>{this.state.navigation}</NavBar>
+    <NavBar key='portal_navigation' id='portal_navigation'>{this.state.navigation}</NavBar>
     <main>{this.state.content}</main>
   </React.Fragment>
   )

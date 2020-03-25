@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { Spinner, InfoCol2, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
-import { InfoButton, TextButton }  from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, TextButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 
 import { Info as UserInfo } from './User.jsx';
@@ -36,9 +36,9 @@ export class List extends Component {
   if ((this.context.cookie.id === row.user_id) || !row.valid) {
    cells.push(
     <Fragment key='reservation_buttons'>
-     <InfoButton type='info' key={'rsv_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
-     <InfoButton type='add'  key={'rsv_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
-     <InfoButton type='delete' key={'rsv_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />
+     <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
+     <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
+     <DeleteButton key={'rsv_btn_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />
     </Fragment>
    )
   }
@@ -48,7 +48,7 @@ export class List extends Component {
  render(){
   return <Fragment key='rsv_fragment'>
    <ContentList key='rsv_cl' header='Reservations' thead={['User','Device','Until','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='rsv_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+    <ReloadButton key='rsv_btn_reload' onClick={() => this.componentDidMount() } />
    </ContentList>
    <ContentData key='rsv_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -88,7 +88,7 @@ class Info extends Component {
       <RadioInput key='shutdown' id='shutdown' value={this.state.data.shutdown} options={[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]} onChange={this.onChange} />
       <TextInput key='info' id='info' value={this.state.data.info} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='rsv_btn_save' type='save' onClick={() => this.updateInfo('api/reservation/info')} />
+     <SaveButton key='rsv_btn_save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>
    );
   } else

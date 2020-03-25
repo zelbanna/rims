@@ -4,11 +4,10 @@ import React, { Component }  from 'react';
 //
 // with children
 //
+
 const NavButton = (props) =>  <li className={props.className}><button className={('className' in props) ? `nav ${props.className}` : 'nav'} onClick={props.onClick}>{('icon' in props) ? <img src={props.icon} alt={props.title} draggable='false' /> : props.title}</button></li>
 
-export const NavBar = (props) => {
- return <nav><ul>{props.children && props.children.map(row => (row.type === 'dropdown') ? <NavDropDown key={'nd_' + row.title} {...row}>{row.items}</NavDropDown> : <NavButton key={'nb_' + row.title} {...row} /> )}</ul></nav>
-}
+export const NavBar = (props) => <nav id={props.id}><ul>{props.children && props.children.map(row => (row.type === 'dropdown') ? <NavDropDown key={'nd_' + row.title} {...row}>{row.items}</NavDropDown> : <NavButton key={'nb_' + row.title} {...row} /> )}</ul></nav>
 
 class NavDropDown extends Component{
  constructor(props){

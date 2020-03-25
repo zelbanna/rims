@@ -866,12 +866,12 @@ def log_get(aCTX, aArgs = None):
   - count (optional)
 
  Output:
-  - logs
+  - data
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT DATE_FORMAT(time,'%%Y-%%m-%%d %%H:%%i:%%s') AS time, message FROM device_logs WHERE %s ORDER BY id DESC LIMIT %s"%("device_id = %s"%aArgs['id'] if aArgs.get('id') else "TRUE", aArgs.get('count',30)))
-  ret['logs'] = db.get_rows() # ["%(time)s: %(message)s"%(x) for x in db.get_rows()]
+  ret['count'] = db.do("SELECT DATE_FORMAT(time,'%%Y-%%m-%%d %%H:%%i:%%s') AS time, message FROM device_logs WHERE %s ORDER BY id DESC LIMIT %s"%("device_id = %s"%aArgs['id'] if aArgs.get('id') else "TRUE", aArgs.get('count',30)))
+  ret['data'] = db.get_rows() # ["%(time)s: %(message)s"%(x) for x in db.get_rows()]
  return ret
 
 #

@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, StateMap, SearchField, InfoCol2, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/Generic.js';
-import { InfoButton, TextButton } from './infra/Buttons.jsx';
-import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
 import { NavBar } from './infra/Navigation.js'
+import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
+import { AddButton, ConnectionButton, DeleteButton, DevicesButton, DocButton, EditButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, StartButton, SyncButton, TextButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as ReservationList } from './Reservation.jsx';
 import { List as LocationList } from './Location.jsx';
@@ -100,7 +100,7 @@ class Search extends Component {
       <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field} options={[{value:'hostname',text:'Hostname'},{value:'type',text:'Type'},{value:'id',text:'ID'},{value:'ip',text:'IP'},{value:'mac',text:'MAC'},{value:'ipam_id',text:'IPAM ID'}]} />
       <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
      </span>
-     <InfoButton key='ds_btn_search' type='search' title='Search' onClick={() => this.props.changeSelf(<List key='dl' {...this.state} changeSelf={this.props.changeSelf} />)} />
+     <SearchButton key='ds_btn_search' title='Search' onClick={() => this.props.changeSelf(<List key='dl' {...this.state} changeSelf={this.props.changeSelf} />)} />
     </div>
    </article>
   )
@@ -138,7 +138,7 @@ class List extends Component {
   row.ip,
   <TextButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} />,
   StateMap({state:row.state}),
-  <InfoButton key={'dl_btn_del_'+row.id} type='delete' onClick={() => { this.deleteList('api/device/delete',row.id,'Really delete device?'); }} />
+  <DeleteButton key={'dl_btn_del_'+row.id} onClick={() => { this.deleteList('api/device/delete',row.id,'Really delete device?'); }} />
  ]
 
  deleteList = (api,id,msg) => {
@@ -154,10 +154,10 @@ class List extends Component {
    const thead = [<TextButton key='dl_btn_ip' text='IP' className={(this.state.sort === 'ip') ? 'highlight':''} onClick={() => { this.sortList('ip') }} />,<TextButton key='dl_btn_hostname' text='Hostname' className={(this.state.sort === 'hostname') ? 'highlight':''} onClick={() => { this.sortList('hostname') }} />,'',''];
    return <Fragment key={'dl_fragment'}>
     <ContentList key='dl_list' header='Device List' thead={thead}listItem={this.listItem} trows={device_list}>
-     <InfoButton key='dl_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-     <InfoButton key='dl_btn_items' type='items'   onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='All items' />
-     <InfoButton key='dl_btn_add' type='add'       onClick={() => this.changeContent(<New key={'dn_' + rnd()} id='new' />) } />
-     <InfoButton key='dl_btn_devices' type='devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discovery' />
+     <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount() } />
+     <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='All items' />
+     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_' + rnd()} id='new' />) } />
+     <DevicesButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discovery' />
      <SearchField key='dl_searchfield' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
     </ContentList>
     <ContentData key='dl_content'>{this.state.content}</ContentData>
@@ -201,7 +201,8 @@ export class Info extends Component {
    const rack = (this.state.rack && this.state.data.class !== 'vm') ? this.state.rack : false;
    const change_self = (this.props.changeSelf);
    const has_ip = (this.state.extra.interface_ip);
-   const functions = this.state.extra.functions.split(',');
+   const functions = (this.state.extra.functions.length >0) ? this.state.extra.functions.split(',').map(row => ({title:row, onClick:() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} />)})) : null
+
    return (
     <Fragment key='di_fragment'>
      <article className='info'>
@@ -240,20 +241,20 @@ export class Info extends Component {
       <UrlInput key='url' id='url' label='URL' value={this.state.data.url} onChange={this.onChange} />
      </InfoCol2>
      <br />
-     <InfoButton key='di_btn_save' type='save' onClick={() => this.updateInfo('api/device/info')} />
-     <InfoButton key='di_btn_conn' type='connections' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />
-     <InfoButton key='di_btn_cont' type='start' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />
-     <InfoButton key='di_btn_conf' type='document' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
-     {change_self && <InfoButton key='di_btn_edit' type='edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
-     {change_self && <InfoButton key='di_btn_netw' type='network' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
-     {has_ip && <InfoButton key='di_btn_srch' type='search' onClick={() => this.lookupInfo()} />}
-     {has_ip && <InfoButton key='di_btn_logs' type='logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />}
-     {has_ip && <InfoButton key='di_btn_ssh'  type='term' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} title='SSH connection' />}
-     {rack && rack.console_ip && rack.console_port && <InfoButton key='di_btn_console' type='term' onClick={() => { const termWin = window.open(`telnet://${rack.console_ip}:${6000 +rack.console_port}`,'_blank'); termWin.close();}} title='Serial Connection' /> }
-     {this.state.data.url && <InfoButton key='di_btn_ui' type='ui' onClick={() => window.open(this.state.data.url,'_blank')} />}
+     <SaveButton key='di_btn_save' onClick={() => this.updateInfo('api/device/info')} />
+     <ConnectionButton key='di_btn_conn' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />
+     <StartButton key='di_btn_cont' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />
+     <DocButton key='di_btn_conf' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
+     {change_self && <EditButton key='di_btn_edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
+     {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
+     {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} />}
+     {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />}
+     {has_ip && <TermButton key='di_btn_ssh' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} title='SSH connection' />}
+     {rack && rack.console_ip && rack.console_port && <TermButton key='di_btn_console' onClick={() => { const termWin = window.open(`telnet://${rack.console_ip}:${6000 +rack.console_port}`,'_blank'); termWin.close();}} title='Serial Connection' /> }
+     {this.state.data.url && <UiButton key='di_btn_ui' onClick={() => window.open(this.state.data.url,'_blank')} />}
      <Result key='dev_result' result={JSON.stringify(this.state.update)} />
     </article>
-    <NavBar key='di_navbar'>{functions.map(row => ({title:row, onClick:() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} />)}))}</NavBar>
+    <NavBar key='di_navigation' id='di_navigation'>{functions}</NavBar>
     {this.state.content}
     </Fragment>
    )
@@ -263,6 +264,56 @@ export class Info extends Component {
 }
 
 // TODO: NAvBar from functions
+
+// ************** Control **************
+//
+class Control extends Component {
+ render() {
+  return (<div>Device Control (TODO)</div>);
+ }
+}
+ /*
+ args = aWeb.args()
+ res = aWeb.rest_call("device/control",args)
+ aWeb.wr("<ARTICLE CLASS='info'><P>Device Controls</P>")
+ aWeb.wr("<DIV CLASS='info col3'>")
+ aWeb.wr("<label for='reboot'>Reboot:</label><span id='reboot'>&nbsp;")
+ aWeb.wr(aWeb.button('revert', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&dev_op=reboot'%res['id'], MSG='Really reboot device?', TITLE='reboot device'))
+ aWeb.wr("</span><DIV>%s</DIV>"%(res.get('dev_op') if args.get('dev_op') == 'reboot' else '&nbsp;'))
+ aWeb.wr("<label for='shutdown'>Shutdown:</label><span id='shutdown'>&nbsp;")
+ aWeb.wr(aWeb.button('off', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&dev_op=shutdown'%res['id'], MSG='Really shutdown device?', TITLE='Shutdown device'))
+ aWeb.wr("</span><DIV>%s</DIV>"%(res.get('dev_op') if args.get('dev_op') == 'shutdown' else '&nbsp;'))
+ for pem in res.get('pems',[]):
+  aWeb.wr("<!-- %(pdu_type)s@%(pdu_ip)s:%(pdu_slot)s/%(pdu_unit)s -->"%pem)
+  aWeb.wr("<label for='pem_%(name)s'>PEM: %(name)s</label><span id='pem_%(name)s'>&nbsp;"%pem)
+  if   pem['state'] == 'off':
+   aWeb.wr(aWeb.button('start', DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&pem_id=%s&pem_op=on'%(res['id'],pem['id'])))
+  elif pem['state'] == 'on':
+   aWeb.wr(aWeb.button('stop',  DIV='div_dev_data', SPIN='true', URL='device_control?id=%s&pem_id=%s&pem_op=off'%(res['id'],pem['id'])))
+  else:
+   aWeb.wr(aWeb.button('help', TITLE='Unknown state'))
+  aWeb.wr("</span><DIV>%s</DIV>"%(pem.get('op',{'status':'&nbsp;'})['status']))
+ aWeb.wr("</DIV>")
+ aWeb.wr("</ARTICLE>")
+*/
+// ************** Logs **************
+//
+export class Logs extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
+
+ componentDidMount(){
+  rest_call("api/device/log_get",{id:this.props.id}).then(result => this.setState(result));
+ }
+
+ listItem = (row) => [row.time,row.message];
+
+ render() {
+  return <ContentReport key='dev_log_cr' header='Devices' thead={['Time','Message']} trows={this.state.data} listItem={this.listItem} />
+ }
+}
 
 // ************** New **************
 //
@@ -309,8 +360,8 @@ export class New extends Component {
       <TextInput key='ip' id='ip' label='IP' value={this.state.data.ip} onChange={this.onChange} />
       <TextInput key='mac' id='mac' label='MAC' value={this.state.data.mac} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='dn_start' type='start' onClick={() => this.addDevice()} />
-     <InfoButton key='dn_search' type='search' onClick={() => this.searchIP()} />
+     <StartButton key='dn_btn_start' onClick={() => this.addDevice()} />
+     <SearchButton key='dn_btn_search' onClick={() => this.searchIP()} />
      <Result key='dn_result' result={this.state.result} />
     </article>
    )
@@ -348,9 +399,9 @@ class Discover extends Component {
        <SelectInput key='ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} options={this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))} onChange={this.onChange} />
        <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
       </InfoCol2>
-      <InfoButton key='dd_save' type='start' onClick={() => this.changeContent(<DiscoverRun key={'dd_run_' + this.state.ipam_network_id} ipam_network_id={this.state.ipam_network_id} a_domain_id={this.state.a_domain_id} />)} />
+      <StartButton key='dd_btn_start' onClick={() => this.changeContent(<DiscoverRun key={'dd_run_' + this.state.ipam_network_id} ipam_network_id={this.state.ipam_network_id} a_domain_id={this.state.a_domain_id} />)} />
      </article>
-     <NavBar key='dd_nav' />
+     <NavBar key='dd_navigation' id='dd_navigation' />
      {this.state.content}
     </Fragment>
    )
@@ -429,8 +480,8 @@ class ModelList extends Component {
  }
 
  listItem = (row) => [row.id,row.name,row.type,<Fragment key={'ml_' + row.id}>
-  <InfoButton type='info' onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
-  <InfoButton type='delete' onClick={() => this.deleteList('api/device/model_delete',row.id,'Really delete model?') } />
+  <InfoButton key={'ml_btn_info_' + row.id} onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
+  <DeleteButton key={'ml_btn_delete_' + row.id}  onClick={() => this.deleteList('api/device/model_delete',row.id,'Really delete model?') } />
  </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
@@ -439,8 +490,8 @@ class ModelList extends Component {
  render(){
   return <Fragment key='dev_ml_fragment'>
    <ContentList key='dev_ml_cl' header='Device Models' thead={['ID','Model','Type','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-    <InfoButton key='dev_ml_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='dev_ml_btn_sync'   type='sync' onClick={() => this.syncModels() } title='Resync models' />
+    <ReloadButton key='ml_btn_reload' onClick={() => this.componentDidMount() } />
+    <SyncButton key='_ml_btn_sync' onClick={() => this.syncModels() } title='Resync models' />
    </ContentList>
    <ContentData key='dev_ml_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -480,7 +531,7 @@ export class ModelInfo extends Component {
      </InfoCol2>
      <label htmlFor='parameters'>Parameters:</label>
      <textarea id='parameters' name='parameters' onChange={this.onChange} value={this.state.data.parameters} />
-     <InfoButton key='dm_save' type='save' onClick={() => this.updateInfo('api/device/model_info')} />
+     <SaveButton key='dm_btn_save' onClick={() => this.updateInfo('api/device/model_info')} />
     </article>
    );
   else
@@ -512,7 +563,7 @@ class OUISearch extends Component {
     <h1>OUI Search</h1>
     <div>
      <span>Type OUI or MAC address to find OUI/company name:<input type='text' id='oui' name='oui' required='required' onChange={this.onChange} value={this.state.data.oui} placeholder='00:00:00' /></span>
-     <InfoButton type='search' title='Search' onClick={() => this.ouiSearch()} />
+     <SearchButton key='oui_btn_search' title='Search' onClick={() => this.ouiSearch()} />
     </div>
    </article>
    {this.state.content}
@@ -548,21 +599,10 @@ class OUIList extends Component {
 
 // ************** TODO **************
 //
-export class Logs extends Component {
- render() {
-  return (<div>Device Logs (TODO)</div>);
- }
-}
 
 class Extended extends Component {
  render() {
   return (<div>Device Extended (TODO)</div>);
- }
-}
-
-class Control extends Component {
- render() {
-  return (<div>Device Control (TODO)</div>);
  }
 }
 

@@ -1,8 +1,8 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd, int2ip } from './infra/Functions.js';
 import { Spinner, InfoCol2, StateMap, Result, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
-import { InfoButton } from './infra/Buttons.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
+import { AddButton, DeleteButton, DevicesButton, DocButton, InfoButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { Info as DeviceInfo, New as DeviceNew } from './Device.jsx';
 
 // CONVERTED ENTIRELY
@@ -36,10 +36,10 @@ export class NetworkList extends Component {
  }
 
  listItem = (row) => [row.id,row.netasc,row.description,row.service,<Fragment key={'network_buttons_'+row.id}>
-   <InfoButton key={'net_info_'+row.id} type='info'  onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />) } />
-   <InfoButton key={'net_items_'+row.id} type='items' onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
-   <InfoButton key={'net_layout_'+row.id} type='devices' onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
-   <InfoButton key={'net_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/ipam/network_delete',row.id,'Really delete network') } />
+   <InfoButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />) } />
+   <ItemsButton key={'net_btn_items_'+row.id} onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
+   <DevicesButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
+   <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList('api/ipam/network_delete',row.id,'Really delete network') } />
   </Fragment>
  ]
 
@@ -49,9 +49,9 @@ export class NetworkList extends Component {
  render(){
   return <Fragment key='nl_fragment'>
    <ContentList key='nl_cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-    <InfoButton key='nl_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='nl_btn_add' type='add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_' + rnd()} id='new' />) } />
-    <InfoButton key='nl_btn_document' type='document' onClick={() => this.changeContent(<Leases key='network_leases' />)} />
+    <ReloadButton key='nl_btn_reload'  onClick={() => this.componentDidMount() } />
+    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_' + rnd()} id='new' />) } />
+    <DocButton key='nl_btn_doc' onClick={() => this.changeContent(<Leases key='network_leases' />)} />
    </ContentList>
    <ContentData key='nl_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -94,7 +94,7 @@ class NetworkInfo extends Component {
       <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} options={this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))} onChange={this.onChange} />
       <SelectInput key='reverse_zone_id' id='reverse_zone_id' label='Reverse Zone' value={this.state.data.reverse_zone_id} options={this.state.domains.map(row => ({value:row.id, text:`${row.server} (${row.name})`}))} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='network_save' type='save' onClick={() => this.updateInfo('api/ipam/network_info')} />
+     <SaveButton key='network_btn_save' onClick={() => this.updateInfo('api/ipam/network_info')} />
     </article>
    );
   else
@@ -164,16 +164,16 @@ class AddressList extends Component{
  }
 
  listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,StateMap({state:row.state}),<Fragment key={'ip_button_'+row.id}>
-   <InfoButton type='info' onClick={() => this.props.changeSelf(<AddressInfo id={row.id} />)} />
-   <InfoButton type='delete' onClick={() => this.deleteList('api/ipam/address_delete',row.id,'Really delete address?')} />
+   <InfoButton key={'al_btn_info'+row.id} onClick={() => this.props.changeSelf(<AddressInfo id={row.id} />)} />
+   <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList('api/ipam/address_delete',row.id,'Really delete address?')} />
   </Fragment>]
 
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
  render(){
   return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','A_id','PTR_id','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-   <InfoButton key='reload' type='reload' onClick={() => this.componentDidMount() } />
-   <InfoButton key='add' type='add' onClick={() => this.props.changeSelf(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />) } />
+   <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
+   <AddButton key='al_btn_add' onClick={() => this.props.changeSelf(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />) } />
   </ContentReport>
  }
 }
@@ -213,7 +213,7 @@ class AddressInfo extends Component {
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='ip_save' type='save' onClick={() => this.updateInfo('api/ipam/address_info')} />
+     <SaveButton key='ip_save' onClick={() => this.updateInfo('api/ipam/address_info')} />
      <Result key='ip_operation' result={this.state.hasOwnProperty('info') ? `${this.state.status} ${this.state.info}` : this.state.status} />
     </article>
    );

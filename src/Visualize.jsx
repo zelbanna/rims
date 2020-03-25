@@ -2,7 +2,8 @@ import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { ContentData, ContentList, Result } from './infra/Generic.js';
 import { TextInput } from './infra/Inputs.jsx'
-import { InfoButton, TextButton } from './infra/Buttons.jsx';
+import { DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
+
 import { DataSet, Network } from 'vis';
 import { Info as DeviceInfo } from './Device.jsx';
 
@@ -34,21 +35,21 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => [row.id,row.name,<Fragment key='viz_list_buttons'>
-  <InfoButton key={'viz_edt_'+row.id} type='edit' onClick={() => { this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)}} title='Show and edit map' />
-  <InfoButton key={'viz_net_'+row.id} type='network' onClick={() => { this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)}} />
-  <InfoButton key={'viz_del_'+row.id} type='delete' onClick={() => { this.deleteList('api/visualize/delete',row.id,'Really delete map?')}} />
+ listItem = (row) => [row.id,row.name,<Fragment key='vl_buttons'>
+  <EditButton key={'vl_btn_edt_'+row.id} onClick={() => { this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)}} title='Show and edit map' />
+  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => { this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)}} />
+  <DeleteButton key={'vl_btn_del_'+row.id}  onClick={() => { this.deleteList('api/visualize/delete',row.id,'Really delete map?')}} />
  </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='viz_fragment'>
-   <ContentList key='viz_cl' header='Maps' thead={['ID','NAme','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='viz_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+  return <Fragment key='vl_fragment'>
+   <ContentList key='vl_cl' header='Maps' thead={['ID','NAme','']} trows={this.state.data} listItem={this.listItem}>
+    <ReloadButton key='vl_btn_reload' onClick={() => this.componentDidMount() } />
    </ContentList>
-   <ContentData key='viz_cd'>{this.state.content}</ContentData>
+   <ContentData key='vl_cd'>{this.state.content}</ContentData>
   </Fragment>
  }
 }
@@ -94,7 +95,7 @@ class Show extends Component {
 export class Edit extends Component {
  constructor(props){
   super(props)
-  this.state = {content:'network', physics_button:'start', found:true, data:{name:'N/A'}, result:''}
+  this.state = {content:'network', physics_button:StartButton, found:true, data:{name:'N/A'}, result:''}
   this.viz = {network:null,nodes:null,edges:null}
   this.results = React.createRef();
   this.edit = false;
@@ -121,19 +122,22 @@ export class Edit extends Component {
   this.setState({data:data})
  }
 
+ jsonHandler = (e) => {
+  var data = {...this.state.data}
+  try {
+   data[e.target.name] = JSON.parse(e.target.value);
+   this.setState({data:data})
+  } catch {
+   console.log("Error converting string to JSON")
+  }
+ }
+
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  doubleClick = (params) => {
   console.log("DoubleClick",params.nodes[0]);
   if(this.props.changeSelf)
    this.props.changeSelf(<DeviceInfo key={'di_' + params.nodes[0]} id={params.nodes[0]} changeSelf={this.props.changeSelf} />)
- }
-
- togglePhysics = () => {
-  const data = this.state.data;
-  data.options.physics.enabled = !data.options.physics.enabled;
-  this.viz.network.setOptions({ physics:data.options.physics.enabled })
-  this.setState({data:data, physics_button:(data.options.physics.enabled) ? 'stop':'start', result:"Physics:"+data.options.physics.enabled})
  }
 
  toggleEdit = () => {
@@ -147,33 +151,31 @@ export class Edit extends Component {
   this.setState({data:{...this.state.data, nodes:this.viz.nodes.get()}, result:"Fix/Unfix positions"})
  }
 
+ togglePhysics = () => {
+  const data = this.state.data;
+  data.options.physics.enabled = !data.options.physics.enabled;
+  this.viz.network.setOptions({ physics:data.options.physics.enabled })
+  this.setState({data:data, physics_button:(data.options.physics.enabled) ? StopButton:StartButton, result:"Physics:"+data.options.physics.enabled})
+ }
+
  networkSync = (params) => {
   this.viz.network.storePositions();
   this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}, result:"Moved " + this.viz.nodes.get(params.nodes[0]).label})
  }
 
- jsonHandler = (e) => {
-  var data = {...this.state.data}
-  try {
-   data[e.target.name] = JSON.parse(e.target.value);
-   this.setState({data:data})
-  } catch {
-   console.log("Error converting string to JSON")
-  }
- }
-
  showDiv = (id) => (id === this.state.content) ? 'network show' : 'hidden';
 
  render(){
+  const PhysicsButton = this.state.physics_button;
   return(
    <article className='network'>
     <h1>Network Map</h1>
-    <InfoButton key='viz_reload' type='reload' onClick={() => this.componentDidMount()} />
-    <InfoButton key='viz_edit' type='edit' onClick={() => this.toggleEdit()} />
-    <InfoButton key='viz_physics' type={this.state.physics_button} onClick={() => this.togglePhysics()} />
-    <InfoButton key='viz_fix' type='fix' onClick={() => this.toggleFix()} />
-    <InfoButton key='viz_save' type='save' onClick={() => this.updateInfo('api/visualize/network')} />
-    <InfoButton key='viz_net' type='network' onClick={() => this.setState({content:'network'})} />
+    <ReloadButton key='viz_reload' onClick={() => this.componentDidMount()} />
+    <EditButton key='viz_edit' onClick={() => this.toggleEdit()} />
+    <PhysicsButton key='viz_physics' onClick={() => this.togglePhysics()} />
+    <FixButton key='viz_fix' onClick={() => this.toggleFix()} />
+    <SaveButton key='viz_save' onClick={() => this.updateInfo('api/visualize/network')} />
+    <NetworkButton key='viz_net' onClick={() => this.setState({content:'network'})} />
     <TextButton key='viz_opt' text='Options' className='info' onClick={() => this.setState({content:'options'})} />
     <TextButton key='viz_nodes' text='Nodes' className='info' onClick={() => this.setState({content:'nodes'})} />
     <TextButton key='viz_edges' text='Edges' className='info' onClick={() => this.setState({content:'edges'})} />

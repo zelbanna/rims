@@ -380,7 +380,7 @@ def logs(aWeb):
  res = aWeb.rest_call("device/log_get",args)
  aWeb.wr("<ARTICLE>")
  aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>Time</DIV><DIV>Event</DIV></DIV><DIV CLASS=tbody>")
- for row in res['logs']:
+ for row in res['data']:
   aWeb.wr("<DIV><DIV>%(time)s</DIV><DIV>%(message)s</DIV></DIV>"%row)
  aWeb.wr("</DIV></DIV>")
  aWeb.wr("</ARTICLE>")

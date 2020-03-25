@@ -1,8 +1,9 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
-import { InfoButton, TextButton } from './infra/Buttons.jsx';
 import { Spinner, InfoCol2, RimsContext, ContentList, ContentData } from './infra/Generic.js';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
+import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, ViewButton, TextButton, UiButton } from './infra/Buttons.jsx';
+
 import { Main as DeviceMain, Info as DeviceInfo } from './Device.jsx';
 
 // *************** Main ***************
@@ -33,10 +34,10 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.location,row.name,<Fragment key='rack_list_buttons'>
-   <InfoButton key={'rack_info_'+row.id} type='info'  onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} />
-   <InfoButton key={'rack_fwd_'+row.id} type='forward' onClick={() => this.context.changeMain({content:<DeviceMain key={'Device_Main_'+row.id} rack_id={row.id} />})} />
-   <InfoButton key={'rack_items_'+row.id} type='items' onClick={() => this.changeContent(<Inventory key={'rack_inventory_'+row.id} id={row.id} />)} />
-   <InfoButton key={'rack_del_'+row.id} type='delete' onClick={() => this.deleteList('api/rack/delete',row.id,'Really delete rack?')} />
+   <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} />
+   <ViewButton key={'rl_btn_view_'+row.id} onClick={() => this.context.changeMain({content:<DeviceMain key={'Device_Main_'+row.id} rack_id={row.id} />})} />
+   <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Inventory key={'rack_inventory_'+row.id} id={row.id} />)} />
+   <DeleteButton key={'rl_btn_del_'+row.id} onClick={() => this.deleteList('api/rack/delete',row.id,'Really delete rack?')} />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
@@ -45,8 +46,8 @@ export class List extends Component {
  render(){
   return <Fragment key='rack_fragment'>
    <ContentList key='rack_cl' header='Racks' thead={['Location','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='rack_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='rack_btn_add' type='add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='rl_btn_add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />) } />
    </ContentList>
    <ContentData key='rack_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -87,7 +88,7 @@ class Info extends Component {
       <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
       <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
      </InfoCol2>
-     <InfoButton key='rack_save' type='save' onClick={() => this.updateInfo('api/rack/info')} />
+     <SaveButton key='ri_btn_save' onClick={() => this.updateInfo('api/rack/info')} />
     </article>
    )
   else
@@ -131,7 +132,7 @@ export class Infra extends Component {
  listItem = (row) => {
   const buttons = []
   if (row.url)
-   buttons.push(<InfoButton key={'ri_url_'+row.id} type='ui' onClick={() => { window.open(row.url,'_blank'); }} />)
+   buttons.push(<UiButton key={'ri_btn_ui_'+row.id} onClick={() => { window.open(row.url,'_blank'); }} />)
   return [
    <TextButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} />,
    row.hostname,<Fragment key='ri_buttons'>{buttons}</Fragment>
@@ -145,7 +146,7 @@ export class Infra extends Component {
  render(){
   return <Fragment key='ri_fragment'>
    <ContentList key='ri_cl' header={this.props.type.toUpperCase()} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <InfoButton key='ri_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
+    <ReloadButton key='ri_btn_reload' onClick={() => this.componentDidMount() } />
    </ContentList>
    <ContentData key='ri_cd'>{this.state.content}</ContentData>
   </Fragment>

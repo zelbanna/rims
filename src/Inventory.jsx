@@ -1,9 +1,8 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoCol2, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
-import { InfoButton, TextButton } from './infra/Buttons.jsx';
 import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
-
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, TextButton } from './infra/Buttons.jsx';
 import { List as LocationList } from './Location.jsx'
 
 // CONVERTED ENTIRELY
@@ -43,10 +42,9 @@ class List extends Component {
  }
 
  listItem = (row) => [row.id,row.serial,row.model,<Fragment key={'inventory_buttons_'+row.id}>
-   <InfoButton key={'inv_info_'+row.id} type='info'  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } />
-   <InfoButton key={'inv_delete_'+row.id} type='delete' onClick={() => this.deleteList('api/inventory/delete',row.id,'Really delete item') } />
-   </Fragment>
-  ]
+   <InfoButton key={'inv_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } />
+   <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList('api/inventory/delete',row.id,'Really delete item') } />
+  </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
@@ -54,8 +52,8 @@ class List extends Component {
  render(){
   return <Fragment key='inv_fragment'>
    <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-    <InfoButton key='inv_btn_reload' type='reload' onClick={() => this.componentDidMount() } />
-    <InfoButton key='inv_btn_add' type='add' onClick={() => this.changeContent(<Info key={'domain_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'domain_new_' + rnd()} id='new' />) } />
    </ContentList>
    <ContentData key='inv_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -85,7 +83,7 @@ class Search extends Component {
       <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange} options={[{value:'serial',text:'Serial'},{value:'vendor',text:'Vendor'}]} />
       <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
      </span>
-     <InfoButton type='search' title='Search' onClick={() => this.props.changeSelf(<List key='inventory_list' args={this.state.data} changeSelf={this.props.changeSelf} />)} />
+     <SearchButton key='inv_btn_search' title='Search' onClick={() => this.props.changeSelf(<List key='inventory_list' args={this.state.data} changeSelf={this.props.changeSelf} />)} />
     </div>
    </article>
   )
@@ -135,8 +133,8 @@ onChange = (e) => {
       <CheckboxInput key='support_contract' id='support_contract' value={data.support_contract} onChange={this.onChange} />
       {(data.support_contract && <DateInput key='support_end_date' id='support_end_date' label='Contract End' value={data.support_end_date} onChange={this.onChange} />)}
      </InfoCol2>
-     <InfoButton key='inventory_reload' type='reload' onClick={() => this.componentDidMount() } />
-     <InfoButton key='inventory_save' type='save' onClick={() => this.updateInfo('api/inventory/info') } />
+     <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
+     <SaveButton key='inv_btn_save' onClick={() => this.updateInfo('api/inventory/info') } />
     </article>
    );
   } else
