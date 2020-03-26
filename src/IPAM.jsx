@@ -171,7 +171,7 @@ class AddressList extends Component{
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
  render(){
-  return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','A_id','PTR_id','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+  return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','A','PTR','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
    <AddButton key='al_btn_add' onClick={() => this.props.changeSelf(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />) } />
   </ContentReport>

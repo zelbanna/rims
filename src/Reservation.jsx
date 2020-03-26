@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, TextButton }  from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, LinkButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 
 import { Info as UserInfo } from './User.jsx';
@@ -29,7 +29,7 @@ export class List extends Component {
 
  listItem = (row) => {
   const cells = [
-   <TextButton key={'user_' + this.context.cookie.id} text={row.alias} onClick={() => this.changeContent(<UserInfo key={'user_info'+this.context.cookie.id} id={this.context.cookie.id} />) } />,
+   <LinkButton key={'user_' + this.context.cookie.id} text={row.alias} onClick={() => this.changeContent(<UserInfo key={'user_info'+this.context.cookie.id} id={this.context.cookie.id} />) } />,
    row.hostname,
    <div className={(row.valid) ? '' : 'orange'}>{row.end}</div>
   ]

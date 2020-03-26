@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, TextButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, LinkButton } from './infra/Buttons.jsx';
 import { List as LocationList } from './Location.jsx'
 
 // CONVERTED ENTIRELY
@@ -154,7 +154,7 @@ class Vendor extends Component {
   rest_call('api/inventory/vendor_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [<TextButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.props.changeSelf(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} changeSelf={this.props.changeSelf} />)} />,row.count]
+ listItem = (row) => [<LinkButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.props.changeSelf(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} changeSelf={this.props.changeSelf} />)} />,row.count]
 
  render(){
   return <Fragment key='inv_fragment'>

@@ -176,9 +176,9 @@ export class Edit extends Component {
     <FixButton key='viz_fix' onClick={() => this.toggleFix()} />
     <SaveButton key='viz_save' onClick={() => this.updateInfo('api/visualize/network')} />
     <NetworkButton key='viz_net' onClick={() => this.setState({content:'network'})} />
-    <TextButton key='viz_opt' text='Options' className='info' onClick={() => this.setState({content:'options'})} />
-    <TextButton key='viz_nodes' text='Nodes' className='info' onClick={() => this.setState({content:'nodes'})} />
-    <TextButton key='viz_edges' text='Edges' className='info' onClick={() => this.setState({content:'edges'})} />
+    <TextButton key='viz_opt' text='Options' onClick={() => this.setState({content:'options'})} />
+    <TextButton key='viz_nodes' text='Nodes' onClick={() => this.setState({content:'nodes'})} />
+    <TextButton key='viz_edges' text='Edges' onClick={() => this.setState({content:'edges'})} />
     <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} className='network' />
     <Result key='viz_result' result={this.state.result} />
     <div className={this.showDiv('network')} ref='edit_canvas' />

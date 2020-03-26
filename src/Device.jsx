@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.js'
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
-import { AddButton, ConnectionButton, DeleteButton, DevicesButton, DocButton, EditButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TextButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, ConnectionButton, DeleteButton, DevicesButton, DocButton, EditButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, LinkButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as ReservationList } from './Reservation.jsx';
 import { List as LocationList } from './Location.jsx';
@@ -136,7 +136,7 @@ class List extends Component {
 
  listItem = (row) => [
   row.ip,
-  <TextButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} />,
+  <LinkButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} />,
   StateMap({state:row.state}),
   <DeleteButton key={'dl_btn_del_'+row.id} onClick={() => { this.deleteList('api/device/delete',row.id,'Really delete device?'); }} />
  ]
@@ -151,7 +151,7 @@ class List extends Component {
    return <Spinner />
   else {
    let device_list = this.state.data.filter(row => row.hostname.includes(this.state.searchfield));
-   const thead = [<TextButton key='dl_btn_ip' text='IP' className={(this.state.sort === 'ip') ? 'highlight':''} onClick={() => { this.sortList('ip') }} />,<TextButton key='dl_btn_hostname' text='Hostname' className={(this.state.sort === 'hostname') ? 'highlight':''} onClick={() => { this.sortList('hostname') }} />,'',''];
+   const thead = [<LinkButton key='dl_btn_ip' text='IP' style={(this.state.sort === 'ip') ? ({color:'var(--high-color)'}):({})} onClick={() => { this.sortList('ip') }} />,<LinkButton key='dl_btn_hostname' text='Hostname' style={(this.state.sort === 'hostname') ? ({color:'var(--high-color)'}):({})} onClick={() => { this.sortList('hostname') }} />,'',''];
    return <Fragment key={'dl_fragment'}>
     <ContentList key='dl_list' header='Device List' thead={thead}listItem={this.listItem} trows={device_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount() } />
@@ -473,7 +473,7 @@ class TypeList extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- listItem = (row) => [row.base,<TextButton text={row.name} onClick={() => this.props.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
+ listItem = (row) => [row.base,<LinkButton text={row.name} onClick={() => this.props.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
 
  render(){
   return <Fragment key='dev_tp_fragment'>

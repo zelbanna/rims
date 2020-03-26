@@ -1,5 +1,7 @@
 import React, { createContext } from 'react';
 
+export const Header = (props) => <header>{props.children}</header>
+
 // **************************** Generic ********************************
 
 export const RimsContext = createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,changeMain:()=>{},loadNavigtion:()=>{}})

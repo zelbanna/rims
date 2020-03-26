@@ -46,11 +46,10 @@ select:focus,input:focus,textarea:focus { border-color:var(--high-color)!importa
 /***************************************  Login Model *****************************************/
 
 div.login { position: absolute; height:100vh; width:100vw; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.2); }
-article.login {  border:solid var(--border-size) #9CA6B0; width:auto; height:auto;}
+article.login {  border:solid var(--border-size) #9CA6B0; width:auto; height:auto; padding:var(--std-txt);}
 article.login input:focus { border-color:black!important; }
-article.login div.left { float:left; }
 article.login h1 { margin:var(--head-txt); }
-article.login button { margin-right:var(--head-txt); margin-bottom:var(--head-txt); }
+button.login { margin-right:var(--head-txt); margin-bottom:var(--head-txt); }
 
 /***************************************** Menu Model *****************************************/
 
@@ -63,7 +62,6 @@ button.menu {
 button.menu:active { opacity:0.5; }
 button.menu:hover,button.menu:focus { opacity:0.7; box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-weight: bold; border: var(--border-size) solid #000000; }
 button.menu > img {  max-height:43px; }
-button.right   {  float:right!important; }
 
 /*************************************** Content Model *****************************************/
 
@@ -82,7 +80,7 @@ nav li.dropdown ul { position: absolute; box-shadow:0px 8px 16px 0px rgba(0,0,0,
 nav li.dropdown > ul > li { clear:left; float:unset; }
 nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
 nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
-nav li.right   {  float:right!important; }
+nav li.right { float:right; }
 
 nav button,nav label { color:var(--std-txt-color); font-size:var(--mid-txt); padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
 nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); }
@@ -95,7 +93,6 @@ nav button.navinfo:hover, nav button.navinfo:focus{ color:#FFFFFF!important; }
 article.table {        height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; }
 button.text {          font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; }
 button.text::-moz-focus-inner { border-style: dotted; }
-button.highlight {     color:var(--high-color); }
 div.table {            display: table; width:100% }
 div.table .thead {     display: table-header-group; }
 div.table .thead > div { display: table-cell; vertical-align: middle; text-align: center; padding: 3px 2px 6px 4px; font-size:var(--mid-txt); font-weight:bold; }
@@ -111,7 +108,7 @@ input.searchfield {    display:block; width: 99%; height: 22px; margin: 3px 0px 
 /***************************************  Info  Model *****************************************/
 
 article.info { resize:horizontal; width:max-content; }
-article.info label { font-weight:bold; font-style:normal!important; padding:2px; }
+article.info label { font-weight:bold; padding:2px; }
 article.info textarea { height:calc(var(--std-txt) * 5); width:300px; display:block; }
 div.info { display:grid; margin:2px 0px 2px 0px; align-items:center; grid-gap:1px; }
 div.col2 { grid-template-columns: max-content auto;}
@@ -122,6 +119,8 @@ div.info > input[type='checkbox'] { width:22px; }
 div.info input::-webkit-input-placeholder { color: #9CA6B0; }
 div.info input::-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.info span { font-size: calc(var(--std-txt) - 1px); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-style:italic; }
+
+div.left { float:left!important; }
 
 button.info { background-color:var(--std-color); color:var(--std-txt-color); height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
 button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!important; }
@@ -191,13 +190,10 @@ div.flexdiv { display:flex; flex-wrap:wrap; width:100%; height:max-content; }
 div.centered { justify-content:space-evenly; }
 div.states { padding: 1px; }
 div.state { border: var(--border-size) solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; margin-left:2px; margin-right:2px;}
-div.left { float:left; }
 
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; }
 
 button.ipam { float:left; font-size:9px; font-weight:bold; padding:0px; width:22px; color:#000000; margin:2px; }
-button.warning { background-color:#CB2026; color:#FFFFFF; }
-
 
 /* media dependent */
 article.network { width:99%; }
@@ -205,7 +201,7 @@ div.network { height:500px; width:600px; resize:horizontal}
 div.network > textarea { height:500px; width:99%; }
 div.hidden { display:none; }
 div.shown  { display:block; }
-label.network { font-weight:bold; font-style:normal!important; }
+label.network { font-weight:bold; }
 
 /******************************************* EXTRA NOT FOUND YET *********************************************/
 /*

@@ -365,11 +365,13 @@ def control(aCTX, aArgs = None):
   if ret['class'] != 'vm':
    module = import_module("rims.devices.%s"%ret['type'])
    with getattr(module,'Device',None)(aCTX,ret['id'],ret['ip']) as dev:
-    ret['dev_op'] = dev.operation(aArgs['dev_op'])
+    ret['result'] = dev.operation(aArgs['dev_op'])
   elif ret.get('mapping'):
    module = import_module("rims.devices.%s"%ret['mapping']['type'])
    with getattr(module,'Device',None)(aCTX,ret['id'],ret['mapping']['ip']) as dev:
-    ret['dev_op'] = dev.vm_operation(aArgs['dev_op'],ret['mapping']['snmp_id'], aUUID = ret['mapping']['device_uuid'])
+    ret['result'] = dev.vm_operation(aArgs['dev_op'],ret['mapping']['snmp_id'], aUUID = ret['mapping']['device_uuid'])
+  else:
+   ret['result'] = 'NO_VM_MAPPING'
  if ret.get('pems'):
   for pem in ret['pems']:
    if not pem['pdu_id']:

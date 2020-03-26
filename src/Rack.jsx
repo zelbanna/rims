@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, ViewButton, TextButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, ViewButton, LinkButton, UiButton } from './infra/Buttons.jsx';
 
 import { Main as DeviceMain, Info as DeviceInfo } from './Device.jsx';
 
@@ -134,7 +134,7 @@ export class Infra extends Component {
   if (row.url)
    buttons.push(<UiButton key={'ri_btn_ui_'+row.id} onClick={() => { window.open(row.url,'_blank'); }} />)
   return [
-   <TextButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} />,
+   <LinkButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} />,
    row.hostname,<Fragment key='ri_buttons'>{buttons}</Fragment>
   ]
  }
