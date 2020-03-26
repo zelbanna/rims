@@ -6,9 +6,9 @@ export const MenuButton = (props) => {
  return <button className={className} title={props.title} form={props.form} onClick={props.onClick} style={props.style}>{view}</button>
 }
 
-const button_template = (type,props) => <button className={('className' in props) ? `info type-${type} ${props.className}` : `info type-${type}`} onClick={props.onClick} title={props.title}/>
+const button_template = (type,props) => <button id={props.id} className={('className' in props) ? `info type-${type} ${props.className}` : `info type-${type}`} onClick={props.onClick} title={props.title}/>
 
-export const TextButton = (props) => <button className={('className' in props) ? `text ${props.className}` : 'text'} onClick={props.onClick} title={props.title}>{props.text}</button>
+export const TextButton = (props) => <button id={props.id} className={('className' in props) ? `text ${props.className}` : 'text'} onClick={props.onClick} title={props.title}>{props.text}</button>
 
 export const  AddButton = (props) => button_template('add',props);
 export const  ConnectionButton = (props) => button_template('connections',props);
@@ -25,6 +25,7 @@ export const  NetworkButton = (props) => button_template('network',props);
 export const  ReloadButton = (props) => button_template('reload',props);
 export const  SaveButton = (props) => button_template('save',props);
 export const  SearchButton = (props) => button_template('search',props);
+export const  ShutdownButton = (props) => button_template('off',props);
 export const  StartButton = (props) => button_template('start',props);
 export const  StopButton = (props) => button_template('stop',props);
 export const  SyncButton = (props) => button_template('sync',props);

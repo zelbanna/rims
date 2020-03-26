@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
-import { ContentData, ContentList, Result } from './infra/Generic.js';
+import { ContentData, ContentList, Result } from './infra/UI.jsx';
 import { TextInput } from './infra/Inputs.jsx'
 import { DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
 

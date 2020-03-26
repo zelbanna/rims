@@ -1,9 +1,9 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, StateMap, SearchField, InfoCol2, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/Generic.js';
+import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.js'
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
-import { AddButton, ConnectionButton, DeleteButton, DevicesButton, DocButton, EditButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, StartButton, SyncButton, TextButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, ConnectionButton, DeleteButton, DevicesButton, DocButton, EditButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TextButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as ReservationList } from './Reservation.jsx';
 import { List as LocationList } from './Location.jsx';
@@ -207,39 +207,39 @@ export class Info extends Component {
     <Fragment key='di_fragment'>
      <article className='info'>
      <h1>Device Info</h1>
-     <InfoCol2 key='di_info' className='left'>
+     <InfoColumns key='di_info' className='left'>
       <TextLine key='hostname' id='hostname' text={this.state.data.hostname} />
       <TextInput key='mac' id='mac' label='Sys Mac' value={this.state.data.mac} title='System MAC' onChange={this.onChange} />
       <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={this.state.extra.interface_mac} title='Management Interface MAC' />
       <TextLine key='if_ip' id='if_ip' label='Mgmt IP' text={this.state.extra.interface_ip} />
       <TextLine key='snmp' id='snmp' label='SNMP' text={this.state.data.snmp} />
       <StateLine key='state' id='state' state={[this.state.extra.if_state,this.state.extra.ip_state]} />
-     </InfoCol2>
-     <InfoCol2 key='di_extra' className='left'>
+     </InfoColumns>
+     <InfoColumns key='di_extra' className='left'>
       <TextLine key='id' id='id' text={this.props.id} />
       <SelectInput key='class' id='class' value={this.state.data.class} options={this.state.classes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
       <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} options={this.state.types.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
       <TextInput key='model' id='model' value={this.state.data.model} onChange={this.onChange} extra={this.state.data.model} />
       <TextLine key='version' id='version' text={this.state.data.version} onChange={this.onChange} />
       <TextInput key='serial' id='serial' label='S/N' value={this.state.data.serial} onChange={this.onChange} />
-     </InfoCol2>
-     <InfoCol2 key='di_rack' className='left'>
+     </InfoColumns>
+     <InfoColumns key='di_rack' className='left'>
       {rack && <TextLine key='rack_pos' id='rack_pos' label='Rack/Pos' text={`${rack.rack_name} (${rack.rack_unit})`} />}
       {rack && <TextLine key='rack_size' id='rack_size' label='Size (U)' text={rack.rack_size} />}
       {rack && <TextLine key='rack_con' id='rack_con' label='TS/Port' text={`${rack.console_name} (${rack.console_port})`} />}
       {rack && this.state.pems.map(pem => <TextLine key={'pem_'+pem.id} id={'pem_'+pem.id} label={pem.name+' PDU'} text={`${pem.pdu_name} (${pem.pdu_unit})`} />)}
-     </InfoCol2>
-     <InfoCol2 key='di_vm' className='left'>
+     </InfoColumns>
+     <InfoColumns key='di_vm' className='left'>
       {vm && <TextLine key='vm_name' id ='vm_name' label='VM Name' text={vm.name} />}
       {vm && <TextLine key='vm_host' id ='vm_host' label='VM Host' text={vm.host} />}
       {vm && <TextLine key='vm_uuid' id ='vm_uuid' label='VM UUID' text={vm.device_uuid} style={{maxWidth:170}} extra={vm.device_uuid} />}
       {vm && <TextLine key='vm_uuhost' id ='vm_uuhost' label='Host UUID' text={vm.server_uuid} style={{maxWidth:170}} extra={vm.server_uuid} />}
-     </InfoCol2>
+     </InfoColumns>
      <br />
-     <InfoCol2 key='di_text'>
+     <InfoColumns key='di_text'>
       <TextInput key='comment' id='comment' value={this.state.data.comment} onChange={this.onChange} />
       <UrlInput key='url' id='url' label='URL' value={this.state.data.url} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <br />
      <SaveButton key='di_btn_save' onClick={() => this.updateInfo('api/device/info')} />
      <ConnectionButton key='di_btn_conn' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />
@@ -268,8 +268,28 @@ export class Info extends Component {
 // ************** Control **************
 //
 class Control extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
+ componentDidMount(){
+  rest_call("api/device/control",{id:this.props.id}).then(result => this.setState(result));
+ }
+
+ operationDev = (op) => {
+  rest_call("api/device/control",{id:this.props.id, dev_op:op}).then(result => this.setState(result));
+ }
+
  render() {
-  return (<div>Device Control (TODO)</div>);
+  return (
+   <article className='info'>
+    <h1>Device Control</h1>
+    <InfoColumns columns={3}>
+     <label htmlFor='reboot'>Reboot:</label><ReloadButton id='reboot' key='dev_ctr_reboot' onClick={() => this.operationDev('reboot')} /><span>{this.state.dev_op}</span>
+     <label htmlFor='shutdown'>Shutdown:</label><ShutdownButton id='shutdown' key='dev_ctr_shutdown' onClick={() => this.operationDev('shutdown')} /><span>{this.state.dev_op}</span>
+    </InfoColumns>
+   </article>
+  )
  }
 }
  /*
@@ -352,14 +372,14 @@ export class New extends Component {
    return (
     <article className='info'>
      <h1>Device Add</h1>
-     <InfoCol2 key='dn_content'>
+     <InfoColumns key='dn_content'>
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} placeholder='Device hostname' onChange={this.onChange} />
       <SelectInput key='class' id='class' value={this.state.data.class} options={this.state.classes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
       <SelectInput key='ipam_network_id' id='ipam_network_id' label='Network' value={this.state.data.ipam_network_id} options={this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))} onChange={this.onChange} />
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
       <TextInput key='ip' id='ip' label='IP' value={this.state.data.ip} onChange={this.onChange} />
       <TextInput key='mac' id='mac' label='MAC' value={this.state.data.mac} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <StartButton key='dn_btn_start' onClick={() => this.addDevice()} />
      <SearchButton key='dn_btn_search' onClick={() => this.searchIP()} />
      <Result key='dn_result' result={this.state.result} />
@@ -395,10 +415,10 @@ class Discover extends Component {
     <Fragment key='dd_fragment'>
      <article className="info">
       <h1>Device Discovery</h1>
-      <InfoCol2 key='dd_content'>
+      <InfoColumns key='dd_content'>
        <SelectInput key='ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} options={this.state.networks.map(row => ({value:row.id, text:`${row.netasc} (${row.description})`}))} onChange={this.onChange} />
        <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} options={this.state.domains.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
-      </InfoCol2>
+      </InfoColumns>
       <StartButton key='dd_btn_start' onClick={() => this.changeContent(<DiscoverRun key={'dd_run_' + this.state.ipam_network_id} ipam_network_id={this.state.ipam_network_id} a_domain_id={this.state.a_domain_id} />)} />
      </article>
      <NavBar key='dd_navigation' id='dd_navigation' />
@@ -523,12 +543,12 @@ export class ModelInfo extends Component {
    return (
     <article className='info'>
      <h1>Device Model</h1>
-     <InfoCol2 key='dm_content'>
+     <InfoColumns key='dm_content'>
       <TextLine key='name' id='name' text={this.state.data.name} />
       <TextLine key='type' id='type' text={this.state.extra.type} />
       <TextInput key='defaults_file' id='defaults_file' label='Default File' value={this.state.data.defaults_file} onChange={this.onChange} />
       <TextInput key='image_file' id='image_file' label='Image  File' value={this.state.data.image_file} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <label htmlFor='parameters'>Parameters:</label>
      <textarea id='parameters' name='parameters' onChange={this.onChange} value={this.state.data.parameters} />
      <SaveButton key='dm_btn_save' onClick={() => this.updateInfo('api/device/model_info')} />

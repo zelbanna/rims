@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { rest_call } from  './infra/Functions.js';
 import Library from './infra/Mapper.js'
-import { InfoCol2, RimsContext } from './infra/Generic.js';
+import { InfoColumns, RimsContext } from './infra/UI.jsx';
 import { TextInput, PasswordInput } from './infra/Inputs.jsx';
 import { MenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
@@ -110,10 +110,10 @@ class Login extends Component {
    <div className='login'>
     <article className='login'>
      <h1 className='centered'>{this.state.message}</h1>
-     <InfoCol2 className={'left'}>
+     <InfoColumns className='left'>
       <TextInput key='username' id='username' onChange={this.onChange} />
       <PasswordInput key='password' id='password' onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <MenuButton icon='images/icon-start.png' title='Start' onClick={this.handleSubmit}/>
     </article>
    </div>

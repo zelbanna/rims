@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call} from './infra/Functions.js';
-import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/Generic.js';
+import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
 
 import { LogShow, List as NodeList } from './Node.jsx';

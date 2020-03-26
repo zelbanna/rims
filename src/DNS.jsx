@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd,  } from './infra/Functions.js';
-import { RimsContext, Spinner, InfoCol2, TableHead, TableRow, ContentList, ContentData, ContentReport, Result } from './infra/Generic.js';
+import { RimsContext, Spinner, InfoColumns, TableHead, TableRow, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, DocButton, InfoButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
 
@@ -97,7 +97,7 @@ class DomainInfo extends Component {
    return (
     <article className='info'>
      <h1>Domain Info</h1>
-     <InfoCol2 key='domain_content'>
+     <InfoColumns key='domain_content'>
       {old && <TextLine key='node' id='node' text={this.state.infra.node} />}
       {old && <TextLine key='service' id='service' text={this.state.infra.service} />}
       {old && <TextLine key='foreign_id' id='foreign_id' label='Foreign ID' text={this.state.infra.foreign_id} />}
@@ -106,7 +106,7 @@ class DomainInfo extends Component {
       <TextInput key='master' id='master' value={this.state.data.master} onChange={this.onChange} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} />
       <TextInput key='notified_serial' id='notified_serial' label='Notified Serial' value={this.state.data.notified_serial} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='domain_save' onClick={() => this.updateInfo('api/dns/domain_info')} />
     </article>
    );
@@ -219,12 +219,12 @@ class RecordInfo extends Component {
    return (
     <article className='info'>
      <h1>Record Info</h1>
-     <InfoCol2 key='record_content'>
+     <InfoColumns key='record_content'>
       <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' onChange={this.onChange} />
       <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' onChange={this.onChange} />
       <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} onChange={this.onChange} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder={'A, PTR or CNAME typically'} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='record_save' onClick={() => this.updateInfo('api/dns/record_info')} />
      <Result key='record_result' result={this.state.hasOwnProperty('info') ? `${this.state.status} ${this.state.info}` : this.state.status} />
     </article>

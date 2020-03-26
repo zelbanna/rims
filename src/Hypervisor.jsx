@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { StateMap, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
+import { StateMap, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { InfoButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 
 import { Logs as DeviceLogs } from './Device.jsx';

@@ -5,6 +5,7 @@ __build__ = 219
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
+from sys import stdout
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
@@ -592,8 +593,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:  args = {}
   except: args = {}
   if self._ctx.config['logging']['rest']['enabled'] and self.headers.get('X-Log','true') == 'true':
-   with open(self._ctx.config['logging']['rest']['file'], 'a') as f:
-    f.write(str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", self._ctx.node, get.strip())))
+   logstring = str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", self._ctx.node, get.strip()))
+   if self._ctx.config['logging']['rest']['enabled'] == 'debug':
+    stdout.write(logstring)
+   else:
+    with open(self._ctx.config['logging']['rest']['file'], 'a') as f:
+     f.write(logstring)
   try:
    if self._headers['X-Route'] == self._ctx.node:
     module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)

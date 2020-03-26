@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import {Spinner, InfoCol2, ContentList, ContentData } from './infra/Generic.js';
+import {Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.js';
 import { TextInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
@@ -73,11 +73,11 @@ class Info extends Component {
    <Fragment key='node_info_fragment'>
     <article className='info'>
      <h1>Node Info</h1>
-     <InfoCol2 key='node_content'>
+     <InfoColumns key='node_content'>
       <TextInput key='node' id='node' value={this.state.data.node} onChange={this.onChange} />
       <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='ni_btn_save' onClick={() => this.updateInfo('api/master/node_info')} />
      {old && !this.state.data.hostname && <SearchButton key='ni_btn_srch' onClick={this.searchInfo} />}
      {old && <ReloadButton key='ni_btn_reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) } />}

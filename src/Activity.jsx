@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
-import { InfoCol2, Spinner, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
+import { InfoColumns, Spinner, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, TimeInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 
@@ -87,12 +87,12 @@ class Info extends Component {
    return (
     <article className='info'>
      <h1>Activity</h1>
-     <InfoCol2 key='activity_content'>
+     <InfoColumns key='activity_content'>
       <SelectInput key='user_id' id='user_id' label='User' value={this.state.data.user_id} options={this.state.users.map(row => ({value:row.id, text:row.alias}))} onChange={this.onChange} />
       <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} options={this.state.types.map(row => ({value:row.id, text:row.type}))} onChange={this.onChange} />
       <DateInput key='date' id='date' value={this.state.data.date} onChange={this.onChange} />
       <TimeInput key='time' id='time' value={this.state.data.time} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <label htmlFor='event'>Info</label><textarea id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
      <SaveButton key='activity_save' onClick={() => this.updateInfo('api/master/activity_info')} />
     </article>
@@ -182,9 +182,9 @@ class TypeInfo extends Component {
    return (
     <article className='info'>
      <h1>Activity Type</h1>
-     <InfoCol2 key='activity_type_content'>
+     <InfoColumns key='activity_type_content'>
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='activity_type_save' onClick={() => this.updateInfo('api/master/activity_type_info')} />
     </article>
    );

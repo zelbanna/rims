@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, RimsContext, ContentList, ContentData } from './infra/Generic.js';
+import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, ViewButton, TextButton, UiButton } from './infra/Buttons.jsx';
 
@@ -80,14 +80,14 @@ class Info extends Component {
    return (
     <article className='info'>
      <h1>Rack Info</h1>
-     <InfoCol2 key='rack_content'>
+     <InfoColumns key='rack_content'>
       <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
       <TextInput key='size' id='size' value={this.state.data.size} onChange={this.onChange} />
       <SelectInput key='console' id='console' value={this.state.data.console} options={this.state.consoles.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
       <SelectInput key='location_id' id='location_id' label='Location' value={this.state.data.location_id} options={this.state.locations.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
       <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
       <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='ri_btn_save' onClick={() => this.updateInfo('api/rack/info')} />
     </article>
    )

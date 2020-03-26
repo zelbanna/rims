@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
+import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, TextButton } from './infra/Buttons.jsx';
 import { List as LocationList } from './Location.jsx'
@@ -118,7 +118,7 @@ onChange = (e) => {
    return (
     <article className='info'>
      <h1>Inventory Item</h1>
-     <InfoCol2 key='inventory_content'>
+     <InfoColumns key='inventory_content'>
       <TextInput key='vendor' id='vendor' value={data.vendor} onChange={this.onChange} />
       <TextInput key='serial' id='serial' label='S/N' value={data.serial} onChange={this.onChange} />
       <TextInput key='product' id='product' value={data.product} onChange={this.onChange} />
@@ -132,7 +132,7 @@ onChange = (e) => {
       {(data.license && <TextInput key='license_key' id='license_key' label='Key' value={data.license_key} onChange={this.onChange} />)}
       <CheckboxInput key='support_contract' id='support_contract' value={data.support_contract} onChange={this.onChange} />
       {(data.support_contract && <DateInput key='support_end_date' id='support_end_date' label='Contract End' value={data.support_end_date} onChange={this.onChange} />)}
-     </InfoCol2>
+     </InfoColumns>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
      <SaveButton key='inv_btn_save' onClick={() => this.updateInfo('api/inventory/info') } />
     </article>

@@ -1,21 +1,23 @@
 import React, { Fragment } from 'react';
-import { StateMap } from './Generic.js';
+import { StateMap } from './UI.jsx';
 
 const auto_label = (props) => (props.label) ? props.label : props.id.charAt(0).toUpperCase() + props.id.substring(1);
-const input_template = (type,props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} title={props.title} className={props.className}>{auto_label(props)}:</label><input type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} /></Fragment>
 
+const input_template = (type,props) =>   <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className={props.className}>{auto_label(props)}:</label><input type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} /></Fragment>
+const line_template = (content,props) => <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className={props.className}>{auto_label(props)}:</label>{content}</Fragment>
 //
 // Display Only
 //
-export const TextLine = (props) =>  <Fragment key={'fragline_'+props.id}><label htmlFor={props.id} title={props.title}>{auto_label(props)}:</label><span id={props.id} style={props.style} title={props.extra}>{props.text}</span></Fragment>
-export const StateLine = (props) => <Fragment key={'fragline_'+props.id}><label htmlFor={props.id} title={props.title}>{auto_label(props)}:</label>{ (Array.isArray(props.state)) ? <div key={'state_line_multi_' + props.id} className='states'>{props.state.map((val,idx) => <StateMap key={'state_line_state_' + props.id + '_' + idx} state={val} />)}</div> : <StateMap key={'state_line_state_' + props.id} state={props.state} /> }</Fragment>
-export const DivLine = (props) =>   <Fragment key={'fragline_'+props.id}><label htmlFor={props.id} title={props.title}>{auto_label(props)}:</label><div id={props.id} style={props.style} title={props.extra}>{props.content}</div></Fragment>
+export const ButtonLine = (props) => line_template(props.button,props);
+export const TextLine = (props) =>  line_template(<span id={props.id} style={props.style} title={props.extra}>{props.text}</span>,props);
+export const StateLine = (props) => line_template((Array.isArray(props.state)) ? <div key={'state_line_multi_' + props.id} className='states'>{props.state.map((val,idx) => <StateMap key={'state_line_state_' + props.id + '_' + idx} state={val} />)}</div> : <StateMap key={'state_line_state_' + props.id} state={props.state} />,props);
+export const DivLine = (props) =>   line_template(<div id={props.id} style={props.style} title={props.extra}>{props.content}</div>,props);
 //
 // Inputs
 //
 export const SelectInput = (props) => {
  if ((props.value === null || props.value === undefined) && props.options.find(opt => opt.value === 'NULL') === undefined)
-  props.options.push({value:"NULL",text:"<Empty>"})
+  props.options.push({value:"NULL",text:"<Empty>"});
  return <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} title={props.title}>{auto_label(props)}:</label><select name={props.id} onChange={props.onChange} value={(props.value !== null && props.value !== undefined) ? props.value : "NULL"}>{ props.options.map((opt,index) => <option key={'select_input_option_' + props.id + '_'+ index} value={opt.value}>{opt.text}</option>) }</select></Fragment>
 }
 

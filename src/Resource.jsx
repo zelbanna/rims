@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { MenuButton } from './infra/Buttons.jsx';
-import { RimsContext } from './infra/Generic.js';
+import { RimsContext } from './infra/UI.jsx';
 
 // CONVERTED ENTIRELY
 

@@ -13,7 +13,10 @@ export const SearchField = (props) => <input type='text' className='searchfield'
 
 export const Result = (props) => <span className='results'>{props.result}</span>
 
-export const InfoCol2 = (props) => <div className={('className' in props) ? 'info col2 ' + props.className : 'info col2'} style={props.style}>{props.children}</div>
+export const InfoColumns = (props) => <div className={'info col' + props.columns + (('className' in props) ? ' ' + props.className : '')}>{props.children}</div>
+InfoColumns.defaultProps = {columns:2};
+
+export const InfoArticle = (props) => <article className='info'>{props.children}</article>
 
 // ***************************** Table ********************************
 
@@ -33,11 +36,11 @@ const content = (type,props) => {
   return <article className={(props.hasOwnProperty('articleClass')) ? props.articleClass : type}>
     <h1>{props.header}</h1>
     {props.children}
-    <span className='results'>{props.result}</span>
+    <Result key='con_result' result={props.result} />
     <div className={(props.hasOwnProperty('tableClass')) ? props.tableClass : 'table'}>
-     <TableHead key={'content_thead'} headers={props.thead} />
+     <TableHead key={'con_thead'} headers={props.thead} />
      <div className='tbody'>
-      {props.trows.map((row,index) => <TableRow key={'content_trow_'+index} cells={props.listItem(row)} /> )}
+      {props.trows.map((row,index) => <TableRow key={'tr_'+index} cells={props.listItem(row)} /> )}
      </div>
     </div>
    </article>

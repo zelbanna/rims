@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, RimsContext, ContentList, ContentData } from './infra/Generic.js';
+import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput, PasswordInput, SelectInput } from './infra/Inputs.jsx';
 
@@ -69,13 +69,13 @@ export class Info extends Component {
    return (
     <article className='info'>
      <h1>User Info</h1>
-     <InfoCol2 key='ui_content'>
+     <InfoColumns key='ui_content'>
       <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
       <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
       <SelectInput key='theme' id='theme' value={this.state.data.theme} options={this.state.themes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='ui_btn_save' onClick={() => this.updateInfo('api/master/user_info') } />
     </article>
    );

@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, ContentList, ContentData } from './infra/Generic.js';
+import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 
@@ -67,9 +67,9 @@ class Info extends Component {
    return (
     <article className='info'>
      <h1>Location</h1>
-     <InfoCol2 key='loc_content'>
+     <InfoColumns key='loc_content'>
      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='loc_btn_save' onClick={() => this.updateInfo('api/location/info')} />
     </article>
    );

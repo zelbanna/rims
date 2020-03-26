@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoCol2, ContentList, ContentData } from './infra/Generic.js';
+import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar }   from './infra/Navigation.js';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, SyncButton, UiButton } from './infra/Buttons.jsx';
@@ -73,12 +73,12 @@ class Info extends Component {
     <Fragment key='si_info_fragment'>
     <article className='info'>
      <h1>Server Info</h1>
-     <InfoCol2 key='si_content'>
+     <InfoColumns key='si_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
       <SelectInput key='node' id='node' value={this.state.data.node} options={this.state.nodes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
       <SelectInput key='type_id' id='type_id' label='Service'  value={this.state.data.type_id} options={this.state.services.map(row => ({value:row, text:`${row.service} (${row.type})`}))} onChange={this.onChange} />
       <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='si_btn_save' onClick={() => this.updateInfo('api/master/server_info')} />
      {old && <SyncButton key='si_sync' onClick={() => {      this.changeContent(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />) }} />}
      {old && <ReloadButton key='si_restart' onClick={() => { this.changeContent(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />) }} />}

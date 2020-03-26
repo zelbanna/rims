@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
-import { Spinner, InfoCol2, RimsContext, ContentList, ContentData, ContentReport } from './infra/Generic.js';
+import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, TextButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 
@@ -81,13 +81,13 @@ class Info extends Component {
    return (
     <article className='info'>
      <h1>Reservation</h1>
-     <InfoCol2 key={'reservation_content'}>
+     <InfoColumns key='reservation_content'>
       <TextLine key='alias' id='alias' text={this.state.data.alias} />
       <TextLine key='time_start' id='Start' text={this.state.data.time_start} />
       <TextLine key='time_end' id='End' text={this.state.data.time_end} />
       <RadioInput key='shutdown' id='shutdown' value={this.state.data.shutdown} options={[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]} onChange={this.onChange} />
       <TextInput key='info' id='info' value={this.state.data.info} onChange={this.onChange} />
-     </InfoCol2>
+     </InfoColumns>
      <SaveButton key='rsv_btn_save' onClick={() => this.updateInfo('api/reservation/info')} />
     </article>
    );
