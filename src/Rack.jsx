@@ -5,6 +5,7 @@ import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, ViewButton, LinkButton, UiButton } from './infra/Buttons.jsx';
 
 import { Main as DeviceMain, Info as DeviceInfo } from './Device.jsx';
+import { Info as LocationInfo } from './Location.jsx';
 
 // *************** Main ***************
 //
@@ -33,7 +34,7 @@ export class List extends Component {
   rest_call('api/rack/list',{sort:"name"}).then(result => this.setState(result))
  }
 
- listItem = (row) => [row.location,row.name,<Fragment key='rack_list_buttons'>
+ listItem = (row) => [<LinkButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>
    <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} />
    <ViewButton key={'rl_btn_view_'+row.id} onClick={() => this.context.changeMain({content:<DeviceMain key={'Device_Main_'+row.id} rack_id={row.id} />})} />
    <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Inventory key={'rack_inventory_'+row.id} id={row.id} />)} />
@@ -79,7 +80,7 @@ class Info extends Component {
   if (this.state.data)
    return (
     <article className='info'>
-     <h1>Rack Info</h1>
+     <h1>Rack</h1>
      <InfoColumns key='rack_content'>
       <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
       <TextInput key='size' id='size' value={this.state.data.size} onChange={this.onChange} />

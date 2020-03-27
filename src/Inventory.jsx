@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { Spinner, SearchField, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, LinkButton } from './infra/Buttons.jsx';
 import { List as LocationList } from './Location.jsx'
@@ -34,7 +34,7 @@ Main.contextType = RimsContext;
 class List extends Component {
  constructor(props){
   super(props)
-  this.state = {}
+  this.state = {searchfield:''}
  }
 
  componentDidMount(){
@@ -46,17 +46,24 @@ class List extends Component {
    <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList('api/inventory/delete',row.id,'Really delete item') } />
   </Fragment>]
 
+ searchHandler = (e) => this.setState({searchfield:e.target.value})
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='inv_fragment'>
-   <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-    <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'domain_new_' + rnd()} id='new' />) } />
-   </ContentList>
-   <ContentData key='inv_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  if (!this.state.data)
+   return <Spinner />
+  else {
+   let inv_list = this.state.data.filter(row => (row.model.includes(this.state.searchfield) || row.serial.includes(this.state.searchfield)));
+   return <Fragment key='inv_fragment'>
+    <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
+     <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
+     <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'domain_new_' + rnd()} id='new' />) } />
+     <SearchField key='dl_searchfield' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search inventory' />
+    </ContentList>
+    <ContentData key='inv_cd'>{this.state.content}</ContentData>
+   </Fragment>
+  }
  }
 }
 

@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
-import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput, PasswordInput, SelectInput } from './infra/Inputs.jsx';
 
 // CONVERTED ENTIRELY
@@ -19,7 +19,7 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'ul_buttons_'+row.id}>
-   <InfoButton key={'ul_btn_info_'+row.id}  onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
+   <ConfigureButton key={'ul_btn_info_'+row.id}  onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
    <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
   </Fragment>]
 
@@ -68,7 +68,7 @@ export class Info extends Component {
   else if (this.state.data && this.state.themes){
    return (
     <article className='info'>
-     <h1>User Info</h1>
+     <h1>User</h1>
      <InfoColumns key='ui_content'>
       <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />

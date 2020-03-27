@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { ContentData, ContentList, Result } from './infra/UI.jsx';
 import { TextInput } from './infra/Inputs.jsx'
-import { DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
+import { BackButton, DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
 
 import { DataSet, Network } from 'vis';
 import { Info as DeviceInfo } from './Device.jsx';
@@ -170,6 +170,7 @@ export class Edit extends Component {
   return(
    <article className='network'>
     <h1>Network Map</h1>
+    {(this.props.type === 'device') && (this.props.changeSelf) && <BackButton key='viz_back' onClick={() => this.props.changeSelf(<DeviceInfo key={'di_'+this.props.id} id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
     <ReloadButton key='viz_reload' onClick={() => this.componentDidMount()} />
     <EditButton key='viz_edit' onClick={() => this.toggleEdit()} />
     <PhysicsButton key='viz_physics' onClick={() => this.togglePhysics()} />

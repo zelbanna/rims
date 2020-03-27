@@ -11,77 +11,8 @@
 .red {    background-color:#CB2026!important; }
 .green {  background-color:#26CB20!important; }
 .blue {   background-color:#2026CB!important; }
-.orange { background-color:orange!important;  }
-.white {  background-color:#FFFFFF!important; }
-.grey {   background-color:#9CA6B0!important; }
 
 /*###################################### Info Buttons ########################################*/
 
 nav button.reload {                                background-image: url(/images/btn-nav-reload.black.png); }
 nav button.reload:hover, nav button.reload:focus { background-image: url(/images/btn-nav-reload.black.hover.png); }
-
-button.type-add {       width:22px; background-image: url(/images/btn-add.black.png); }
-button.type-analyze {   width:22px; background-image: url(/images/btn-analyze.black.png); }
-button.type-back {      width:22px; background-image: url(/images/btn-back.black.png); }
-button.type-configure { width:22px; background-image: url(/images/btn-configure.black.png); }
-button.type-connections { width:22px; background-image: url(/images/btn-connections.black.png); }
-button.type-delete {    width:22px; background-image: url(/images/btn-delete.black.png); }
-button.type-devices {   width:22px; background-image: url(/images/btn-devices.black.png); }
-button.type-document {  width:22px; background-image: url(/images/btn-document.black.png); }
-button.type-edit {      width:22px; background-image: url(/images/btn-edit.black.png); }
-button.type-fix {       width:22px; background-image: url(/images/btn-fix.black.png); }
-button.type-forward {   width:22px; background-image: url(/images/btn-forward.black.png); }
-button.type-help {      width:22px; background-image: url(/images/btn-help.black.png); }
-button.type-info {      width:22px; background-image: url(/images/btn-info.black.png); }
-button.type-items {     width:22px; background-image: url(/images/btn-items.black.png); }
-button.type-load {      width:22px; background-image: url(/images/btn-load.black.png); }
-button.type-logs {      width:22px; background-image: url(/images/btn-logs.black.png); }
-button.type-network {   width:22px; background-image: url(/images/btn-network.black.png); }
-button.type-off {       width:22px; background-image: url(/images/btn-off.black.png); }
-button.type-reload {    width:22px; background-image: url(/images/btn-reload.black.png); }
-button.type-revert {    width:22px; background-image: url(/images/btn-revert.black.png); }
-button.type-save {      width:22px; background-image: url(/images/btn-save.black.png); }
-button.type-search {    width:22px; background-image: url(/images/btn-search.black.png); }
-button.type-show {      width:22px; background-image: url(/images/btn-show.black.png); }
-button.type-snapshot {  width:22px; background-image: url(/images/btn-snapshot.black.png); }
-button.type-start {     width:22px; background-image: url(/images/btn-start.black.png); }
-button.type-stop {      width:22px; background-image: url(/images/btn-stop.black.png); }
-button.type-suspend {   width:22px; background-image: url(/images/btn-suspend.black.png); }
-button.type-sync {      width:22px; background-image: url(/images/btn-sync.black.png); }
-button.type-term-frame {width:22px; background-image: url(/images/btn-term-frame.black.png); }
-button.type-term {      width:22px; background-image: url(/images/btn-term.black.png); }
-button.type-trash {     width:22px; background-image: url(/images/btn-trash.black.png); }
-button.type-ui {        width:22px; background-image: url(/images/btn-ui.black.png); }
-
-button.type-add:hover, button.type-add:focus {                 background-image: url(/images/btn-add.black.hover.png); }
-button.type-analyze:hover, button.type-analyze:focus {         background-image: url(/images/btn-analyze.black.hover.png); }
-button.type-back:hover, button.type-back:focus {               background-image: url(/images/btn-back.black.hover.png); }
-button.type-configure:hover, button.type-configure:focus {     background-image: url(/images/btn-configure.black.hover.png); }
-button.type-connections:hover, button.type-connections:focus { background-image: url(/images/btn-connections.black.hover.png); }
-button.type-delete:hover, button.type-delete:focus {           background-image: url(/images/btn-delete.black.hover.png); }
-button.type-devices:hover, button.type-devices:focus {         background-image: url(/images/btn-devices.black.hover.png); }
-button.type-document:hover, button.type-document:focus {       background-image: url(/images/btn-document.black.hover.png); }
-button.type-edit:hover, button.type-edit:focus {               background-image: url(/images/btn-edit.black.hover.png); }
-button.type-fix:hover, button.type-fix:focus {                 background-image: url(/images/btn-fix.black.hover.png); }
-button.type-forward:hover, button.type-forward:focus {         background-image: url(/images/btn-forward.black.hover.png); }
-button.type-help:hover, button.type-help:focus {               background-image: url(/images/btn-help.black.hover.png); }
-button.type-info:hover, button.type-info:focus {               background-image: url(/images/btn-info.black.hover.png); }
-button.type-items:hover, button.type-items:focus {             background-image: url(/images/btn-items.black.hover.png); }
-button.type-load:hover, button.type-load:focus {               background-image: url(/images/btn-load.black.hover.png); }
-button.type-logs:hover, button.type-logs:focus {               background-image: url(/images/btn-logs.black.hover.png); }
-button.type-network:hover, button.type-network:focus {         background-image: url(/images/btn-network.black.hover.png); }
-button.type-off:hover, button.type-off:focus {                 background-image: url(/images/btn-off.black.hover.png); }
-button.type-reload:hover, button.type-reload:focus {           background-image: url(/images/btn-reload.black.hover.png); }
-button.type-revert:hover, button.type-revert:focus {           background-image: url(/images/btn-revert.black.hover.png); }
-button.type-save:hover, button.type-save:focus {               background-image: url(/images/btn-save.black.hover.png); }
-button.type-search:hover, button.type-search:focus {           background-image: url(/images/btn-search.black.hover.png); }
-button.type-show:hover, button.type-show:focus {               background-image: url(/images/btn-show.black.hover.png); }
-button.type-snapshot:hover, button.type-snapshot:focus {       background-image: url(/images/btn-snapshot.black.hover.png); }
-button.type-start:hover, button.type-start:focus {             opacity:0.7; }
-button.type-stop:hover, button.type-stop:focus {               opacity:0.7; }
-button.type-suspend:hover, button.type-suspend:focus {         background-image: url(/images/btn-suspend.black.hover.png); }
-button.type-sync:hover, button.type-sync:focus {               background-image: url(/images/btn-sync.black.hover.png); }
-button.type-term-frame:hover, button.type-term-frame:focus {   background-image: url(/images/btn-term-frame.black.hover.png); }
-button.type-term:hover, button.type-term:focus {               background-image: url(/images/btn-term.black.hover.png); }
-button.type-trash:hover, button.type-trash:focus {             background-image: url(/images/btn-trash.black.hover.png); }
-button.type-ui:hover, button.type-ui:focus {                   background-image: url(/images/btn-ui.black.hover.png); }

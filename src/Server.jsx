@@ -72,7 +72,7 @@ class Info extends Component {
    return (
     <Fragment key='si_info_fragment'>
     <article className='info'>
-     <h1>Server Info</h1>
+     <h1>Server</h1>
      <InfoColumns key='si_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
       <SelectInput key='node' id='node' value={this.state.data.node} options={this.state.nodes.map(row => ({value:row, text:row}))} onChange={this.onChange} />

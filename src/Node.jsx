@@ -72,7 +72,7 @@ class Info extends Component {
    return (
    <Fragment key='node_info_fragment'>
     <article className='info'>
-     <h1>Node Info</h1>
+     <h1>Node</h1>
      <InfoColumns key='node_content'>
       <TextInput key='node' id='node' value={this.state.data.node} onChange={this.onChange} />
       <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />

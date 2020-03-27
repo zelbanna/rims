@@ -15,7 +15,7 @@ def list(aCTX, aArgs = None):
  ret = {}
  sort = aArgs.get('sort','racks.id')
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT racks.id, racks.name, racks.size, locations.name AS location FROM racks LEFT JOIN locations ON racks.location_id = locations.id ORDER BY %s"%sort)
+  ret['count'] = db.do("SELECT racks.id, racks.name, racks.size, locations.name AS location, locations.id AS location_id FROM racks LEFT JOIN locations ON racks.location_id = locations.id ORDER BY %s"%sort)
   ret['data'] = db.get_rows()
  return ret
 

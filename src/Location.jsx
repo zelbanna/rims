@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
-import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 
 // CONVERTED ENTIRELY
@@ -22,7 +22,7 @@ constructor(props){
  deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  listItem = (row) => [row.id,row.name,<Fragment key={'location_buttons_'+row.id}>
-   <InfoButton key={'loc_btn_info_'+row.id} onClick={() => { this.changeContent(<Info key={'location_'+row.id} id={row.id} />) }} />
+   <ConfigureButton key={'loc_btn_info_'+row.id} onClick={() => { this.changeContent(<Info key={'location_'+row.id} id={row.id} />) }} />
    <DeleteButton key={'loc_btn_delete_'+row.id} onClick={() => { this.deleteList('api/location/delete',row.id,'Really delete location') }} />
    </Fragment>
   ]
@@ -40,7 +40,7 @@ constructor(props){
 
 // *************** Info ***************
 //
-class Info extends Component {
+export class Info extends Component {
  constructor(props){
   super(props);
   this.state = {data:null, found:true};

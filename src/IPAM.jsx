@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react'
 import { rest_call, rnd, int2ip } from './infra/Functions.js';
 import { Spinner, InfoColumns, StateMap, Result, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, DevicesButton, DocButton, InfoButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { Info as DeviceInfo, New as DeviceNew } from './Device.jsx';
 
 // CONVERTED ENTIRELY
@@ -36,9 +36,9 @@ export class NetworkList extends Component {
  }
 
  listItem = (row) => [row.id,row.netasc,row.description,row.service,<Fragment key={'network_buttons_'+row.id}>
-   <InfoButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />) } />
+   <ConfigureButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />) } />
    <ItemsButton key={'net_btn_items_'+row.id} onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
-   <DevicesButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
+   <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
    <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList('api/ipam/network_delete',row.id,'Really delete network') } />
   </Fragment>
  ]
@@ -51,7 +51,7 @@ export class NetworkList extends Component {
    <ContentList key='nl_cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='nl_btn_reload'  onClick={() => this.componentDidMount() } />
     <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_' + rnd()} id='new' />) } />
-    <DocButton key='nl_btn_doc' onClick={() => this.changeContent(<Leases key='network_leases' />)} />
+    <LogButton key='nl_btn_doc' onClick={() => this.changeContent(<Leases key='network_leases' />)} />
    </ContentList>
    <ContentData key='nl_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -84,7 +84,7 @@ class NetworkInfo extends Component {
   if (this.state.data)
    return (
     <article className='info'>
-     <h1>Network Info</h1>
+     <h1>Network</h1>
      <InfoColumns key='network_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
       <TextInput key='description' id='description'  value={this.state.data.description} onChange={this.onChange} />
@@ -164,7 +164,7 @@ class AddressList extends Component{
  }
 
  listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,StateMap({state:row.state}),<Fragment key={'ip_button_'+row.id}>
-   <InfoButton key={'al_btn_info'+row.id} onClick={() => this.props.changeSelf(<AddressInfo id={row.id} />)} />
+   <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.props.changeSelf(<AddressInfo id={row.id} />)} />
    <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList('api/ipam/address_delete',row.id,'Really delete address?')} />
   </Fragment>]
 

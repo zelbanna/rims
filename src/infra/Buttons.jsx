@@ -6,28 +6,32 @@ export const LinkButton = (props) => <button id={props.id} className='text' styl
 
 export const TextButton = (props) => <button id={props.id} className='text info' onClick={props.onClick} title={props.title}>{props.text}</button>
 
-const button_template = (type,props) => <button id={props.id} className={`info type-${type}`} onClick={props.onClick} title={props.title}/>
+const button_awesome = (type,props) => <button id={props.id} className={'info proper ' + type} onClick={props.onClick} title={props.title}/>
 
-// *********************** Button Types ************************* 
+// *********************** Button Types *************************
 
-export const AddButton = (props) => button_template('add',props);
-export const ConnectionButton = (props) => button_template('connections',props);
-export const DeleteButton = (props) => button_template('delete',props);
-export const DevicesButton = (props) => button_template('devices',props);
-export const DocButton = (props) => button_template('document',props);
-export const EditButton = (props) => button_template('edit',props);
-export const FixButton = (props) => button_template('fix',props);
-export const ViewButton = (props) => button_template('forward',props);
-export const InfoButton = (props) => button_template('info',props);
-export const ItemsButton = (props) => button_template('items',props);
-export const LogButton = (props) => button_template('logs',props);
-export const NetworkButton = (props) => button_template('network',props);
-export const ReloadButton = (props) => button_template('reload',props);
-export const SaveButton = (props) => button_template('save',props);
-export const SearchButton = (props) => button_template('search',props);
-export const ShutdownButton = (props) => button_template('off',props);
-export const StartButton = (props) => button_template('start',props);
-export const StopButton = (props) => button_template('stop',props);
-export const SyncButton = (props) => button_template('sync',props);
-export const TermButton = (props) => button_template('term',props);
-export const UiButton = (props) => button_template('ui',props);
+export const LogButton = (props) => <button id={props.id} className='info proper far fa-file-alt' onClick={props.onClick} title={props.title} />
+
+export const AddButton = (props) => button_awesome('fas fa-plus',props);
+export const BackButton = (props) => button_awesome('fas fa-arrow-left',props);
+export const CheckButton = (props) => button_awesome('fas fa-tasks',props);
+export const ConfigureButton = (props) => button_awesome('fas fa-cogs',props);
+export const ConnectionButton = (props) => button_awesome('fas fa-arrows-alt',props);
+export const DeleteButton = (props) => button_awesome('fas fa-trash-alt',props);
+export const DevicesButton = (props) => button_awesome('fas fa-network-wired',props);
+export const DocButton = (props) => button_awesome('fas fa-clipboard-list',props);
+export const EditButton = (props) => button_awesome('far fa-edit',props);
+export const FixButton = (props) => button_awesome('fas fa-thumbtack',props);
+export const InfoButton = (props) => button_awesome('fas fa-info',props);
+export const ItemsButton = (props) => button_awesome('fas fa-list-ul',props);
+export const NetworkButton = (props) => button_awesome('fas fa-share-alt',props);
+export const ReloadButton = (props) => button_awesome('fas fa-redo-alt',props);
+export const SaveButton = (props) => button_awesome('fas fa-download',props);
+export const SearchButton = (props) => button_awesome('fas fa-search',props);
+export const ShutdownButton = (props) => button_awesome('fas fa-power-off',props);
+export const StartButton = (props) => button_awesome('fas fa-play',props);
+export const StopButton = (props) => button_awesome('fas fa-stop',props);
+export const SyncButton = (props) => button_awesome('fas fa-exchange-alt',props);
+export const TermButton = (props) => button_awesome('fas fa-terminal',props);
+export const UiButton = (props) => button_awesome('fas fa-globe',props);
+export const ViewButton = (props) => button_awesome('fas fa-search-plus',props);

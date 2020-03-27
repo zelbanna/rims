@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.js'
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
-import { AddButton, ConnectionButton, DeleteButton, DevicesButton, DocButton, EditButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, LinkButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, LinkButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as ReservationList } from './Reservation.jsx';
 import { List as LocationList } from './Location.jsx';
@@ -206,7 +206,7 @@ export class Info extends Component {
    return (
     <Fragment key='di_fragment'>
      <article className='info'>
-     <h1>Device Info</h1>
+     <h1>Device</h1>
      <InfoColumns key='di_info' className='left'>
       <TextLine key='hostname' id='hostname' text={this.state.data.hostname} />
       <TextInput key='mac' id='mac' label='Sys Mac' value={this.state.data.mac} title='System MAC' onChange={this.onChange} />
@@ -244,8 +244,8 @@ export class Info extends Component {
      <SaveButton key='di_btn_save' onClick={() => this.updateInfo('api/device/info')} />
      <ConnectionButton key='di_btn_conn' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />
      <StartButton key='di_btn_cont' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />
-     <DocButton key='di_btn_conf' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
-     {change_self && <EditButton key='di_btn_edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
+     <CheckButton key='di_btn_conf' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
+     {change_self && <ConfigureButton key='di_btn_conf' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
      {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
      {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} />}
      {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />}
@@ -500,7 +500,7 @@ class ModelList extends Component {
  }
 
  listItem = (row) => [row.id,row.name,row.type,<Fragment key={'ml_' + row.id}>
-  <InfoButton key={'ml_btn_info_' + row.id} onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
+  <ConfigureButton key={'ml_btn_info_' + row.id} onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
   <DeleteButton key={'ml_btn_delete_' + row.id}  onClick={() => this.deleteList('api/device/model_delete',row.id,'Really delete model?') } />
  </Fragment>]
 

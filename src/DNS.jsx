@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react'
 import { rest_call, rnd,  } from './infra/Functions.js';
 import { RimsContext, Spinner, InfoColumns, TableHead, TableRow, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, DocButton, InfoButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -45,7 +45,7 @@ export class DomainList extends Component {
  }
 
  listItem = (row) => [row.id,row.name,row.service,<Fragment key={'domain_buttons_'+row.id}>
-   <InfoButton key={'net_info_'+row.id} onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } />
+   <ConfigureButton key={'net_info_'+row.id} onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } />
    <ItemsButton key={'net_items_'+row.id} onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } />
    <DeleteButton key={'net_delete_'+row.id} onClick={() => this.deleteList('api/dns/domain_delete',row.id,'Really delete domain') } />
    </Fragment>
@@ -60,7 +60,7 @@ export class DomainList extends Component {
     <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount() } />
     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } />
     <SyncButton key='dl_btn_sync' onClick={() => this.syncDomains()} />
-    <DocButton key='dl_btn_document' onClick={() => this.changeContent(<Status key='domain_status' />)} />
+    <LogButton key='dl_btn_document' onClick={() => this.changeContent(<Status key='domain_status' />)} />
    </ContentList>
    <ContentData key='dl_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -96,7 +96,7 @@ class DomainInfo extends Component {
    const old = (this.state.data.id !== "new");
    return (
     <article className='info'>
-     <h1>Domain Info</h1>
+     <h1>Domain</h1>
      <InfoColumns key='domain_content'>
       {old && <TextLine key='node' id='node' text={this.state.infra.node} />}
       {old && <TextLine key='service' id='service' text={this.state.infra.service} />}
@@ -183,7 +183,7 @@ class RecordList extends Component {
  }
 
  listItem = (row) => [row.id,row.name,row.content,row.type,row.ttl,<Fragment key={'rl_buttons_'+row.id}>
-   <InfoButton key={'record_info_btn_' + row.id} onClick={() => this.props.changeSelf(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} />
+   <ConfigureButton key={'record_info_btn_' + row.id} onClick={() => this.props.changeSelf(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} />
    {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + row.id} onClick={() => this.deleteList('api/dns/record_delete',row.id,'Really delete record?')} />}
   </Fragment>]
 
@@ -218,7 +218,7 @@ class RecordInfo extends Component {
   if (this.state.data) {
    return (
     <article className='info'>
-     <h1>Record Info</h1>
+     <h1>Record</h1>
      <InfoColumns key='record_content'>
       <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' onChange={this.onChange} />
       <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' onChange={this.onChange} />

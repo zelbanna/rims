@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { InfoColumns, Spinner, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, TimeInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, ConfigureButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -135,7 +135,7 @@ class TypeList extends Component {
  }
 
  listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
-   <InfoButton key='act_tp_info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
+   <ConfigureButton key='act_tp_info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
    <DeleteButton key='act_tp_delete' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
   </Fragment>
  ]
