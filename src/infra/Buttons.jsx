@@ -6,11 +6,9 @@ export const LinkButton = (props) => <button id={props.id} className='text' styl
 
 export const TextButton = (props) => <button id={props.id} className='text info' onClick={props.onClick} title={props.title}>{props.text}</button>
 
-const button_awesome = (type,props) => <button id={props.id} className={'info proper ' + type} onClick={props.onClick} title={props.title}/>
+const button_awesome = (type,props) => <button id={props.id} className={'info fontawesome'} onClick={props.onClick} title={props.title}><i className={type} /></button>
 
 // *********************** Button Types *************************
-
-export const LogButton = (props) => <button id={props.id} className='info proper far fa-file-alt' onClick={props.onClick} title={props.title} />
 
 export const AddButton = (props) => button_awesome('fas fa-plus',props);
 export const BackButton = (props) => button_awesome('fas fa-arrow-left',props);
@@ -24,6 +22,7 @@ export const EditButton = (props) => button_awesome('far fa-edit',props);
 export const FixButton = (props) => button_awesome('fas fa-thumbtack',props);
 export const InfoButton = (props) => button_awesome('fas fa-info',props);
 export const ItemsButton = (props) => button_awesome('fas fa-list-ul',props);
+export const LogButton = (props) => button_awesome('far fa-file-alt',props);
 export const NetworkButton = (props) => button_awesome('fas fa-share-alt',props);
 export const ReloadButton = (props) => button_awesome('fas fa-redo-alt',props);
 export const SaveButton = (props) => button_awesome('fas fa-download',props);

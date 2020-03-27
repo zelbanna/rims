@@ -114,14 +114,13 @@ class Layout extends Component {
   if (!this.state)
    return <Spinner />
   else {
-   const layout = [<button key={'btn_' + this.state.start_address} className='info ipam blue'>{this.state.start_address}</button>]
-   for (let cnt = 1; cnt < this.state.size; cnt++){
+   const layout = [];
+   for (let cnt = 0; cnt <= this.state.size; cnt++){
     if (this.state.data.hasOwnProperty(this.state.start + cnt))
      layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam red' onClick={() => this.props.changeSelf(<DeviceInfo key={this.state.data[this.state.start + cnt].device_id} id={this.state.data[this.state.start + cnt].device_id} />)} >{cnt%256}</button>)
     else
      layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam green' onClick={() => this.props.changeSelf(<DeviceNew key={this.state.start + cnt} ipam_network_id={this.props.network_id} ip={int2ip(this.state.start + cnt)} />)} >{cnt%256}</button>)
    }
-   layout.push(<button key={'btn_' + (this.state.start + this.state.size - 1)} className='info ipam blue'>{(this.state.start + this.state.size - 1) % 256}</button>)
    return (
     <article>
      <h1>{this.state.network}/{this.state.mask}</h1>

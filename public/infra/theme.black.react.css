@@ -8,10 +8,6 @@
   --std-txt-color: #FFFFFF;
 }
 
-.red {    background-color:#CB2026!important; }
-.green {  background-color:#26CB20!important; }
-.blue {   background-color:#2026CB!important; }
-
 /*###################################### Info Buttons ########################################*/
 
 nav button.reload {                                background-image: url(/images/btn-nav-reload.black.png); }
