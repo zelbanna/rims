@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './infra/system.css';
 import { rest_call } from  './infra/Functions.js';
-import Library from './infra/Mapper.js'
-import { InfoColumns, RimsContext, Header } from './infra/UI.jsx';
+import { InfoColumns, RimsContext, Header, Theme } from './infra/UI.jsx';
 import { TextInput, PasswordInput } from './infra/Inputs.jsx';
 import { MenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
@@ -19,27 +18,29 @@ serviceWorker.unregister();
 class Portal extends Component {
  constructor(props){
   super(props)
-  this.state = { content:null, menu:[], navigation:null, cookie:null}
+  this.state = { menu:[], navigation:<NavBar key='portal_navigation_empty' /> }
  }
 
  componentDidMount() {
   this.props.providerMounting({changeMain:this.changeContent,loadNavigation:this.loadNavigation});
   rest_call('api/portal/menu',{id:this.context.cookie.id}).then(result => {
-    this.setState(result)
+    this.setState(result);
     result.start && this.changeContent(result.menu[result.start]);
     document.title = result.title;
    })
  }
 
- loadNavigation = (items) => this.setState({navigation:items})
+ loadNavigation = (navbar) => this.setState({navigation:navbar})
 
  changeContent = (panel) => {
   if (panel.hasOwnProperty('module')) {
    if (this.state.content && (this.state.content.key === `${panel.module}_${panel.function}`))
     return
    try {
-    var Elem = Library[panel.module][panel.function]
-    this.setState({navigation:[],content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />})
+    import("./"+panel.module+".jsx").then(lib => {
+     var Elem = lib[panel.function];
+     this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />});
+    })
    } catch(err) {
     console.error("Mapper error: "+panel);
     alert(err);
@@ -57,20 +58,20 @@ class Portal extends Component {
    else if (panel.type === 'tab')
     click = () => window.open(panel.tab,'_blank')
    else if (panel.type === 'frame')
-    click = () => this.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>,navigation:null})
+    click = () => { this.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>,navigation:<NavBar key='portal_navigation_empty' />}) }
    panel.title = key
    buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
   }
   return (
    <React.Fragment key='portal'>
-    <link key='userstyle' rel='stylesheet' type='text/css' href={'infra/theme.' + this.context.cookie.theme + '.react.css'} />
+    <Theme key='portal_theme' theme={this.context.cookie.theme} />
     <Header key='portal_header'>
      <MenuButton key='mb_Logout' style={{float:'right',color:'#FFFFFF',backgroundColor:'var(--high-color)'}} onClick={() => { this.context.clearCookie()}} title='Log out' />
-     <MenuButton key='mb_System_Main' style={{float:'right'}} onClick={() => {this.changeContent({module:'System',function:'Main'})}} title='System' icon='images/icon-config.png' />
-     <MenuButton key='mb_User_User' style={{float:'right'}} onClick={() => {this.changeContent({module:'User',function:'User', args:{id:this.context.cookie.id}})}} title='User' icon='images/icon-users.png' />
+     <MenuButton key='mb_System_Main' style={{float:'right'}} onClick={() => {this.changeContent({module:'system',function:'Main'})}} title='System' icon='images/icon-config.png' />
+     <MenuButton key='mb_User_User' style={{float:'right'}} onClick={() => {this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})}} title='User' icon='images/icon-users.png' />
      {buttons}
     </Header>
-    <NavBar key='portal_navigation' id='portal_navigation'>{this.state.navigation}</NavBar>
+    {this.state.navigation}
     <main>{this.state.content}</main>
   </React.Fragment>
   )

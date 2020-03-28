@@ -318,6 +318,32 @@ def theme_list(aCTX, aArgs = None):
   - list of theme names
  """
  from os import walk, path as ospath
- path = ospath.join(aCTX.path,'public','infra')
+ path = ospath.join(aCTX.path,'src','infra')
  _, _, filelist = next(walk(path), (None, None, []))
  return [x.split('.')[1] for x in filelist if x.startswith('theme.')]
+
+#
+#
+def theme_info(aCTX, aArgs = None):
+ """ Function returns theme parameters
+
+ Args:
+  - theme (required)
+
+ Output:
+  - data - dictionary of values
+  - status
+ """
+ from os import path as ospath
+ from json import load
+ ret = {}
+ file = ospath.join(aCTX.path,'src','infra',"theme.%s.json"%aArgs['theme'])
+ try:
+  with open(file,'r') as f:
+   ret['data'] = load(f)
+ except Exception as e:
+  ret['info'] = str(e)
+  ret['status'] = 'NOT_OK'
+ else:
+  ret['status'] = 'OK'
+ return ret

@@ -5,7 +5,7 @@ import { TextInput } from './infra/Inputs.jsx'
 import { BackButton, DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
 
 import { DataSet, Network } from 'vis';
-import { Info as DeviceInfo } from './Device.jsx';
+import { Info as DeviceInfo } from './device.jsx';
 
 // ************** Main **************
 //

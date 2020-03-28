@@ -3,6 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { InfoColumns, Spinner, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, TimeInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
+import { NavBar, NavButton } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
 
@@ -10,11 +11,11 @@ import { AddButton, DeleteButton, ConfigureButton, InfoButton, ReloadButton, Sav
 //
 export class Main extends Component {
  componentDidMount(){
-  this.context.loadNavigation([
-   {title:'Activities', onClick:() => { this.changeContent(<List key='activity_list' />)}},
-   {title:'Types', onClick:() => { this.changeContent(<TypeList key='activity_type_list' />)}},
-   {title:'Report', onClick:() => { this.changeContent(<Report key='activity_report' />)}}
-  ])
+  this.context.loadNavigation(<NavBar key='activity_navbar'>
+   <NavButton key='act_nav_list' title='Activities' onClick={() => this.changeContent(<List key='activity_list' />)} />
+   <NavButton key='act_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='activity_type_list' />)} />
+   <NavButton key='act_nav_report' title='Report' onClick={() => this.changeContent(<Report key='activity_report' />)} />
+  </NavBar>)
  }
 
  changeContent = (elem) => this.setState(elem)

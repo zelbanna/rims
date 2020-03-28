@@ -1,4 +1,5 @@
-import React, { createContext } from 'react';
+import React, { createContext, Component, Fragment } from 'react';
+import { rest_call } from './Functions.js';
 
 export const Header = (props) => <header>{props.children}</header>
 
@@ -19,6 +20,30 @@ export const InfoColumns = (props) => <div className={'info col' + props.columns
 InfoColumns.defaultProps = {columns:2};
 
 export const InfoArticle = (props) => <article className='info'>{props.children}</article>
+
+export class Theme extends Component {
+
+ componentDidMount(){
+  this.loadTheme(this.props.theme);
+ }
+
+ componentDidUpdate(prevProps){
+  if (prevProps.theme !== this.props.theme)
+   this.loadTheme(this.props.theme);
+ }
+
+ loadTheme = (theme) => {
+  rest_call('api/system/theme_info',{theme:theme}).then(result => {
+   if(result.status === 'OK')
+    for (var [param,val] of Object.entries(result.data))
+     document.documentElement.style.setProperty(param, val);
+  })
+ }
+
+ render(){
+  return <Fragment key='theme_container'>{this.props.children}</Fragment>
+ }
+}
 
 // ***************************** Table ********************************
 

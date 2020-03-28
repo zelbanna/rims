@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd,  } from './infra/Functions.js';
-import { RimsContext, Spinner, InfoColumns, TableHead, TableRow, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
+import { Spinner, InfoColumns, TableHead, TableRow, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
 
@@ -9,9 +9,8 @@ import { AddButton, DeleteButton, LogButton, ConfigureButton, ItemsButton, Reloa
 // *************** Main ***************
 //
 export class Main extends Component {
- constructor(props){
-  super(props)
-  this.state = <DomainList key='domain_list' />
+ componentDidMount(){
+  this.setState(<DomainList key='domain_list' />)
  }
 
  changeContent = (elem) => this.setState(elem)
@@ -20,7 +19,6 @@ export class Main extends Component {
   return  <Fragment key='main_base'>{this.state}</Fragment>
  }
 }
-Main.contextType = RimsContext;
 
 // *************** Domain List ***************
 //

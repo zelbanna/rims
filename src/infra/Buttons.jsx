@@ -20,6 +20,7 @@ export const DevicesButton = (props) => button_awesome('fas fa-network-wired',pr
 export const DocButton = (props) => button_awesome('fas fa-clipboard-list',props);
 export const EditButton = (props) => button_awesome('far fa-edit',props);
 export const FixButton = (props) => button_awesome('fas fa-thumbtack',props);
+export const GoButton = (props) => button_awesome('fas fa-share-square',props);
 export const InfoButton = (props) => button_awesome('fas fa-info',props);
 export const ItemsButton = (props) => button_awesome('fas fa-list-ul',props);
 export const LogButton = (props) => button_awesome('far fa-file-alt',props);
@@ -32,5 +33,5 @@ export const StartButton = (props) => button_awesome('fas fa-play',props);
 export const StopButton = (props) => button_awesome('fas fa-stop',props);
 export const SyncButton = (props) => button_awesome('fas fa-exchange-alt',props);
 export const TermButton = (props) => button_awesome('fas fa-terminal',props);
-export const UiButton = (props) => button_awesome('fas fa-globe',props);
+export const UiButton = (props) => button_awesome('fas fa-globe-americas',props);
 export const ViewButton = (props) => button_awesome('fas fa-search-plus',props);

@@ -3,7 +3,8 @@ import { rest_call, rnd, int2ip } from './infra/Functions.js';
 import { Spinner, InfoColumns, StateMap, Result, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
-import { Info as DeviceInfo, New as DeviceNew } from './Device.jsx';
+
+import { Info as DeviceInfo, New as DeviceNew } from './device.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -50,7 +51,7 @@ export class NetworkList extends Component {
   return <Fragment key='nl_fragment'>
    <ContentList key='nl_cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='nl_btn_reload'  onClick={() => this.componentDidMount() } />
-    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_' + rnd()} id='new' />) } />
+    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_'+rnd()} id='new' />) } />
     <LogButton key='nl_btn_doc' onClick={() => this.changeContent(<Leases key='network_leases' />)} />
    </ContentList>
    <ContentData key='nl_cd'>{this.state.content}</ContentData>

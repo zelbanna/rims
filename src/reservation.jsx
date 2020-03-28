@@ -4,7 +4,7 @@ import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentRep
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, LinkButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 
-import { Info as UserInfo } from './User.jsx';
+import { Info as UserInfo } from './user.jsx';
 
 // CONVERTED ENTIRELY
 

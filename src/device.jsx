@@ -1,18 +1,18 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { NavBar } from './infra/Navigation.js'
+import { NavBar, NavButton, NavDropDown, NavReload } from './infra/Navigation.js'
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, LinkButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
-import { List as ReservationList } from './Reservation.jsx';
-import { List as LocationList } from './Location.jsx';
-import { List as ServerList } from './Server.jsx';
-import { NetworkList as IPAMNetworkList } from './IPAM.jsx';
-import { DomainList as DNSDomainList } from './DNS.jsx';
-import { List as VisualizeList, Edit as VisualizeEdit } from './Visualize.jsx';
-import { List as RackList, Inventory as RackInventory, Infra as RackInfra } from './Rack.jsx';
-import { List as InterfaceList } from './Interface.jsx';
+import { List as ReservationList } from './reservation.jsx';
+import { List as LocationList } from './location.jsx';
+import { List as ServerList } from './server.jsx';
+import { NetworkList as IPAMNetworkList } from './ipam.jsx';
+import { DomainList as DNSDomainList } from './dns.jsx';
+import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
+import { List as RackList, Inventory as RackInventory, Infra as RackInfra } from './rack.jsx';
+import { List as InterfaceList } from './interface.jsx';
 
 // **************** Main ****************
 //
@@ -32,42 +32,38 @@ export class Main extends Component {
  }
 
  compileNavItems = (state) => {
-  const navitems = [
-   {title:'Devices', type:'dropdown', items:[
-    {title:'List', onClick:() => this.changeContent(<List key='dl' changeSelf={this.changeContent} rack_id={state.rack_id} />)},
-    {title:'Search', onClick:() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)},
-    {title:'Types', onClick:() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)},
-    {title:'Models', onClick:() => this.changeContent(<ModelList key='dml' />)}
-   ]},
-   {title:'Reservations', className:'right', onClick:() => this.changeContent(<ReservationList key='reservation_list' />)},
-   {title:'Locations', className:'right', onClick:() => this.changeContent(<LocationList key='location_list' />)},
-   {title:'IPAM', type:'dropdown',  className:'right', items:[
-    {title:'Servers', onClick:() => this.changeContent(<ServerList key='ipam_server_list' type='DHCP' />)},
-    {title:'Networks', onClick:() => this.changeContent(<IPAMNetworkList key='ipam_network_list' />)}
-   ]},
-   {title:'DNS', type:'dropdown',  className:'right', items:[
-    {title:'Servers', onClick:() => this.changeContent(<ServerList key='dns_server_list' type='DNS' />)},
-    {title:'Domains', onClick:() => this.changeContent(<DNSDomainList key='dns_domain_list' />)}
-   ]},
-   {title:'Rack', type:'dropdown', className:'right', items:[
-    {title:'Racks',    onClick:() => this.changeContent(<RackList key='rack_list' />)},
-    {title:'PDUs',     onClick:() => this.changeContent(<RackInfra key='pdu_list' type='pdu' />)},
-    {title:'Consoles', onClick:() => this.changeContent(<RackInfra key='console_list' type='console' />)}
-   ]},
-   {title:'Maps',  onClick:() => this.changeContent(<VisualizeList key='visualize_list' />)},
-   {title:'OUI', type:'dropdown', items:[
-    {title:'Search',  onClick:() => this.changeContent(<OUISearch key='oui_search' />)},
-    {title:'List',  onClick:() => this.changeContent(<OUIList key='oui_list' />)}
-   ]}
-  ]
-  if (state.pdu.length > 0)
-   navitems.push({title:'PDUs', type:'dropdown', items:state.pdu.map(row => ({title:row.hostname, onClick:() =>alert('implement PDU')}))})
-  if (state.console.length > 0)
-   navitems.push({title:'Consoles', type:'dropdown', items:state.console.map(row => ({title:row.hostname, onClick:() => alert('implement Console')}))})
-  if (state.rack_id)
-   navitems.push({title:state.name, onClick:() => this.changeContent(<RackInventory key='rack_inventory' id={state.rack_id} />)})
-  navitems.push({ onClick:() => this.changeContent(null), className:'reload' })
-  this.context.loadNavigation(navitems)
+  this.context.loadNavigation(<NavBar key='device_navbar'>
+   <NavDropDown key='dev_nav_devs' title='Devices'>
+    <NavButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' changeSelf={this.changeContent} rack_id={state.rack_id} />)} />
+    <NavButton key='dev_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)} />
+    <NavButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
+    <NavButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
+   </NavDropDown>
+   <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
+   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() =>alert('implement PDU')} />)}</NavDropDown>}
+   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() =>alert('implement Console')} />)}</NavDropDown>}
+   {(state.rack_id) && <NavButton key='dev_nav_rack' title={state.name} onClick={() => this.changeContent(<RackInventory key='rack_inventory' id={state.rack_id} />)} />}
+   <NavDropDown key='dev_nav_oui' title='OUI'>
+    <NavButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
+    <NavButton key='dev_nav_ouil' title='List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
+   </NavDropDown>
+   <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeContent(<ReservationList key='reservation_list' />)} style={{float:'right'}} />
+   <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)} style={{float:'right'}} />
+   <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
+    <NavButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeContent(<ServerList key='ipam_server_list' type='DHCP' />)} />
+    <NavButton key='dev_nav_nets' title='Networks' onClick={() => this.changeContent(<IPAMNetworkList key='ipam_network_list' />)} />
+   </NavDropDown>
+   <NavDropDown key='dev_nav_dns' title='DNS' style={{float:'right'}}>
+    <NavButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeContent(<ServerList key='dns_server_list' type='DNS' />)} />
+    <NavButton key='dev_nav_doms' title='Domains' onClick={() => this.changeContent(<DNSDomainList key='dns_domain_list' />)} />
+   </NavDropDown>
+   <NavDropDown key='dev_nav_racks' title='Rack' style={{float:'right'}}>
+    <NavButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<RackList key='rack_list' />)} />
+    <NavButton key='dev_nav_all_pdu' title='PDUs' onClick={() => this.changeContent(<RackInfra key='pdu_list' type='pdu' />)} />
+    <NavButton key='dev_nav_all_con' title='Consoles' onClick={() => this.changeContent(<RackInfra key='console_list' type='console' />)} />
+   </NavDropDown>
+   <NavReload key='dev_nav_reload' onClick={() => this.changeContent(null)} />
+  </NavBar>)
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -201,7 +197,7 @@ export class Info extends Component {
    const rack = (this.state.rack && this.state.data.class !== 'vm') ? this.state.rack : false;
    const change_self = (this.props.changeSelf);
    const has_ip = (this.state.extra.interface_ip);
-   const functions = (this.state.extra.functions.length >0) ? this.state.extra.functions.split(',').map(row => ({title:row, onClick:() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} />)})) : null
+   const functions = (this.state.extra.functions.length >0) ? this.state.extra.functions.split(',').map((row,idx) => (<NavButton key={'di_nav_'+idx} title={row} onClick={() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} />)} />)) : null
 
    return (
     <Fragment key='di_fragment'>
@@ -245,7 +241,7 @@ export class Info extends Component {
      <ConnectionButton key='di_btn_conn' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />
      <StartButton key='di_btn_cont' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />
      <CheckButton key='di_btn_conf' onClick={() => this.changeContent(<Configuration key='device_configure' device_id={this.props.id} />)} />
-     {change_self && <ConfigureButton key='di_btn_conf' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
+     {change_self && <ConfigureButton key='di_btn_edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
      {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
      {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} />}
      {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />}

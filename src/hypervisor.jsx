@@ -2,8 +2,9 @@ import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { StateMap, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { InfoButton, SyncButton, UiButton } from './infra/Buttons.jsx';
+import { NavBar, NavButton } from './infra/Navigation.js';
 
-import { Logs as DeviceLogs } from './Device.jsx';
+import { Logs as DeviceLogs } from './device.jsx';
 
 // ************** Main **************
 //
@@ -11,6 +12,7 @@ import { Logs as DeviceLogs } from './Device.jsx';
 export class Main extends Component {
  componentDidMount(){
   this.setState(<List key={'hypervisor_list_'+rnd()} />)
+  this.context.loadNavigation(<NavBar key='hypervisor_navbar_empty' />)
  }
 
  changeContent = (elem) => this.setState(elem)
@@ -88,10 +90,9 @@ class Manage extends Component {
  componentDidMount(){
   rest_call('api/device/management',{id:this.props.id})
    .then((result) => {
-    var navitems = [{title:'Logs', onClick:() => this.changeContent(<DeviceLogs id={this.props.id} />)}];
     //if (result.data.hasOwnProperty(url) && result.data.url.length > 0)
     // navitems.push({title:)
-    this.context.loadNavigation(navitems);
+    this.context.loadNavigation(<NavBar key='hypervisor_navbar'><NavButton key='hyp_nav_logs' title='Logs' onClick={() => this.changeContent(<DeviceLogs id={this.props.id} />)} /></NavBar>);
     this.setState(result)
     })
  }

@@ -2,14 +2,15 @@ import React, { Component, Fragment } from 'react'
 import { rest_call} from './infra/Functions.js';
 import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, LinkButton } from './infra/Buttons.jsx';
+import { NavBar, NavButton, NavDropDown, NavInfo, NavReload } from './infra/Navigation.js';
 
-import { LogShow, List as NodeList } from './Node.jsx';
-import { List as ServerList } from './Server.jsx';
-import { List as UserList } from './User.jsx';
-import { Report as ActivityReport } from './Activity.jsx';
-import { Report as ReservationReport } from './Reservation.jsx';
-import { Report as DeviceReport } from './Device.jsx';
-import { Report as InventoryReport } from './Inventory.jsx';
+import { LogShow, List as NodeList } from './node.jsx';
+import { List as ServerList } from './server.jsx';
+import { List as UserList } from './user.jsx';
+import { Report as ActivityReport } from './activity.jsx';
+import { Report as ReservationReport } from './reservation.jsx';
+import { Report as DeviceReport } from './device.jsx';
+import { Report as InventoryReport } from './inventory.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -33,34 +34,29 @@ export class Main extends Component {
  }
 
  compileNavItems = () => {
-  let navitems = [];
-  let reports = [];
-   if (this.context.cookie.node === 'master') {
-    navitems.push(
-     {title:'Nodes',  onClick:() => this.changeContent(<NodeList key='node_list' />) },
-     {title:'Servers', onClick:() => this.changeContent(<ServerList key='server_list' />) },
-     {title:'ERD',    onClick:() => window.open('infra/erd.pdf','_blank') },
-     {title:'Users',  onClick:() => this.changeContent(<UserList key='user_list' />) },
-     {title:'Controls',  onClick:() => this.changeContent(<Controls  />) }
-    )
-    reports.push(
-     {title:'Activities',  onClick:() => this.changeContent(<ActivityReport key='activity_report' />) },
-     {title:'Reservations',  onClick:() => this.changeContent(<ReservationReport key='reservation_report' />) },
-     {title:'Devices',  onClick:() => this.changeContent(<DeviceReport key='device_report' />) },
-     {title:'Inventory',  onClick:() => this.changeContent(<InventoryReport key='inventory_report' />) }
-    )
-   }
-   reports.push({title:'Tasks',   onClick:() => this.changeContent(<TaskReport key='task_report' />) },{title:'System',  onClick:() => this.changeContent(<Report key='system_report' />) })
-   navitems.push(
-    {title:'Logs',   type:'dropdown', items:this.state.logs.map(row => ({title:row, onClick:() => this.changeContent( <LogShow key={row.name} node={row} /> )})) },
-    {title:'Report', type:'dropdown', items:reports},
-    {title:'REST',  onClick:() => this.changeContent(<RestList key='rest_list' />) }
-   )
-   if (this.state.services.length > 0)
-    navitems.push({title:'Services', type:'dropdown', items:this.state.services.map(row => ({title:row.name, onClick:() => this.changeContent( <ServiceInfo key={row.name} {...row} /> )})) })
-   navitems.push({ onClick:() => this.setState({content:null}), className:'reload' })
-   this.state.navinfo.forEach(row => navitems.push({title:row, className:'right navinfo'}))
-   this.context.loadNavigation(navitems)
+  const master = (this.context.cookie.node === 'master')
+  this.context.loadNavigation(<NavBar key='system_navbar'>
+   {master && <NavButton key='sys_nav_node' title='Nodes' onClick={() => this.changeContent(<NodeList key='node_list' />)} />}
+   {master && <NavButton key='sys_nav_srv' title='Servers' onClick={() => this.changeContent(<ServerList key='server_list' />)} />}
+   {master && <NavButton key='sys_nav_erd' title='ERD'     onClick={() => window.open('infra/erd.pdf','_blank')} />}
+   {master && <NavButton key='sys_nav_user' title='Users'  onClick={() => this.changeContent(<UserList key='user_list' />)} />}
+   {master && <NavButton key='sys_nav_ctrl' title='Controls' onClick={() => this.changeContent(<Controls key='system_controls' />)} />}
+   <NavDropDown key='sys_nav_logs' title='Logs'>
+    {this.state.logs.map((row,idx) => <NavButton key={'sys_nav_logs_'+idx} title={row} onClick={() => this.changeContent( <LogShow key={row.name} node={row} /> )} />)}
+   </NavDropDown>
+   <NavDropDown key='sys_nav_reports' title='Reports'>
+    <NavButton key='sys_nav_sys' title='System' onClick={() => this.changeContent(<Report key='system_report' />)} />
+    <NavButton key='sys_nav_task' title='Tasks' onClick={() => this.changeContent(<TaskReport key='task_report' />)} />
+    {master && <NavButton key='sys_nav_act' title='Activities' onClick={() => this.changeContent(<ActivityReport key='activity_report' />)} />}
+    {master && <NavButton key='sys_nav_resv' title='Reservations' onClick={() => this.changeContent(<ReservationReport key='reservation_report' />)} />}
+    {master && <NavButton key='sys_nav_dev' title='Devices' onClick={() => this.changeContent(<DeviceReport key='device_report' />)} />}
+    {master && <NavButton key='sys_nav_inv' title='Inventory' onClick={() => this.changeContent(<InventoryReport key='inventory_report' />)} />}
+   </NavDropDown>
+   <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />
+   {this.state.services.length > 0 &&  <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
+   <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
+   {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} style={{float:'right'}} />)}
+  </NavBar>)
  }
 
  changeContent = (elem) => this.setState({content:elem})
