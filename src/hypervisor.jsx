@@ -8,7 +8,6 @@ import { Logs as DeviceLogs } from './device.jsx';
 
 // ************** Main **************
 //
-
 export class Main extends Component {
  componentDidMount(){
   this.setState(<List key={'hypervisor_list_'+rnd()} />)

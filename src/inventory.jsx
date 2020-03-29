@@ -5,9 +5,6 @@ import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, LinkButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown } from './infra/Navigation.js';
 
-import { List as LocationList } from './location.jsx'
-
-
 // CONVERTED ENTIRELY
 
 // ************** Main **************
@@ -20,8 +17,15 @@ export class Main extends Component {
     <NavButton key='inv_nav_vend' title='Vendor' onClick={() => this.changeContent(<Vendor key='vendor_list' changeSelf={this.changeContent} />)} />
     <NavButton key='inv_nav_list' title='List'   onClick={() => this.changeContent(<List key='list' changeSelf={this.changeContent} />)} />
    </NavDropDown>
-   <NavButton key='inv_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)} />
+   <NavButton key='inv_nav_loc' title='Locations' onClick={() => this.changeLocation()} />
   </NavBar>)
+ }
+
+ changeLocation(){
+  import('./location.jsx').then(lib => {
+   var LocList = lib.List;
+   this.setState(<LocList key='location_list' />);
+  })
  }
 
  changeContent = (elem) => this.setState(elem)

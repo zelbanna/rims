@@ -1,10 +1,8 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, LinkButton }  from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
-
-import { Info as UserInfo } from './user.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -28,11 +26,7 @@ export class List extends Component {
  deleteItem = (dev,user) => (window.confirm('Remove reservation?') && rest_call('api/reservation/update',{op:'delete', device_id:dev, user_id:user}).then(result => result.result && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
 
  listItem = (row) => {
-  const cells = [
-   <LinkButton key={'user_' + this.context.cookie.id} text={row.alias} onClick={() => this.changeContent(<UserInfo key={'user_info'+this.context.cookie.id} id={this.context.cookie.id} />) } />,
-   row.hostname,
-   <div className={(row.valid) ? '' : 'orange'}>{row.end}</div>
-  ]
+  const cells = [row.alias,row.hostname,<div className={(row.valid) ? '' : 'orange'}>{row.end}</div>]
   if ((this.context.cookie.id === row.user_id) || !row.valid) {
    cells.push(
     <Fragment key='reservation_buttons'>

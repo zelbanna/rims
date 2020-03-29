@@ -4,8 +4,6 @@ import { Spinner, InfoColumns, StateMap, Result, RimsContext, ContentList, Conte
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 
-import { Info as DeviceInfo, New as DeviceNew } from './device.jsx';
-
 // CONVERTED ENTIRELY
 
 // *************** Main ***************
@@ -115,6 +113,20 @@ class Layout extends Component {
   rest_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']}).then(result => this.setState({...result, start_address:parseInt(result.network.split(".")[3])}))
  }
 
+ changeDevice(id){
+  import('./device.jsx').then(lib => {
+   var Device = lib.Info;
+   this.props.changeSelf(<Device key={'di_'+id} id={id} changeSelf={this.props.changeSelf} />);
+  })
+ }
+
+ createDevice(network,ip){
+  import('./device.jsx').then(lib => {
+   var New = lib.New;
+   this.props.changeSelf(<New key={'dn_new'} ipam_network_id={network} ip={ip} />);
+  })
+ }
+
  render(){
   if (!this.state)
    return <Spinner />
@@ -122,9 +134,9 @@ class Layout extends Component {
    const layout = [];
    for (let cnt = 0; cnt <= this.state.size; cnt++){
     if (this.state.data.hasOwnProperty(this.state.start + cnt))
-     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam red' onClick={() => this.props.changeSelf(<DeviceInfo key={this.state.data[this.state.start + cnt].device_id} id={this.state.data[this.state.start + cnt].device_id} />)} >{cnt%256}</button>)
+     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam red' onClick={() => this.changeDevice(this.state.data[this.state.start + cnt].device_id)}>{cnt%256}</button>)
     else
-     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam green' onClick={() => this.props.changeSelf(<DeviceNew key={this.state.start + cnt} ipam_network_id={this.props.network_id} ip={int2ip(this.state.start + cnt)} />)} >{cnt%256}</button>)
+     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam green' onClick={() => this.createDevice(this.props.network_id,int2ip(this.state.start + cnt))}>{cnt%256}</button>)
    }
    return (
     <article>

@@ -5,9 +5,6 @@ import { NavBar, NavButton, NavDropDown, NavReload } from './infra/Navigation.js
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, LinkButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
-import { List as ReservationList } from './reservation.jsx';
-import { List as LocationList } from './location.jsx';
-import { List as ServerList } from './server.jsx';
 import { NetworkList as IPAMNetworkList } from './ipam.jsx';
 import { DomainList as DNSDomainList } from './dns.jsx';
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
@@ -31,6 +28,14 @@ export class Main extends Component {
    this.compileNavItems({pdu:[], console:[], name:'N/A', rack_id:undefined});
  }
 
+ changeImport(module,func,args){
+  import('./'+module+'.jsx').then(lib => {
+   var Elem = lib[func];
+   this.setState({content:<Elem key={module+'_'+func} {...args} />})
+  })
+ }
+
+
  compileNavItems = (state) => {
   this.context.loadNavigation(<NavBar key='device_navbar'>
    <NavDropDown key='dev_nav_devs' title='Devices'>
@@ -47,15 +52,15 @@ export class Main extends Component {
     <NavButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
     <NavButton key='dev_nav_ouil' title='List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
    </NavDropDown>
-   <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeContent(<ReservationList key='reservation_list' />)} style={{float:'right'}} />
-   <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)} style={{float:'right'}} />
+   <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','List',{})} style={{float:'right'}} />
+   <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeImport('location','List',{})} style={{float:'right'}} />
    <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
-    <NavButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeContent(<ServerList key='ipam_server_list' type='DHCP' />)} />
-    <NavButton key='dev_nav_nets' title='Networks' onClick={() => this.changeContent(<IPAMNetworkList key='ipam_network_list' />)} />
+    <NavButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DHCP'})} />
+    <NavButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
    </NavDropDown>
    <NavDropDown key='dev_nav_dns' title='DNS' style={{float:'right'}}>
-    <NavButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeContent(<ServerList key='dns_server_list' type='DNS' />)} />
-    <NavButton key='dev_nav_doms' title='Domains' onClick={() => this.changeContent(<DNSDomainList key='dns_domain_list' />)} />
+    <NavButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DNS'})} />
+    <NavButton key='dev_nav_doms' title='Domains' onClick={() => this.changeImport('dns','DomainList',{})} />
    </NavDropDown>
    <NavDropDown key='dev_nav_racks' title='Rack' style={{float:'right'}}>
     <NavButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<RackList key='rack_list' />)} />
@@ -304,7 +309,7 @@ class Extended extends Component {
     <TextLine key='oui' id='oui' label='Mgmt OUI' text={this.state.extra.oui} />
     <SelectInput key='management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={'de_intf_'+idx} value={row.interface_id}>{`${row.name} (${row.ip} - ${row.fqdn})`}</option>)}</SelectInput>
     <SelectInput key='a_domain_id' id='a_domain_id' label='Mgmt Domain' value={this.state.extra.management_domain} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'de_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
-    {rack && <SelectInput key='rack_id' id='rack_info_rack_id' label='Rack' value={this.state.rack.rack_id} onChange={this.onChange}>{this.state.infra.racks.map((row,idx) => <option key={'de_rack_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>}
+    {rack && <SelectInput key='rack_id' id='rack_info_rack_id' label='Rack' value={(this.state.rack)?this.state.rack.rack_id:'NULL'} onChange={this.onChange}>{this.state.infra.racks.map((row,idx) => <option key={'de_rack_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>}
    </InfoColumns>
   </article>
   } else
