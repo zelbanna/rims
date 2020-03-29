@@ -13,7 +13,7 @@ const button_awesome = (type,props) => <button id={props.id} className={'info fo
 export const AddButton = (props) => button_awesome('fas fa-plus',props);
 export const BackButton = (props) => button_awesome('fas fa-arrow-left',props);
 export const CheckButton = (props) => button_awesome('fas fa-tasks',props);
-export const ConfigureButton = (props) => button_awesome('fas fa-cogs',props);
+export const ConfigureButton = (props) => button_awesome('fas fa-cog',props);
 export const ConnectionButton = (props) => button_awesome('fas fa-arrows-alt',props);
 export const DeleteButton = (props) => button_awesome('fas fa-trash-alt',props);
 export const DevicesButton = (props) => button_awesome('fas fa-network-wired',props);

@@ -74,7 +74,7 @@ export class Info extends Component {
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
       <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
-      <SelectInput key='theme' id='theme' value={this.state.data.theme} options={this.state.themes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
+      <SelectInput key='theme' id='theme' value={this.state.data.theme} onChange={this.onChange}>{this.state.themes.map(row => <option key={'ui_theme_'+row} value={row}>{row}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ui_btn_save' onClick={() => this.updateInfo('api/master/user_info') } />
     </article>

@@ -99,7 +99,7 @@ class DomainInfo extends Component {
       {old && <TextLine key='node' id='node' text={this.state.infra.node} />}
       {old && <TextLine key='service' id='service' text={this.state.infra.service} />}
       {old && <TextLine key='foreign_id' id='foreign_id' label='Foreign ID' text={this.state.infra.foreign_id} />}
-      {!old && <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} options={this.state.servers.map(row => ({value:row.id, text:`${row.service}@${row.node}`}))} onChange={this.onChange} />}
+      {!old && <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} onChange={this.onChange}>{this.state.servers.map((row,idx) => <option key={'srv_'+idx} value={row.id}>{`${row.service}@${row.node}`}</option>)}</SelectInput>}
       <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
       <TextInput key='master' id='master' value={this.state.data.master} onChange={this.onChange} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} />

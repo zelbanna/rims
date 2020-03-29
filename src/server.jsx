@@ -75,8 +75,8 @@ class Info extends Component {
      <h1>Server</h1>
      <InfoColumns key='si_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
-      <SelectInput key='node' id='node' value={this.state.data.node} options={this.state.nodes.map(row => ({value:row, text:row}))} onChange={this.onChange} />
-      <SelectInput key='type_id' id='type_id' label='Service'  value={this.state.data.type_id} options={this.state.services.map(row => ({value:row, text:`${row.service} (${row.type})`}))} onChange={this.onChange} />
+      <SelectInput key='node' id='node' value={this.state.data.node} onChange={this.onChange}>{this.state.nodes.map((row,idx) => <option key={'si_node_'+idx} value={row}>{row}</option>)}</SelectInput>
+      <SelectInput key='type_id' id='type_id' label='Service' value={this.state.data.type_id} onChange={this.onChange}>{this.state.services.map((row,idx) => <option key={'si_svc_'+idx} value={row.id}>{`${row.service} (${row.type})`}</option>)}</SelectInput>
       <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} onChange={this.onChange} />
      </InfoColumns>
      <SaveButton key='si_btn_save' onClick={() => this.updateInfo('api/master/server_info')} />

@@ -84,10 +84,10 @@ class Info extends Component {
      <InfoColumns key='rack_content'>
       <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
       <TextInput key='size' id='size' value={this.state.data.size} onChange={this.onChange} />
-      <SelectInput key='console' id='console' value={this.state.data.console} options={this.state.consoles.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
-      <SelectInput key='location_id' id='location_id' label='Location' value={this.state.data.location_id} options={this.state.locations.map(row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
-      <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
-      <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} options={this.state.pdus.map(row => ({value:row.id, text:row.hostname}))} onChange={this.onChange} />
+      <SelectInput key='console' id='console' value={this.state.data.console} onChange={this.onChange}>{this.state.consoles.map(row => <option key={'ri_con_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
+      <SelectInput key='location_id' id='location_id' label='Location' value={this.state.data.location_id} onChange={this.onChange}>{this.state.locations.map(row => <option key={'ri_loc_'+row.id} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu1_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
+      <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu2_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ri_btn_save' onClick={() => this.updateInfo('api/rack/info')} />
     </article>

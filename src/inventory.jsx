@@ -90,7 +90,7 @@ class Search extends Component {
     <h1>Inventory Search</h1>
     <div>
      <span>
-      <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange} options={[{value:'serial',text:'Serial'},{value:'vendor',text:'Vendor'}]} />
+      <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange}><option value='serial'>Serial</option><option value='vendor'>Vendor</option></SelectInput>
       <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
      </span>
      <SearchButton key='inv_btn_search' title='Search' onClick={() => this.props.changeSelf(<List key='inventory_list' args={this.state.data} changeSelf={this.props.changeSelf} />)} />
@@ -134,14 +134,14 @@ onChange = (e) => {
       <TextInput key='product' id='product' value={data.product} onChange={this.onChange} />
       <TextInput key='model' id='model' value={data.model} onChange={this.onChange} />
       <TextInput key='description' id='description' value={data.description} onChange={this.onChange} />
-      <SelectInput key='location_id' id='location_id' label='Location' value={data.location_id} options={this.state.locations.map( row => ({value:row.id, text:row.name}))} onChange={this.onChange} />
+      <SelectInput key='location_id' id='location_id' label='Location' value={data.location_id} onChange={this.onChange}>{this.state.locations.map((row,idx) => <option key={'ii_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
       <DateInput key='receive_date' id='receive_date' label='Received' value={data.receive_date} onChange={this.onChange} />
       <TextInput key='purchase_order' id='purchase_order' label='Purchase Order' value={data.purchase_order} onChange={this.onChange} />
-      <TextInput key='comments' id='comments' value={data.comments} onChange={this.onChange} />
       <CheckboxInput key='license' id='license' value={data.license} onChange={this.onChange} />
       {(data.license && <TextInput key='license_key' id='license_key' label='Key' value={data.license_key} onChange={this.onChange} />)}
       <CheckboxInput key='support_contract' id='support_contract' value={data.support_contract} onChange={this.onChange} />
       {(data.support_contract && <DateInput key='support_end_date' id='support_end_date' label='Contract End' value={data.support_end_date} onChange={this.onChange} />)}
+      <TextInput key='comments' id='comments' value={data.comments} onChange={this.onChange} />
      </InfoColumns>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
      <SaveButton key='inv_btn_save' onClick={() => this.updateInfo('api/inventory/info') } />

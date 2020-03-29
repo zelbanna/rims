@@ -83,14 +83,15 @@ class Info extends Component {
   })
  }
 
+ // > options={this.state.types.map(row => ({value:row.id, text:row.type}))} onChange={this.onChange} />
  render() {
   if (this.state.data)
    return (
     <article className='info'>
      <h1>Activity</h1>
      <InfoColumns key='activity_content'>
-      <SelectInput key='user_id' id='user_id' label='User' value={this.state.data.user_id} options={this.state.users.map(row => ({value:row.id, text:row.alias}))} onChange={this.onChange} />
-      <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} options={this.state.types.map(row => ({value:row.id, text:row.type}))} onChange={this.onChange} />
+      <SelectInput key='user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
+      <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'ai_t_'+idx} value={row.id}>{row.type}</option>)}</SelectInput>
       <DateInput key='date' id='date' value={this.state.data.date} onChange={this.onChange} />
       <TimeInput key='time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoColumns>

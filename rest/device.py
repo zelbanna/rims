@@ -274,7 +274,7 @@ def extended(aCTX, aArgs = None):
     result['device'] = (db.do("UPDATE devices SET hostname = '%s', management_id = %s WHERE id = %s"%(aArgs['hostname'],aArgs['management_id'],ret['id'])) == 1)
 
   # Now fetch info
-  ret['found'] = (db.do("SELECT management_id, devices.class, devices.oid, devices.hostname, dt.base AS type_base, oui.company AS oui FROM devices LEFT JOIN oui ON oui.oui = (devices.mac >> 24) AND devices.mac != 0 LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT management_id, devices.class, CONCAT('.1.3.6.1.4.1.',devices.oid) AS oid, devices.hostname, dt.base AS type_base, oui.company AS oui FROM devices LEFT JOIN oui ON oui.oui = (devices.mac >> 24) AND devices.mac != 0 LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
   if ret['found']:
    ret['extra'] = db.get_row()
    ret['data'] = {'hostname':ret['extra'].pop('hostname','unknown'),'management_id':ret['extra'].pop('management_id',None)}
