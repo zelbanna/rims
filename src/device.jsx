@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component, Fragment } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavReload } from './infra/Navigation.js'
@@ -137,7 +137,7 @@ class List extends Component {
 
  listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,StateMap({state:row.state}),<DeleteButton key={'dl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete device' />]
 
- deleteList = (id) => (window.confirm("Really delete device?") && rest_call('api/device/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm("Really delete device "+id+"?") && rest_call('api/device/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   if (this.state.data){

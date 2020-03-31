@@ -85,7 +85,7 @@ section.content-left { min-width:max-content; overflow-x:hidden; width:25%; back
 section.content-right { overflow-x:scroll; background-color:transparent; }
 
 nav {     background-color: var(--ui-color); color:var(--ui-txt-color)!important; height: var(--nav-height); width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
-nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; background-color:transparent; }
+nav ul {  margin:0px ;padding:0px; overflow:hidden; background-color:transparent; }
 nav li {  display:block; float:left; background-color: transparent; }
 nav li:hover{ background-color: var(--head-color); }
 nav li.dropdown ul { position: absolute; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.3); background-color: var(--ui-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
@@ -95,11 +95,11 @@ nav li.navinfo {  background-color:#00CC66; color:white; font-weight:bold;}
 nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
 nav li.right { float:right; }
 
-nav button,nav label { color:var(--ui-txt-color); font-size:var(--head-txt); padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
+nav button,nav label { color:var(--ui-txt-color); font-size:var(--head-txt); padding:0px 8px 0px 8px; line-height:var(--nav-height); border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
 nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); }
 nav button:active{ opacity:0.8; }
-nav button.fontawesome { padding:0px; }
-nav button.fontawesome > i { font-size:calc(var(--nav-height) * 0.7); }
+nav button.fontawesome { padding:0px; width:var(--nav-height); }
+nav button.fontawesome > i { font-size:calc(var(--nav-height) * 0.7); padding:calc(var(--nav-height) * 0.15); }
 nav button.navinfo:hover, nav button.navinfo:focus{ color:white!important; }
 
 /***************************************  List Model *****************************************/
@@ -142,7 +142,7 @@ button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!imp
 button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
 button.fontawesome {  width:var(--field-size); padding:0px; }
 button.fontawesome > i{ font-size:16px; background-color:transparent; color:var(--ui-txt-color); }
-button.fontawesome > i:hover,button.fontawesome > i:active { color:var(--high-color)!important; }
+button.fontawesome > i:hover,button.fontawesome > i:focus { color:var(--high-color)!important; }
 
 /*************************************** Report Model *****************************************/
 
