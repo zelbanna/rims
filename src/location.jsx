@@ -19,11 +19,11 @@ constructor(props){
  }
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete location?') && rest_call('api/location/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  listItem = (row) => [row.id,row.name,<Fragment key={'location_buttons_'+row.id}>
-   <ConfigureButton key={'loc_btn_info_'+row.id} onClick={() => { this.changeContent(<Info key={'location_'+row.id} id={row.id} />) }} />
-   <DeleteButton key={'loc_btn_delete_'+row.id} onClick={() => { this.deleteList('api/location/delete',row.id,'Really delete location') }} />
+   <ConfigureButton key={'loc_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'location_'+row.id} id={row.id} />)} />
+   <DeleteButton key={'loc_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} />
    </Fragment>
   ]
 
@@ -46,11 +46,7 @@ export class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
 

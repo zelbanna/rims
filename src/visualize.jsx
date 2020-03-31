@@ -36,13 +36,13 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.id,row.name,<Fragment key='vl_buttons'>
-  <EditButton key={'vl_btn_edt_'+row.id} onClick={() => { this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)}} title='Show and edit map' />
-  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => { this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)}} />
-  <DeleteButton key={'vl_btn_del_'+row.id}  onClick={() => { this.deleteList('api/visualize/delete',row.id,'Really delete map?')}} />
+  <EditButton key={'vl_btn_edt_'+row.id} onClick={() => this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)} title='Show and edit map' />
+  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)} />
+  <DeleteButton key={'vl_btn_del_'+row.id}  onClick={() => this.deleteList(row.id)} />
  </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Delete map?') && rest_call('api/visualize/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='vl_fragment'>
@@ -116,11 +116,9 @@ export class Edit extends Component {
   })
  }
 
- onChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data})
- }
+ changeContent = (elem) => this.props.changeSelf(elem);
+
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  jsonHandler = (e) => {
   var data = {...this.state.data}
@@ -137,7 +135,7 @@ export class Edit extends Component {
  doubleClick = (params) => {
   console.log("DoubleClick",params.nodes[0]);
   if(this.props.changeSelf)
-   this.props.changeSelf(<DeviceInfo key={'di_' + params.nodes[0]} id={params.nodes[0]} changeSelf={this.props.changeSelf} />)
+   this.changeContent(<DeviceInfo key={'di_' + params.nodes[0]} id={params.nodes[0]} />)
  }
 
  toggleEdit = () => {
@@ -170,7 +168,7 @@ export class Edit extends Component {
   return(
    <article className='network'>
     <h1>Network Map</h1>
-    {(this.props.type === 'device') && (this.props.changeSelf) && <BackButton key='viz_back' onClick={() => this.props.changeSelf(<DeviceInfo key={'di_'+this.props.id} id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
+    {(this.props.type === 'device') && (this.props.changeSelf) && <BackButton key='viz_back' onClick={() => this.changeContent(<DeviceInfo key={'di_'+this.props.id} id={this.props.id} />)} />}
     <ReloadButton key='viz_reload' onClick={() => this.componentDidMount()} />
     <EditButton key='viz_edit' onClick={() => this.toggleEdit()} />
     <PhysicsButton key='viz_physics' onClick={() => this.togglePhysics()} />
@@ -180,7 +178,7 @@ export class Edit extends Component {
     <TextButton key='viz_opt' text='Options' onClick={() => this.setState({content:'options'})} />
     <TextButton key='viz_nodes' text='Nodes' onClick={() => this.setState({content:'nodes'})} />
     <TextButton key='viz_edges' text='Edges' onClick={() => this.setState({content:'edges'})} />
-    <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} className='network' />
+    <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
     <Result key='viz_result' result={this.state.result} />
     <div className={this.showDiv('network')} ref='edit_canvas' />
     <div className={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>

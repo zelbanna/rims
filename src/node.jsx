@@ -21,11 +21,11 @@ export class List extends Component {
 
  listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
    <InfoButton key={'nl_btn_info'+row.id} onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} />
-   <DeleteButton key={'nl_btn_delete'+row.id} onClick={() => this.deleteList('api/master/node_delete',row.id,'Really delete node?')} />
+   <DeleteButton key={'nl_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete node?') && rest_call('api/master/node_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='node_fragment'>
@@ -50,15 +50,9 @@ class Info extends Component {
   rest_call('api/master/node_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
- searchInfo = () => {
-  rest_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.device.hostname, device_id:result.device.id}}))
- }
+ searchInfo = () => rest_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.device.hostname, device_id:result.device.id}}))
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
 

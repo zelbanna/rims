@@ -18,13 +18,13 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.node,row.service,row.type,<Fragment key='sl_buttons'>
-   <InfoButton key={'sl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />) } />
-   <DeleteButton key={'sl_btn_delete'+row.id} onClick={() => this.deleteList('api/master/server_delete',row.id,'Are you really sure?')  } />
-   {row.hasOwnProperty('ui') && row.ui.length > 0 && <UiButton key={'sl_btn_ui'+row.id} onClick={() =>  window.open(row.ui,'_blank') } />}
+   <InfoButton key={'sl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />)} />
+   <DeleteButton key={'sl_btn_delete'+row.id} onClick={() => this.deleteList(row.id) } />
+   {row.hasOwnProperty('ui') && row.ui.length > 0 && <UiButton key={'sl_btn_ui'+row.id} onClick={() =>  window.open(row.ui,'_blank')} />}
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete service?') && rest_call('api/master/server_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='sl_fragment'>
@@ -55,13 +55,10 @@ class Info extends Component {
    })
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
+
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {

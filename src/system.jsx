@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call} from './infra/Functions.js';
 import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
-import { StartButton, StopButton, LinkButton } from './infra/Buttons.jsx';
+import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavInfo, NavReload } from './infra/Navigation.js';
 
 import { LogShow } from './node.jsx';
@@ -124,7 +124,7 @@ class RestList extends Component {
    })
  }
 
- listItem = (row) => [row.api,<LinkButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
+ listItem = (row) => [row.api,<HrefButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
 
  changeContent = (elem) => this.setState({content:elem})
 
@@ -192,7 +192,7 @@ class Controls extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- listItem = (row) => [<LinkButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
+ listItem = (row) => [<HrefButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
 
  render(){
   return <Fragment key='ctl_fragment'>

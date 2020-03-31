@@ -62,11 +62,7 @@ class Info extends Component {
   rest_call('api/reservation/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 

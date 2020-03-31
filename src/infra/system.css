@@ -15,11 +15,12 @@ With standard margin @ 3px we need to remove 6px from all heights and widths
 */
 
 :root {
-  --std-txt: 11px;
-  --head-txt: 16px;
   --mid-txt: 14px;
+  --head-txt: 14px;
+  --std-txt: 11px;
   --border-size:1px;
-  --header-height:64px;
+  --field-size:22px;
+  --header-height:52px;
   --nav-height:34px;
   --high-color:#FFFFFF;
 }
@@ -61,23 +62,21 @@ div.login { position: absolute; height:100vh; width:100vw; display:flex; justify
 article.login {  border:solid var(--border-size) #9CA6B0; width:auto; height:auto; padding:var(--std-txt);}
 article.login input:focus { border-color:black!important; }
 article.login h1 { margin:var(--head-txt); }
-button.login { margin-right:var(--head-txt); margin-bottom:var(--head-txt); }
 
 /***************************************** Menu Model *****************************************/
 
 button.menu { 
- -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat; 
- border:var(--border-size) solid #9CA6B0; border-radius:6px; display: block; float:left; font-family: "Courier New", serif; font-size:var(--mid-txt); font-weight:bold;
- height: 52px; margin: 5px 2px; min-width:52px; outline:none; overflow:hidden; padding:4px; text-align:center; 
- white-space:nowrap;
+ -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat;
+ border:var(--border-size) solid #9CA6B0; border-radius:4px; background-color:#FFFFFF; color:#71808E;  float:left; font-family: "Courier New", serif; font-size:var(--mid-txt); font-weight:bold;
+ height:calc(var(--field-size) * 2); margin:3px 2px; min-width:calc(var(--field-size) * 2);  overflow:hidden; padding:4px; text-align:center; white-space:nowrap;
 }
-button.menu:active { opacity:0.5; }
-button.menu:hover,button.menu:focus { opacity:0.7; box-shadow:4px 4px 4px 0 rgba(0,0,0,0.3); font-weight: bold; border: var(--border-size) solid #000000; }
-button.menu > img {  max-height:43px; }
+button.menu:hover, button.menu:focus { opacity:0.9; border:var(--border-size) solid #000000; }
+button.menu >i { font-size:calc(var(--field-size) * 1.4); }
+button.menu > img {  max-height:calc(var(--field-size) * 1.5); }
 
 /*************************************** Content Model *****************************************/
 
-header {  background-color: var(--head-color); height:var(--header-height); width:100vw; padding-left:5px; overflow:auto; }
+header {  background-color: var(--head-color); height:var(--header-height); width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; }
 main {    background-color: var(--main-color); height: calc(100vh - var(--header-height) - var(--nav-height) - 2px);  width:100vw; display:flex }
 section { float:left; height: 100%; width:auto; overflow-y: scroll; }
 section.content-left { min-width:max-content; overflow-x:hidden; width:25%; }
@@ -116,29 +115,30 @@ div.table .tbody > div:nth-child(even) { background-color: #FFFFFF; }
 div.table .tbody > div:nth-child(odd)  { background-color: #F1F1F1; }
 div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0px 4px; white-space:nowrap; }
 div.table .tfoot {     display: table-footer-group; }
-input.searchfield {    display:block; width: 99%; height: 22px; margin: 3px 0px 3px 0px; }
+input.searchfield {    display:block; width: 99%; height:var(--field-size); margin: 3px 0px 3px 0px; }
 
 /***************************************  Info  Model *****************************************/
 
 article.info { resize:horizontal; width:max-content; }
-article.info label { font-weight:bold; padding:2px; }
 article.info textarea { height:calc(var(--std-txt) * 5); width:300px; display:block; }
 div.info { display:grid; margin:2px 0px 2px 0px; align-items:center; grid-gap:1px; }
 div.col2 { grid-template-columns: max-content auto;}
 div.col3 { grid-template-columns: max-content auto max-content;}
 div.info *[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
-div.info > select, div.info > input[type='text'], div.info > input[type='url'], div.info > input[type='email'], div.info > input[type='password'], div.info > input[type='date'], div.info > input[type='time'] {  overflow:visible;  width: 99%; font-style:normal; }
-div.info > input[type='checkbox'] { width:22px; }
+div.info > select, div.info > input[type='text'], div.info > input[type='url'], div.info > input[type='email'], div.info > input[type='password'], div.info > input[type='date'], div.info > input[type='time'] {  overflow:visible;  width: 99%; }
+div.info > input[type='checkbox'] { width:var(--field-size); }
 div.info input::-webkit-input-placeholder { color: #9CA6B0; }
 div.info input::-moz-placeholder {          color: #9CA6B0; opacity:1; }
 div.info span { font-size: calc(var(--std-txt) - 1px); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-style:italic; }
 
 div.left { float:left!important; }
 
-button.info { background-color:var(--std-color); color:var(--std-txt-color); height:22px; border:none; outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
+label.info { font-weight:bold; padding:2px; }
+span.info { padding: 2px; }
+button.info { background-color:var(--std-color); color:var(--std-txt-color); height:var(--field-size); border:none; outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
 button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!important; }
 button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
-button.fontawesome {  width:22px; padding:0px; }
+button.fontawesome {  width:var(--field-size); padding:0px; }
 button.fontawesome > i{ font-size:16px; }
 
 /*************************************** Report Model *****************************************/
@@ -149,7 +149,7 @@ article.report div {   white-space:unset!important; }
 /*************************************** Line Input Model ****************************************/
 
 article.lineinput { height:max-content; }
-article.lineinput > div { display:flex; }
+article.lineinput > div { display:inline-flex; }
 
 /*************************************** Code Model ****************************************/
 
@@ -207,7 +207,7 @@ div.state { border: var(--border-size) solid #9CA6B0; border-radius:16px; height
 
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; }
 
-button.ipam { float:left; font-size:9px; font-weight:bold; padding:0px; width:22px; color:#000000; margin:2px; }
+button.ipam { float:left; font-size:9px; font-weight:bold; padding:0px; width:var(--field-size); color:#000000; margin:2px; }
 
 /* media dependent */
 article.network { width:99%; }
@@ -215,7 +215,6 @@ div.network { height:500px; width:600px; resize:horizontal}
 div.network > textarea { height:500px; width:99%; }
 div.hidden { display:none; }
 div.shown  { display:block; }
-label.network { font-weight:bold; }
 
 /******************************************* EXTRA NOT FOUND YET *********************************************/
 /*

@@ -38,12 +38,12 @@ export class NetworkList extends Component {
    <ConfigureButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />) } />
    <ItemsButton key={'net_btn_items_'+row.id} onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
    <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
-   <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList('api/ipam/network_delete',row.id,'Really delete network') } />
+   <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} />
   </Fragment>
  ]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete network') && rest_call('api/ipam/network_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='nl_fragment'>
@@ -65,11 +65,7 @@ class NetworkInfo extends Component {
   this.state = {data:null, found:true };
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
 
@@ -113,17 +109,19 @@ class Layout extends Component {
   rest_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']}).then(result => this.setState({...result, start_address:parseInt(result.network.split(".")[3])}))
  }
 
+ changeContent = (elem) => this.props.changeSelf(elem)
+
  changeDevice(id){
   import('./device.jsx').then(lib => {
    var Device = lib.Info;
-   this.props.changeSelf(<Device key={'di_'+id} id={id} changeSelf={this.props.changeSelf} />);
+   this.changeContent(<Device key={'di_'+id} id={id} />);
   })
  }
 
  createDevice(network,ip){
   import('./device.jsx').then(lib => {
    var New = lib.New;
-   this.props.changeSelf(<New key={'dn_new'} ipam_network_id={network} ip={ip} />);
+   this.changeContent(<New key={'dn_new'} ipam_network_id={network} ip={ip} />);
   })
  }
 
@@ -179,34 +177,32 @@ class AddressList extends Component{
   rest_call('api/ipam/address_list',{network_id:this.props.network_id,extra:['a_id','ptr_id','hostname','a_domain_id','device_id']}).then(result => this.setState(result))
  }
 
+ changeContent = (elem) => this.props.changeSelf(elem)
+
  listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,StateMap({state:row.state}),<Fragment key={'ip_button_'+row.id}>
-   <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.props.changeSelf(<AddressInfo id={row.id} />)} />
-   <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList('api/ipam/address_delete',row.id,'Really delete address?')} />
+   <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} />
+   <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} />
   </Fragment>]
 
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
+ deleteList = (id) => (window.confirm('Delete address?') && rest_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
  render(){
   return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','A','PTR','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
-   <AddButton key='al_btn_add' onClick={() => this.props.changeSelf(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />) } />
+   <AddButton key='al_btn_add' onClick={() => this.changeContent(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />) } />
   </ContentReport>
  }
 }
 
 // *************** Address Info ***************
 //
-class AddressInfo extends Component {
+export class AddressInfo extends Component {
  constructor(props){
   super(props);
   this.state = {data:null, found:true};
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
@@ -230,7 +226,7 @@ class AddressInfo extends Component {
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_save' onClick={() => this.updateInfo('api/ipam/address_info')} />
-     <Result key='ip_operation' result={this.state.hasOwnProperty('info') ? `${this.state.status} ${this.state.info}` : this.state.status} />
+     <Result key='ip_operation' result={(this.state.status !== "OK") ? this.state.info : 'OK'} />
     </article>
    );
   else

@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, LinkButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton, UiButton } from './infra/Buttons.jsx';
 
 import { Main as DeviceMain, Info as DeviceInfo } from './device.jsx';
 import { Info as LocationInfo } from './location.jsx';
@@ -34,15 +34,15 @@ export class List extends Component {
   rest_call('api/rack/list',{sort:"name"}).then(result => this.setState(result))
  }
 
- listItem = (row) => [<LinkButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>
+ listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>
    <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} />
    <GoButton key={'rl_btn_go_'+row.id} onClick={() => this.context.changeMain({content:<DeviceMain key={'Device_Main_'+row.id} rack_id={row.id} />})} />
    <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Inventory key={'rack_inventory_'+row.id} id={row.id} />)} />
-   <DeleteButton key={'rl_btn_del_'+row.id} onClick={() => this.deleteList('api/rack/delete',row.id,'Really delete rack?')} />
+   <DeleteButton key={'rl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete rack?') && rest_call('api/rack/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='rack_fragment'>
@@ -64,11 +64,7 @@ class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
@@ -135,14 +131,12 @@ export class Infra extends Component {
   if (row.url)
    buttons.push(<UiButton key={'ri_btn_ui_'+row.id} onClick={() => { window.open(row.url,'_blank'); }} />)
   return [
-   <LinkButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} />,
+   <HrefButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} />,
    row.hostname,<Fragment key='ri_buttons'>{buttons}</Fragment>
   ]
  }
 
-
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='ri_fragment'>
@@ -155,6 +149,8 @@ export class Infra extends Component {
 }
 
 /*
+ TODO: 
+
  for dev in devices:
   <A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV>"%(dev['type_name'],dev['ip'],dev['hostname']))
   aWeb.button('info',DIV='main',URL='%s_manage?id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ip'],dev['hostname'])))

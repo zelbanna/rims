@@ -45,12 +45,12 @@ export class DomainList extends Component {
  listItem = (row) => [row.id,row.name,row.service,<Fragment key={'domain_buttons_'+row.id}>
    <ConfigureButton key={'net_info_'+row.id} onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } />
    <ItemsButton key={'net_items_'+row.id} onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } />
-   <DeleteButton key={'net_delete_'+row.id} onClick={() => this.deleteList('api/dns/domain_delete',row.id,'Really delete domain') } />
+   <DeleteButton key={'net_delete_'+row.id} onClick={() => this.deleteList(row.id) } />
    </Fragment>
   ]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete domain') && rest_call('api/dns/domain_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='dl_fragment'>
@@ -73,11 +73,7 @@ class DomainInfo extends Component {
   this.state = {data:null, found:true };
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
 
@@ -180,17 +176,19 @@ class RecordList extends Component {
   rest_call('api/dns/record_list',{domain_id:this.props.domain_id}).then(result => this.setState(result))
  }
 
+ changeContent = (elem) => this.props.changeSelf(elem);
+
  listItem = (row) => [row.id,row.name,row.content,row.type,row.ttl,<Fragment key={'rl_buttons_'+row.id}>
-   <ConfigureButton key={'record_info_btn_' + row.id} onClick={() => this.props.changeSelf(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} />
-   {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + row.id} onClick={() => this.deleteList('api/dns/record_delete',row.id,'Really delete record?')} />}
+   <ConfigureButton key={'record_info_btn_' + row.id} onClick={() => this.changeContent(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} />
+   {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + row.id} onClick={() => this.deleteList(row.id)} />}
   </Fragment>]
 
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {domain_id:this.props.domain_id,id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
+ deleteList = (id) => (window.confirm('Delete record?') && rest_call('api/dns/record_delete', {domain_id:this.props.domain_id,id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
  render(){
   return <ContentReport key='rl_cr' header='Records' thead={['ID','Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount() } />
-   <AddButton key='rl_btn_add' onClick={() => this.props.changeSelf(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} id='new' />)} />
+   <AddButton key='rl_btn_add' onClick={() => this.changeContent(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} id='new' />)} />
   </ContentReport>
  }
 }
@@ -203,7 +201,7 @@ class RecordInfo extends Component {
   this.state = {data:null, found:true };
  }
 
- onChange = (e) => { var data = {...this.state.data}; data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];  this.setState({data:data}); }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
@@ -224,7 +222,7 @@ class RecordInfo extends Component {
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder={'A, PTR or CNAME typically'} />
      </InfoColumns>
      <SaveButton key='record_save' onClick={() => this.updateInfo('api/dns/record_info')} />
-     <Result key='record_result' result={this.state.hasOwnProperty('info') ? `${this.state.status} ${this.state.info}` : this.state.status} />
+     <Result key='record_result' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
     </article>
    );
   } else

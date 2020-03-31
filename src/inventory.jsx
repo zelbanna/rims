@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, SearchField, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, LinkButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
@@ -50,12 +50,12 @@ class List extends Component {
 
  listItem = (row) => [row.id,row.serial,row.model,<Fragment key={'inventory_buttons_'+row.id}>
    <InfoButton key={'inv_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } />
-   <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList('api/inventory/delete',row.id,'Really delete item') } />
+   <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} />
   </Fragment>]
 
  searchHandler = (e) => this.setState({searchfield:e.target.value})
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete item') && rest_call('api/inventory/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   if (!this.state.data)
@@ -82,23 +82,19 @@ class Search extends Component {
   this.state = {data:{field:'serial',search:''}}
  }
 
- onChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
- }
+ changeContent = (elem) => this.props.changeSelf(elem);
+
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== "checkbox") ? "value" : "checked"]}})
 
  render() {
   return (
    <article className='lineinput'>
     <h1>Inventory Search</h1>
     <div>
-     <span>
-      <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange}><option value='serial'>Serial</option><option value='vendor'>Vendor</option></SelectInput>
-      <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
-     </span>
-     <SearchButton key='inv_btn_search' title='Search' onClick={() => this.props.changeSelf(<List key='inventory_list' args={this.state.data} changeSelf={this.props.changeSelf} />)} />
+     <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange}><option value='serial'>Serial</option><option value='vendor'>Vendor</option></SelectInput>
+     <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
     </div>
+    <SearchButton key='inv_btn_search' title='Search' onClick={() => this.changeContent(<List key='inventory_list' args={this.state.data} />)} />
    </article>
   )
  }
@@ -116,11 +112,7 @@ export class Info extends Component {
   rest_call('api/inventory/info',{id:this.props.id}).then(result => this.setState(result))
  }
 
-onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== "checkbox") ? "value" : "checked"]}})
 
  changeContent = (elem) => this.setState({content:elem})
 
@@ -168,7 +160,9 @@ class Vendor extends Component {
   rest_call('api/inventory/vendor_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [<LinkButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.props.changeSelf(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} changeSelf={this.props.changeSelf} />)} />,row.count]
+ changeContent = (elem) => this.props.changeSelf(elem);
+
+ listItem = (row) => [<HrefButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.changeContent(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} />)} />,row.count]
 
  render(){
   return <Fragment key='inv_fragment'>

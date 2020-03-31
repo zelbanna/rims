@@ -99,9 +99,31 @@ def management(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['status'] = 'OK' if (db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, devices.url FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %s"%aArgs['id']) == 1) else 'NOT_OK'
-  ret['data'] = db.get_row()
-  ret['data']['username'] = aCTX.config['netconf']['username']
+  if (db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, devices.url FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %s"%aArgs['id']) == 1):
+   ret['data'] = db.get_row()
+   ret['data']['username'] = aCTX.config['netconf']['username']
+   ret['status'] = 'OK'
+  else:
+   ret['status'] = 'NOT_OK'
+ return ret
+
+#
+def hostname(aCTX, aArgs = None):
+ """Retrieves hostname
+
+ Args:
+  - id (required)
+
+ Output:
+  - hostname
+ """
+ ret = {}
+ with aCTX.db as db:
+  if (db.do("SELECT devices.hostname FROM devices WHERE devices.id = %s"%aArgs['id']) == 1):
+   ret['data'] = db.get_val('hostname')
+   ret['status'] = 'OK'
+  else:
+   ret['status'] = 'NOT_OK'
  return ret
 
 #

@@ -41,12 +41,12 @@ class List extends Component {
 
  listItem = (row) => [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
    <InfoButton key={'act_info_'+row.id} onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } />
-   <DeleteButton key={'act_delete_'+row.id} onClick={() => this.deleteList('api/master/activity_delete',row.id,'Really delete activity') } />
+   <DeleteButton key={'act_delete_'+row.id} onClick={() => this.deleteList(row.id) } />
    </Fragment>
   ]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Delete activity') && rest_call('api/master/activity_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='act_fragment'>
@@ -67,11 +67,7 @@ class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
@@ -83,7 +79,6 @@ class Info extends Component {
   })
  }
 
- // > options={this.state.types.map(row => ({value:row.id, text:row.type}))} onChange={this.onChange} />
  render() {
   if (this.state.data)
    return (
@@ -138,12 +133,12 @@ class TypeList extends Component {
 
  listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
    <ConfigureButton key='act_tp_info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } />
-   <DeleteButton key='act_tp_delete' onClick={() => this.deleteList('api/master/activity_type_delete',row.id,'Really delete type?') } />
+   <DeleteButton key='act_tp_delete' onClick={() => this.deleteList(row.id) } />
   </Fragment>
  ]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete type?') && rest_call('api/master/activity_type_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='act_tp_fragment'>
@@ -165,11 +160,7 @@ class TypeInfo extends Component {
   this.state = {data:null, found:true, content:null};
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
 

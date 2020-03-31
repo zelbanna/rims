@@ -19,12 +19,12 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'ul_buttons_'+row.id}>
-   <ConfigureButton key={'ul_btn_info_'+row.id}  onClick={() => { this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)}} />
-   <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => { this.deleteList('api/master/user_delete',row.id,'Really delete user?')}} />
+   <ConfigureButton key={'ul_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)} />
+   <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete user?') && rest_call('api/master/user_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='ul_fragment'>
@@ -45,11 +45,7 @@ export class Info extends Component {
   this.state = {data:null, found:true};
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  componentDidMount(){
   rest_call('api/system/theme_list').then(result => this.setState({themes:result}))

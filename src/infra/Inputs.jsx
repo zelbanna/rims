@@ -3,14 +3,14 @@ import { StateMap } from './UI.jsx';
 
 const auto_label = (props) => (props.label) ? props.label : props.id.charAt(0).toUpperCase() + props.id.substring(1);
 
-const input_template = (type,props) =>   <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className={props.className}>{auto_label(props)}:</label><input type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} /></Fragment>
-const line_template = (content,props) => <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className={props.className}>{auto_label(props)}:</label>{content}</Fragment>
+const input_template = (type,props) =>   <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className='info'>{auto_label(props)}:</label><input type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} /></Fragment>
+const line_template = (content,props) => <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className='info'>{auto_label(props)}:</label>{content}</Fragment>
 
 //
 // Display Only
 //
 export const ButtonLine = (props) => line_template(props.button,props);
-export const TextLine = (props) =>  line_template(<span id={props.id} style={props.style} title={props.extra}>{props.text}</span>,props);
+export const TextLine = (props) =>  line_template(<span id={props.id} style={props.style} title={props.extra} className='info'>{props.text}</span>,props);
 export const StateLine = (props) => line_template((Array.isArray(props.state)) ? <div key={'state_line_multi_' + props.id} className='states'>{props.state.map((val,idx) => <StateMap key={'state_line_state_' + props.id + '_' + idx} state={val} />)}</div> : <StateMap key={'state_line_state_' + props.id} state={props.state} />,props);
 export const DivLine = (props) =>   line_template(<div id={props.id} style={props.style} title={props.extra}>{props.content}</div>,props);
 
@@ -18,7 +18,7 @@ export const DivLine = (props) =>   line_template(<div id={props.id} style={prop
 // Inputs
 //
 export const SelectInput = (props) => <Fragment key={'fraginput_'+props.id}>
-  <label htmlFor={props.id} title={props.title}>{auto_label(props)}:</label>
+  <label htmlFor={props.id} title={props.title} className='info'>{auto_label(props)}:</label>
   <select name={props.id} onChange={props.onChange} value={(props.value !== null && props.value !== undefined) ? props.value : "NULL"}>
   {(props.value === null || props.value === undefined) && props.children.find(child => child.props.value === 'NULL') === undefined && <option value='NULL'>{"<Empty>"}</option>}
   {props.children}

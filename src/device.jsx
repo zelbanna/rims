@@ -3,10 +3,8 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavReload } from './infra/Navigation.js'
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
-import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, LinkButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, HrefButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
-import { NetworkList as IPAMNetworkList } from './ipam.jsx';
-import { DomainList as DNSDomainList } from './dns.jsx';
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 import { List as RackList, Inventory as RackInventory, Infra as RackInfra } from './rack.jsx';
 import { List as InterfaceList } from './interface.jsx';
@@ -39,7 +37,7 @@ export class Main extends Component {
  compileNavItems = (state) => {
   this.context.loadNavigation(<NavBar key='device_navbar'>
    <NavDropDown key='dev_nav_devs' title='Devices'>
-    <NavButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' changeSelf={this.changeContent} rack_id={state.rack_id} />)} />
+    <NavButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' rack_id={state.rack_id} />)} />
     <NavButton key='dev_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)} />
     <NavButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
     <NavButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
@@ -88,28 +86,26 @@ class Search extends Component {
   this.state = {field:'ip',search:''}
  }
 
- onChange = (e) => {
-  this.setState({[e.target.name]:e.target.value})
- }
+ changeContent = (elem) => this.props.changeSelf(elem);
+
+ onChange = (e) => this.setState({[e.target.name]:e.target.value})
 
  render() {
   return (
    <article className='lineinput'>
     <h1>Device Search</h1>
     <div>
-     <span>
-      <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field}>
-       <option value='hostname'>Hostname</option>
-       <option value='type'>Type</option>
-       <option value='id'>ID</option>
-       <option value='ip'>IP</option>
-       <option value='mac'>MAC</option>
-       <option value='ipam_id'>IPAM ID</option>
-      </SelectInput>
-      <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
-     </span>
-     <SearchButton key='ds_btn_search' title='Search' onClick={() => this.props.changeSelf(<List key='dl' {...this.state} changeSelf={this.props.changeSelf} />)} />
+     <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field}>
+      <option value='hostname'>Hostname</option>
+      <option value='type'>Type</option>
+      <option value='id'>ID</option>
+      <option value='ip'>IP</option>
+      <option value='mac'>MAC</option>
+      <option value='ipam_id'>IPAM ID</option>
+     </SelectInput>
+     <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
     </div>
+    <SearchButton key='ds_btn_search' title='Search' onClick={() => this.changeContent(<List key='dl' {...this.state} />)} />
    </article>
   )
  }
@@ -142,26 +138,16 @@ class List extends Component {
   this.setState({sort:method})
  }
 
- listItem = (row) => [
-  row.ip,
-  <LinkButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} />,
-  StateMap({state:row.state}),
-  <DeleteButton key={'dl_btn_del_'+row.id} onClick={() => { this.deleteList('api/device/delete',row.id,'Really delete device?'); }} />
- ]
+ listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,StateMap({state:row.state}),<DeleteButton key={'dl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} />]
 
- deleteList = (api,id,msg) => {
-  if (window.confirm(msg))
-   rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null}))
- }
+ deleteList = (id) => (window.confirm("Really delete device?") && rest_call('api/device/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  if (!this.state.data)
-   return <Spinner />
-  else {
+  if (this.state.data){
    let device_list = this.state.data.filter(row => row.hostname.includes(this.state.searchfield));
-   const thead = [<LinkButton key='dl_btn_ip' text='IP' style={(this.state.sort === 'ip') ? ({color:'var(--high-color)'}):({})} onClick={() => { this.sortList('ip') }} />,<LinkButton key='dl_btn_hostname' text='Hostname' style={(this.state.sort === 'hostname') ? ({color:'var(--high-color)'}):({})} onClick={() => { this.sortList('hostname') }} />,'',''];
+   const thead = [<HrefButton key='dl_btn_ip' text='IP' style={(this.state.sort === 'ip') ? ({color:'var(--high-color)'}):({})} onClick={() => { this.sortList('ip') }} />,<HrefButton key='dl_btn_hostname' text='Hostname' style={(this.state.sort === 'hostname') ? ({color:'var(--high-color)'}):({})} onClick={() => { this.sortList('hostname') }} />,'',''];
    return <Fragment key={'dl_fragment'}>
-    <ContentList key='dl_list' header='Device List' thead={thead}listItem={this.listItem} trows={device_list}>
+    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={device_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount() } />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='All items' />
      <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} id='new' />) } />
@@ -170,7 +156,8 @@ class List extends Component {
     </ContentList>
     <ContentData key='dl_content'>{this.state.content}</ContentData>
    </Fragment>
-  }
+  } else
+   return <Spinner />
  }
 }
 
@@ -182,13 +169,11 @@ export class Info extends Component {
   this.state = {data:undefined, found:true, content:null}
  }
 
- onChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data})
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
+
+ changeSelf = (elem) => this.props.changeSelf(elem);
 
  updateInfo = (api) => {
   rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
@@ -252,16 +237,16 @@ export class Info extends Component {
      </InfoColumns>
      <br />
      <SaveButton key='di_btn_save' onClick={() => this.updateInfo('api/device/info')} />
-     <ConnectionButton key='di_btn_conn' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} />)} />
-     <StartButton key='di_btn_cont' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} />
-     <CheckButton key='di_btn_conf' onClick={() => this.changeContent(<Configuration key='device_configure' id={this.props.id} />)} />
-     {change_self && <ConfigureButton key='di_btn_edit' onClick={() => this.props.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} />}
-     {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.props.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} />}
-     {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} />}
-     {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} />}
+     <ConnectionButton key='di_btn_conn' onClick={() => this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />)} title="Interfaces" />
+     <StartButton key='di_btn_cont' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} title="Device control" />
+     <CheckButton key='di_btn_conf' onClick={() => this.changeContent(<Configuration key='device_configure' id={this.props.id} />)} title="Configuration template" />
+     {change_self && <ConfigureButton key='di_btn_edit' onClick={() => this.changeSelf(<Extended key={'de_'+this.props.id} id={this.props.id} />)} title="Extended configuration" />}
+     {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} title="Connectivity map" />}
+     {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} title="Information lookup" />}
+     {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title="Logs" />}
      {has_ip && <TermButton key='di_btn_ssh' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} title='SSH connection' />}
-     {rack && rack.console_ip && rack.console_port && <TermButton key='di_btn_console' onClick={() => { const termWin = window.open(`telnet://${rack.console_ip}:${6000 +rack.console_port}`,'_blank'); termWin.close();}} title='Serial Connection' /> }
-     {this.state.data.url && <UiButton key='di_btn_ui' onClick={() => window.open(this.state.data.url,'_blank')} />}
+     {rack && rack.console_ip && rack.console_port && <TermButton key='di_btn_console' onClick={() => { const termWin = window.open(`telnet://${rack.console_ip}:${6000 +rack.console_port}`,'_blank'); termWin.close();}} title="Serial Connection" /> }
+     {this.state.data.url && <UiButton key='di_btn_ui' onClick={() => window.open(this.state.data.url,'_blank')} title="Web UI" />}
      <Result key='dev_result' result={JSON.stringify(this.state.update)} />
     </article>
     <NavBar key='di_navigation' id='di_navigation'>{functions}</NavBar>
@@ -281,11 +266,7 @@ class Extended extends Component {
   this.state = {data:undefined, found:true, content:null}
  }
 
- onChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data})
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== "checkbox") ? "value" : "checked"]}})
 
  changeContent = (elem) => this.setState({content:elem})
 
@@ -393,7 +374,7 @@ class Configuration extends Component {
 
  render() {
   return <article>
-   {(this.state.status === 'OK') ? this.state.data.map(row => <p>{row}</p>) : <b>{this.state.info}</b>}
+   {(this.state.status === 'OK') ? this.state.data.map((row,idx) => <p key={'conf_'+idx}>{row}</p>) : <b>{this.state.info}</b>}
   </article>
  }
 }
@@ -407,11 +388,7 @@ export class New extends Component {
   this.state = {data:{ip:this.props.ip,mac:'00:00:00:00:00:00',class:'device',ipam_network_id:this.props.ipam_network_id,hostname:''}, found:true}
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  componentDidMount(){
   rest_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}))
@@ -535,9 +512,11 @@ class TypeList extends Component {
   rest_call('api/device/type_list').then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.setState({content:elem})
+ changeContent = (elem) => this.setState({content:elem});
 
- listItem = (row) => [row.base,<LinkButton text={row.name} onClick={() => this.props.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
+ changeSelf = (elem) => this.props.changeSelf(elem);
+
+ listItem = (row) => [row.base,<HrefButton text={row.name} onClick={() => this.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
 
  render(){
   return <Fragment key='dev_tp_fragment'>
@@ -565,11 +544,11 @@ class ModelList extends Component {
 
  listItem = (row) => [row.id,row.name,row.type,<Fragment key={'ml_' + row.id}>
   <ConfigureButton key={'ml_btn_info_' + row.id} onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
-  <DeleteButton key={'ml_btn_delete_' + row.id}  onClick={() => this.deleteList('api/device/model_delete',row.id,'Really delete model?') } />
+  <DeleteButton key={'ml_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } />
  </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (api,id,msg) => (window.confirm(msg) && rest_call(api, {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete model?') && rest_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='dev_ml_fragment'>
@@ -590,11 +569,7 @@ export class ModelInfo extends Component {
   this.state = {data:null, found:true};
  }
 
- onChange = (e) => {
-  var data = {...this.state.data};
-  data[e.target.name] = e.target[(e.target.type !== "checkbox") ? "value" : "checked"];
-  this.setState({data:data});
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
@@ -631,11 +606,7 @@ class OUISearch extends Component {
   this.state = {data:{oui:''},content:null}
  }
 
- onChange = (e) => {
-  var data = {...this.state.data}
-  data[e.target.name] = e.target.value
-  this.setState({data:data})
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  ouiSearch = () => {
   rest_call('api/master/oui_info',{oui:this.state.data.oui}).then(result => this.setState({content:<article><div className='info col2'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.company}</span></div></article>}))

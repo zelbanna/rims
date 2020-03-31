@@ -4,7 +4,7 @@ import './infra/system.css';
 import { rest_call } from  './infra/Functions.js';
 import { InfoColumns, RimsContext, Header, Theme } from './infra/UI.jsx';
 import { TextInput, PasswordInput } from './infra/Inputs.jsx';
-import { MenuButton } from './infra/Buttons.jsx';
+import { MenuButton, FontAwesomeMenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 import * as serviceWorker from './serviceWorker';
 
@@ -66,9 +66,9 @@ class Portal extends Component {
    <React.Fragment key='portal'>
     <Theme key='portal_theme' theme={this.context.cookie.theme} />
     <Header key='portal_header'>
-     <MenuButton key='mb_Logout' style={{float:'right',color:'#FFFFFF',backgroundColor:'var(--high-color)'}} onClick={() => { this.context.clearCookie()}} title='Log out' />
-     <MenuButton key='mb_System_Main' style={{float:'right'}} onClick={() => {this.changeContent({module:'system',function:'Main'})}} title='System' icon='images/icon-config.png' />
-     <MenuButton key='mb_User_User' style={{float:'right'}} onClick={() => {this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})}} title='User' icon='images/icon-users.png' />
+     <FontAwesomeMenuButton key='mb_btn_logout' style={{float:'right',color:'#FFFFFF',backgroundColor:'var(--high-color)'}} onClick={() => { this.context.clearCookie()}} title='Log out' type='fas fa-sign-out-alt' />
+     <FontAwesomeMenuButton key='mb_btn_system_Main' style={{float:'right'}} onClick={() => {this.changeContent({module:'system',function:'Main'})}} title='System information' type='fas fa-cogs' />
+     <FontAwesomeMenuButton key='mb_btn_user_User' style={{float:'right'}} onClick={() => {this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})}} title='User' type='fas fa-user' />
      {buttons}
     </Header>
     {this.state.navigation}
@@ -117,7 +117,7 @@ class Login extends Component {
       <TextInput key='username' id='username' onChange={this.onChange} />
       <PasswordInput key='password' id='password' onChange={this.onChange} />
      </InfoColumns>
-     <MenuButton icon='images/icon-start.png' title='Start' onClick={this.handleSubmit}/>
+     <FontAwesomeMenuButton key='login_btn_login' onClick={this.handleSubmit} title='Login' type='fas fa-sign-in-alt' />
     </article>
    </div>
   )

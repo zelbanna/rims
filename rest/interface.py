@@ -128,8 +128,8 @@ def delete(aCTX, aArgs = None):
  ret = {'interfaces':[],'cleared':0,'deleted':0}
  with aCTX.db as db:
   if 'device_id' in aArgs:
-   ret['cleared'] = db.do("DELETE FROM device_connections WHERE id IN (SELECT DISTINCT connection_id FROM device_interfaces WHERE device_id = %s)"%aArgs['device_id'])
-   ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s)"%aArgs)
+   # ret['cleared'] = db.do("DELETE FROM device_connections WHERE id IN (SELECT DISTINCT connection_id FROM device_interfaces WHERE device_id = %s)"%aArgs['device_id'])
+   ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s)"%aArgs)
   elif 'interfaces' in aArgs:
    from rims.rest.ipam import address_delete
    for id in aArgs['interfaces']:
@@ -242,17 +242,23 @@ def connection_info(aCTX, aArgs = None):
 
  Args:
   - connection_id (required)
+  - op (optional)
+  - map (optional required)
 
  Output:
   - data object
  """
  ret = {}
+ id = aArgs.get('connection_id')
+ op = aArgs.get('op')
  with aCTX.db as db:
-  ret['status'] = 'OK' if (db.do("SELECT map FROM device_connections WHERE id = %s"%aArgs['connection_id']) == 1) else 'NOT_OK'
-  if ret['status'] == 'OK':
-   ret['data'] = {'map':True if db.get_val('map') == 1 else False}
-   db.do("SELECT di.interface_id, di.name AS interface_name, di.device_id, devices.hostname AS device_name FROM device_interfaces AS di LEFT JOIN devices ON di.device_id = devices.id WHERE connection_id = %s"%aArgs['connection_id'])
-   ret['data']['interfaces'] = db.get_rows()
+  if op == 'update':
+   ret['status'] = 'OK' if (db.do("UPDATE device_connections SET map = %i WHERE id = '%s'"%(1 if aArgs.get('map',False) else 0,id)) > 0) else 'NOT_OK'
+  ret['found'] = (db.do("SELECT map FROM device_connections WHERE id = '%s'"%id) == 1)
+  if ret['found']:
+   ret['data'] = {'map':True if db.get_val('map') == 1 else False,'connection_id':id}
+   db.do("SELECT di.interface_id, di.name AS interface_name, di.device_id, devices.hostname AS device_name FROM device_interfaces AS di LEFT JOIN devices ON di.device_id = devices.id WHERE connection_id = '%s'"%id)
+   ret['interfaces'] = db.get_rows()
  return ret
 
 #

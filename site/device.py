@@ -674,13 +674,13 @@ def interface_connect(aWeb):
 #
 #
 def connection_info(aWeb):
- data = aWeb.rest_call("interface/connection_info",{"connection_id":aWeb['id']})['data']
+ res = aWeb.rest_call("interface/connection_info",{"connection_id":aWeb['id']})
  aWeb.wr("<ARTICLE CLASS='info'><P>Connection</P>")
  aWeb.wr("<FORM id='connection_info'>")
  aWeb.wr("<INPUT TYPE=HIDDEN NAME='id' VALUE='%s'>"%aWeb['id'])
  aWeb.wr("<DIV CLASS='info col2'>")
- aWeb.wr("<label for='map'>Map:</label><INPUT id='map' TYPE=CHECKBOX NAME=map VALUE=1 %s >"%("CHECKED=checked" if data['map'] else ""))
- for intf in data['interfaces']:
+ aWeb.wr("<label for='map'>Map:</label><INPUT id='map' TYPE=CHECKBOX NAME=map VALUE=1 %s >"%("CHECKED=checked" if res['data']['map'] else ""))
+ for intf in res['interfaces']:
   aWeb.wr("<label for='%(device_name)s'>Device - Interface:</label><span id='%(device_name)s'>%(device_name)s - %(interface_name)s (%(interface_id)s)</span>"%intf)
  aWeb.wr("</DIV>")
  aWeb.wr("</FORM>")
