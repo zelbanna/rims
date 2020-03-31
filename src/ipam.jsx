@@ -35,10 +35,10 @@ export class NetworkList extends Component {
  }
 
  listItem = (row) => [row.id,row.netasc,row.description,row.service,<Fragment key={'network_buttons_'+row.id}>
-   <ConfigureButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />) } />
-   <ItemsButton key={'net_btn_items_'+row.id} onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
-   <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'items_'+row.id} network_id={row.id} />) } />
-   <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} />
+   <ConfigureButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />)} title='Edit network properties' />
+   <ItemsButton key={'net_btn_items_'+row.id} onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'address_list_'+row.id} network_id={row.id} />)} title='View addresses' />
+   <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'address_layout_'+row.id} network_id={row.id} />)} title='View usage map' />
+   <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete network' />
   </Fragment>
  ]
 
@@ -49,8 +49,8 @@ export class NetworkList extends Component {
   return <Fragment key='nl_fragment'>
    <ContentList key='nl_cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='nl_btn_reload'  onClick={() => this.componentDidMount() } />
-    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_'+rnd()} id='new' />) } />
-    <LogButton key='nl_btn_doc' onClick={() => this.changeContent(<Leases key='network_leases' />)} />
+    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_'+rnd()} id='new' />)} title='Add network' />
+    <LogButton key='nl_btn_doc' onClick={() => this.changeContent(<Leases key='network_leases' />)} title='View IPAM/DHCP leases' />
    </ContentList>
    <ContentData key='nl_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -93,7 +93,7 @@ class NetworkInfo extends Component {
        {this.state.domains.map((row,idx) => <option key={'ni_rzone_'+idx} value={row.id}>{`${row.server} (${row.name})`}</option>)}
       </SelectInput>
      </InfoColumns>
-     <SaveButton key='network_btn_save' onClick={() => this.updateInfo('api/ipam/network_info')} />
+     <SaveButton key='network_btn_save' onClick={() => this.updateInfo('api/ipam/network_info')} title='Save' />
     </article>
    );
   else
@@ -180,8 +180,8 @@ class AddressList extends Component{
  changeContent = (elem) => this.props.changeSelf(elem)
 
  listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,StateMap({state:row.state}),<Fragment key={'ip_button_'+row.id}>
-   <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} />
-   <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} />
+   <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} title='Edit address entry' />
+   <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
   </Fragment>]
 
  deleteList = (id) => (window.confirm('Delete address?') && rest_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
@@ -189,7 +189,7 @@ class AddressList extends Component{
  render(){
   return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','A','PTR','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
-   <AddButton key='al_btn_add' onClick={() => this.changeContent(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />) } />
+   <AddButton key='al_btn_add' onClick={() => this.changeContent(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />)} title='Add address entry' />
   </ContentReport>
  }
 }
@@ -225,7 +225,7 @@ export class AddressInfo extends Component {
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
-     <SaveButton key='ip_save' onClick={() => this.updateInfo('api/ipam/address_info')} />
+     <SaveButton key='ip_save' onClick={() => this.updateInfo('api/ipam/address_info')} title='Save' />
      <Result key='ip_operation' result={(this.state.status !== "OK") ? this.state.info : 'OK'} />
     </article>
    );

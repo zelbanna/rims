@@ -26,17 +26,12 @@ export class List extends Component {
  deleteItem = (dev,user) => (window.confirm('Remove reservation?') && rest_call('api/reservation/update',{op:'delete', device_id:dev, user_id:user}).then(result => result.result && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
 
  listItem = (row) => {
-  const cells = [row.alias,row.hostname,<div className={(row.valid) ? '' : 'orange'}>{row.end}</div>]
-  if ((this.context.cookie.id === row.user_id) || !row.valid) {
-   cells.push(
-    <Fragment key='reservation_buttons'>
-     <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>
-     <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />
-     <DeleteButton key={'rsv_btn_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />
-    </Fragment>
-   )
-  }
-  return cells;
+  const buttons = (this.context.cookie.id === row.user_id || !row.valid);
+  return [row.alias,row.hostname,<div className={(row.valid) ? '' : 'orange'}>{row.end}</div>,<Fragment key='reservation_buttons'>
+   {buttons && <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>}
+   {buttons && <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />}
+   {buttons && <DeleteButton key={'rsv_btn_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />}
+  </Fragment>]
  }
 
  render(){
@@ -78,7 +73,7 @@ class Info extends Component {
       <RadioInput key='shutdown' id='shutdown' value={this.state.data.shutdown} options={[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]} onChange={this.onChange} />
       <TextInput key='info' id='info' value={this.state.data.info} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='rsv_btn_save' onClick={() => this.updateInfo('api/reservation/info')} />
+     <SaveButton key='rsv_btn_save' onClick={() => this.updateInfo('api/reservation/info')} title='Save' />
     </article>
    );
   } else

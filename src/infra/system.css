@@ -4,9 +4,11 @@ Use a theme together with this one to get proper color end result, e.g.
 
  --main-color:#F1F1F1
  --head-color:#1A1A1A
- --std-color:#000000
  --high-color:#CB2026
- --std-txt-color:#FFFFFF
+ --std-color:#FFFFFF
+ --std-txt-color:#000000
+ --ui-color:#000000
+ --ui-txt-color:#FFFFFF
 
 Hint: https://htmlcolorcodes.com/color-picker
 
@@ -27,8 +29,8 @@ With standard margin @ 3px we need to remove 6px from all heights and widths
 
 /* **************************** HTML elements ************************ */
 
-* {      box-sizing: border-box; font-size:var(--std-txt); }
-article { border-radius: 4px; background-color:#FFFFFF; margin: 3px; overflow:hidden; padding:4px; float:left; }
+* {      box-sizing: border-box; font-size:var(--std-txt); color:var(--std-txt-color); background-color:var(--std-color); }
+article { border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; float:left; }
 article:hover {  box-shadow:0px 0px 2px 2px rgba(0,0,0,0.2); }
 body {   margin:0px; z-index:1; font-family:Verdana,sans-serif;}
 br { clear:both; }
@@ -40,7 +42,7 @@ iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 p { margin:2px; }
 pre {    margin:0px; }
 select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
- -webkit-appearance: none; background-color: transparent; border:solid var(--border-size); border-color:transparent; border-bottom:dotted var(--border-size) #F1F1F1; outline:none;
+ -webkit-appearance: none; background-color: transparent; border:solid var(--border-size); border-color:transparent; border-bottom:dotted var(--border-size) var(--main-color); outline:none;
 }
 select:focus,input:focus,textarea:focus { border-color:var(--high-color)!important; }
 
@@ -67,38 +69,38 @@ article.login h1 { margin:var(--head-txt); }
 
 button.menu { 
  -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat;
- border:var(--border-size) solid #9CA6B0; border-radius:4px; background-color:#FFFFFF; color:#71808E;  float:left; font-family: "Courier New", serif; font-size:var(--head-txt); font-weight:bold;
+ border:var(--border-size) solid #9CA6B0; border-radius:4px; color:#71808E; float:left; font-family: "Courier New", serif; font-size:var(--head-txt); font-weight:bold;
  height:calc(var(--field-size) * 2); margin:3px 2px; min-width:calc(var(--field-size) * 2);  overflow:hidden; padding:4px; text-align:center; white-space:nowrap;
 }
 button.menu:hover, button.menu:focus { opacity:0.9; border:var(--border-size) solid #000000; }
-button.menu >i { font-size:calc(var(--field-size) * 1.4); }
+button.menu > i { font-size:calc(var(--field-size) * 1.4); color:#71808E; background-color:transparent; }
 button.menu > img {  max-height:calc(var(--field-size) * 1.5); }
 
 /*************************************** Content Model *****************************************/
 
 header {  background-color: var(--head-color); height:var(--header-height); width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; }
-main {    background-color: var(--main-color); height: calc(100vh - var(--header-height) - var(--nav-height) - 2px);  width:100vw; display:flex }
+main {    background-color: var(--main-color); height:calc(100vh - var(--header-height) - var(--nav-height) - 2px); width:100vw; display:flex }
 section { float:left; height: 100%; width:auto; overflow-y: scroll; }
-section.content-left { min-width:max-content; overflow-x:hidden; width:25%; }
-section.content-right { overflow-x:scroll;}
+section.content-left { min-width:max-content; overflow-x:hidden; width:25%; background-color:transparent; }
+section.content-right { overflow-x:scroll; background-color:transparent; }
 
-nav {     background-color: var(--std-color); color:var(--std-txt-color)!important; height: var(--nav-height); width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
-nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; z-index:1000; }
+nav {     background-color: var(--ui-color); color:var(--ui-txt-color)!important; height: var(--nav-height); width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
+nav ul {  list-style-type:none; margin:0px ;padding:0px; overflow:hidden; background-color:transparent; }
 nav li {  display:block; float:left; background-color: transparent; }
 nav li:hover{ background-color: var(--head-color); }
-nav li.dropdown ul { position: absolute; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.3); background-color: var(--std-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
+nav li.dropdown ul { position: absolute; box-shadow:0px 8px 16px 0px rgba(0,0,0,0.3); background-color: var(--ui-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
 /* Handled by React:  nav li.dropdown:hover > ul, nav li.dropdown:focus > ul { max-height:calc(var(--nav-height) * 15); } */
 nav li.dropdown > ul > li { clear:left; float:unset; }
-nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
+nav li.navinfo {  background-color:#00CC66; color:white; font-weight:bold;}
 nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
 nav li.right { float:right; }
 
-nav button,nav label { color:var(--std-txt-color); font-size:var(--head-txt); padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
+nav button,nav label { color:var(--ui-txt-color); font-size:var(--head-txt); padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
 nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); }
 nav button:active{ opacity:0.8; }
 nav button.fontawesome { padding:0px; }
 nav button.fontawesome > i { font-size:calc(var(--nav-height) * 0.7); }
-nav button.navinfo:hover, nav button.navinfo:focus{ color:#FFFFFF!important; }
+nav button.navinfo:hover, nav button.navinfo:focus{ color:white!important; }
 
 /***************************************  List Model *****************************************/
 
@@ -111,9 +113,9 @@ div.table .thead > div { display: table-cell; vertical-align: middle; text-align
 div.table .thead > div * { font-size:var(--mid-txt); font-weight: bold; }
 div.table .tbody {     display: table-row-group; }
 div.table .tbody > div { display: table-row; }
-div.table .tbody > div:nth-child(even) { background-color: #FFFFFF; }
-div.table .tbody > div:nth-child(odd)  { background-color: #F1F1F1; }
-div.table .tbody > div > div { display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0px 4px; white-space:nowrap; }
+div.table .tbody > div:nth-child(even) { background-color:var(--std-color); }
+div.table .tbody > div:nth-child(odd)  { background-color:var(--main-color); }
+div.table .tbody > div > div { background-color:transparent; display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0px 4px; white-space:nowrap; }
 div.table .tfoot {     display: table-footer-group; }
 input.searchfield {    display:block; width: 99%; height:var(--field-size); margin: 3px 0px 3px 0px; }
 
@@ -135,11 +137,12 @@ div.left { float:left!important; }
 
 label.info { font-weight:bold; padding:2px; }
 span.info { padding: 2px; }
-button.info { background-color:var(--std-color); color:var(--std-txt-color); height:var(--field-size); border:none; outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
+button.info { background-color:var(--ui-color); color:var(--ui-txt-color); height:var(--field-size); border:var(--border-size) solid var(--head-color); outline-width:0; border-radius:3px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
 button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!important; }
 button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
 button.fontawesome {  width:var(--field-size); padding:0px; }
-button.fontawesome > i{ font-size:16px; }
+button.fontawesome > i{ font-size:16px; background-color:transparent; color:var(--ui-txt-color); }
+button.fontawesome > i:hover,button.fontawesome > i:active { color:var(--high-color)!important; }
 
 /*************************************** Report Model *****************************************/
 
@@ -201,9 +204,9 @@ div.loader {
 /* **************************************** EXTRA/LAST/IMPORTANT ******************************************* */
 
 div.flexdiv { display:flex; flex-wrap:wrap; width:100%; height:max-content; }
-div.centered { justify-content:space-evenly; }
+div.centered { justify-content:space-evenly; background-color:transparent; }
 div.states { padding: 1px; }
-div.state { border: var(--border-size) solid #9CA6B0; border-radius:16px; height:16px; width:16px; display:inline-block; margin-left:2px; margin-right:2px;}
+div.state { border-radius:16px; height:16px; width:16px; display:inline-block; margin-left:2px; margin-right:2px;}
 
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; }
 

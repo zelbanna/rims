@@ -1,9 +1,9 @@
 {
- "--main-color":"#F1F1F1",
+ "--main-color":"#1A1A1A",
  "--head-color":"#1A1A1A",
  "--high-color":"#CB2026",
- "--std-color":"#FFFFFF",
- "--std-txt-color":"#000000",
+ "--std-color":"#000000",
+ "--std-txt-color":"#8A8A8A",
  "--ui-color":"#000000",
  "--ui-txt-color":"#FFFFFF"
 }

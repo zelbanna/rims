@@ -31,8 +31,8 @@ export const EmailInput = (props) => input_template('email',props);
 export const PasswordInput = (props) => input_template('password',props);
 export const DateInput = (props) => input_template('date',props);
 export const TimeInput = (props) => input_template('time',props);
-export const CheckboxInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} /></Fragment>
-export const RadioInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} title={props.title}>{auto_label(props)}:</label><div>{
+export const CheckboxInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className='info' title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} /></Fragment>
+export const RadioInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className='info' title={props.title}>{auto_label(props)}:</label><div>{
   props.options.map((opt,idx) => <Fragment key={'fragradio_'+props.id+'_'+idx}>
    <label htmlFor={'radio_input_'+props.id+'_'+idx}>{opt.text}</label>
    <input type='radio' key={'radio_input_'+props.id+'_'+idx} id={'radio_input_'+props.id+'_'+idx} name={props.id} onChange={props.onChange} value={opt.value} checked={(props.value.toString() === opt.value.toString()) ? 'checked' : ''}/>

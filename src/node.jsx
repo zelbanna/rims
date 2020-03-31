@@ -20,8 +20,8 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
-   <InfoButton key={'nl_btn_info'+row.id} onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} />
-   <DeleteButton key={'nl_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} />
+   <InfoButton key={'nl_btn_info'+row.id} onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} title='Node information' />
+   <DeleteButton key={'nl_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete node' />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
@@ -31,7 +31,7 @@ export class List extends Component {
   return <Fragment key='node_fragment'>
    <ContentList key='node_cl' header='Nodes' thead={['Node','URL','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='nl_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<Info key={'node_new_' + rnd()} id='new' />) } />
+    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<Info key={'node_new_' + rnd()} id='new' />)} title='Add node' />
    </ContentList>
    <ContentData key='node_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -72,11 +72,11 @@ class Info extends Component {
       <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='ni_btn_save' onClick={() => this.updateInfo('api/master/node_info')} />
-     {old && !this.state.data.hostname && <SearchButton key='ni_btn_srch' onClick={this.searchInfo} />}
-     {old && <ReloadButton key='ni_btn_reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />) } />}
-     {old && <LogButton key='ni_btn_logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />) } />}
-     {old && <DeleteButton key='ni_btn_logc' title='Clear logs' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />) } />}
+     <SaveButton key='ni_btn_save' onClick={() => this.updateInfo('api/master/node_info')} title='Save information' />
+     {old && !this.state.data.hostname && <SearchButton key='ni_btn_srch' onClick={this.searchInfo} title='Try to map node to device' />}
+     {old && <ReloadButton key='ni_btn_reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />)} />}
+     {old && <LogButton key='ni_btn_logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />)} title='View node logs' />}
+     {old && <DeleteButton key='ni_btn_logc' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />)} title='Clear logs' />}
     </article>
     <NavBar key='node_navigation' id='node_navigation' />
     {this.state.content}

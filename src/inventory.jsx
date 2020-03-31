@@ -49,8 +49,8 @@ class List extends Component {
  }
 
  listItem = (row) => [row.id,row.serial,row.model,<Fragment key={'inventory_buttons_'+row.id}>
-   <InfoButton key={'inv_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } />
-   <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} />
+   <InfoButton key={'inv_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } title='View inventory item' />
+   <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete inventory item' />
   </Fragment>]
 
  searchHandler = (e) => this.setState({searchfield:e.target.value})
@@ -65,7 +65,7 @@ class List extends Component {
    return <Fragment key='inv_fragment'>
     <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
-     <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'domain_new_' + rnd()} id='new' />) } />
+     <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
      <SearchField key='dl_searchfield' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search inventory' />
     </ContentList>
     <ContentData key='inv_cd'>{this.state.content}</ContentData>
@@ -94,7 +94,7 @@ class Search extends Component {
      <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange}><option value='serial'>Serial</option><option value='vendor'>Vendor</option></SelectInput>
      <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
     </div>
-    <SearchButton key='inv_btn_search' title='Search' onClick={() => this.changeContent(<List key='inventory_list' args={this.state.data} />)} />
+    <SearchButton key='inv_btn_search' onClick={() => this.changeContent(<List key='inventory_list' args={this.state.data} />)} title='Search inventory' />
    </article>
   )
  }
@@ -140,7 +140,7 @@ export class Info extends Component {
       <TextInput key='comments' id='comments' value={data.comments} onChange={this.onChange} />
      </InfoColumns>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
-     <SaveButton key='inv_btn_save' onClick={() => this.updateInfo('api/inventory/info') } />
+     <SaveButton key='inv_btn_save' onClick={() => this.updateInfo('api/inventory/info') } title='Save' />
     </article>
    );
   } else

@@ -43,9 +43,9 @@ export class DomainList extends Component {
  }
 
  listItem = (row) => [row.id,row.name,row.service,<Fragment key={'domain_buttons_'+row.id}>
-   <ConfigureButton key={'net_info_'+row.id} onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } />
-   <ItemsButton key={'net_items_'+row.id} onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } />
-   <DeleteButton key={'net_delete_'+row.id} onClick={() => this.deleteList(row.id) } />
+   <ConfigureButton key={'net_info_'+row.id} onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } title='Edit domain information' />
+   <ItemsButton key={'net_items_'+row.id} onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } title='View domain records' />
+   <DeleteButton key={'net_delete_'+row.id} onClick={() => this.deleteList(row.id) } title='Delete domain' />
    </Fragment>
   ]
 
@@ -56,9 +56,9 @@ export class DomainList extends Component {
   return <Fragment key='dl_fragment'>
    <ContentList key='dl_cl' header='Domains' thead={['ID','Domain','Server','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='dl_btn_add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } />
-    <SyncButton key='dl_btn_sync' onClick={() => this.syncDomains()} />
-    <LogButton key='dl_btn_document' onClick={() => this.changeContent(<Status key='domain_status' />)} />
+    <AddButton key='dl_btn_add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } title='Add domain' />
+    <SyncButton key='dl_btn_sync' onClick={() => this.syncDomains()} title='Sync external DNS servers with cache' />
+    <LogButton key='dl_btn_document' onClick={() => this.changeContent(<Status key='domain_status' />)} title='View DNS statistics' />
    </ContentList>
    <ContentData key='dl_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -101,7 +101,7 @@ class DomainInfo extends Component {
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} />
       <TextInput key='notified_serial' id='notified_serial' label='Notified Serial' value={this.state.data.notified_serial} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='domain_save' onClick={() => this.updateInfo('api/dns/domain_info')} />
+     <SaveButton key='domain_save' onClick={() => this.updateInfo('api/dns/domain_info')} title='Save domain information' />
     </article>
    );
   } else
@@ -179,8 +179,8 @@ class RecordList extends Component {
  changeContent = (elem) => this.props.changeSelf(elem);
 
  listItem = (row) => [row.id,row.name,row.content,row.type,row.ttl,<Fragment key={'rl_buttons_'+row.id}>
-   <ConfigureButton key={'record_info_btn_' + row.id} onClick={() => this.changeContent(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} />
-   {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + row.id} onClick={() => this.deleteList(row.id)} />}
+   <ConfigureButton key={'record_info_btn_' + row.id} onClick={() => this.changeContent(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} title='Configure record' />
+   {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + row.id} onClick={() => this.deleteList(row.id)} title='Delete record' />}
   </Fragment>]
 
  deleteList = (id) => (window.confirm('Delete record?') && rest_call('api/dns/record_delete', {domain_id:this.props.domain_id,id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
@@ -188,7 +188,7 @@ class RecordList extends Component {
  render(){
   return <ContentReport key='rl_cr' header='Records' thead={['ID','Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount() } />
-   <AddButton key='rl_btn_add' onClick={() => this.changeContent(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} id='new' />)} />
+   <AddButton key='rl_btn_add' onClick={() => this.changeContent(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} id='new' />)} title='Add DNS record' />
   </ContentReport>
  }
 }
@@ -221,7 +221,7 @@ class RecordInfo extends Component {
       <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} onChange={this.onChange} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder={'A, PTR or CNAME typically'} />
      </InfoColumns>
-     <SaveButton key='record_save' onClick={() => this.updateInfo('api/dns/record_info')} />
+     <SaveButton key='record_save' onClick={() => this.updateInfo('api/dns/record_info')} title='Save record information' />
      <Result key='record_result' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
     </article>
    );

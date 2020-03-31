@@ -19,8 +19,8 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'ul_buttons_'+row.id}>
-   <ConfigureButton key={'ul_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)} />
-   <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} />
+   <ConfigureButton key={'ul_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)} title='Edit user' />
+   <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete user' />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
@@ -29,8 +29,8 @@ export class List extends Component {
  render(){
   return <Fragment key='ul_fragment'>
    <ContentList key='ul_cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='ul_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='ul_btn_add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='ul_btn_reload' onClick={() => this.componentDidMount()} />
+    <AddButton key='ul_btn_add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />)} title='Add user' />
    </ContentList>
    <ContentData key='ul_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -72,7 +72,7 @@ export class Info extends Component {
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
       <SelectInput key='theme' id='theme' value={this.state.data.theme} onChange={this.onChange}>{this.state.themes.map(row => <option key={'ui_theme_'+row} value={row}>{row}</option>)}</SelectInput>
      </InfoColumns>
-     <SaveButton key='ui_btn_save' onClick={() => this.updateInfo('api/master/user_info') } />
+     <SaveButton key='ui_btn_save' onClick={() => this.updateInfo('api/master/user_info')} title='Save' />
     </article>
    );
   } else

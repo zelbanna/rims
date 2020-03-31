@@ -284,7 +284,7 @@ class ServiceInfo extends Component {
   return (
    <article className='lineinput'>
     <div>
-     <b>{this.props.name}</b>: {this.state.state} ({this.state.extra}) <Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} />
+     <b>{this.props.name}</b>: {this.state.state} ({this.state.extra}) <Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} title='Operate service' />
     </div>
     {this.state.spinner}
    </article>

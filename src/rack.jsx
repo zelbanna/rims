@@ -35,10 +35,10 @@ export class List extends Component {
  }
 
  listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>
-   <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} />
-   <GoButton key={'rl_btn_go_'+row.id} onClick={() => this.context.changeMain({content:<DeviceMain key={'Device_Main_'+row.id} rack_id={row.id} />})} />
-   <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Inventory key={'rack_inventory_'+row.id} id={row.id} />)} />
-   <DeleteButton key={'rl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} />
+   <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} title='Rack information' />
+   <GoButton key={'rl_btn_go_'+row.id} onClick={() => this.context.changeMain({content:<DeviceMain key={'Device_Main_'+row.id} rack_id={row.id} />})} title='Rack inventory' />
+   <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Layout key={'rack_layout_'+row.id} id={row.id} />)} title='Rack layout'/>
+   <DeleteButton key={'rl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete rack' />
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
@@ -47,8 +47,8 @@ export class List extends Component {
  render(){
   return <Fragment key='rack_fragment'>
    <ContentList key='rack_cl' header='Racks' thead={['Location','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='rl_btn_add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />) } />
+    <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount()} />
+    <AddButton key='rl_btn_add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />)} title='Add rack' />
    </ContentList>
    <ContentData key='rack_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -85,7 +85,7 @@ class Info extends Component {
       <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu1_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
       <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu2_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
      </InfoColumns>
-     <SaveButton key='ri_btn_save' onClick={() => this.updateInfo('api/rack/info')} />
+     <SaveButton key='ri_btn_save' onClick={() => this.updateInfo('api/rack/info')} title='Save' />
     </article>
    )
   else
@@ -93,11 +93,11 @@ class Info extends Component {
  }
 }
 
-// *************** Inventory ***************
+// *************** Layout ***************
 //
 // TODO
 //
-export class Inventory extends Component {
+export class Layout extends Component {
  constructor(props){
   super(props)
   this.state = {}
@@ -108,13 +108,13 @@ export class Inventory extends Component {
  }
 
  render(){
-  return (<div>Rack Inventory (TODO)</div>);
+  return (<div>Rack Layout (TODO)</div>);
  }
 }
 
 // *************** Infra ***************
 //
-// TODO: fix up links on hostname so that they go to the inventory for that type
+// TODO: fix up links on hostname so that they go to the Layout for that type
 //
 export class Infra extends Component {
  constructor(props){
@@ -129,9 +129,9 @@ export class Infra extends Component {
  listItem = (row) => {
   const buttons = []
   if (row.url)
-   buttons.push(<UiButton key={'ri_btn_ui_'+row.id} onClick={() => { window.open(row.url,'_blank'); }} />)
+   buttons.push(<UiButton key={'ri_btn_ui_'+row.id} onClick={() => { window.open(row.url,'_blank'); }} title='UI' />)
   return [
-   <HrefButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} />,
+   <HrefButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,
    row.hostname,<Fragment key='ri_buttons'>{buttons}</Fragment>
   ]
  }
@@ -141,7 +141,7 @@ export class Infra extends Component {
  render(){
   return <Fragment key='ri_fragment'>
    <ContentList key='ri_cl' header={this.props.type.toUpperCase()} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='ri_btn_reload' onClick={() => this.componentDidMount() } />
+    <ReloadButton key='ri_btn_reload' onClick={() => this.componentDidMount()} />
    </ContentList>
    <ContentData key='ri_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -149,7 +149,7 @@ export class Infra extends Component {
 }
 
 /*
- TODO: 
+ TODO:
 
  for dev in devices:
   <A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV>"%(dev['type_name'],dev['ip'],dev['hostname']))

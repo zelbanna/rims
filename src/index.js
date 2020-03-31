@@ -66,7 +66,7 @@ class Portal extends Component {
    <React.Fragment key='portal'>
     <Theme key='portal_theme' theme={this.context.cookie.theme} />
     <Header key='portal_header'>
-     <FontAwesomeMenuButton key='mb_btn_logout' style={{float:'right',color:'#FFFFFF',backgroundColor:'var(--high-color)'}} onClick={() => { this.context.clearCookie()}} title='Log out' type='fas fa-sign-out-alt' />
+     <FontAwesomeMenuButton key='mb_btn_logout' style={{float:'right', backgroundColor:'var(--high-color)'}} onClick={() => { this.context.clearCookie()}} title='Log out' type='fas fa-sign-out-alt' />
      <FontAwesomeMenuButton key='mb_btn_system_Main' style={{float:'right'}} onClick={() => {this.changeContent({module:'system',function:'Main'})}} title='System information' type='fas fa-cogs' />
      <FontAwesomeMenuButton key='mb_btn_user_User' style={{float:'right'}} onClick={() => {this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})}} title='User' type='fas fa-user' />
      {buttons}
