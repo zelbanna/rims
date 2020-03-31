@@ -16,7 +16,7 @@ import { List as InterfaceList } from './interface.jsx';
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = {content:null}
+  this.state = {}
  }
 
  componentDidMount(){
@@ -32,7 +32,6 @@ export class Main extends Component {
    this.setState({content:<Elem key={module+'_'+func} {...args} />})
   })
  }
-
 
  compileNavItems = (state) => {
   this.context.loadNavigation(<NavBar key='device_navbar'>
@@ -196,7 +195,7 @@ export class Info extends Component {
    const has_ip = (this.state.extra.interface_ip);
 
    // TODO: Function for 'manage' that takes base,type,id
-   const functions = (this.state.extra.functions.length >0) ? this.state.extra.functions.split(',').map((row,idx) => (<NavButton key={'di_nav_'+idx} title={row} onClick={() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} />)} />)) : null
+   const functions = (this.state.extra.functions.length >0) ? this.state.extra.functions.split(',').map((row,idx) => (<NavButton key={'di_nav_'+idx} title={row} onClick={() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} type={this.state.extra.type_name} />)} />)) : null
 
    return (
     <Fragment key='di_fragment'>
@@ -260,6 +259,7 @@ export class Info extends Component {
 
 // ************* Extended *************
 //
+// TODO: complete this one
 class Extended extends Component {
  constructor(props){
   super(props)
@@ -300,6 +300,7 @@ class Extended extends Component {
 
 // ************* Control **************
 //
+// TODO: complete this one 
 class Control extends Component {
  constructor(props){
   super(props)
@@ -344,41 +345,26 @@ class Control extends Component {
 // ************** Logs **************
 //
 export class Logs extends Component {
- constructor(props){
-  super(props)
-  this.state = {}
- }
-
  componentDidMount(){
   rest_call("api/device/log_get",{id:this.props.id}).then(result => this.setState(result));
  }
 
- listItem = (row) => [row.time,row.message];
-
  render() {
-  return <ContentReport key='dev_log_cr' header='Devices' thead={['Time','Message']} trows={this.state.data} listItem={this.listItem} />
+  return (!this.state) ? <Spinner /> : <ContentReport key='dev_log_cr' header='Devices' thead={['Time','Message']} trows={this.state.data} listItem={(row) => [row.time,row.message]} />
  }
 }
 
 // ******** Configuration *********
 //
 class Configuration extends Component {
- constructor(props){
-  super(props)
-  this.state = {}
- }
-
  componentDidMount(){
   rest_call("api/device/configuration_template",{id:this.props.id}).then(result => this.setState(result));
  }
 
  render() {
-  return <article>
-   {(this.state.status === 'OK') ? this.state.data.map((row,idx) => <p key={'conf_'+idx}>{row}</p>) : <b>{this.state.info}</b>}
-  </article>
+  return (!this.state) ? <Spinner /> : <article>{(this.state.status === 'OK') ? this.state.data.map((row,idx) => <p key={'conf_'+idx}>{row}</p>) : <b>{this.state.info}</b>}</article>
  }
 }
-
 
 // ************** New **************
 //
@@ -484,11 +470,6 @@ class DiscoverRun extends Component {
 // ************** Report **************
 //
 export class Report extends Component {
- constructor(props){
-  super(props)
-  this.state ={}
- }
-
  componentDidMount(){
   rest_call('api/device/list', { extra:['system','type','mac','oui','class']}).then(result => this.setState(result))
  }
@@ -496,18 +477,13 @@ export class Report extends Component {
  listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,StateMap({state:row.state})]
 
  render(){
-  return <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','Class','IP','MAC','OUI','Model','OID','Serial','State']} trows={this.state.data} listItem={this.listItem} />
+  return (!this.state) ? <Spinner /> : <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','Class','IP','MAC','OUI','Model','OID','Serial','State']} trows={this.state.data} listItem={this.listItem} />
  }
 }
 
 // ************** Type List **************
 //
 class TypeList extends Component {
- constructor(props){
-  super(props);
-  this.state = {}
- }
-
  componentDidMount(){
   rest_call('api/device/type_list').then(result => this.setState(result))
  }
@@ -519,28 +495,22 @@ class TypeList extends Component {
  listItem = (row) => [row.base,<HrefButton text={row.name} onClick={() => this.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
 
  render(){
-  return <Fragment key='dev_tp_fragment'>
+  return (this.state) ? <Fragment key='dev_tp_fragment'>
    <ContentList key='dev_tp_cl' header='Device Types' thead={['Class','Name','Icon']} trows={this.state.data} listItem={this.listItem} />
    <ContentData key='dev_tp_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </Fragment> : <Spinner />
  }
 }
 
 // ************** Model List **************
 //
 class ModelList extends Component {
- constructor(props){
-  super(props)
-  this.state = {}
- }
 
  componentDidMount(){
   rest_call('api/device/model_list').then(result => this.setState({...result,result:'OK'}))
  }
 
- syncModels(){
-  rest_call('api/device/model_list',{op:'sync'}).then(result => this.setState(result))
- }
+ syncModels = () => rest_call('api/device/model_list',{op:'sync'}).then(result => this.setState(result))
 
  listItem = (row) => [row.id,row.name,row.type,<Fragment key={'ml_' + row.id}>
   <ConfigureButton key={'ml_btn_info_' + row.id} onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} />
@@ -551,13 +521,13 @@ class ModelList extends Component {
  deleteList = (id) => (window.confirm('Really delete model?') && rest_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='dev_ml_fragment'>
+  return (this.state) ? <Fragment key='dev_ml_fragment'>
    <ContentList key='dev_ml_cl' header='Device Models' thead={['ID','Model','Type','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='ml_btn_reload' onClick={() => this.componentDidMount() } />
     <SyncButton key='_ml_btn_sync' onClick={() => this.syncModels() } title='Resync models' />
    </ContentList>
    <ContentData key='dev_ml_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </Fragment> : <Spinner />
  }
 }
 
@@ -626,7 +596,7 @@ class OUISearch extends Component {
  }
 }
 
-// ************** OUI LIST **************
+// ************** OUI List **************
 //
 class OUIList extends Component {
 
@@ -652,11 +622,22 @@ class OUIList extends Component {
  }
 }
 
-// ************** TODO **************
+// ************** Function **************
 //
-
 class Function extends Component {
+ componentDidMount(){
+  rest_call("api/device/function",{op:this.props.op, id:this.props.id, type:this.props.type}).then(result => this.setState(result))
+ }
  render() {
-  return (<div>Device Function (TODO)</div>);
+  if (!this.state)
+   return <Spinner />
+  else if (this.state.status === 'OK'){
+   if(this.state.data.length > 0){
+    const head = Object.keys(this.state.data[0]);
+    return <ContentReport key='df_cr' thead={head} trows={this.state.data} listItem={(row) => head.map(hd => row[hd])} />
+   } else
+    return <article>No Data</article>
+  } else
+   return <article><b>Error in devdata: {this.state.info}</b></article>
  }
 }

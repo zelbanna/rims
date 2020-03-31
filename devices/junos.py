@@ -104,7 +104,7 @@ class Junos(GenericDevice):
   return ret
 
  def info(self):
-  return [{'version':self._version,'model':self._model}]
+  return [{'Version':self._version,'Model':self._model}]
 
  def configuration(self,argdict):
   base  = "set groups default_system"

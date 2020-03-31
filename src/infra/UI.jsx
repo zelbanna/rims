@@ -41,7 +41,7 @@ export class Theme extends Component {
  }
 
  render(){
-  return <Fragment key='theme_container'>{this.props.children}</Fragment>
+  return <Fragment key='fragment_theme'>{this.props.children}</Fragment>
  }
 }
 

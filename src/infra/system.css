@@ -15,8 +15,8 @@ With standard margin @ 3px we need to remove 6px from all heights and widths
 */
 
 :root {
-  --mid-txt: 14px;
   --head-txt: 14px;
+  --mid-txt: 12px;
   --std-txt: 11px;
   --border-size:1px;
   --field-size:22px;
@@ -67,7 +67,7 @@ article.login h1 { margin:var(--head-txt); }
 
 button.menu { 
  -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat;
- border:var(--border-size) solid #9CA6B0; border-radius:4px; background-color:#FFFFFF; color:#71808E;  float:left; font-family: "Courier New", serif; font-size:var(--mid-txt); font-weight:bold;
+ border:var(--border-size) solid #9CA6B0; border-radius:4px; background-color:#FFFFFF; color:#71808E;  float:left; font-family: "Courier New", serif; font-size:var(--head-txt); font-weight:bold;
  height:calc(var(--field-size) * 2); margin:3px 2px; min-width:calc(var(--field-size) * 2);  overflow:hidden; padding:4px; text-align:center; white-space:nowrap;
 }
 button.menu:hover, button.menu:focus { opacity:0.9; border:var(--border-size) solid #000000; }
@@ -93,7 +93,7 @@ nav li.navinfo {  background-color:#00CC66; color:#FFFFFF; font-weight:bold;}
 nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
 nav li.right { float:right; }
 
-nav button,nav label { color:var(--std-txt-color); font-size:var(--mid-txt); padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
+nav button,nav label { color:var(--std-txt-color); font-size:var(--head-txt); padding:8px; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
 nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); }
 nav button:active{ opacity:0.8; }
 nav button.fontawesome { padding:0px; }
