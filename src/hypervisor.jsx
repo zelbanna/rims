@@ -37,7 +37,7 @@ export class List extends Component {
  listItem = (row) => {
   const up =  (row.state === 'up');
   return [row.hostname,row.type_name,<StateMap state={row.state} />,<Fragment key={'hypervisor_buttons_'+row.id}>
-   {up && row.type_functions === 'manage' && <InfoButton key={'hypervisor_info_'+row.id} onClick={() => this.context.changeMain({content:<Manage key={'hypervisor_manage_'+row.id} id={row.id} />}) } />}
+   {up && row.type_functions === 'manage' && <InfoButton key={'hypervisor_info_'+row.id} onClick={() => this.changeContent(<Manage key={'hypervisor_manage_'+row.id} id={row.id} />)} />}
    {up && row.url && row.url.length > 0 && <UiButton key={'hypervisor_ui_'+row.id} onClick={() => window.open(row.url,'_blank') } />}
    </Fragment>]
  }
@@ -53,7 +53,6 @@ export class List extends Component {
   </Fragment>
  }
 }
-List.contextType = RimsContext;
 
 // ************** Sync **************
 //
@@ -84,7 +83,7 @@ class Sync extends Component{
 
 // ************** Manage **************
 //
-class Manage extends Component {
+export class Manage extends Component {
 
  componentDidMount(){
   rest_call('api/device/management',{id:this.props.id})

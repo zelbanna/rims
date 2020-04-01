@@ -49,7 +49,7 @@ export class Theme extends Component {
 
 export const TableHead = (props) => <div className='thead'>{props.headers.map((row,index) => <div key={'th_'+index}>{row}</div> )}</div>
 
-export const TableRow = (props) => <div>{props.cells.map((row,index) => <div key={'tr_'+index}>{row}</div> )}</div>
+export const TableRow = (props) => <div className='trow'>{props.cells.map((row,index) => <div key={'tr_'+index}>{row}</div> )}</div>
 
 // ***************************** Content ********************************
 

@@ -192,6 +192,13 @@ export class Info extends Component {
   })
  }
 
+ changeFunction(op){
+  if(op !== 'manage')
+   this.changeContent(<Function key={'dev_func_'+op} id={this.props.id} op={op} type={this.state.extra.type_name} />)
+  else
+   this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{id:this.props.id, type:this.state.extra.type_name}})
+ }
+
  render() {
   if(this.state.data){
    const vm = (this.state.data.class === 'vm' && this.state.vm) ? this.state.vm : false;
@@ -199,8 +206,7 @@ export class Info extends Component {
    const change_self = (this.props.changeSelf);
    const has_ip = (this.state.extra.interface_ip);
 
-   // TODO: Function for 'manage' that takes base,type,id
-   const functions = (this.state.extra.functions.length >0) ? this.state.extra.functions.split(',').map((row,idx) => (<NavButton key={'di_nav_'+idx} title={row} onClick={() => this.changeContent(<Function key={'dev_func'+row} id={this.props.id} op={row} type={this.state.extra.type_name} />)} />)) : null
+   const functions = (this.state.extra.functions.length >0) ? this.state.extra.functions.split(',').map((row,idx) => <NavButton key={'di_nav_'+idx} title={row} onClick={() => this.changeFunction(row)} />) : null
 
    return (
     <Fragment key='di_fragment'>
@@ -261,6 +267,7 @@ export class Info extends Component {
    return <Spinner />
  }
 }
+Info.contextType = RimsContext;
 
 // ************* Extended *************
 //

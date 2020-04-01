@@ -23,7 +23,7 @@ export class List extends Component{
 
  listItem = (row) => [row.interface_id,row.mac,(row.ip) ? `${row.ip} (${row.ipam_id})` : '-',row.snmp_index,row.name,row.description,row.class,
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
-   <div><StateMap key={'il_if_state_' + row.interface_id} state={row.if_state} /><StateMap key={'il_ip_state_' + row.interface_id}state={row.ip_state} /></div>,<Fragment key={'il_btns_'+row.interface_id}>
+   <div className='states'><StateMap key={'il_if_state_' + row.interface_id} state={row.if_state} /><StateMap key={'il_ip_state_' + row.interface_id}state={row.ip_state} /></div>,<Fragment key={'il_btns_'+row.interface_id}>
     <InfoButton key={'il_btn_info_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
     <DeleteButton key={'il_btn_del_' + row.interface_id} onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
     {!row.connection_id && <LinkButton key={'il_btn_sync_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}

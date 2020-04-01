@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { MenuButton } from './infra/Buttons.jsx';
 import { RimsContext } from './infra/UI.jsx';
@@ -8,6 +8,10 @@ import { RimsContext } from './infra/UI.jsx';
 // ************** Main **************
 //
 export class Main extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  changeContent = (elem) => this.setState(elem)
 
@@ -15,22 +19,19 @@ export class Main extends Component {
   rest_call('api/portal/resources',{type:'tool'}).then((result) => {
    let buttons = []
    for (let [key, panel] of Object.entries(result.data)){
-    let click = null
     if (panel.type === 'module')
-     click = () => this.context.changeMain(panel)
+     buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => this.context.changeMain(panel)} />)
     else if (panel.type === 'tab')
-     click = () => window.open(panel.tab,'_blank')
-    else if (panel.type === 'frame')
-     click = () => this.setState({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>})
-    panel.title = key
-    buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
+     buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => window.open(panel.tab,'_blank')} />)
+   else if (panel.type === 'frame')
+    buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => this.context.changeMain(<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>)} />)
    }
-   this.setState(<div className='flexdiv centered'>{buttons}</div>)
+   this.setState({content:buttons})
   })
  }
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <div className='flexdiv centered'>{this.state.content}</div>
  }
 }
 Main.contextType = RimsContext;

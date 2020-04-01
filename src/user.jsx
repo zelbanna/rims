@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
-import { TextInput, PasswordInput, SelectInput } from './infra/Inputs.jsx';
+import { TextInput, TextLine, PasswordInput, SelectInput } from './infra/Inputs.jsx';
 
 // CONVERTED ENTIRELY
 
@@ -66,7 +66,7 @@ export class Info extends Component {
     <article className='info'>
      <h1>User</h1>
      <InfoColumns key='ui_content'>
-      <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />
+      {(this.context.cookie.id === this.props.id) ?  <TextLine key='alias' id='alias' text='alias' /> : <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />}
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
       <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />

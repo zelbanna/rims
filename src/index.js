@@ -33,6 +33,7 @@ class Portal extends Component {
  loadNavigation = (navbar) => this.setState({navigation:navbar})
 
  changeContent = (panel) => {
+  // Native RIMS or something else?
   if (panel.hasOwnProperty('module')) {
    if (this.state.content && (this.state.content.key === `${panel.module}_${panel.function}`))
     return
@@ -46,21 +47,19 @@ class Portal extends Component {
     alert(err);
    }
   } else
-   this.setState(panel)
+   this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:panel})
  }
 
+ // TODO setstate with panel should also reset navbar
  render() {
   let buttons = []
   for (let [key, panel] of Object.entries(this.state.menu)){
-   let click = null
    if (panel.type === 'module')
-    click = () => this.changeContent(panel)
+    buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => this.changeContent(panel)} />)
    else if (panel.type === 'tab')
-    click = () => window.open(panel.tab,'_blank')
+    buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => window.open(panel.tab,'_blank')} />)
    else if (panel.type === 'frame')
-    click = () => { this.changeContent({content:<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>,navigation:<NavBar key='portal_navigation_empty' />}) }
-   panel.title = key
-   buttons.push(<MenuButton key={'mb_'+key} {...panel} onClick={click} />)
+    buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => this.changeContent(<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>)} />)
   }
   return (
    <React.Fragment key='portal'>
