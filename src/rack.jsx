@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
 
 import { Main as DeviceMain, Info as DeviceInfo } from './device.jsx';
 import { Info as LocationInfo } from './location.jsx';
@@ -126,32 +126,20 @@ export class Infra extends Component {
   rest_call('api/device/list',{field:'base',search:this.props.type,extra:['type']}).then(result => this.setState(result))
  }
 
- listItem = (row) => {
-  const buttons = []
-  if (row.url)
-   buttons.push(<UiButton key={'ri_btn_ui_'+row.id} onClick={() => { window.open(row.url,'_blank'); }} title='UI' />)
-  return [
-   <HrefButton key={'ri_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,
-   row.hostname,<Fragment key='ri_buttons'>{buttons}</Fragment>
-  ]
- }
+ listItem = (row) => [<HrefButton key={'rinfra_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,
+   row.hostname,<Fragment key='rinfra_buttons'>
+   <InfoButton key={'rinfra_btn_' + row.id} onClick={() => this.context.changeMain({module:row.type_base,function:'Manage',args:{id:row.id, type:row.type_name}})} title='Manage device' />
+   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return <Fragment key='ri_fragment'>
-   <ContentList key='ri_cl' header={this.props.type.toUpperCase()} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='ri_btn_reload' onClick={() => this.componentDidMount()} />
+  return <Fragment key='rinfra_fragment'>
+   <ContentList key='rinfra_cl' header={this.props.type.toUpperCase()} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
+    <ReloadButton key='rinfra_btn_reload' onClick={() => this.componentDidMount()} />
    </ContentList>
-   <ContentData key='ri_cd'>{this.state.content}</ContentData>
+   <ContentData key='rinfra_cd'>{this.state.content}</ContentData>
   </Fragment>
  }
 }
-
-/*
- TODO:
-
- for dev in devices:
-  <A CLASS=z-op DIV=div_content_left URL='%s_inventory?ip=%s'>%s</A></DIV><DIV>"%(dev['type_name'],dev['ip'],dev['hostname']))
-  aWeb.button('info',DIV='main',URL='%s_manage?id=%s&ip=%s&hostname=%s'%(dev['type_name'],dev['id'],dev['ip'],dev['hostname'])))
-*/
+Infra.contextType = RimsContext;

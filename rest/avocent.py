@@ -17,11 +17,13 @@ def update(aCTX, aArgs = None):
 
  Output:
  """
+ ret = {}
  if not (int(aArgs['slot']) == 0 and int(aArgs['unit']) == 0):
   avocent = Device(aCTX, aArgs['id'])
   ret = avocent.set_name(int(aArgs['slot']),int(aArgs['unit']),aArgs['text'])
  else:
-  ret = 'not updating 0.0'
+  ret['info'] = 'not updating 0.0'
+  ret['status'] = 'NOT_OK'
  return ret
 
 #
@@ -65,11 +67,11 @@ def inventory(aCTX, aArgs = None):
   - id (required)
 
  Output:
-  - inventory. list of inventory items
+  - data. list of inventory items
  """
  ret = {}
  avocent = Device(aCTX,aArgs['id'])
- try:    ret['inventory'] = avocent.get_inventory()
+ try:    ret['data'] = avocent.get_inventory()
  except: ret['status'] = 'NOT_OK'
  else:   ret['status'] = 'OK'
  return ret

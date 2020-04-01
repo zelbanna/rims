@@ -7,11 +7,11 @@ __author__  = "Zacharias El Banna"
 __type__    = "pdu"
 
 from rims.devices.generic import Device as GenericDevice
-from rims.core.common import VarList, Session
+from rims.core.common import VarList, VarBind, Session
 
 ######################################## PDU ########################################
 
-class Org(GenericDevice):
+class Device(GenericDevice):
 
  _getstatemap = { '1':'off', '2':'on' }
  _setstatemap = { 'off':b'3', 'on':b'2', 'reboot':b'4' }
@@ -43,7 +43,7 @@ class Org(GenericDevice):
    op  = Device.set_outlet_state(state)
    # snmpset -v2c -c %s %s %s i %s"%(self._ctx.config['snmp']['write'], self._ip, oid, op))
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['write'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
-   setobj = VarList(tag,iid , op ,"INTEGER")
+   setobj = VarList(VarBind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
    sleep(0.5)
    if (session.ErrorInd == 0):
@@ -80,19 +80,21 @@ class Org(GenericDevice):
  #
  def set_name(self,slot,unit,name):
   ret = {}
-  try:
+  # try:
+  if (True):
    name = name[:16].encode('utf-8')
-   tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.4.1"
+   tag = '.1.3.6.1.4.1.10418.17.2.5.5.1.4.1'
    iid = "%s.%s"%(slot,unit)
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['write'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
-   setobj = VarList(tag , iid , name, "OPAQUE")
+   setobj = VarList(VarBind(tag , iid , name, "OPAQUE"))
    session.set(setobj)
    if (session.ErrorInd == 0):
     ret['status'] = 'OK'
    else:
     ret['status'] = 'NOT_OK_FAILED'
     ret['info'] = 'SNMP_ERROR_%s'%session.ErrorInd
-  except Exception as e:
+  #except Exception as e:
+  else:
    ret['info'] = repr(e)
    ret['status']  = 'NOT_OK_ERROR'
   return ret
@@ -133,7 +135,7 @@ class Org(GenericDevice):
 
 from random import randint
 
-class Device(GenericDevice):
+class Mock(GenericDevice):
 
  _getstatemap = { '1':'off', '2':'on' }
  _setstatemap = { 'off':b'3', 'on':b'2', 'reboot':b'4' }

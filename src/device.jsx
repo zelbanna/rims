@@ -41,8 +41,8 @@ export class Main extends Component {
     <NavButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
    </NavDropDown>
    <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
-   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() =>alert('implement PDU')} />)}</NavDropDown>}
-   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() =>alert('implement Console')} />)}</NavDropDown>}
+   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.context.changeMain({module:'pdu', function:'Manage', args:{id:row.id, type:row.type}})} />)}</NavDropDown>}
+   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.context.changeMain({module:'console', function:'Manage', args:{id:row.id, type:row.type}})} />)}</NavDropDown>}
    {(state.rack_id) && <NavButton key='dev_nav_rack' title={state.name} onClick={() => this.changeContent(<RackLayout key='rack_layout' id={state.rack_id} />)} />}
    <NavDropDown key='dev_nav_oui' title='OUI'>
     <NavButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />

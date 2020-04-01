@@ -168,7 +168,7 @@ class DB(object):
 class SnmpException(Exception):
  pass
 
-class Varbind(object):
+class VarBind(object):
  """ Match the model from netsnmp - at least (!) tag and iid should be supplied """
  def __init__(self, tag=None, iid=None, val=None, type=None):
   self.tag = tag
@@ -187,15 +187,15 @@ class Varbind(object):
   self.__dict__[name] = val if (name == 'val' or val == None) else str(val)
 
  def __str__(self):
-  return "Varbind(tag=%s, iid=%s, val=%s, type=%s)"%(self.tag, self.iid, self.val, self.type)
+  return "VarBind(tag=%s, iid=%s, val=%s, type=%s)"%(self.tag, self.iid, self.val, self.type)
 
 #
 #
 class VarList(object):
 
  def __init__(self, *vs):
-  """ If regular vars - i.e. strings are passed, wrap into a Varbind. This is the most common usage for Varlists """
-  self.varbinds = list(var if isinstance(var, Varbind) else Varbind(var) for var in vs)
+  """ If regular vars - i.e. strings are passed, wrap into a VarBind. This is the most common usage for Varlists """
+  self.varbinds = list(var if isinstance(var, VarBind) else VarBind(var) for var in vs)
 
  def __len__(self):
   return len(self.varbinds)
@@ -204,7 +204,7 @@ class VarList(object):
   return self.varbinds[index]
 
  def __setitem__(self, index, val):
-  if isinstance(val, Varbind):
+  if isinstance(val, VarBind):
    self.varbinds[index] = val
   else:
    raise TypeError
@@ -223,7 +223,7 @@ class VarList(object):
 
  def append(self, *vars):
   for var in vars:
-   if isinstance(var, Varbind):
+   if isinstance(var, VarBind):
     self.varbinds.append(var)
    else:
     raise TypeError
@@ -305,7 +305,7 @@ class Session(object):
    raise SnmpException(err)
 
  def oid(self,aOid):
-  tmp_var = Varbind(aOid,'')
+  tmp_var = VarBind(aOid,'')
   self._libmod.get(self, VarList(tmp_var))
   return tmp_var
 
