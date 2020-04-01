@@ -128,7 +128,7 @@ export class Infra extends Component {
 
  listItem = (row) => [<HrefButton key={'rinfra_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,
    row.hostname,<Fragment key='rinfra_buttons'>
-   <InfoButton key={'rinfra_btn_' + row.id} onClick={() => this.context.changeMain({module:row.type_base,function:'Manage',args:{id:row.id, type:row.type_name}})} title='Manage device' />
+   <InfoButton key={'rinfra_btn_' + row.id} onClick={() => this.context.changeMain({module:row.type_base,function:'Manage',args:{device_id:row.id, type:row.type_name}})} title='Manage device' />
    </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})

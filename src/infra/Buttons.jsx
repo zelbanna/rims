@@ -8,7 +8,8 @@ export const FontAwesomeMenuButton = (props) => <button id={props.id} className=
 export const HrefButton = (props) => <button id={props.id} className='text' style={props.style} onClick={props.onClick} title={props.title}>{props.text}</button>
 
 // *********************** Info Types *************************
-const info_template = (type,props) => <button id={props.id} className={'info fontawesome'} style={props.style} onClick={props.onClick} title={props.title}><i className={type} /></button>
+
+const info_template = (type,props) => <button id={props.id} className='info fontawesome' style={props.style} onClick={props.onClick} title={props.title}><i className={type} /></button>
 export const TextButton = (props) => <button id={props.id} className='info text' onClick={props.onClick} title={props.title}>{props.text}</button>
 export const AddButton = (props) => info_template('fas fa-plus',props);
 export const BackButton = (props) => info_template('fas fa-arrow-left',props);
@@ -31,8 +32,8 @@ export const ReloadButton = (props) => info_template('fas fa-redo-alt',props);
 export const SaveButton = (props) => info_template('fas fa-download',props);
 export const SearchButton = (props) => info_template('fas fa-search',props);
 export const ShutdownButton = (props) => info_template('fas fa-power-off',props);
-export const StartButton = (props) => info_template('fas fa-play',props);
-export const StopButton = (props) => info_template('fas fa-stop',props);
+export const StartButton = (props) => <button id={props.id} className='info fontawesome green' style={props.style} onClick={props.onClick} title={props.title}><i className='fas fa-play' /></button>;
+export const StopButton = (props) => <button id={props.id} className='info fontawesome red' style={props.style} onClick={props.onClick} title={props.title}><i className='fas fa-stop' /></button>;
 export const SyncButton = (props) => info_template('fas fa-exchange-alt',props);
 export const TermButton = (props) => info_template('fas fa-terminal',props);
 export const UiButton = (props) => info_template('fas fa-globe-americas',props);

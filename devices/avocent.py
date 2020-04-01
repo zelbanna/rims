@@ -13,20 +13,17 @@ from rims.core.common import VarList, VarBind, Session
 
 class Device(GenericDevice):
 
- _getstatemap = { '1':'off', '2':'on' }
- _setstatemap = { 'off':b'3', 'on':b'2', 'reboot':b'4' }
-
  @classmethod
  def get_functions(cls):
   return ['manage']
 
  @classmethod
  def get_outlet_state(cls,state):
-  return cls._getstatemap.get(state,'unknown')
+  return { '1':'off', '2':'on' }.get(state,'unknown')
 
  @classmethod
  def set_outlet_state(cls,state):
-  return cls._setstatemap.get(state,b'1')
+  return { 'off':b'3', 'on':b'2', 'reboot':b'4' }.get(state,b'1')
 
  def __init__(self, aCTX, aID, aIP = None):
   GenericDevice.__init__(self, aCTX, aID, aIP)
@@ -80,8 +77,7 @@ class Device(GenericDevice):
  #
  def set_name(self,slot,unit,name):
   ret = {}
-  # try:
-  if (True):
+  try:
    name = name[:16].encode('utf-8')
    tag = '.1.3.6.1.4.1.10418.17.2.5.5.1.4.1'
    iid = "%s.%s"%(slot,unit)
@@ -93,8 +89,7 @@ class Device(GenericDevice):
    else:
     ret['status'] = 'NOT_OK_FAILED'
     ret['info'] = 'SNMP_ERROR_%s'%session.ErrorInd
-  #except Exception as e:
-  else:
+  except Exception as e:
    ret['info'] = repr(e)
    ret['status']  = 'NOT_OK_ERROR'
   return ret
@@ -130,62 +125,3 @@ class Device(GenericDevice):
   except Exception as e:
    self.log("Error loading conf: %s"%(str(e)))
   return result
-
-######################################## Mock ########################################
-
-from random import randint
-
-class Mock(GenericDevice):
-
- _getstatemap = { '1':'off', '2':'on' }
- _setstatemap = { 'off':b'3', 'on':b'2', 'reboot':b'4' }
-
- @classmethod
- def get_functions(cls):
-  return ['manage']
-
- @classmethod
- def get_outlet_state(cls,state):
-  return cls._getstatemap.get(state,'unknown')
-
- @classmethod
- def set_outlet_state(cls,state):
-  return cls._setstatemap.get(state,b'1')
-
- def __init__(self, aCTX, aID, aIP = None):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
-  self.units = {}
-  for k in range(1,10):
-   self.units[k] = {'state':self.get_outlet_state(str(randint(1,2))),'name':'name_%s'%k}
-
- def __str__(self): return "AvocentMock[%s,%s]"%(self._id,self._ip)
-
- #
- def set_state(self,slot,unit,state):
-  ret = {}
-  self.units[unit]['state'] = Device.set_outlet_state(state)
-  ret['status'] = 'OK'
-  self.log("Set state: %s on %s.%s - %s (%s)"%(state,slot,unit,ret['status'],ret.get('info','')))
-  return ret
-
- #
- def get_state(self,slot,unit):
-  ret = {'state':'unknown' }
-  ret['status'] = 'OK'
-  ret['state'] = Device.get_outlet_state(self.units[unit]['state'])
-  return ret
-
- #
- def set_name(self,slot,unit,name):
-  ret = {}
-  self.units[unit]['name'] = name
-  ret['status'] = 'OK'
-  return ret
-
- #
- def get_slot_names(self):
-  return [[1,'default_slot']]
-
- #
- def get_inventory(self):
-  return [{'slot':1, 'unit':k,'name':self.units[k]['name'],'state':self.units[k]['state'],'slotname':'default_slot'} for k in range(1,10)]

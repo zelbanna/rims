@@ -56,7 +56,6 @@ export class List extends Component {
 
 // ************** Sync **************
 //
-
 class Sync extends Component{
  constructor(props){
   super(props)

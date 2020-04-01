@@ -67,7 +67,7 @@ const content = (type,props) => {
     <div className={(props.hasOwnProperty('tableClass')) ? props.tableClass : 'table'}>
      <TableHead key={'con_thead'} headers={props.thead} />
      <div className='tbody'>
-      {props.trows.map((row,index) => <TableRow key={'tr_'+index} cells={props.listItem(row)} /> )}
+      {props.trows.map((row,idx) => <TableRow key={'tr_'+idx} cells={props.listItem(row,idx)} /> )}
      </div>
     </div>
    </article>

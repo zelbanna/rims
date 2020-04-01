@@ -7,10 +7,10 @@ import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 import { List as RackList, Layout as RackLayout, Infra as RackInfra } from './rack.jsx';
+import { Inventory as PduInventory } from './pdu.jsx';
+import { Inventory as ConInventory } from './console.jsx';
 
 // **************** Main ****************
-//
-// TODO - proper PDU and Console action for rack devices
 //
 export class Main extends Component {
  constructor(props){
@@ -41,8 +41,8 @@ export class Main extends Component {
     <NavButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
    </NavDropDown>
    <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
-   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.context.changeMain({module:'pdu', function:'Manage', args:{id:row.id, type:row.type}})} />)}</NavDropDown>}
-   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.context.changeMain({module:'console', function:'Manage', args:{id:row.id, type:row.type}})} />)}</NavDropDown>}
+   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeContent(<PduInventory key='pdu_inventory' device_id={row.id} type={row.type} />)} />)}</NavDropDown>}
+   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeContent(<ConInventory key='console_inventory' device_id={row.id} type={row.type} />)} />)}</NavDropDown>}
    {(state.rack_id) && <NavButton key='dev_nav_rack' title={state.name} onClick={() => this.changeContent(<RackLayout key='rack_layout' id={state.rack_id} />)} />}
    <NavDropDown key='dev_nav_oui' title='OUI'>
     <NavButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
@@ -196,7 +196,7 @@ export class Info extends Component {
   if(op !== 'manage')
    this.changeContent(<Function key={'dev_func_'+op} id={this.props.id} op={op} type={this.state.extra.type_name} />)
   else
-   this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{id:this.props.id, type:this.state.extra.type_name}})
+   this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{device_id:this.props.id, type:this.state.extra.type_name}})
  }
 
  render() {
@@ -255,7 +255,7 @@ export class Info extends Component {
      {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} title="Information lookup" />}
      {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title="Logs" />}
      {has_ip && <TermButton key='di_btn_ssh' onClick={() => { const sshWin = window.open(`ssh://${this.state.extra.username}@${this.state.extra.interface_ip}`,'_blank'); sshWin.close(); }} title='SSH connection' />}
-     {rack && rack.console_ip && rack.console_port && <TermButton key='di_btn_console' onClick={() => { const termWin = window.open(`telnet://${rack.console_ip}:${6000 +rack.console_port}`,'_blank'); termWin.close();}} title="Serial Connection" /> }
+     {rack && rack.console_url && <TermButton key='di_btn_console' onClick={() => { const termWin = window.open(rack.console_url,'_blank'); termWin.close(); }} title="Serial Connection" /> }
      {this.state.data.url && <UiButton key='di_btn_ui' onClick={() => window.open(this.state.data.url,'_blank')} title="Web UI" />}
      <Result key='dev_result' result={JSON.stringify(this.state.update)} />
     </article>
@@ -272,6 +272,7 @@ Info.contextType = RimsContext;
 // ************* Extended *************
 //
 // TODO: complete this one
+//
 class Extended extends Component {
  constructor(props){
   super(props)

@@ -213,8 +213,10 @@ def info(aCTX, aArgs = None):
      pdus = db.get_dict('device_id')
     else:
      pdus = {}
-    console = devices.get(rack['console_id'],{'hostname':None,'ip':None})
-    rack.update({'console_name':console['hostname'],'console_ip':console['ip']})
+    if rack['console_id']:
+     rack['console_name'] = devices.get(rack['console_id'],{'hostname':None})['hostname']
+     if (db.do("SELECT CONCAT(access_url,':',port+%s) AS url FROM console_info WHERE device_id = '%s'"%(rack['console_port'],rack['console_id'])) > 0):
+      rack['console_url'] = db.get_val('url')
     for pem in ret['pems']:
      pdu = pdus.get(pem['pdu_id'])
      pem['pdu_name'] = "%s:%s"%(devices[pem['pdu_id']]['hostname'],pdu['%s_slot_name'%pem['pdu_slot']]) if pdu else None

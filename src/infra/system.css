@@ -132,11 +132,11 @@ div.info span { font-size: calc(var(--std-txt) - 1px); overflow:hidden; white-sp
 
 label.info { font-weight:bold; padding:2px; }
 span.info { padding: 2px; }
-button.info { background-color:var(--ui-color); color:var(--ui-txt-color); height:var(--field-size); border:var(--border-size) solid var(--head-color); outline-width:0; border-radius:4px; margin-left:2px; margin-bottom:2px; box-shadow:0px 2px rgba(0,0,0,0.3) }
+button.info { background-color:var(--ui-color); border:none; color:var(--ui-txt-color); height:var(--field-size); outline-width:0; border-radius:4px; margin-left:2px; }
 button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!important; }
-button.info:active { opacity:0.7; box-shadow:0px 1px rgba(0,0,0,0.3); transform: translateY(1px); }
+button.info:active { opacity:0.7; transform: translateY(1px); }
 button.fontawesome {  width:var(--field-size); padding:0px; }
-button.fontawesome > i{ font-size:16px; background-color:transparent; color:var(--ui-txt-color); }
+button.fontawesome > i{ font-size:calc(var(--field-size) * 0.7); background-color:transparent; color:var(--ui-txt-color); }
 button.fontawesome > i:hover,button.fontawesome > i:focus { color:var(--high-color)!important; }
 
 /*************************************** Report Model *****************************************/
@@ -202,7 +202,7 @@ div.left { float:left!important; }
 div.flexdiv { display:flex; flex-wrap:wrap; width:100%; height:max-content; }
 div.centered { justify-content:space-evenly; background-color:transparent; }
 div.states { background-color:transparent; }
-div.state { border-radius:16px; height:16px; width:16px; display:inline-block; margin-left:2px; margin-right:2px;}
+div.state { border-radius:50%; height:calc(var(--field-size) - 0.5 * var(--std-txt)); width:calc(var(--field-size) - 0.5 * var(--std-txt)); display:inline-block; margin-left:2px; margin-right:2px;}
 
 span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; }
 

@@ -29,7 +29,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(portobjs)
    for obj in portobjs:
-    result.append({'interface':obj.iid,'name':obj.val.decode(),'port':str(6000+int(obj.iid))})
+    result.append({'interface':obj.iid,'name':obj.val.decode()})
   except Exception as exception_error:
    self.log("Error loading conf " + str(exception_error))
   return result

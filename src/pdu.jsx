@@ -2,24 +2,20 @@ import React, { Fragment, Component } from "react";
 import { rest_call } from "./infra/Functions.js";
 import { InfoColumns, Spinner, RimsContext, ContentList, ContentData, Result } from "./infra/UI.jsx";
 import { TextInput, TextLine } from "./infra/Inputs.jsx";
-import { HrefButton, ReloadButton, SearchButton, SaveButton } from "./infra/Buttons.jsx";
+import { HrefButton, ReloadButton, SaveButton, SearchButton, StartButton, StopButton } from "./infra/Buttons.jsx";
 import { NavBar, NavButton, NavInfo } from "./infra/Navigation.js";
 
-/*
-
-def op(aWeb):
-
-*/
+// CONVERTED ENTIRELY
 
 // ************** Manage **************
 //
 export class Manage extends Component {
  componentDidMount(){
-  rest_call("api/device/hostname",{id:this.props.id}).then(result => {
+  rest_call("api/device/hostname",{id:this.props.device_id}).then(result => {
    this.context.loadNavigation(<NavBar key="pdu_navbar">
     <NavInfo key="pdu_nav_name" title={result.data} style={{float:'right'}} />
-    <NavButton key="pdu_nav_inv" title="Inventory" onClick={() => this.changeContent(<Inventory key="pdu_inventory" id={this.props.id} type={this.props.type} />)} />
-    <NavButton key="pdu_nav_info" title="Info" onClick={() => this.changeContent(<Info key="pdu_info" id={this.props.id} type={this.props.type} />)} />
+    <NavButton key="pdu_nav_inv" title="Inventory" onClick={() => this.changeContent(<Inventory key="pdu_inventory" device_id={this.props.device_id} type={this.props.type} />)} />
+    <NavButton key="pdu_nav_info" title="Info" onClick={() => this.changeContent(<Info key="pdu_info" device_id={this.props.device_id} type={this.props.type} />)} />
    </NavBar>)
   })
  }
@@ -37,10 +33,10 @@ Manage.contextType = RimsContext;
 class Info extends Component{
 
  componentDidMount(){
-  rest_call("api/"+this.props.type+"/info",{id:this.props.id}).then(result => this.setState(result))
+  rest_call("api/"+this.props.type+"/info",{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
- lookupSlots = () => rest_call("api/"+this.props.type+"/info",{id:this.props.id,op:"lookup"}).then(result => this.setState(result))
+ lookupSlots = () => rest_call("api/"+this.props.type+"/info",{device_id:this.props.device_id,op:"lookup"}).then(result => this.setState(result))
 
  render(){
   if (this.state){
@@ -67,19 +63,19 @@ class Info extends Component{
 
 // ************** Inventory **************
 //
-class Inventory extends Component{
+export class Inventory extends Component{
  constructor(props){
   super(props)
   this.state = {}
  }
 
  componentDidMount(){
-  rest_call("api/" + this.props.type + "/inventory",{id:this.props.id}).then(result => this.setState(result))
+  rest_call("api/" + this.props.type + "/inventory",{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})
 
- listItem = (row) => [`${row.slotname}.${row.unit}`,<HrefButton key={`pdu_inv_btn_unit_${row.slot}.${row.unit}`} onClick={() => this.changeContent(<Unit key={`pdu_unit_${row.slot}.${row.unit}`} id={this.props.id} type={this.props.type} {...row} />)} text={row.name} title='Edit port info' />,row.state]
+ listItem = (row,idx) => [`${row.slotname}.${row.unit}`,<HrefButton key={'pdu_inv_btn_' + idx} onClick={() => this.changeContent(<Unit key={'pdu_unit_'+idx} device_id={this.props.device_id} type={this.props.type} {...row} />)} text={row.name} title='Edit port info' />,<Operation key={'pdu_state'+idx} idx={idx} device_id={this.props.device_id} type={this.props.type} {...row} />]
 
  render(){
   if (this.state.data){
@@ -94,27 +90,29 @@ class Inventory extends Component{
  }
 }
 
-/*
- data = aWeb.rest_call("avocent/inventory",{'id':aWeb['id']})
- aWeb.wr("<ARTICLE>")
- aWeb.wr(aWeb.button('reload',DIV='div_content_left', SPIN='true', URL='avocent_inventory?id=%s&ip=%s'%(aWeb['id'],aWeb['ip'])))
- aWeb.wr("<DIV CLASS=table><DIV CLASS=thead><DIV>PDU</DIV><DIV>Position</DIV><DIV>Device</DIV><DIV CLASS=th STYLE='width:63px;'>State</DIV></DIV>")
- aWeb.wr("<DIV CLASS=tbody>")
- for counter,value in enumerate(data['inventory'],1):
-  aWeb.wr("<DIV><DIV TITLE='Open up a browser tab for {0}'><A TARGET='_blank' HREF='https://{0}:3502'>{0}</A></DIV><DIV>{1}</DIV>".format(aWeb['ip'],'%s.%s'%(value['slotname'],value['unit'])))
-  aWeb.wr("<DIV><A CLASS=z-op DIV=div_content_right URL='avocent_unit_info?id={0}&slot={1}&unit={2}&text={3}&slotname={4}' TITLE='Edit port info' >{3}</A></DIV><DIV ID=div_pdu_{5}>&nbsp;".format(aWeb
-['id'],value['slot'],value['unit'],value['name'], value['slotname'],counter))
-  url = 'avocent_op?id=%s&slot=%s&unit=%s&div_pdu_id=%i&nstate={}'%(aWeb['id'],value['slot'],value['unit'],counter)
-  div = 'div_pdu_%i'%counter
-  if value['state'] == "off":
-   aWeb.wr(aWeb.button('start',   DIV=div, SPIN='div_content_left', URL=url.format('on')))
-  else:
-   aWeb.wr(aWeb.button('stop',    DIV=div, SPIN='div_content_left', URL=url.format('off')))
-   aWeb.wr(aWeb.button('reload',  DIV=div, SPIN='div_content_left', URL=url.format('reboot')))
-  aWeb.wr("</DIV></DIV>")
- aWeb.wr("</DIV></DIV></ARTICLE>")
+// *************** Operation ***************
+//
+class Operation extends Component{
+ constructor(props){
+  super(props)
+  this.state = {state:this.props.state, status:'',wait:null};
+ }
 
-*/
+ operation = (state) => {
+  this.setState({wait:<Spinner />})
+  rest_call("api/"+this.props.type+"/op",{device_id:this.props.device_id, slot:this.props.slot, unit:this.props.unit, state:state}).then(result => this.setState({...result, wait:null}));
+ }
+
+ render(){
+   const off = (this.state.state === 'off');
+   return <Fragment key={'pdu_frag_'+this.props.idx}>
+    {off && <StartButton key={'pdu_btn_start_'+this.props.idx} onClick={() => this.operation('on')} title={this.state.status} />}
+    {!off && <StopButton key={'pdu_btn_stop_'+this.props.idx} onClick={() => this.operation('off')} title={this.state.status} />}
+    {!off && <ReloadButton key={'pdu_btn_reload_'+this.props.idx} onClick={() => this.operation('reboot')} title={this.state.status} />}
+    {this.state.wait}
+   </Fragment>
+ }
+}
 
 // ************** Unit **************
 //
@@ -128,7 +126,7 @@ class Unit extends Component {
 
  updatePDU = () => {
   this.setState({wait:<Spinner />, info:undefined});
-  rest_call("api/"+this.props.type+"/update",{op:'update',id:this.props.id,slot:this.props.slot,unit:this.props.unit,text:this.state.text}).then(result => this.setState({...result,wait:null}));
+  rest_call("api/"+this.props.type+"/update",{op:'update',device_id:this.props.device_id,slot:this.props.slot,unit:this.props.unit,text:this.state.text}).then(result => this.setState({...result,wait:null}));
  }
 
  render(){
