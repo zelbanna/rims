@@ -27,6 +27,16 @@ CREATE TABLE `activity_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `console_info`;
+CREATE TABLE `console_info` (
+  `device_id` int(10) unsigned NOT NULL,
+  `access_url` varchar(30) NOT NULL DEFAULT 'telnet://',
+  `port` int(10) unsigned NOT NULL DEFAULT 6000,
+  UNIQUE KEY `device_id` (`device_id`),
+  CONSTRAINT `console_info_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `device_connections`;
 CREATE TABLE `device_connections` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

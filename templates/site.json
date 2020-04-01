@@ -1,51 +1,92 @@
 {
  "portal": {
-  "message": "RIMS development portal",
+  "message": "Management portal",
   "start": "device",
-  "theme": "black",
-  "title": "RIMS"
+  "theme": "black"
+ },
+ "themes": {
+  "black":{
+   "main":"#F1F1F1",
+   "head":"#1A1A1A",
+   "high":"#CB2026",
+   "std":"#FFFFFF",
+   "std-txt":"#000000",
+   "ui":"#000000",
+   "ui-txt":"#FFFFFF"
+  },
+  "blue":{
+   "main":"#F1F1F1",
+   "head":"#3E84F4",
+   "high":"#000000",
+   "std":"#FFFFFF",
+   "std-txt":"#000000",
+   "ui":"#2674F2",
+   "ui-txt":"#FFFFFF"
+  },
+  "dark":{
+   "main":"#0A0A0A",
+   "head":"#1A1A1A",
+   "high":"#CB2026",
+   "std":"#1A1A1A",
+   "std-txt":"#8A8A8A",
+   "ui":"#000000",
+   "ui-txt":"#FFFFFF"
+  }
  },
  "menuitem": {
-  "activities": {
-   "href": "activities_main",
+  "activity": {
+   "mod_fun": "activity_main",
+   "module":  "activity",
+   "function": "Main",
    "icon": "images/icon-calendar.png"
   },
   "device": {
-   "href": "device_main",
+   "mod_fun": "device_main",
+   "module": "device",
+   "function": "Main",
    "icon": "images/icon-network.png"
   },
-  "hypervisors": {
-   "href": "hypervisors_main",
+  "hypervisor": {
+   "mod_fun": "hypervisor_main",
+   "module": "hypervisor",
+   "function": "Main",
    "icon": "images/icon-servers.png"
   },
   "inventory": {
-   "href": "inventory_main",
+   "mod_fun": "inventory_main",
+   "module": "inventory",
+   "function": "Main",
    "icon": "images/icon-inventory.png"
   },
-  "racks": {
-   "href": "racks_main",
+  "rack": {
+   "mod_fun": "rack_main",
+   "module": "rack",
+   "function": "Main",
    "icon": "images/icon-rack.png"
   },
-  "resources": {
-   "href": "portal_resources",
+  "resource": {
+   "mod_fun": "resource_main",
+   "module": "resource",
+   "function": "Main",
    "icon": "images/icon-tools.png"
   },
-  "system": {
-   "href": "system_main",
-   "icon": "images/icon-config.png"
-  },
-  "users": {
-   "href": "users_main",
-   "icon": "images/icon-users.png"
-  },
   "visualize": {
-   "href": "visualize_main",
+   "mod_fun": "visualize_main",
+   "module": "visualize",
+   "function": "Main",
    "icon": "images/icon-visualize.png"
   }
  },
+ "tool": {
   "images": {
-   "href": "tools_images?navigation=true",
+   "mod_fun": "system_images",
+   "module": "system",
+   "function": "FileList",
    "icon": "images/None"
+  },
+  "gitHub": {
+   "tab": "https://github.com",
+   "icon": "files/images/icon-github.png"
   }
  }
 }

@@ -48,7 +48,7 @@ export class Info extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  componentDidMount(){
-  rest_call('api/system/theme_list').then(result => this.setState({themes:result}))
+  rest_call('api/system/theme_list').then(result => this.setState({themes:result.data}))
   rest_call('api/master/user_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
