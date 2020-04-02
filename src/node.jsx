@@ -118,14 +118,7 @@ class LogClear extends Component {
  }
 
  render(){
-  if (!this.state)
-   return <Spinner />
-  else {
-   let output = []
-   for (let [name, res] of Object.entries(this.state.logs))
-    output.push(<span key={name}>{name}: {res}</span>)
-   return <article className='code'><h1>Cleared</h1>{output}</article>
-  }
+  return (!this.state) ? <Spinner /> : <article className='code'><h1>Cleared</h1>{Object.entries(this.state.logs).map(log => <span key={log[0]}>{log[0]}: {log[1]}</span>)}</article>
  }
 }
 
@@ -137,19 +130,7 @@ export class LogShow extends Component {
   rest_call('api/system/logs_get?node=' + this.props.node).then(result => this.setState({logs:result}))
  }
 
- Log = (props) => <Fragment>
-   <h1>{props.name}</h1>
-   {props.rows.map((line,index) => <span key={props.name + '_row_' + index}>{line}</span> )}
-   </Fragment>
-
  render(){
-  if (!this.state)
-   return <Spinner />
-  else {
-   let output = []
-   for (let [name, rows] of Object.entries(this.state.logs))
-    output.push(<this.Log key={'log_file_' + name} name={name} rows={rows} />)
-   return <article className='code'>{output}</article>
-  }
+  return (!this.state) ? <Spinner /> : <article className='code'>{Object.entries(this.state.logs).map(log => <Fragment><h1>{log[0]}</h1>{log[1].map((line,idx) => <span key={log[0]+'_'+idx}>{line}</span> )}</Fragment>)}</article>
  }
 }

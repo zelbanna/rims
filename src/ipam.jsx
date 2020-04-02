@@ -106,7 +106,7 @@ class NetworkInfo extends Component {
 class Layout extends Component {
 
  componentDidMount(){
-  rest_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']}).then(result => this.setState({...result, start_address:parseInt(result.network.split(".")[3])}))
+  rest_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']}).then(result => this.setState({...result, start_address:parseInt(result.network.split('.')[3])}))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem)
@@ -226,7 +226,7 @@ export class AddressInfo extends Component {
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_save' onClick={() => this.updateInfo('api/ipam/address_info')} title='Save' />
-     <Result key='ip_operation' result={(this.state.status !== "OK") ? this.state.info : 'OK'} />
+     <Result key='ip_operation' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
     </article>
    );
   else

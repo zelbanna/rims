@@ -6,11 +6,11 @@ export const Header = (props) => <header>{props.children}</header>
 // **************************** Generic ********************************
 
 export const RimsContext = createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,changeMain:()=>{},loadNavigtion:()=>{}})
-RimsContext.displayName = "RimsContext";
+RimsContext.displayName = 'RimsContext';
 
 export const Spinner = () => <div className='overlay'><div className='loader'></div></div>
 
-export const StateMap = (props) =>  <div className={'state '+ {unknown:'grey',up:'green',down:'red',undefined:'orange',null:'orange'}[props.state] || 'orange'} />
+export const StateMap = (props) =>  <div className={'state '+ {on:'green',off:'red',unknown:'grey',up:'green',down:'red',undefined:'orange',null:'orange'}[props.state] || 'orange'} title={props.state} />
 
 export const SearchField = (props) => <input type='text' className='searchfield' onChange={props.searchHandler} value={props.value} placeholder={props.placeholder} />
 

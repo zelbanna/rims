@@ -84,7 +84,7 @@ class Search extends Component {
 
  changeContent = (elem) => this.props.changeSelf(elem);
 
- onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== "checkbox") ? "value" : "checked"]}})
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
  render() {
   return (
@@ -112,7 +112,7 @@ export class Info extends Component {
   rest_call('api/inventory/info',{id:this.props.id}).then(result => this.setState(result))
  }
 
- onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== "checkbox") ? "value" : "checked"]}})
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
  changeContent = (elem) => this.setState({content:elem})
 

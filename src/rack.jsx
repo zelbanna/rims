@@ -31,7 +31,7 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/rack/list',{sort:"name"}).then(result => this.setState(result))
+  rest_call('api/rack/list',{sort:'name'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>

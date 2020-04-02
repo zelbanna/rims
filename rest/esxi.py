@@ -12,21 +12,21 @@ __add_globals__ = lambda x: globals().update(x)
 from rims.devices.esxi import Device
 
 #
-def list(aCTX, aArgs = None):
- """Function docstring for list TBD
+def inventory(aCTX, aArgs = None):
+ """Function docstring for inventory TBD
 
  Args:
-  - id (required)
+  - device_id (required)
   - sort (optional)
 
  Output:
  """
  ret = {}
  try:
-  esxi = Device(aCTX, aArgs['id'])
+  esxi = Device(aCTX, aArgs['device_id'])
   ret['data'] = esxi.get_vm_list(aArgs.get('sort','name'))
  except Exception as err:
-  ret['status'] = 'NOT_OK'  
+  ret['status'] = 'NOT_OK'
   ret['info'] = repr(err)
   ret['data'] = []
  else:
@@ -35,19 +35,19 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def vm_info(aCTX, aArgs = None):
  """Function info returns state information for VM
 
  Args:
-  - id (required)
+  - device_id (required)
   - vm_id (required)
   - op (optional). 'update' will update the cached information about the VM (mapping)
 
  Output:
  """
- ret = {'vm_id':aArgs['vm_id'],'id':aArgs['id']}
+ ret = {}
  try:
-  esxi = Device(aCTX, aArgs['id'])
+  esxi = Device(aCTX, aArgs['device_id'])
   ret['data'] = esxi.get_info(aArgs['vm_id'])
  except Exception as err:
   ret['status'] = 'NOT_OK'
@@ -64,43 +64,61 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def map(aCTX, aArgs = None):
+def vm_map(aCTX, aArgs = None):
  """ Function maps or retrieves VM to device ID mapping
 
  Args:
   - device_uuid (required)
   - device_id (optional required)
+  - host_id (optional_reauired)
   - op (optional)
 
  Output:
  """
- ret = {'device_uuid':aArgs['device_uuid']}
+ ret = {}
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   try:    aArgs['device_id'] = int(aArgs['device_id'])
+   try:
+    aArgs['device_id'] = int(aArgs['device_id'])
+    aArgs['host_id'] = int(aArgs['host_id'])
    except: pass
-   else:   ret['update'] = (db.do("UPDATE device_vm_uuid SET device_id = '%(device_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
-  ret['device_id'] = db.get_val('device_id') if (db.do("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs) > 0) else None
+   else:   ret['update'] = (db.do("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
+  ret['data'] = db.get_val('device_id') if (db.do("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs) > 0) else ''
  return ret
 
 #
 #
-def control(aCTX, aArgs = None):
- """Function control provides VM operation control
+def vm_op(aCTX, aArgs = None):
+ """Function op provides VM operation control
 
  Args:
-  - id (required)
+  - device_id (required)
   - vm_id (required)
-  - op (required), 'create/revert/remove/list' (for snapshots on VM id's) 'on/off/reboot/shutdown/suspend' (for VM id's)
+  - op (required), 'on/off/reboot/shutdown/suspend'
   - uuid (optional)
-  - snapshot (optional)
 
  Output:
  """
- with Device(aCTX, aArgs['id']) as esxi:
-  if aArgs['op'] in ['on','off','reboot','shutdown','suspend']:
-   ret = esxi.vm_operation(aArgs['op'],aArgs['vm_id'],aUUID = aArgs.get('uuid'))
-  else:
-   ret = esxi.snapshot(aArgs['op'],aArgs['vm_id'], aArgs.get('snapshot'))
+ with Device(aCTX, aArgs['device_id']) as esxi:
+  ret = esxi.vm_operation(aArgs['op'],aArgs['vm_id'],aUUID = aArgs.get('uuid'))
+ return ret
+
+#
+#
+def vm_snapshot(aCTX, aArgs = None):
+ """Function snapshot provides VM snapshot control
+
+ Args:
+  - device_id (required)
+  - vm_id (required)
+  - op (required), 'create/revert/remove/list'
+  - snapshot (optional)
+
+ Output:
+  - data (optional)
+  - status
+ """
+ with Device(aCTX, aArgs['device_id']) as esxi:
+  ret = esxi.snapshot(aArgs['op'],aArgs['vm_id'], aArgs.get('snapshot'))
  return ret

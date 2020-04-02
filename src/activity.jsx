@@ -10,6 +10,11 @@ import { NavBar, NavButton } from './infra/Navigation.js';
 // ************** Main **************
 //
 export class Main extends Component {
+ constructor(props){
+  super(props)
+  this.state = <List key='activity_list' />
+ }
+
  componentDidMount(){
   this.context.loadNavigation(<NavBar key='activity_navbar'>
    <NavButton key='act_nav_list' title='Activities' onClick={() => this.changeContent(<List key='activity_list' />)} />

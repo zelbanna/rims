@@ -87,7 +87,7 @@ class DomainInfo extends Component {
   if (!this.state.found)
    return <article>Domain with id: {this.props.id} removed</article>
   else if (this.state.data) {
-   const old = (this.state.data.id !== "new");
+   const old = (this.state.data.id !== 'new');
    return (
     <article className='info'>
      <h1>Domain</h1>
@@ -151,11 +151,11 @@ class Status extends Component {
     <div style={{display:'flex'}}>
      <article className='report'>
       <h1>Top looked up FQDN</h1>
-      {Object.keys(this.state.top).map(key => this.topTable(key, this.state.top[key]))}
+      {Object.entries(this.state.top).map(entry => this.topTable(entry[0],entry[1]))}
      </article>
      <article className='report'>
       <h1>Top looked up WHO</h1>
-      {Object.keys(this.state.who).map(key => this.whoTable(key, this.state.who[key]))}
+      {Object.entries(this.state.who).map(entry => this.whoTable(entry[0],entry[1]))}
      </article>
     </div>
    )

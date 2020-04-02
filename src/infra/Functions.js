@@ -11,6 +11,6 @@ export async function rest_call(url = '', args = {}) {
 
 export const rnd = () => Math.floor(Math.random() * 10);
 
-export const  int2ip = (x) => ((x >> 24) & 255) + "." + ((x >> 16) & 255) + "." + ((x >> 8) & 255) + "." + (x & 255);
+export const int2ip = (x) => ((x >> 24) & 255) + '.' + ((x >> 16) & 255) + '.' + ((x >> 8) & 255) + '.' + (x & 255);
 
 export const ip2int = (x) => (x.split('.').reduce((a, v) => ((a << 8) + (+v)), 0) >>> 0);

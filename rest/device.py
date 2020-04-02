@@ -821,6 +821,8 @@ def vm_mapping(aCTX, aArgs = None):
    else:
     for id,vm in inventory.items():
      vm.update({'host_id':row['id'],'snmp_id':id})
+     vm['config'] = vm['config'][:140]
+     vm['vm'] = vm['vm'][:30]
      for intf in vm.pop('interfaces',{}).values():
       db_vm = vms.pop(intf['mac'],None)
       if db_vm:

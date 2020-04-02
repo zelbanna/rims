@@ -59,8 +59,8 @@ export class List extends Component {
 class Show extends Component {
 
  componentDidMount(){
-  var args = (this.props.hasOwnProperty("id")) ? {id:this.props.id}:{name:this.props.name};
-  rest_call("api/visualize/show",args)
+  var args = (this.props.hasOwnProperty('id')) ? {id:this.props.id}:{name:this.props.name};
+  rest_call('api/visualize/show',args)
    .then(result => {
     var nodes = new DataSet(result.data.nodes);
     var edges = new DataSet(result.data.edges);
@@ -71,16 +71,16 @@ class Show extends Component {
  }
 
  doubleClick = (params) => {
-  console.log("DoubleClick",params.nodes);
+  console.log('DoubleClick',params.nodes);
   if (params.nodes[0]){
-   rest_call("api/device/management",{id:params.nodes[0]}).then(result => {
-    if (result && result.status === "OK"){
+   rest_call('api/device/management',{id:params.nodes[0]}).then(result => {
+    if (result && result.status === 'OK'){
      if(result.data.url && result.data.url.length > 0)
       window.open(result.data.url);
      else
-      window.open("ssh://" + result.data.username + "@" + result.data.ip,"_self");
+      window.open('ssh://' + result.data.username + '@' + result.data.ip,'_self');
     }else
-     console.log("Data not ok:" + result)
+     console.log('Data not ok:' + result)
    })
   }
  }
@@ -102,7 +102,7 @@ export class Edit extends Component {
  }
 
  componentDidMount(){
-  rest_call("api/visualize/network",{id:this.props.id,type:this.props.type})
+  rest_call('api/visualize/network',{id:this.props.id,type:this.props.type})
    .then((result) => {
     this.viz.nodes = new DataSet(result.data.nodes);
     this.viz.edges = new DataSet(result.data.edges);
@@ -126,14 +126,14 @@ export class Edit extends Component {
    data[e.target.name] = JSON.parse(e.target.value);
    this.setState({data:data})
   } catch {
-   console.log("Error converting string to JSON")
+   console.log('Error converting string to JSON')
   }
  }
 
  updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  doubleClick = (params) => {
-  console.log("DoubleClick",params.nodes[0]);
+  console.log('DoubleClick',params.nodes[0]);
   if(this.props.changeSelf)
    this.changeContent(<DeviceInfo key={'di_' + params.nodes[0]} id={params.nodes[0]} />)
  }
@@ -141,24 +141,24 @@ export class Edit extends Component {
  toggleEdit = () => {
   this.edit = !this.edit;
   this.viz.network.setOptions({ manipulation:{ enabled:this.edit }})
-  this.setState({result:"Edit:"+this.edit});
+  this.setState({result:'Edit:'+this.edit});
  }
 
  toggleFix = () => {
   this.viz.nodes.forEach((node,id) => this.viz.nodes.update({id:id,fixed:!(node.fixed)}) );
-  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get()}, result:"Fix/Unfix positions"})
+  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get()}, result:'Fix/Unfix positions'})
  }
 
  togglePhysics = () => {
   const data = this.state.data;
   data.options.physics.enabled = !data.options.physics.enabled;
   this.viz.network.setOptions({ physics:data.options.physics.enabled })
-  this.setState({data:data, physics_button:(data.options.physics.enabled) ? StopButton:StartButton, result:"Physics:"+data.options.physics.enabled})
+  this.setState({data:data, physics_button:(data.options.physics.enabled) ? StopButton:StartButton, result:'Physics:'+data.options.physics.enabled})
  }
 
  networkSync = (params) => {
   this.viz.network.storePositions();
-  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}, result:"Moved " + this.viz.nodes.get(params.nodes[0]).label})
+  this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}, result:'Moved ' + this.viz.nodes.get(params.nodes[0]).label})
  }
 
  showDiv = (id) => (id === this.state.content) ? 'network show' : 'hidden';

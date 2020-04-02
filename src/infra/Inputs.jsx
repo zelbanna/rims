@@ -19,8 +19,8 @@ export const DivLine = (props) =>   line_template(<div id={props.id} style={prop
 //
 export const SelectInput = (props) => <Fragment key={'fraginput_'+props.id}>
   <label htmlFor={props.id} title={props.title} className='info'>{auto_label(props)}:</label>
-  <select name={props.id} onChange={props.onChange} value={(props.value !== null && props.value !== undefined) ? props.value : "NULL"}>
-  {(props.value === null || props.value === undefined) && props.children.find(child => child.props.value === 'NULL') === undefined && <option value='NULL'>{"<Empty>"}</option>}
+  <select name={props.id} onChange={props.onChange} value={(props.value !== null && props.value !== undefined) ? props.value : 'NULL'}>
+  {(props.value === null || props.value === undefined) && props.children.find(child => child.props.value === 'NULL') === undefined && <option value='NULL'>{'<Empty>'}</option>}
   {props.children}
   </select>
  </Fragment>

@@ -157,7 +157,7 @@ CREATE TABLE `device_vm_uuid` (
   `device_uuid` varchar(36) NOT NULL,
   `server_uuid` varchar(36) DEFAULT NULL,
   `vm` varchar(30) DEFAULT NULL,
-  `config` varchar(80) DEFAULT NULL,
+  `config` varchar(140) DEFAULT NULL,
   PRIMARY KEY (`device_uuid`),
   UNIQUE KEY `device_id` (`device_id`),
   KEY `host_id` (`host_id`),

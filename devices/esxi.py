@@ -14,7 +14,7 @@ class Device(GenericDevice):
 
  @classmethod
  def get_state_str(cls,aState):
-  return { "powered on":"up", "powered off":"down","suspended":"suspended" }.get(aState)
+  return { "powered on":"on", "powered off":"off","suspended":"suspended" }.get(aState)
 
  @classmethod
  def get_functions(cls):
@@ -125,7 +125,7 @@ class Device(GenericDevice):
    if aOP in ['on','off','reboot','shutdown','suspend']:
     from time import sleep
     self._command("vim-cmd vmsvc/power.%s %s"%(aOP,aID))
-    sleep(3)
+    sleep(5)
    ret.update(self.get_vm_state(aID))
    self.log("VM operation [%s] executed on %s, state:%s"%(aOP,aID,ret.get('state','unknown')))
   except Exception as err:
@@ -139,7 +139,7 @@ class Device(GenericDevice):
   ret = {'status':'OK'}
   if aOP == 'list':
    snapshots = self._command("vim-cmd vmsvc/snapshot.get %s"%aID)
-   ret['snapshots'] = []
+   ret['data'] = []
    ret['highest'] = 0
    data = {'id':None,'name':None,'desc':None,'created':None,'state':None}
    for field in snapshots.splitlines():
@@ -160,7 +160,7 @@ class Device(GenericDevice):
      elif key[-5:] == 'State':
       # Last!
       data['state'] = val
-      ret['snapshots'].append(data)
+      ret['data'].append(data)
       data = {'id':None,'name':None,'desc':None,'created':None,'state':None}
   elif aOP == 'create':
    from time import strftime
@@ -169,6 +169,7 @@ class Device(GenericDevice):
    self._command("vim-cmd vmsvc/snapshot.revert %s %s suppressPowerOff"%(aID,aSnapshot))
   elif aOP == 'remove':
    self._command("vim-cmd vmsvc/snapshot.remove %s %s"%(aID,aSnapshot))
+   ret['deleted'] = True
   ret.update(self.get_vm_state(aID))
   self.log("VM snapshot [%s] on %s"%(aOP,aID))
   return ret

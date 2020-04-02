@@ -58,7 +58,7 @@ export class Main extends Component {
    <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />
    {this.state.services.length > 0 &&  <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
    <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
-   {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} style={{float:'right'}} />)}
+   {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} />)}
   </NavBar>)
  }
 
@@ -225,7 +225,7 @@ export class FileList extends Component {
    if (result.status === 'OK')
     this.setState(result)
    else {
-    window.alert("Error retrieving files:" + result.info);
+    window.alert('Error retrieving files:' + result.info);
     this.setState({files:[]})
    }
   })
@@ -235,7 +235,7 @@ export class FileList extends Component {
   if (this.state.mode === 'images')
    return (row.substr(row.length - 4) === '.png') ? [row,<img src={this.state.path +'/'+row} alt={this.state.path +'/'+row} />] : []
   else
-   return [<Fragment key={row}>{this.state.path + "/"}<a href={this.state.path + "/" + row} target="_blank" rel="noopener noreferrer">{row}</a></Fragment>]
+   return [<Fragment key={row}>{this.state.path + '/'}<a href={this.state.path + '/' + row} target='_blank' rel='noopener noreferrer'>{row}</a></Fragment>]
  }
 
  render() {
@@ -274,7 +274,7 @@ class ServiceInfo extends Component {
    if (result.status === 'OK')
     this.setState({...result,spinner:null})
    else
-    window.alert("Error retrieving service state:" + result.info);
+    window.alert('Error retrieving service state:' + result.info);
   })
  }
 

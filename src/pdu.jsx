@@ -1,9 +1,9 @@
-import React, { Fragment, Component } from "react";
-import { rest_call } from "./infra/Functions.js";
-import { InfoColumns, Spinner, RimsContext, ContentList, ContentData, Result } from "./infra/UI.jsx";
-import { TextInput, TextLine } from "./infra/Inputs.jsx";
-import { HrefButton, ReloadButton, SaveButton, SearchButton, StartButton, StopButton } from "./infra/Buttons.jsx";
-import { NavBar, NavButton, NavInfo } from "./infra/Navigation.js";
+import React, { Fragment, Component } from 'react';
+import { rest_call } from './infra/Functions.js';
+import { InfoColumns, Spinner, RimsContext, ContentList, ContentData, Result } from './infra/UI.jsx';
+import { TextInput, TextLine } from './infra/Inputs.jsx';
+import { HrefButton, ReloadButton, SaveButton, SearchButton, StartButton, StopButton } from './infra/Buttons.jsx';
+import { NavBar, NavButton, NavInfo } from './infra/Navigation.js';
 
 // CONVERTED ENTIRELY
 
@@ -11,19 +11,20 @@ import { NavBar, NavButton, NavInfo } from "./infra/Navigation.js";
 //
 export class Manage extends Component {
  componentDidMount(){
-  rest_call("api/device/hostname",{id:this.props.device_id}).then(result => {
-   this.context.loadNavigation(<NavBar key="pdu_navbar">
-    <NavInfo key="pdu_nav_name" title={result.data} style={{float:'right'}} />
-    <NavButton key="pdu_nav_inv" title="Inventory" onClick={() => this.changeContent(<Inventory key="pdu_inventory" device_id={this.props.device_id} type={this.props.type} />)} />
-    <NavButton key="pdu_nav_info" title="Info" onClick={() => this.changeContent(<Info key="pdu_info" device_id={this.props.device_id} type={this.props.type} />)} />
+  rest_call('api/device/hostname',{id:this.props.device_id}).then(result => {
+   this.context.loadNavigation(<NavBar key='pdu_navbar'>
+    <NavInfo key='pdu_nav_name' title={result.data} />
+    <NavButton key='pdu_nav_inv' title='Inventory' onClick={() => this.changeContent(<Inventory key='pdu_inventory' device_id={this.props.device_id} type={this.props.type} />)} />
+    <NavButton key='pdu_nav_info' title='Info' onClick={() => this.changeContent(<Info key='pdu_info' device_id={this.props.device_id} type={this.props.type} />)} />
    </NavBar>)
   })
+  this.setState(<Inventory key='pdu_inventory' device_id={this.props.device_id} type={this.props.type} />);
  }
 
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key="manage_base">{this.state}</Fragment>
+  return  <Fragment key='manage_base'>{this.state}</Fragment>
  }
 }
 Manage.contextType = RimsContext;
@@ -33,27 +34,27 @@ Manage.contextType = RimsContext;
 class Info extends Component{
 
  componentDidMount(){
-  rest_call("api/"+this.props.type+"/info",{device_id:this.props.device_id}).then(result => this.setState(result))
+  rest_call('api/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
- lookupSlots = () => rest_call("api/"+this.props.type+"/info",{device_id:this.props.device_id,op:"lookup"}).then(result => this.setState(result))
+ lookupSlots = () => rest_call('api/'+this.props.type+'/info',{device_id:this.props.device_id,op:'lookup'}).then(result => this.setState(result))
 
  render(){
   if (this.state){
    let slots = [];
    for (let i = 0; i < this.state.data.slots; i++){
-    slots.push(<TextLine key={"pi_slot_name_" + i} id={"pi_slot_name_" + i} label={"Slot " + i + " Name"} text={this.state.data[i + "_slot_name"]} />);
-    slots.push(<TextLine key={"pi_slot_id_" + i} id={"pi_slot_id_" + i} label={"Slot " + i + " ID"} text={this.state.data[i + "_slot_id"]} />);
+    slots.push(<TextLine key={'pi_slot_name_' + i} id={'pi_slot_name_' + i} label={'Slot ' + i + ' Name'} text={this.state.data[i + '_slot_name']} />);
+    slots.push(<TextLine key={'pi_slot_id_' + i} id={'pi_slot_id_' + i} label={'Slot ' + i + ' ID'} text={this.state.data[i + '_slot_id']} />);
    }
-   return (<div className="flexdiv centered">
-    <article className="info">
+   return (<div className='flexdiv centered'>
+    <article className='info'>
      <h1>PDU Device Info ({this.props.type})</h1>
-     <InfoColumns key="pi_info">
-      <TextLine key="pi_slots" id="slots" label="Right/Left slots" text={JSON.stringify(this.state.data.slots === 2)} />
+     <InfoColumns key='pi_info'>
+      <TextLine key='pi_slots' id='slots' label='Right/Left slots' text={JSON.stringify(this.state.data.slots === 2)} />
       {slots}
      </InfoColumns>
-     <ReloadButton key="pi_btn_reload" onClick={() => this.componentDidMount() } />
-     <SearchButton key="pi_btn_search" onClick={() => this.lookupSlots() } />
+     <ReloadButton key='pi_btn_reload' onClick={() => this.componentDidMount() } />
+     <SearchButton key='pi_btn_search' onClick={() => this.lookupSlots() } />
     </article>
    </div>)
   } else
@@ -70,7 +71,7 @@ export class Inventory extends Component{
  }
 
  componentDidMount(){
-  rest_call("api/" + this.props.type + "/inventory",{device_id:this.props.device_id}).then(result => this.setState(result))
+  rest_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -100,7 +101,7 @@ class Operation extends Component{
 
  operation = (state) => {
   this.setState({wait:<Spinner />})
-  rest_call("api/"+this.props.type+"/op",{device_id:this.props.device_id, slot:this.props.slot, unit:this.props.unit, state:state}).then(result => this.setState({...result, wait:null}));
+  rest_call('api/'+this.props.type+'/op',{device_id:this.props.device_id, slot:this.props.slot, unit:this.props.unit, state:state}).then(result => this.setState({...result, wait:null}));
  }
 
  render(){
@@ -126,7 +127,7 @@ class Unit extends Component {
 
  updatePDU = () => {
   this.setState({wait:<Spinner />, info:undefined});
-  rest_call("api/"+this.props.type+"/update",{op:'update',device_id:this.props.device_id,slot:this.props.slot,unit:this.props.unit,text:this.state.text}).then(result => this.setState({...result,wait:null}));
+  rest_call('api/'+this.props.type+'/update',{op:'update',device_id:this.props.device_id,slot:this.props.slot,unit:this.props.unit,text:this.state.text}).then(result => this.setState({...result,wait:null}));
  }
 
  render(){

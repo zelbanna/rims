@@ -40,9 +40,9 @@ iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 p { margin:2px; }
 pre {    margin:0px; }
 select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
- -webkit-appearance: none; background-color: transparent; border:solid var(--border-size); border-color:transparent; border-bottom:dotted var(--border-size) var(--main-color); outline:none;
+ -webkit-appearance: none; background-color: transparent; border-style:solid; border-width:var(--border-size); border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:0px
 }
-select:focus,input:focus,textarea:focus { border-color:var(--high-color)!important; }
+select:focus,input:focus,textarea:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0px 0px 6px -2px var(--high-color), 0px 0px 3px -1px var(--high-color) inset;}
 
 @media only screen and (min-width: 600px) {
   /* For tablets: */
@@ -93,7 +93,7 @@ nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
 nav li.right { float:right; }
 
 nav button,nav label { color:var(--ui-txt-color); font-size:var(--head-txt); padding:0px 8px 0px 8px; line-height:var(--nav-height); border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:var(--nav-height); z-index:1000}
-nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); }
+nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); transition-duration:0.15s}
 nav button:active{ opacity:0.8; }
 nav button.fontawesome { padding:0px; width:var(--nav-height); }
 nav button.fontawesome > i { font-size:calc(var(--nav-height) * 0.7); padding:calc(var(--nav-height) * 0.15); }
@@ -113,7 +113,7 @@ div.trow:nth-child(odd) { background-color:var(--main-color); }
 div.trow > div { background-color:transparent; display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0px 4px; white-space:nowrap; }
 input.searchfield {    display:block; width: 99%; height:var(--field-size); margin: 3px 0px 3px 0px; }
 
-button.text { font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; }
+button.text { font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; z-index:800; }
 button.text::-moz-focus-inner { border-style: dotted; }
 
 /***************************************  Info  Model *****************************************/
@@ -132,12 +132,12 @@ div.info span { font-size: calc(var(--std-txt) - 1px); overflow:hidden; white-sp
 
 label.info { font-weight:bold; padding:2px; }
 span.info { padding: 2px; }
-button.info { background-color:var(--ui-color); border:none; color:var(--ui-txt-color); height:var(--field-size); outline-width:0; border-radius:4px; margin-left:2px; }
-button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!important; }
+button.info { background-color:var(--ui-color); border:none; color:var(--ui-txt-color); height:var(--field-size); outline-width:0; border-radius:4px; margin-left:2px; z-index:800; }
+button.info:hover, button.info:focus {  opacity:0.9; color:var(--high-color)!important; transition-duration:0.15s; }
 button.info:active { opacity:0.7; transform: translateY(1px); }
 button.fontawesome {  width:var(--field-size); padding:0px; }
 button.fontawesome > i{ font-size:calc(var(--field-size) * 0.7); background-color:transparent; color:var(--ui-txt-color); }
-button.fontawesome > i:hover,button.fontawesome > i:focus { color:var(--high-color)!important; }
+button.fontawesome > i:hover,button.fontawesome > i:focus { color:var(--high-color)!important; transition-duration:0.15s; }
 
 /*************************************** Report Model *****************************************/
 
@@ -166,7 +166,7 @@ article.files h1 {  text-transform: capitalize; }
 
 /************************************** JS tools ********************************************/
 
-div.overlay { position: absolute; top:calc(var(--header-height) + var(--nav-height)); bottom: 0px; left: 0px; right: 0px; z-index:200; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.4); }
+div.overlay { position: absolute; top:calc(var(--header-height) + var(--nav-height)); bottom: 0px; left: 0px; right: 0px; z-index:900; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.4); }
 div.loader {
   background-color:transparent; border-radius: 50%; color: var(--high-color);
   width: 1em;  height: 1em;
