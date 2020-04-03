@@ -27,7 +27,7 @@ export class List extends Component {
 
  listItem = (row) => {
   const buttons = (this.context.cookie.id === row.user_id || !row.valid);
-  return [row.alias,row.hostname,<div className={(row.valid) ? '' : 'orange'}>{row.end}</div>,<Fragment key='reservation_buttons'>
+  return [row.alias,row.hostname,<span className={(row.valid) ? '' : 'orange'}>{row.end}</span>,<Fragment key='reservation_buttons'>
    {buttons && <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>}
    {buttons && <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />}
    {buttons && <DeleteButton key={'rsv_btn_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />}

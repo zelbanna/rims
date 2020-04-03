@@ -915,7 +915,8 @@ def log_clear(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = db.do("DELETE FROM device_logs WHERE %s"%("device_id = %s"%aArgs['id'] if aArgs.get('id') else "TRUE"))
+  ret['count'] = db.do("DELETE FROM device_logs WHERE %s"%("device_id = %s"%aArgs['id'] if aArgs.get('id') else "TRUE"))
+  ret['deleted'] = ret['count'] > 0
  return ret
 
 

@@ -366,8 +366,12 @@ export class Logs extends Component {
   rest_call('api/device/log_get',{id:this.props.id}).then(result => this.setState(result));
  }
 
+ clearLog = () => rest_call('api/device/log_clear',{id:this.props.id}).then(result => (result.deleted && this.setState({data:[]})));
+
  render() {
-  return (!this.state) ? <Spinner /> : <ContentReport key='dev_log_cr' header='Devices' thead={['Time','Message']} trows={this.state.data} listItem={(row) => [row.time,row.message]} />
+  return (!this.state) ? <Spinner /> : <ContentReport key='dev_log_cr' header='Devices' thead={['Time','Message']} trows={this.state.data} listItem={(row) => [row.time,row.message]}>
+   <DeleteButton key='devlog_btn_delete' onClick={() => this.clearLog()} title='Clear device logs' />
+  </ContentReport>
  }
 }
 
@@ -576,7 +580,7 @@ export class ModelInfo extends Component {
       <TextInput key='image_file' id='image_file' label='Image  File' value={this.state.data.image_file} onChange={this.onChange} />
      </InfoColumns>
      <label htmlFor='parameters'>Parameters:</label>
-     <textarea id='parameters' name='parameters' onChange={this.onChange} value={this.state.data.parameters} />
+     <textarea className='info' id='parameters' name='parameters' onChange={this.onChange} value={this.state.data.parameters} />
      <SaveButton key='dm_btn_save' onClick={() => this.updateInfo('api/device/model_info')} title='Save' />
     </article>
    );

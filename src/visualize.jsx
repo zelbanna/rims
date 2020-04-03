@@ -1,11 +1,12 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
 import { ContentData, ContentList, Result } from './infra/UI.jsx';
-import { TextInput } from './infra/Inputs.jsx'
 import { BackButton, DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
 
 import { DataSet, Network } from 'vis';
 import { Info as DeviceInfo } from './device.jsx';
+
+// CONVERTED ENTIRELY
 
 // ************** Main **************
 //
@@ -178,7 +179,7 @@ export class Edit extends Component {
     <TextButton key='viz_opt' text='Options' onClick={() => this.setState({content:'options'})} />
     <TextButton key='viz_nodes' text='Nodes' onClick={() => this.setState({content:'nodes'})} />
     <TextButton key='viz_edges' text='Edges' onClick={() => this.setState({content:'edges'})} />
-    <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
+    <label className='info' key='name' htmlFor='name'>Name:</label><input key='input_text_name' type='text' id='name' name='name' value={this.state.data.name} onChange={this.onChange} />
     <Result key='viz_result' result={this.state.result} />
     <div className={this.showDiv('network')} ref='edit_canvas' />
     <div className={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>

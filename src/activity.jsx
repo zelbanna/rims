@@ -95,7 +95,7 @@ class Info extends Component {
       <DateInput key='date' id='date' value={this.state.data.date} onChange={this.onChange} />
       <TimeInput key='time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoColumns>
-     <label htmlFor='event'>Info</label><textarea id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
+     <label htmlFor='event'>Info</label><textarea className='info' id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
      <SaveButton key='activity_save' onClick={() => this.updateInfo('api/master/activity_info')} title='Save' />
     </article>
    );

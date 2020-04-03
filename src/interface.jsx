@@ -212,7 +212,7 @@ class ConnectionInfo extends Component {
  }
 }
 
-// *************** TODO ****************
+// *************** LLDP ****************
 //
 class LLDP extends Component {
 

@@ -50,7 +50,6 @@ class Portal extends Component {
    this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:panel})
  }
 
- // TODO setstate with panel should also reset navbar
  render() {
   let buttons = []
   for (let [key, panel] of Object.entries(this.state.menu)){
