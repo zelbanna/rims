@@ -50,7 +50,7 @@ export class Info extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => rest_call('api/location/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   rest_call('api/location/info',{id:this.props.id}).then(result => this.setState(result))
@@ -66,7 +66,7 @@ export class Info extends Component {
      <InfoColumns key='loc_content'>
      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='loc_btn_save' onClick={() => this.updateInfo('api/location/info')} title='Save' />
+     <SaveButton key='loc_btn_save' onClick={() => this.updateInfo()} title='Save' />
     </article>
    );
   else

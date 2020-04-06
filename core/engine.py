@@ -64,7 +64,7 @@ class Context(object):
     self.site = load(sfile)
   except:
    self.log("Site file could not be loaded/found: %s"%self.config.get('site_file','N/A'))
-   self.site     = {}
+   self.site = {}
   for type in ['menuitem','tool']:
    for k,item in self.site.get(type,{}).items():
     for tp in ['module','frame','tab']:
@@ -350,7 +350,6 @@ class WorkerPool(object):
      if sema:
       sema.release()
      self._queue.task_done()
-
    return False
 
  #
@@ -470,7 +469,6 @@ class WorkerPool(object):
    else:
     self._queue.put((func,True, None, kwargs.get('output',False), kwargs.get('args',{}), None))
 
-
 ###################################### Session Handler ######################################
 #
 class SessionHandler(BaseHTTPRequestHandler):
@@ -493,7 +491,8 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  def do_GET(self):
-  """ Route request to the right function /<path>/mod_fun?get or /<site:mod_fun>?get"""
+  print('GET: '+self.path)
+  """ Route request to the right function /<path>/mod_fun?get """
   path,_,query = self.path[1:].partition('/')
   if path in ['infra','images','files']:
    # Use caching here :-)
@@ -507,16 +506,15 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.front()
   elif path == 'system':
    self.system(query)
-  elif len(path) == 0:
-   self._headers.update({'X-Process':'no route','Location':'portal_login','X-Code':301})
-  else:
-   self.site(self.path[1:])
+  #elif len(path) == 0:
+  # self._headers.update({'X-Process':'no route','Location':'portal_login','X-Code':301})
   self.header()
   try:   self.wfile.write(self._body)
   except Exception as e:
    print("do_GET: Error writing above body => %s"%str(e))
 
  def do_POST(self):
+  print('POST:' + self.path)
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
   if path in ['api','external']:
@@ -533,10 +531,8 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers['X-Code'] = 304
    else:
     self.files(path,query)
-  elif len(path) == 0:
-   self._headers.update({'X-Process':'no route','X-Code':404})
   else:
-   self.site(self.path[1:])
+   self._headers.update({'X-Process':'no route','X-Code':404})
   self.header()
   self.wfile.write(self._body)
 
@@ -544,28 +540,6 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._headers.update({'Access-Control-Allow-Headers':'X-Token,Content-Type','Access-Control-Allow-Origin':'*'})
   self.header()
   self.wfile.write(self._body)
-
- def route(self):
-  """ Route request to the right function /<path>/mod_fun?get or /<site:mod_fun>?get"""
-  path,_,query = self.path[1:].partition('/')
-  if path in ['api','external']:
-   self.api(path,query)
-  elif path in ['infra','images','files']:
-   # Use caching here :-)
-   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
-    self._headers['X-Code'] = 304
-   else:
-    self.files(path,query)
-  elif path == 'front':
-   self.front()
-  elif path == 'auth':
-   self.auth()
-  elif path == 'system':
-   self.system(query)
-  elif len(path) == 0:
-   self._headers.update({'X-Process':'no route','Location':'portal_login','X-Code':301})
-  else:
-   self.site(self.path[1:])
 
  #
  #
@@ -618,34 +592,6 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def site(self,path):
-  """ Site - serve AJAX information """
-  api,_,get = path.partition('?')
-  mod,_,fun = api.partition('_')
-  stream = Stream(self,get)
-  self._headers.update({'Content-Type':'text/html; charset=utf-8','X-Code':200,'X-Process':'site','ETag':'W/"%s"'% __build__})
-  try:
-   module = import_module("rims.site.%s"%mod)
-   getattr(module,fun,lambda x:None)(stream)
-  except Exception as e:
-   stream.wr("<DETAILS CLASS='web'><SUMMARY CLASS='red'>ERROR</SUMMARY>API:&nbsp; rims.site.%s<BR>"%(api))
-   try:
-    stream.wr("Type: %s<BR>Code: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY>"%(e.args[0]['exception'],e.args[0]['code']))
-    try:
-     keys = sorted(e.args[0]['info'].keys())
-     for k in keys:
-      stream.wr("%s: %s<BR>"%(k,e.args[0]['info'][k]))
-    except: stream.wr(e.args[0]['info'])
-    stream.wr("</DETAILS>")
-   except:
-    stream.wr("Type: %s<BR><DETAILS open='open'><SUMMARY>Info</SUMMARY><PRE>%s</PRE></DETAILS>"%(type(e).__name__,str(e)))
-   stream.wr("<DETAILS><SUMMARY>Args</SUMMARY><CODE>%s</CODE></DETAILS>"%(",".join(stream._form.keys())))
-   stream.wr("<DETAILS><SUMMARY>Cookie</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(stream._cookies))
-  finally:
-   self._body = stream.output().encode('utf-8')
-
- #
- #
  def files(self,path,query):
   """ Serve "common" system files and also route 'files' """
   query = unquote(query)
@@ -656,6 +602,8 @@ class SessionHandler(BaseHTTPRequestHandler):
    self._headers['Content-type']='application/javascript; charset=utf-8'
   elif ftype == 'css':
    self._headers['Content-type']='text/css; charset=utf-8'
+  elif ftype == 'html':
+   self._headers['Content-type']='text/html; charset=utf-8'
   try:
    if not path == 'files':
     fullpath = ospath.join(self._ctx.path,'public',path,query)
@@ -761,88 +709,3 @@ class SessionHandler(BaseHTTPRequestHandler):
   else:
    output = {'status':'NOT_OK','info':'system/<environment|reload|report|register|import|shutdown|mode>/<args: node|module_to_import> where import, environment without args and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')
-
-########################################### Web stream ########################################
-#
-
-class Stream(object):
-
- def __init__(self,aHandler, aGet):
-  self._form = {}
-  self._node = aHandler._ctx.node
-  self._ctx  = aHandler._ctx
-  self._body = []
-  self._cookies = {}
-  try: cookie_str = aHandler.headers['Cookie'].split('; ')
-  except: pass
-  else:
-   for cookie in cookie_str:
-    k,_,v = cookie.partition('=')
-    try:    self._cookies[k] = self.cookie_decode(v)
-    except: self._cookies[k] = v
-  try:    body_len = int(aHandler.headers.get('Content-Length',0))
-  except: body_len = 0
-  if body_len > 0 or len(aGet) > 0:
-   if body_len > 0:
-    self._form.update({ k: l[0] for k,l in parse_qs(aHandler.rfile.read(body_len).decode(), keep_blank_values=1).items() })
-   if len(aGet) > 0:
-    self._form.update({ k: l[0] for k,l in parse_qs(aGet, keep_blank_values=1).items() })
-
- def __str__(self):
-  return "<DETAILS CLASS='web blue'><SUMMARY>Web</SUMMARY>Web object<DETAILS><SUMMARY>Cookies</SUMMARY><CODE>%s</CODE></DETAILS><DETAILS><SUMMARY>Form</SUMMARY><CODE>%s</CODE></DETAILS></DETAILS>"%(str(self._cookies),self._form)
-
- def output(self):
-  return ("".join(self._body))
-
- def wr(self,aHTML):
-  self._body.append(aHTML)
-
- def url(self):
-  return self._ctx.nodes[self._node]['url']
-
- def node(self):
-  return self._node
-
- def cookie(self,aName):
-  return self._cookies.get(aName,{})
-
- def cookie_encode(self,aCookie):
-  return b64encode(dumps(aCookie).encode('utf-8')).decode()
-
- def cookie_decode(self,aCookie):
-  return loads(b64decode(aCookie).decode())
-
- def args(self):
-  return self._form
-
- def __getitem__(self,aKey):
-  return self._form.get(aKey,None)
-
- def get(self,aKey,aDefault = None):
-  return self._form.get(aKey,aDefault)
-
- def get_args(self,aExcept = []):
-  return "&".join("%s=%s"%(k,v) for k,v in self._form.items() if not k in aExcept)
-
- def button(self,aImg,**kwargs):
-  return "<A CLASS='btn btn-%s z-op small' %s></A>"%(aImg," ".join("%s='%s'"%i for i in kwargs.items()))
-
- def rest_call(self, aAPI, aArgs = None, aTimeout = 60):
-  return self._ctx.rest_call("%s/api/%s"%(self._ctx.nodes[self._node]['url'],aAPI), aArgs = aArgs, aTimeout = 60, aDataOnly = True)
-
- def rest_full(self, aURL, **kwargs):
-  return self._ctx.rest_call(aURL, **kwargs)
-
- def put_html(self, aTitle = None, aIcon = 'rims.ico', aTheme = None):
-  theme = self._ctx.site['portal'].get('theme','blue') if not aTheme else aTheme
-  self._body.append("<!DOCTYPE html><HEAD><META CHARSET='UTF-8'><LINK REL='stylesheet' TYPE='text/css' HREF='infra/4.21.0.vis.min.css' /><LINK REL='stylesheet' TYPE='text/css' HREF='infra/system.css'><LINK REL='stylesheet' TYPE='text/css' HREF='infra/theme.%s.css'>"%theme)
-  if aTitle:
-   self._body.append("<TITLE>%s</TITLE>"%aTitle)
-  self._body.append("<LINK REL='shortcut icon' TYPE='image/png' HREF='images/%s'/>"%(aIcon))
-  self._body.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
-  self._body.append("<SCRIPT SRC='infra/3.1.1.jquery.min.js'></SCRIPT><SCRIPT SRC='infra/4.21.0.vis.min.js'></SCRIPT><SCRIPT SRC='infra/system.js'></SCRIPT>")
-  self._body.append("<SCRIPT>$(function() { $(document.body).on('click','.z-op',btn ) .on('focusin focusout','input, select',focus ) .on('input','.slider',slide_monitor); });</SCRIPT>")
-  self._body.append("</HEAD>")
-
- def state_ascii(self, aState = None):
-  return {'unknown':'grey','up':'green','down':'red'}.get(aState,'orange')

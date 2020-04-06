@@ -16,7 +16,14 @@ export const SearchField = (props) => <input type='text' className='searchfield'
 
 export const Result = (props) => <span className='results'>{props.result}</span>
 
-export const InfoColumns = (props) => <div className={'info col' + props.columns + (('className' in props) ? ' ' + props.className : '')}>{props.children}</div>
+export const InfoColumns = (props) => {
+ let start = ['max-content','auto'];
+ if (props.columns > 2)
+  for (let i = 2; i < props.columns; i++)
+   start.push((i % 2 === 0) ? 'max-content' :'auto');
+ return <div className={('className' in props) ? `info ${props.className}` : 'info'} style={{gridTemplateColumns:start.join(' ')}}>{props.children}</div>
+}
+
 InfoColumns.defaultProps = {columns:2};
 
 export const InfoArticle = (props) => <article className='info'>{props.children}</article>

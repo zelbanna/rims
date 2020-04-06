@@ -56,7 +56,7 @@ class Info extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  rest_call('api/master/node_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (!this.state.found)
@@ -72,7 +72,7 @@ class Info extends Component {
       <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='ni_btn_save' onClick={() => this.updateInfo('api/master/node_info')} title='Save information' />
+     <SaveButton key='ni_btn_save' onClick={() => this.updateInfo()} title='Save information' />
      {old && !this.state.data.hostname && <SearchButton key='ni_btn_srch' onClick={this.searchInfo} title='Try to map node to device' />}
      {old && <ReloadButton key='ni_btn_reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />)} />}
      {old && <LogButton key='ni_btn_logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />)} title='View node logs' />}

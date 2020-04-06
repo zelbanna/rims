@@ -116,7 +116,7 @@ export class Info extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => rest_call('api/inventory/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (this.state.data){
@@ -140,7 +140,7 @@ export class Info extends Component {
       <TextInput key='comments' id='comments' value={data.comments} onChange={this.onChange} />
      </InfoColumns>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
-     <SaveButton key='inv_btn_save' onClick={() => this.updateInfo('api/inventory/info') } title='Save' />
+     <SaveButton key='inv_btn_save' onClick={() => this.updateInfo()} title='Save' />
     </article>
    );
   } else

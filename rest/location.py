@@ -48,7 +48,7 @@ def info(aCTX, aArgs = None):
 #
 #
 def delete(aCTX, aArgs = None):
- """ Function retrives locations
+ """ Function deletes a location
 
  Args:
   - id (required)

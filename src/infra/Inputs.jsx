@@ -9,7 +9,6 @@ const line_template = (content,props) => <Fragment key={'template_'+props.id}><l
 //
 // Display Only
 //
-export const ButtonLine = (props) => line_template(props.button,props);
 export const TextLine = (props) =>  line_template(<span id={props.id} style={props.style} title={props.extra} className='info'>{props.text}</span>,props);
 export const StateLine = (props) => line_template((Array.isArray(props.state)) ? <div key={'state_line_multi_' + props.id} className='states'>{props.state.map((val,idx) => <StateMap key={'state_line_state_' + props.id + '_' + idx} state={val} />)}</div> : <StateMap key={'state_line_state_' + props.id} state={props.state} />,props);
 

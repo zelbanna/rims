@@ -3,7 +3,6 @@ import { rest_call } from './infra/Functions.js';
 import { ContentData, ContentList, Result } from './infra/UI.jsx';
 import { BackButton, DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
 
-import { DataSet, Network } from 'vis';
 import { Info as DeviceInfo } from './device.jsx';
 
 // CONVERTED ENTIRELY
@@ -63,9 +62,9 @@ class Show extends Component {
   var args = (this.props.hasOwnProperty('id')) ? {id:this.props.id}:{name:this.props.name};
   rest_call('api/visualize/show',args)
    .then(result => {
-    var nodes = new DataSet(result.data.nodes);
-    var edges = new DataSet(result.data.edges);
-    var network = new Network(this.refs.show_canvas, {nodes:nodes, edges:edges}, result.data.options);
+    var nodes = new window.vis.DataSet(result.data.nodes);
+    var edges = new window.vis.DataSet(result.data.edges);
+    var network = new window.vis.Network(this.refs.show_canvas, {nodes:nodes, edges:edges}, result.data.options);
     network.on('stabilizationIterationsDone', () => network.setOptions({ physics: false }))
     network.on('doubleClick', (params) => this.doubleClick(params))
    })
@@ -105,10 +104,10 @@ export class Edit extends Component {
  componentDidMount(){
   rest_call('api/visualize/network',{id:this.props.id,type:this.props.type})
    .then((result) => {
-    this.viz.nodes = new DataSet(result.data.nodes);
-    this.viz.edges = new DataSet(result.data.edges);
+    this.viz.nodes = new window.vis.DataSet(result.data.nodes);
+    this.viz.edges = new window.vis.DataSet(result.data.edges);
     result.data.options.physics.enabled = true;
-    this.viz.network = new Network(this.refs.edit_canvas, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
+    this.viz.network = new window.vis.Network(this.refs.edit_canvas, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
     this.viz.network.on('stabilizationIterationsDone', () => this.viz.network.setOptions({ physics: false }))
     this.viz.network.on('doubleClick', (params) => this.doubleClick(params))
     this.viz.network.on('dragEnd', (params) => this.networkSync(params))
@@ -131,7 +130,7 @@ export class Edit extends Component {
   }
  }
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => rest_call('api/visualize/network',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  doubleClick = (params) => {
   console.log('DoubleClick',params.nodes[0]);
@@ -174,7 +173,7 @@ export class Edit extends Component {
     <EditButton key='viz_edit' onClick={() => this.toggleEdit()} />
     <PhysicsButton key='viz_physics' onClick={() => this.togglePhysics()} />
     <FixButton key='viz_fix' onClick={() => this.toggleFix()} />
-    <SaveButton key='viz_save' onClick={() => this.updateInfo('api/visualize/network')} />
+    <SaveButton key='viz_save' onClick={() => this.updateInfo()} />
     <NetworkButton key='viz_net' onClick={() => this.setState({content:'network'})} />
     <TextButton key='viz_opt' text='Options' onClick={() => this.setState({content:'options'})} />
     <TextButton key='viz_nodes' text='Nodes' onClick={() => this.setState({content:'nodes'})} />

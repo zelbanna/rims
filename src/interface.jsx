@@ -192,9 +192,7 @@ class ConnectionInfo extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
- updateInfo = () => {
-  rest_call('api/interface/connection_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
- }
+ updateInfo = () => rest_call('api/interface/connection_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render(){
   if(this.state){
@@ -205,7 +203,7 @@ class ConnectionInfo extends Component {
      {this.state.interfaces.map((row,idx) => <TextLine key={'conn_int_'+idx} id={'interface_' +idx} text={`${row.device_name} - ${row.interface_name} (${row.interface_id})`} />)}
     </InfoColumns>
     <BackButton key='ci_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />
-    <SaveButton key='ci_btn_save' onClick={() => this.updateInfo()} title='Save connectino information' />
+    <SaveButton key='ci_btn_save' onClick={() => this.updateInfo()} title='Save connection information' />
    </article>
   } else
    return <Spinner />

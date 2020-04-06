@@ -66,7 +66,7 @@ class Info extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  rest_call('api/rack/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   rest_call('api/rack/info',{id:this.props.id}).then(result => this.setState(result))
@@ -85,7 +85,7 @@ class Info extends Component {
       <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu1_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
       <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu2_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
      </InfoColumns>
-     <SaveButton key='ri_btn_save' onClick={() => this.updateInfo('api/rack/info')} title='Save' />
+     <SaveButton key='ri_btn_save' onClick={() => this.updateInfo()} title='Save' />
     </article>
    )
   else

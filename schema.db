@@ -45,14 +45,14 @@ CREATE TABLE `device_connections` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `device_data_points`;
-CREATE TABLE `device_data_points` (
+DROP TABLE IF EXISTS `device_statistics`;
+CREATE TABLE `device_statistics` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `device_id` int(10) unsigned NOT NULL,
-  `measurement` varchar(20) DEFAULT NULL,
-  `tags` varchar(40) DEFAULT NULL,
-  `name` varchar(16) DEFAULT NULL,
-  `oid` varchar(40) DEFAULT NULL,
+  `measurement` varchar(20) NOT NULL,
+  `tags` varchar(40) NOT NULL DEFAULT '',
+  `name` varchar(16) NOT NULL,
+  `oid` varchar(40) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `device_oid` (`device_id`,`oid`),
   KEY `device_id` (`device_id`),
@@ -99,7 +99,7 @@ CREATE TABLE `device_logs` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `device_id` int(10) unsigned NOT NULL,
   `time` timestamp NOT NULL DEFAULT current_timestamp(),
-  `message` varchar(64) DEFAULT 'empty',
+  `message` varchar(96) DEFAULT 'empty',
   PRIMARY KEY (`id`),
   KEY `device_id` (`device_id`),
   CONSTRAINT `device_logs_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

@@ -59,7 +59,7 @@ class Info extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  rest_call('api/reservation/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (this.state.data){
@@ -73,7 +73,7 @@ class Info extends Component {
       <RadioInput key='shutdown' id='shutdown' value={this.state.data.shutdown} options={[{text:'no',value:0},{text:'yes',value:1},{text:'reset',value:2}]} onChange={this.onChange} />
       <TextInput key='info' id='info' value={this.state.data.info} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='rsv_btn_save' onClick={() => this.updateInfo('api/reservation/info')} title='Save' />
+     <SaveButton key='rsv_btn_save' onClick={() => this.updateInfo()} title='Save' />
     </article>
    );
   } else

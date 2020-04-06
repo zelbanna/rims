@@ -77,7 +77,7 @@ class DomainInfo extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  rest_call('api/dns/domain_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   rest_call('api/dns/domain_info',{id:this.props.id}).then(result => this.setState(result))
@@ -101,7 +101,7 @@ class DomainInfo extends Component {
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} />
       <TextInput key='notified_serial' id='notified_serial' label='Notified Serial' value={this.state.data.notified_serial} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='domain_save' onClick={() => this.updateInfo('api/dns/domain_info')} title='Save domain information' />
+     <SaveButton key='domain_save' onClick={() => this.updateInfo()} title='Save domain information' />
     </article>
    );
   } else
@@ -203,7 +203,7 @@ class RecordInfo extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => rest_call('api/dns/record_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   this.setState({info:undefined})
@@ -221,7 +221,7 @@ class RecordInfo extends Component {
       <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} onChange={this.onChange} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder={'A, PTR or CNAME typically'} />
      </InfoColumns>
-     <SaveButton key='record_save' onClick={() => this.updateInfo('api/dns/record_info')} title='Save record information' />
+     <SaveButton key='record_save' onClick={() => this.updateInfo()} title='Save record information' />
      <Result key='record_result' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
     </article>
    );

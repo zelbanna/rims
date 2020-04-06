@@ -61,7 +61,7 @@ class Info extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => rest_call('api/master/server_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (!this.state.found)
@@ -78,7 +78,7 @@ class Info extends Component {
       <SelectInput key='type_id' id='type_id' label='Service' value={this.state.data.type_id} onChange={this.onChange}>{this.state.services.map((row,idx) => <option key={'si_svc_'+idx} value={row.id}>{`${row.service} (${row.type})`}</option>)}</SelectInput>
       <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} onChange={this.onChange} />
      </InfoColumns>
-     <SaveButton key='si_btn_save' onClick={() => this.updateInfo('api/master/server_info')} title='Save' />
+     <SaveButton key='si_btn_save' onClick={() => this.updateInfo()} title='Save' />
      {old && <SyncButton key='si_sync' onClick={() => this.changeContent(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />)} title='Sync service' />}
      {old && <ReloadButton key='si_restart' onClick={() => this.changeContent(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />)} title='Restart service' />}
      {old && <ItemsButton key='si_status' onClick={() => this.changeContent(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />)} title='Service status' />}

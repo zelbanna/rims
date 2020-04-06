@@ -131,8 +131,6 @@ def hostname(aCTX, aArgs = None):
 def info(aCTX, aArgs = None):
  """Function docstring for info. Retrieves and updates device info (excluding rack info which is only fetched)
 
- TODO: remove ret['id'] when REACT
-
  Args:
   - id (required)
   - op (optional), None/'update'/'lookup'
@@ -144,7 +142,7 @@ def info(aCTX, aArgs = None):
   return {'found':False,'status':'NOT_OK','info':'device info requires id'}
 
  id = int(aArgs.pop('id',None))
- ret = {'id':id}
+ ret = {}
 
  op = aArgs.pop('op',None)
  with aCTX.db as db:
@@ -193,13 +191,13 @@ def info(aCTX, aArgs = None):
    if not ret['extra']['functions']:
     ret['extra']['functions'] = ""
    # Rack infrastructure ?
-   if ret['data']['class'] == 'vm' and (db.do("SELECT dvu.vm AS name, dvu.device_uuid, dvu.server_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %(id)s"%ret) == 1):
+   if ret['data']['class'] == 'vm' and (db.do("SELECT dvu.vm AS name, dvu.device_uuid, dvu.server_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %s"%id) == 1):
     ret['vm'] = db.get_row()
    elif (db.do("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%id) == 1):
     rack = db.get_row()
     ret['rack'] = rack
     infra_ids = [str(rack['console_id'])] if rack['console_id'] else []
-    db.do("SELECT id,name,pdu_id,pdu_slot,pdu_unit FROM device_pems WHERE device_id = %(id)s"%ret)
+    db.do("SELECT id,name,pdu_id,pdu_slot,pdu_unit FROM device_pems WHERE device_id = %s"%id)
     ret['pems'] = db.get_rows()
     pdu_ids = [str(x['pdu_id']) for x in ret['pems'] if x['pdu_id']]
     infra_ids.extend(pdu_ids)
@@ -233,124 +231,68 @@ def extended(aCTX, aArgs = None):
   - op (optional), 'update'
   - hostname (optional required). if updating this is required
   - management_id (optional required). if updating this is required
-  - rack_info_<key>
-  - pems_<id>_<key>
-  - ddp_<id>_<key>
   - a_domain_id (optional)
 
 
  Output:
   - extended device info
  """
- ret = {'id':aArgs.pop('id',None)}
-
+ id = aArgs.pop('id',None)
+ op = aArgs.pop('op',None)
+ ret = {'result':{}}
  with aCTX.db as db:
-  operation = aArgs.pop('op',None)
-  result = {}
+  if op == 'update':
+   if aArgs.get('a_domain_id') and not aArgs['management_id'] in ['NULL',None] and (db.do("SELECT ia.id, ia.hostname, ia.a_domain_id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %s"%aArgs['management_id']) > 0):
+    ipam = db.get_row()
+    if (ipam['hostname'] != aArgs['hostname']) or (int(aArgs['a_domain_id']) != ipam['a_domain_id']):
+     from rims.rest.ipam import address_info
+     ret['result']['ipam'] = address_info(aCTX,{'id':ipam['id'],'hostname':aArgs['hostname'],'a_domain_id':aArgs['a_domain_id'],'op':'update_only'})['status']
+    ret['result']['device'] = (db.do("UPDATE devices SET hostname = '%s', management_id = %s WHERE id = %s"%(aArgs['hostname'],aArgs['management_id'],id)) == 1)
 
-  if operation and ret['id']:
-   if   operation == 'add_pem':
-    result['add_pem'] = (db.do("INSERT INTO device_pems(device_id) VALUES(%s)"%ret['id']) > 0)
-   elif operation == 'remove_pem':
-    result['remove_pem'] = (db.do("DELETE FROM device_pems WHERE device_id = %s AND id = %s "%(ret['id'],aArgs['pem_id'])) > 0)
-   elif operation == 'add_ddp':
-    result['add_pem'] = (db.do("INSERT INTO device_data_points(device_id) VALUES(%s)"%ret['id']) > 0)
-   elif operation == 'remove_ddp':
-    result['remove_pem'] = (db.do("DELETE FROM device_data_points WHERE device_id = %s AND id = %s "%(ret['id'],aArgs['ddp_id'])) > 0)
-   elif operation == 'lookup_ddp':
-    result['ddp'] = {'insert':0}
-    from importlib import import_module
-    try:
-     db.do("SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON di.interface_id = devices.management_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id = %s"%ret['id'])
-     info = db.get_row()
-     module = import_module("rims.devices.%s"%info['type'])
-     device = getattr(module,'Device',None)(aCTX, ret['id'], info['ip'])
-     for ddp in device.get_data_points():
-      result['ddp']['insert'] += db.do("INSERT INTO device_data_points (device_id,measurement,tags,name,oid) VALUES(%i,'%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = id"%(int(ret['id']),ddp[0],ddp[1],ddp[2],ddp[3]))
-    except Exception as e:
-     result['ddp']['status'] = 'NOT_OK'
-     result['ddp']['info'] = str(e)
-    else:
-     result['status'] = 'OK'
-
-   if operation == 'update':
-    if aArgs.get('a_domain_id') and not aArgs['management_id'] in ['NULL',None] and (db.do("SELECT ia.id, ia.hostname, ia.a_domain_id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %s"%aArgs['management_id']) > 0):
-     ipam = db.get_row()
-     if (ipam['hostname'] != aArgs['hostname']) or (int(aArgs['a_domain_id']) != ipam['a_domain_id']):
-      from rims.rest.ipam import address_info
-      result['ipam'] = address_info(aCTX,{'id':ipam['id'],'hostname':aArgs['hostname'],'a_domain_id':aArgs['a_domain_id'],'op':'update_only'})['status']
-    if aArgs.get('rack_info_rack_id') in ['NULL',None]:
-     db.do("DELETE FROM rack_info WHERE device_id = %s"%ret['id'])
-    else:
-     db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(ret['id'],aArgs.get('rack_info_rack_id')))
-    # PEMs
-    for id in [k.split('_')[1] for k,_ in aArgs.items() if k.startswith('pems_') and 'name' in k]:
-     pdu_slot = aArgs.pop('pems_%s_pdu_slot'%id,"0.0").split('.')
-     pem = {'name':aArgs.pop('pems_%s_name'%id,None),'pdu_unit':aArgs.pop('pems_%s_pdu_unit'%id,0),'pdu_id':pdu_slot[0],'pdu_slot':pdu_slot[1]}
-     result["PEM_%s"%id] = db.update_dict('device_pems',pem,'id=%s'%id)
-    # DDPs
-    for id in [k.split('_')[1] for k,_ in aArgs.items() if k.startswith('ddp_') and 'measurement' in k]:
-     ddp = {'measurement':aArgs.pop('ddp_%s_measurement'%id,'default'), 'tags':aArgs.pop('ddp_%s_tags'%id,""), 'name':aArgs.pop('ddp_%s_name'%id,'value'), 'oid':aArgs.pop('ddp_%s_oid'%id,None)}
-     result["DDP_%s"%id] = db.update_dict('device_data_points',ddp,'id=%s'%id)
-
-    rack_args = {k[10:]:v for k,v in aArgs.items() if k[0:10] == 'rack_info_'}
-    result['rack_info'] = (db.update_dict('rack_info',rack_args,"device_id='%s'"%ret['id']) == 1) if rack_args else "NO_RACK_INFO"
-    result['device'] = (db.do("UPDATE devices SET hostname = '%s', management_id = %s WHERE id = %s"%(aArgs['hostname'],aArgs['management_id'],ret['id'])) == 1)
-
-  # Now fetch info
-  ret['found'] = (db.do("SELECT management_id, devices.class, CONCAT('.1.3.6.1.4.1.',devices.oid) AS oid, devices.hostname, dt.base AS type_base, oui.company AS oui FROM devices LEFT JOIN oui ON oui.oui = (devices.mac >> 24) AND devices.mac != 0 LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%ret['id']) == 1)
+  ret['found'] = (db.do("SELECT management_id, CONCAT('.1.3.6.1.4.1.',devices.oid) AS oid, devices.hostname, oui.company AS oui FROM devices LEFT JOIN oui ON oui.oui = (devices.mac >> 24) AND devices.mac != 0  WHERE devices.id = %s"%id) == 1)
   if ret['found']:
    ret['extra'] = db.get_row()
-   ret['data'] = {'hostname':ret['extra'].pop('hostname','unknown'),'management_id':ret['extra'].pop('management_id',None)}
-   db.do("SELECT di.interface_id, di.name, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, ia.a_domain_id FROM device_interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains on ia.a_domain_id = domains.id WHERE di.device_id = %s"%ret['id'])
+   ret['data'] = {'id':id,'hostname':ret['extra'].pop('hostname','unknown'),'management_id':ret['extra'].pop('management_id',None)}
+   db.do("SELECT di.interface_id, di.name, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, ia.a_domain_id FROM device_interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains on ia.a_domain_id = domains.id WHERE di.device_id = %s"%id)
    ret['interfaces'] = db.get_rows()
    ret['interfaces'].append({'interface_id':'NULL', 'name':'N/A','ip':None,'fqdn':'N/A','a_domain_id':None})
-   for intf in ret['interfaces']:
-    if ret['data']['management_id'] == intf['interface_id']:
-     ret['extra']['management_domain'] = intf['a_domain_id']
-     break
-   else:
-    ret['extra']['management_domain'] = None
-   db.do("SELECT * FROM device_data_points WHERE device_id = %s"%ret['id'])
-   ret['data_points'] = db.get_rows()
-   # Rack infrastructure
-   ret['infra'] = {'racks':[{'id':'NULL', 'name':'Not used'}]}
-   if ret['extra']['class'] != 'vm':
-    db.do("SELECT id, name FROM racks")
-    ret['infra']['racks'].extend(db.get_rows())
-    if (db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %(id)s"%ret) == 1):
-     ret['rack'] = db.get_row()
-     ret['rack'].pop('device_id',None)
-     sqlbase = "SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = '%s' ORDER BY devices.hostname"
-     db.do(sqlbase%('console'))
-     ret['infra']['consoles'] = db.get_rows()
-     ret['infra']['consoles'].append({ 'id':'NULL', 'hostname':'No Console' })
-     db.do(sqlbase%('pdu'))
-     ret['infra']['pdus'] = db.get_rows()
-     ret['infra']['pdus'].append({ 'id':'NULL', 'hostname':'No PDU' })
-     db.do("SELECT pdu_info.* FROM pdu_info")
-     ret['infra']['pdu_info'] = db.get_dict('device_id')
-     ret['infra']['pdu_info']['NULL'] = {'slots':1, '0_slot_id':0, '0_slot_name':'', '1_slot_id':0, '1_slot_name':''}
-     db.do("SELECT id,name,pdu_id,pdu_slot,pdu_unit FROM device_pems WHERE device_id = %(id)s"%ret)
-     ret['pems'] = db.get_rows()
 
-  # Update PDU with hostname and PEM info on the right pdu slot and unit
-  if operation == 'update' and 'rack' in ret:
-   from importlib import import_module
-   for pem in ret['pems']:
-    if pem['pdu_id']:
-     db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %i"%(pem['pdu_id']))
-     pdu_info = db.get_row()
-     try:
-      module = import_module("rims.devices.%s"%pdu_info['type'])
-      pdu = getattr(module,'Device',None)(aCTX, pem['pdu_id'],pdu_info['ip'])
-      # Slot id is actually local slot ID, so we need to look up infra -> pdu_info -> pdu and then pdu[x_slot_id] to get the right ID
-      pdu_res = pdu.set_name( int(ret['infra']['pdu_info'][pem['pdu_id']]['%s_slot_id'%pem['pdu_slot']] ), int(pem['pdu_unit']) , "%s-%s"%(ret['data']['hostname'],pem['name']) )
-      result["PDU_(%s)"%pem['id']] = "RES:%s.%s"%(pdu_info['hostname'],pdu_res)
-     except Exception as err:
-      result["PDU_(%s)"%pem['id']] = "ERROR: %s"%repr(err)
- ret['result'] = result if len(result) > 0 else None
  ret['status'] = 'OK'
+ return ret
+
+#
+#
+def rack(aCTX, aArgs = None):
+ """ Function provides rack information for a specific device
+
+ Args:
+  - device_id (required)
+  - op
+  - <data>
+
+ Output:
+  - data
+ """
+ id = aArgs['device_id']
+ op = aArgs.pop('op',None)
+ ret ={'racks':[{'id':'NULL', 'name':'Not used'}]}
+ with aCTX.db as db:
+  if (op == 'update'):
+   if aArgs.get('rack_id') in ['NULL',None]:
+    ret['deleted'] = (db.do("DELETE FROM rack_info WHERE device_id = %s"%id) > 0)
+   else:
+    ret['insert'] = (db.do("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(id,aArgs['rack_id'])) > 0)
+    ret['update'] = (db.update_dict('rack_info',aArgs,'device_id=%s'%id) > 0)
+  db.do("SELECT id, name FROM racks")
+  ret['racks'].extend(db.get_rows())
+  ret['data'] = db.get_row()
+  db.do("SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = 'console' ORDER BY devices.hostname")
+  ret['consoles'] = db.get_rows()
+  ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console' })
+  if (db.do("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %s"%id) > 0):
+   ret['data'] = db.get_row()
+  else:
+   ret['data'] = {'device_id':id,'rack_id':None,'rack_size':1,'rack_unit':0,'console_id':None,'console_port':0}
  return ret
 
 #
@@ -360,52 +302,53 @@ def control(aCTX, aArgs = None):
 
  Args:
   - id (optional required)
-  - ip (optional required)
   - user_id (required)
+  - device_op (optional required). Apply op (shutdown|reboot) to device
   - pem_op (optional required). Apply op (on|off|reboot) to pdu connected to pem
   - pem_id (optional required). Select which pem (or 'all') to apply op to
-  - dev_op (optional required). Apply op (shutdown|reboot) to device
 
  Output:
   - pems. list of pems
  """
  from importlib import import_module
  ret = {}
- if   aArgs.get('id'):
-  srch = "devices.id = %s"%aArgs['id']
- elif aArgs.get('ip'):
-  srch = "ia.ip = INET_ATON('%s')"%aArgs['ip']
- else:
-  return {'help':'requires device id or ip'}
+ id = aArgs['id']
  with aCTX.db as db:
-  if (db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, devices.class, dt.name AS type FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE %s"%srch) == 1):
-   ret.update(db.get_row())
-   if ret['class'] != 'vm' and (db.do("SELECT dp.id, dp.device_id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE dp.device_id = %s AND dp.pdu_id IS NOT NULL"%ret['id']) > 0):
-    ret['pems'] = db.get_rows()
-   elif ret['class'] == 'vm' and (db.do("SELECT snmp_id, device_uuid, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM device_vm_uuid AS dvu LEFT JOIN devices ON dvu.host_id = devices.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dvu.device_id = %s"%ret['id']) == 1):
-    ret['mapping'] = db.get_row()
+  db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.class, dt.name AS type FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %s"%id)
+  info = db.get_row()
+  if info['class'] != 'vm' and (db.do("SELECT dp.id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE dp.device_id = %s AND dp.pdu_id IS NOT NULL"%id) > 0):
+   ret['pems'] = db.get_rows()
+  elif info['class'] == 'vm' and (db.do("SELECT dvu.host_id, snmp_id AS device_snmp_id, device_uuid, INET_NTOA(ia.ip) AS host_ip, dt.name AS host_type FROM device_vm_uuid AS dvu LEFT JOIN devices ON dvu.host_id = devices.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dvu.device_id = %s"%id) == 1):
+   ret['mapping'] = db.get_row()
 
- if aArgs.get('dev_op') and ret.get('id'):
-  if ret['class'] != 'vm':
-   module = import_module("rims.devices.%s"%ret['type'])
-   with getattr(module,'Device',None)(aCTX,ret['id'],ret['ip']) as dev:
-    ret['result'] = dev.operation(aArgs['dev_op'])
-  elif ret.get('mapping'):
-   module = import_module("rims.devices.%s"%ret['mapping']['type'])
-   with getattr(module,'Device',None)(aCTX,ret['id'],ret['mapping']['ip']) as dev:
-    ret['result'] = dev.vm_operation(aArgs['dev_op'],ret['mapping']['snmp_id'], aUUID = ret['mapping']['device_uuid'])
-  else:
-   ret['result'] = 'NO_VM_MAPPING'
+ if aArgs.get('device_op'):
+  try:
+   if info['class'] != 'vm':
+    module = import_module("rims.devices.%s"%info['type'])
+    with getattr(module,'Device',None)(aCTX,id,info['ip']) as dev:
+     ret['result'] = dev.operation(aArgs['device_op'])
+   elif ret.get('mapping'):
+    module = import_module("rims.devices.%s"%ret['mapping']['host_type'])
+    with getattr(module,'Device',None)(aCTX,ret['mapping']['host_id'],ret['mapping']['host_ip']) as dev:
+     ret['result'] = dev.vm_operation(aArgs['device_op'],ret['mapping']['device_snmp_id'], aUUID = ret['mapping']['device_uuid'])
+   else:
+    ret['result'] = 'NO_VM_MAPPING'
+  except Exception as e:
+   ret.update({'status':'NOT_OK_DEVICE','op':'NOT_OK','info':str(e)})
+
  if ret.get('pems'):
   for pem in ret['pems']:
    if not pem['pdu_id']:
     continue
    op_id = str(aArgs.get('pem_id','NULL'))
-   module = import_module("rims.devices.%s"%pem['pdu_type'])
-   pdu = getattr(module,'Device',None)(aCTX, pem['device_id'],pem['pdu_ip'])
-   if op_id == 'all' or op_id == str(pem['id']):
-    pem['op'] = pdu.set_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit'],aArgs['pem_op'])
-   pem['state'] = pdu.get_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit']).get('state','unknown')
+   try:
+    module = import_module("rims.devices.%s"%pem['pdu_type'])
+    pdu = getattr(module,'Device',None)(aCTX, pem['pdu_id'],pem['pdu_ip'])
+    if op_id == 'all' or op_id == str(pem['id']):
+     pem['op'] = pdu.set_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit'],aArgs['pem_op'])
+    pem['state'] = pdu.get_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit']).get('state','unknown')
+   except Exception as e:
+    pem.update({'status':'NOT_OK_PEM','op':'NOT_OK','info':str(e)})
  return ret
 
 #
@@ -451,8 +394,8 @@ def new(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'status':'NOT_OK','id':None}
- intf = {}
+ data = {}
+ ret = {'status':'NOT_OK','data':data}
 
  with aCTX.db as db:
   if aArgs.get('ipam_network_id') and __is_ip(aArgs.get('ip')):
@@ -462,19 +405,19 @@ def new(aCTX, aArgs = None):
     ret['info'] = res['info']
     return ret
    else:
-    ret['ipam'] = 'OK'
-    ipam = res['data']['id']
+    data['ipam'] = res['data']['id']
   else:
-   ipam = None
-  try:    mac = int(aArgs['mac'].replace(':',""),16)
-  except: mac = 0
+   data['ipam'] = None
+
+  try:    data['mac'] = int(aArgs['mac'].replace(':',""),16)
+  except: data['mac'] = 0
 
   db.do("INSERT INTO devices (hostname,class,type_id) SELECT '%s' AS hostname, '%s' AS class, id AS type_id FROM device_types WHERE name = 'generic'"%(aArgs['hostname'],aArgs.get('class','device')))
-  ret['id'] = db.get_last_id()
-  if mac > 0 or ipam is not None:
-   ret['interface']  = db.do("INSERT INTO device_interfaces (device_id,mac,ipam_id,name,description) VALUES(%s,%s,%s,'management-%s','auto_created')"%(ret['id'], mac, ipam,ret['id']))
-   ret['management'] = db.get_last_id()
-   db.do("UPDATE devices SET management_id = %s WHERE id = %s"%(ret['management'],ret['id']))
+  data['id']= db.get_last_id()
+  if data['mac'] > 0 or data['ipam'] is not None:
+   data['interface'] = (db.do("INSERT INTO device_interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'management-%(id)s','auto_created')"%data) > 0)
+   data['management_id'] = db.get_last_id()
+   db.do("UPDATE devices SET management_id = %(management_id)s WHERE id = %(id)s"%data)
  ret['status'] = 'OK'
  return ret
 

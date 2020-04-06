@@ -52,10 +52,10 @@ export class Info extends Component {
   rest_call('api/master/user_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
- updateInfo = (api) => {
+ updateInfo = () => {
   if(this.context.cookie.id === this.state.data.id)
    this.context.setCookie({...this.context.cookie, theme:this.state.data.theme});
-  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+  rest_call('api/master/user_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
  }
 
  render() {
@@ -72,7 +72,7 @@ export class Info extends Component {
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
       <SelectInput key='theme' id='theme' value={this.state.data.theme} onChange={this.onChange}>{this.state.themes.map(row => <option key={'ui_theme_'+row} value={row}>{row}</option>)}</SelectInput>
      </InfoColumns>
-     <SaveButton key='ui_btn_save' onClick={() => this.updateInfo('api/master/user_info')} title='Save' />
+     <SaveButton key='ui_btn_save' onClick={() => this.updateInfo()} title='Save' />
     </article>
    );
   } else

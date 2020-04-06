@@ -74,7 +74,7 @@ class Info extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  rest_call('api/master/activity_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   rest_call('api/master/activity_info',{id:this.props.id}).then(result => {
@@ -96,7 +96,7 @@ class Info extends Component {
       <TimeInput key='time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoColumns>
      <label htmlFor='event'>Info</label><textarea className='info' id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
-     <SaveButton key='activity_save' onClick={() => this.updateInfo('api/master/activity_info')} title='Save' />
+     <SaveButton key='activity_save' onClick={() => this.updateInfo()} title='Save' />
     </article>
    );
   else
@@ -169,7 +169,7 @@ class TypeInfo extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = (api) =>  rest_call(api,{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  rest_call('api/master/activity_type_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
   rest_call('api/master/activity_type_info',{id:this.props.id}).then(result => this.setState(result))
@@ -183,9 +183,9 @@ class TypeInfo extends Component {
      <InfoColumns key='activity_type_content'>
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
      </InfoColumns>
-     <SaveButton key='activity_type_save' onClick={() => this.updateInfo('api/master/activity_type_info')} title='Save' />
+     <SaveButton key='activity_type_save' onClick={() => this.updateInfo()} title='Save' />
     </article>
-   );
+   )
   else
    return <Spinner />
  }

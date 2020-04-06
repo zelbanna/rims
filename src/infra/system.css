@@ -39,7 +39,7 @@ iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 p { margin:2px; }
 pre { margin:0px; }
 select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
- -webkit-appearance: none; background-color: transparent; border-style:solid; border-width:var(--border-size); border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:0px
+ -webkit-appearance: none; background-color: transparent; border-style:solid; border-width:var(--border-size); border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:2px
 }
 select:focus,input:focus,textarea:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0px 0px 6px -2px var(--high-color), 0px 0px 3px -1px var(--high-color) inset;}
 span { background-color:transparent; }
@@ -97,7 +97,7 @@ nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var
 nav button:active{ opacity:0.8; }
 nav button.fa { padding:0px; width:var(--nav-height); }
 nav button.fa > i { font-size:calc(var(--nav-height) * 0.7); padding:calc(var(--nav-height) * 0.15); }
-nav button.navinfo:hover, nav button.navinfo:focus{ color:white!important; }
+nav button.navinfo:hover, nav button.navinfo:focus{ color:var(--ui-txt-color)!important; }
 
 /***************************************  List Model *****************************************/
 
@@ -121,8 +121,6 @@ button.text::-moz-focus-inner { border-style: dotted; }
 article.info { resize:horizontal; width:max-content; }
 article.info textarea { height:calc(var(--std-txt) * 5); width:300px; display:block; }
 div.info { display:grid; margin:2px 0px 2px 0px; align-items:center; grid-gap:1px; }
-div.col2 { grid-template-columns: max-content auto;}
-div.col3 { grid-template-columns: max-content auto max-content;}
 div.info *[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
 
 label.info { font-weight:bold; padding:2px; }

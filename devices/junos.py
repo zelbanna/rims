@@ -53,7 +53,7 @@ class Junos(GenericDevice):
    self._model = self._router.facts['model']
    self._version = self._router.facts['version']
   except Exception as err:
-   self.log("System Error - Unable to connect to router: " + str(err))
+   self.log("Unable to connect:" + str(err)[:72])
    return False
   return True
 

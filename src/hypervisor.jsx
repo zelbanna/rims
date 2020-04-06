@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call } from './infra/Functions.js';
 import { Result, Spinner, StateMap, RimsContext, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { DeleteButton, DocButton, GoButton, HeaderButton, InfoButton, ItemsButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
+import { DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 import { StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
 import { NavBar, NavInfo, NavButton } from './infra/Navigation.js';
 
@@ -126,7 +126,7 @@ export class Inventory extends Component{
    return <Fragment key='hl_fragment'>
     <ContentList key='hl_cl' header='Inventory' thead={thead} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='hl_btn_reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
-     <DocButton key='hl_btn_logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
+     <LogButton key='hl_btn_logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
     </ContentList>
     <ContentData key='hl_cd'>{this.state.content}</ContentData>
    </Fragment>

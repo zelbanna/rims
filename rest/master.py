@@ -25,7 +25,6 @@ def inventory(aCTX, aArgs = None):
   if 'user_id' in aArgs:
    db.do("SELECT alias FROM users WHERE id = %s"%aArgs['user_id'])
    ret['navinfo'].append(db.get_val('alias'))
-
  return ret
 
 ########################################## OUI ##########################################
@@ -76,14 +75,15 @@ def oui_info(aCTX, aArgs = None):
 
  Output:
  """
+ ret = {}
  try:
   oui = int(aArgs['oui'].translate(str.maketrans({':':'','-':''}))[:6],16)
   with aCTX.db as db:
    found = (db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) == 1)
-   ret = db.get_row() if found else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
+   ret['data']= db.get_row() if found else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
    ret['status'] = 'OK' if ret['oui'] != 'NOT_FOUND' else 'NOT_FOUND'
  except Exception as e:
-  ret = {'status':'NOT_OK','error':repr(e),'oui':None,'company':''}
+  ret = {'status':'NOT_OK','info':repr(e),'data':{'oui':None,'company':''}}
  return ret
 
 #
@@ -139,10 +139,10 @@ def node_info(aCTX, aArgs = None):
  with aCTX.db as db:
   if op == 'update':
    if not id == 'new':
-    ret['update'] = db.update_dict('nodes',aArgs,'id=%s'%id)
+    ret['update'] = (db.update_dict('nodes',aArgs,'id=%s'%id) > 0)
    else:
-    ret['update'] = db.insert_dict('nodes',aArgs)
-    id = db.get_last_id() if ret['update'] > 0 else 'new'
+    ret['update'] = (db.insert_dict('nodes',aArgs) > 0)
+    id = db.get_last_id() if ret['update'] else 'new'
   if not id == 'new':
    ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
@@ -219,7 +219,7 @@ def user_encrypt(aCTX, aArgs = None):
  """
  from crypt import crypt
  ret = {}
- ret['encrypted'] = crypt(aArgs['data'],"$1$%s$"%aCTX.config['salt'])
+ ret['data'] = crypt(aArgs['data'],"$1$%s$"%aCTX.config['salt'])
  return ret
 
 #
@@ -290,7 +290,8 @@ def token_maintenance(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
+  ret['count'] = db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
+  ret['deleted'] = (ret['count'] > 0)
  return ret
 
 ################################ SERVERS ##################################
@@ -305,7 +306,6 @@ def server_list(aCTX, aArgs = None):
  Output:
  """
  ret = {}
-
  with aCTX.db as db:
   db.do("SELECT servers.id, st.service, servers.node, st.type, servers.ui FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY servers.node"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
   ret['data']= db.get_rows()
@@ -589,11 +589,11 @@ def task_add(aCTX, aArgs = None):
   aCTX.workers.add_task(aArgs['module'],aArgs['function'],freq, output = aArgs.get('output',False), args = aArgs.get('args',{}))
   ret['status'] = 'OK'
  else:
-  try:   ret.update(aCTX.rest_call("%s/api/system/worker?node=%s"%(aCTX.nodes[node]['url'],node), aArgs = aArgs, aDataOnly = True))
+  try: ret.update(aCTX.rest_call("%s/api/system/worker?node=%s"%(aCTX.nodes[node]['url'],node), aArgs = aArgs, aDataOnly = True))
   except Exception as e:
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
-  else:  ret['status'] = 'OK'
+  else: ret['status'] = 'OK'
  return ret
 
 #
@@ -611,7 +611,7 @@ def task_list(aCTX, aArgs = None):
   ret['count'] = db.do("SELECT tasks.*, nodes.node FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node_id IN (SELECT id FROM nodes WHERE node LIKE '%%%s%%')"%aArgs.get('node',''))
   ret['data'] = db.get_rows()
   for task in ret['data']:
-   task['output'] = (task['output']== 'true')
+   task['output'] = (task['output'] == 'true')
  return ret
 
 #
