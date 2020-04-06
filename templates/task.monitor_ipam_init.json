@@ -1,7 +1,0 @@
-{
- "node":"master",
- "module":"monitor",
- "function":"ipam_init",
- "args":{ "repeat":60 },
- "on_boot":true
-}

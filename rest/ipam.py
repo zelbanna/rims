@@ -526,3 +526,82 @@ def address_events(aCTX, aArgs = None):
    ret['count'] = db.do("SELECT {} FROM {} WHERE {} ORDER BY time DESC LIMIT {} OFFSET {}".format(", ".join(fields), " LEFT JOIN ".join(tables), filter, aArgs.get('limit','50'), aArgs.get('offset','0')))
    ret['events']= db.get_rows()
  return ret
+
+#################################### Monitor #################################
+#
+def check(aCTX, aArgs = None):
+ """ Initiate a status check for all or a subset of IP:s that belongs to proper interfaces
+
+ Args:
+  - networks (optional). List of network ids to check
+  - repeat (optional). If declared, it's an integer with frequency.. This is the way to keep status checks 'in-memory'
+
+ """
+ with aCTX.db as db:
+  db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
+  networks = db.get_rows()
+  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
+  addresses = db.get_rows()
+
+ if 'repeat' in aArgs:
+  aCTX.workers.add_task('ipam','process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
+  return {'status':'OK','info':'IPAM_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
+ else:
+  process(aCTX,{'addresses':addresses})
+  return {'status':'OK'}
+
+#
+#
+def process(aCTX, aArgs = None):
+ """ Function checks all IP addresses
+
+ Args:
+  - addresses (required). List of addresses
+
+ Output:
+ """
+ ret = {'status':'OK'}
+ from os import system
+
+ def __check_ip(aDev):
+  aDev['old'] = aDev['state']
+  try:    aDev['state'] = 'up' if (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) or (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) == 0) else 'down'
+  except: aDev['state'] = 'unknown'
+  return True
+
+ aCTX.workers.block_map(__check_ip,aArgs['addresses'])
+
+ changed = [dev for dev in aArgs['addresses'] if (dev['state'] != dev['old'])]
+ if changed:
+  args = {'up':[x['id'] for x in changed if x['state'] == 'up'], 'down':[x['id'] for x in changed if x['state'] == 'down']}
+  ret['up'] = len(args['up'])
+  ret['down'] = len(args['down'])
+  report(aCTX,args)
+ return ret
+
+#
+#
+def report(aCTX, aArgs = None):
+ """ Updates addresses' status
+
+ Args:
+  - up (optional).   List of id that changed to up
+  - down (optional). List of id that changed to down
+
+ Output:
+  - up (number of updated up state)
+  - down (number of updated down state)
+ """
+ ret = {}
+ with aCTX.db as db:
+  for chg in ['up','down']:
+   change = aArgs.get(chg)
+   if change:
+    ret[chg] = db.do("UPDATE ipam_addresses SET state = '%s' WHERE id IN (%s)"%(chg,",".join(str(x) for x in change)))
+    begin = 0
+    final  = len(change)
+    while begin < final:
+     end = min(final,begin+16)
+     db.do("INSERT INTO ipam_events (ipam_id, state) VALUES %s"%(",".join("(%s,'%s')"%(x,chg) for x in change[begin:end])))
+     begin = end
+ return ret

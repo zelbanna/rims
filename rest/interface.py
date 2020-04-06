@@ -362,3 +362,83 @@ def lldp_mapping(aCTX, aArgs = None):
       v['connection_id'] = None
 
  return {'status':'OK','data':info}
+
+#################################### Monitor #################################
+#
+#
+def check(aCTX, aArgs = None):
+ """ Initiate a status check for devices' interfaces.
+
+ Args:
+  - networks (optional). List of subnet_ids to check
+  - repeat (optional). In-memory repetition of state check
+
+ """
+ ret = {}
+ devices = []
+
+ with aCTX.db as db:
+  db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
+  db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
+  for dev in db.get_rows():
+   if (db.do("SELECT snmp_index,interface_id,state FROM device_interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
+    dev['interfaces'] = db.get_rows()
+    devices.append(dev)
+
+ if 'repeat' in aArgs:
+  aCTX.workers.add_task('interface','process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
+  return {'status':'OK','info':'INTERFACE_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
+ else:
+  process(aCTX,{'devices':devices})
+  return {'status':'OK'}
+
+#
+#
+def process(aCTX, aArgs = None):
+ """ Function processes a list of devices and their interfaces
+
+ Args:
+  - devices (required)
+
+ Output:
+ """
+ from rims.devices.generic import Device
+ report = aCTX.node_function('master','interface','report', aHeader= {'X-Log':'false'})
+
+ def __check_if(aDev):
+  try:
+   if len(aDev['interfaces']) > 0:
+    device = Device(aCTX, aDev['device_id'], aDev['ip'])
+    probe  = device.interfaces_state()
+    for intf in aDev['interfaces']:
+     intf['old'] = intf['state']
+     intf['state'] = probe.get(intf['snmp_index'],'unknown')
+    changed = [intf for intf in aDev['interfaces'] if intf['state'] != intf['old']]
+    if changed:
+     report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
+
+  except Exception as e:
+   aCTX.log("interface_process issue for device %s: %s"%(aDev['device_id'],str(e)))
+   return True
+
+ aCTX.workers.block_map(__check_if,aArgs['devices'])
+ return True
+
+#
+#
+def report(aCTX, aArgs = None):
+ """Function updates interface status
+
+ Args:
+  - device_id (required)
+  - up (optional).   List of id that changed to up
+  - down (optional). List of id that changed to down
+
+ Output:
+ """
+ ret = {'status':'OK','update':0}
+ with aCTX.db as db:
+  for chg in ['up','down']:
+   if aArgs.get(chg):
+    ret[chg] = db.do("UPDATE device_interfaces SET state = '%s' WHERE interface_id IN (%s)"%(chg,",".join(str(x) for x in aArgs[chg])))
+ return ret
