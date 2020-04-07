@@ -46,7 +46,7 @@ export class List extends Component {
 
  render(){
   return <Fragment key='vl_fragment'>
-   <ContentList key='vl_cl' header='Maps' thead={['ID','NAme','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='vl_cl' header='Maps' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='vl_btn_reload' onClick={() => this.componentDidMount() } />
    </ContentList>
    <ContentData key='vl_cd'>{this.state.content}</ContentData>

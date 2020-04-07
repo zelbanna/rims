@@ -3,9 +3,10 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
+import { NavBar, NavButton, NavDropDown } from './infra/Navigation.js'
 
 import { Main as DeviceMain, Info as DeviceInfo } from './device.jsx';
-import { Info as LocationInfo } from './location.jsx';
+import { List as LocationList, Info as LocationInfo } from './location.jsx';
 
 // *************** Main ***************
 //
@@ -15,12 +16,24 @@ export class Main extends Component {
   this.state = <List key='rack_list' />
  }
 
+ componentDidMount(){
+  this.context.loadNavigation(<NavBar key='rack_navbar'>
+   <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)} style={{float:'right'}} />
+   <NavDropDown key='dev_nav_racks' title='Rack' style={{float:'right'}}>
+    <NavButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<List key='rack_list' />)} />
+    <NavButton key='dev_nav_all_pdu' title='PDUs' onClick={() => this.changeContent(<Infra key='pdu_list' type='pdu' />)} />
+    <NavButton key='dev_nav_all_con' title='Consoles' onClick={() => this.changeContent(<Infra key='console_list' type='console' />)} />
+   </NavDropDown>
+  </NavBar>)
+ }
+
  changeContent = (elem) => this.setState(elem)
 
  render(){
   return  <Fragment key='main_base'>{this.state}</Fragment>
  }
 }
+Main.contextType = RimsContext;
 
 // *************** List ***************
 //
@@ -37,7 +50,7 @@ export class List extends Component {
  listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>
    <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} title='Rack information' />
    <GoButton key={'rl_btn_go_'+row.id} onClick={() => this.context.changeMain(<DeviceMain key={'rack_device_'+row.id} rack_id={row.id} />)} title='Rack inventory' />
-   <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Layout key={'rack_layout_'+row.id} id={row.id} />)} title='Rack layout'/>
+   <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Layout key={'rack_layout_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title='Rack layout'/>
    <DeleteButton key={'rl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete rack' />
   </Fragment>]
 
@@ -95,26 +108,40 @@ class Info extends Component {
 
 // *************** Layout ***************
 //
-// TODO
-//
 export class Layout extends Component {
- constructor(props){
-  super(props)
-  this.state = {}
- }
 
  componentDidMount(){
   rest_call('api/rack/devices',{id:this.props.id}).then(result => this.setState(result))
  }
 
+ changeContent = (elem) => this.props.changeSelf(elem);
+
+ createRack(name,content,sign){
+  const rack = [];
+  for (let i = 1; i < this.state.size+1; i++)
+   rack.push(<div key={name+'_left_'+i} className='rack-left' style={{gridRow:-i}}>{i}</div>,<div key={name+'_right_'+i} className='rack-right' style={{gridRow:-i}}>{i}</div>)
+  content.forEach(dev => rack.push(<div key={'rd_' + dev.id} className='rack-data' style={{gridRowStart:this.state.size+2-sign*dev.rack_unit, gridRowEnd:this.state.size+2-(sign*dev.rack_unit+dev.rack_size)}}><HrefButton key={'rd_btn_'+dev.id} style={{color:'var(--ui-txt-color)'}} onClick={() => this.changeContent(<DeviceInfo key='device_info' id={dev.id} />)} text={dev.hostname} /></div>))
+  return rack
+ }
+
  render(){
-  return (<div>Rack Layout (TODO)</div>);
+  if (this.state) {
+   return (<Fragment key='rack_layout'>
+     <article className='info'>
+     <h1>Front</h1>
+    <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('front',this.state.front,1)}</div>
+   </article>
+   <article className='info'>
+    <h1>Back</h1>
+    <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('back',this.state.back,-1)}</div>
+   </article>
+  </Fragment>)
+  } else
+   return <Spinner />
  }
 }
 
 // *************** Infra ***************
-//
-// TODO: fix up links on hostname so that they go to the Layout for that type
 //
 export class Infra extends Component {
  constructor(props){

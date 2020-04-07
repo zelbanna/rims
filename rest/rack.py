@@ -104,8 +104,11 @@ def devices(aCTX, aArgs = None):
  with aCTX.db as db:
   db.do("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
-  ret['count']   = db.do("SELECT devices.id, devices.hostname, rack_info.rack_unit, rack_info.rack_size FROM devices INNER JOIN rack_info ON devices.id = rack_info.device_id WHERE rack_info.rack_id = %s ORDER BY %s"%(id,ret['sort']))
-  ret['devices'] = db.get_rows()
+  db.do("SELECT devices.id, devices.hostname, ri.rack_unit, ri.rack_size FROM devices INNER JOIN rack_info AS ri ON devices.id = ri.device_id WHERE ri.rack_id = %s ORDER BY %s"%(id,ret['sort']))
+  devices = db.get_rows()
+  print(devices)
+  ret['front'] = [dev for dev in devices if dev['rack_unit'] > 0]
+  ret['back'] = [dev for dev in devices if dev['rack_unit'] < 0]
  return ret
 
 #

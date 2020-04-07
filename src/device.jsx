@@ -6,9 +6,8 @@ import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/I
 import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
-import { List as RackList, Layout as RackLayout, Infra as RackInfra } from './rack.jsx';
-import { Inventory as PduInventory } from './pdu.jsx';
-import { Inventory as ConInventory } from './console.jsx';
+
+// CONVERTED ENTIRELY
 
 // **************** Main ****************
 //
@@ -41,15 +40,14 @@ export class Main extends Component {
     <NavButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
    </NavDropDown>
    <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
-   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeContent(<PduInventory key='pdu_inventory' device_id={row.id} type={row.type} />)} />)}</NavDropDown>}
-   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeContent(<ConInventory key='console_inventory' device_id={row.id} type={row.type} />)} />)}</NavDropDown>}
-   {(state.rack_id) && <NavButton key='dev_nav_rack' title={state.name} onClick={() => this.changeContent(<RackLayout key='rack_layout' id={state.rack_id} />)} />}
+   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeImport('pdu','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
+   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeImport('console','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
+   {(state.rack_id) && <NavButton key='dev_nav_rack' title={state.name} onClick={() => this.changeImport('rack','Layout',{id:state.rack_id})} />}
    <NavDropDown key='dev_nav_oui' title='OUI'>
     <NavButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
     <NavButton key='dev_nav_ouil' title='List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
    </NavDropDown>
    <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','List',{})} style={{float:'right'}} />
-   <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeImport('location','List',{})} style={{float:'right'}} />
    <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
     <NavButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DHCP'})} />
     <NavButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
@@ -57,11 +55,6 @@ export class Main extends Component {
    <NavDropDown key='dev_nav_dns' title='DNS' style={{float:'right'}}>
     <NavButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DNS'})} />
     <NavButton key='dev_nav_doms' title='Domains' onClick={() => this.changeImport('dns','DomainList',{})} />
-   </NavDropDown>
-   <NavDropDown key='dev_nav_racks' title='Rack' style={{float:'right'}}>
-    <NavButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<RackList key='rack_list' />)} />
-    <NavButton key='dev_nav_all_pdu' title='PDUs' onClick={() => this.changeContent(<RackInfra key='pdu_list' type='pdu' />)} />
-    <NavButton key='dev_nav_all_con' title='Consoles' onClick={() => this.changeContent(<RackInfra key='console_list' type='console' />)} />
    </NavDropDown>
    <NavReload key='dev_nav_reload' onClick={() => this.changeContent(null)} />
   </NavBar>)

@@ -35,13 +35,13 @@ def delete(aCTX, aArgs = None):
  return ret
 
 #
+# TODO: Create a 'static' html with GET method to create a show page for a given id - to use in non-RIMS environment
 #
 def show(aCTX, aArgs = None):
  """ Get map data from name or id
 
  Args:
   - id (optional required)
-  - name (optional required)
 
  Output:
   - name
@@ -49,12 +49,11 @@ def show(aCTX, aArgs = None):
   - edges
   - nodes
  """
- from json import loads
  ret = {}
  with aCTX.db as db:
-  search = "id = %(id)s"%aArgs if 'id' in aArgs else "name = '%(name)s'"%aArgs
-  ret['found'] = (db.do("SELECT * FROM visualize WHERE %s"%search) > 0)
+  ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %(id)s"%aArgs) > 0)
   if ret['found']:
+   from json import loads
    data = db.get_row()
    ret['data'] = {'id':data['id'],'name':data['name']}
    for var in ['nodes','edges','options']:
