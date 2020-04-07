@@ -109,19 +109,9 @@ class Layout extends Component {
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- changeDevice(id){
-  import('./device.jsx').then(lib => {
-   var Device = lib.Info;
-   this.changeContent(<Device key={'di_'+id} id={id} />);
-  })
- }
+ changeDevice = (id) => import('./device.jsx').then(lib => this.changeContent(<lib.Info key={'di_'+id} id={id} />))
 
- createDevice(network,ip){
-  import('./device.jsx').then(lib => {
-   var New = lib.New;
-   this.changeContent(<New key={'dn_new'} ipam_network_id={network} ip={ip} />);
-  })
- }
+ createDevice = (network,ip) => import('./device.jsx').then(lib =>  this.changeContent(<lib.New key={'dn_new'} ipam_network_id={network} ip={ip} />))
 
  render(){
   if (!this.state)

@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call } from './infra/Functions.js';
 import { Result, Spinner, StateMap, RimsContext, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 import { StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
 import { NavBar, NavInfo, NavButton } from './infra/Navigation.js';
 
@@ -178,7 +178,11 @@ class Info extends Component{
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- changeContent = (elem) => this.props.changeSelf(elem);
+ changeSelf = (elem) => this.props.changeSelf(elem);
+
+ changeContent = (elem) => this.setState({content:elem});
+
+ changeImport = (intf) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key={'interface_info_'+intf[0]} device_id={this.state.data.device_id} class='virtual' mac={intf[1].mac} name={intf[1].name} interface_id={intf[1].interface_id} changeSelf={this.changeContent} />}))
 
  componentDidMount(){
   rest_call('api/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => this.setState(result))
@@ -192,26 +196,37 @@ class Info extends Component{
   rest_call('api/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
  }
 
+ interfaceButton(intf){
+  if (intf[1].interface_id)
+   return <InfoButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport([intf[0],{interface_id:intf[1].interface_id}])} />
+  else
+   return <AddButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport({...intf,interface_id:'new'})} />
+ }
+
  render(){
   if (this.state.data) {
    const data = this.state.data;
-   return <article className='info'>
-    <h1>VM info</h1>
-    <InfoColumns key='hyp_ic'>
-     <TextLine key='hyp_name' id='name' text={data.name} />
-     <TextInput key='hyp_device_id' id='device_id' label='Device ID' value={data.device_id} onChange={this.onChange} />
-     <TextLine key='hyp_device_name' id='device' label='Device Name' text={data.device_name} />
-     <TextLine key='hyp_snmp' id='snmp_id' label='SNMP id' text={data.snmp_id} />
-     <TextLine key='hyp_uuid' id='uuid' label='UUID' text={data.device_uuid} />
-     <StateLine key='hyp_state' id='state' state={data.state} />
-     <TextLine key='hyp_config' id='config' text={data.config} />
-     {Object.entries(data.interfaces).map(row => <TextLine key={'hyp_intf_'+row[0]} id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />)}
-    </InfoColumns>
-    <SaveButton key='hyp_btn_save' onClick={() => this.updateInfo()} title='Save mapping' />
-    <SyncButton key='hyp_btn_sync' onClick={() => this.syncDatabase()} title='Resync database with VM info' />
-    {data.device_id && <GoButton key='hyp_btn_device_vm_info' onClick={() => this.changeContent(<DeviceInfo key='device_info' id={data.device_id} changeSelf={this.props.changeSelf} />)} title='VM device info' />}
-    <Result key='hyp_res' result={JSON.stringify(this.state.update)} />
-   </article>
+   return <Fragment key='hyp_frag'>
+    <article className='info'>
+     <h1>VM info</h1>
+     <InfoColumns key='hyp_ic' columns={3}>
+      <TextLine key='hyp_name' id='name' text={data.name} /><div />
+      <TextInput key='hyp_device_id' id='device_id' label='Device ID' value={data.device_id} onChange={this.onChange} /><div />
+      <TextLine key='hyp_device_name' id='device' label='Device Name' text={data.device_name} /><div />
+      <TextLine key='hyp_snmp' id='snmp_id' label='SNMP id' text={data.snmp_id} /><div />
+      <TextLine key='hyp_uuid' id='uuid' label='UUID' text={data.device_uuid} /><div />
+      <StateLine key='hyp_state' id='state' state={data.state} /><div />
+      <TextLine key='hyp_config' id='config' text={data.config} /><div />
+      {Object.entries(this.state.interfaces).map(row => <Fragment key={'hyp_intf_frag_'+row[0]}><TextLine key={'hyp_intf_'+row[0]} id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row)}</Fragment>)}
+     </InfoColumns>
+     <SaveButton key='hyp_btn_save' onClick={() => this.updateInfo()} title='Save mapping' />
+     <SyncButton key='hyp_btn_sync' onClick={() => this.syncDatabase()} title='Resync database with VM info' />
+     {data.device_id && <GoButton key='hyp_btn_device_vm_info' onClick={() => this.changeSelf(<DeviceInfo key='device_info' id={data.device_id} changeSelf={this.props.changeSelf} />)} title='VM device info' />}
+     <Result key='hyp_res' result={JSON.stringify(this.state.update)} />
+    </article>
+    <NavBar />
+    {this.state.content}
+   </Fragment>
   } else
    return <Spinner />
  }

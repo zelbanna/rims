@@ -54,10 +54,25 @@ def vm_info(aCTX, aArgs = None):
   ret['info'] = repr(err)
  else:
   ret['status'] = 'OK'
+  ret['interfaces'] = ret['data'].pop('interfaces',None)
   with aCTX.db as db:
    if (db.do("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.server_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE device_uuid = '%s'"%ret['data']['device_uuid']) == 1):
     ret['data'].update(db.get_row())
     vm = ret['data'].pop('vm',None)
+    if(ret['data']['device_id']):
+     db.do("SELECT interface_id, LPAD(hex(mac),12,0) AS mac, name FROM device_interfaces WHERE device_id = %s"%ret['data']['device_id'])
+     ret['device'] = db.get_rows()
+     for intf in ret['device']:
+       intf['mac'] = ':'.join(intf['mac'][i:i+2] for i in [0,2,4,6,8,10]) if intf.get('mac') else '00:00:00:00:00:00'
+     for vm_if in ret['interfaces'].values():
+      if len(ret['device']) > 0:
+       for i,dev_if in enumerate(ret['device']):
+        if dev_if['mac'] == vm_if['mac']:
+         vm_if.update({'interface_id':dev_if['interface_id'],'pos':i})
+         break
+       if 'pos' in vm_if:
+        ret['device'].pop(vm_if['pos'])
+        vm_if.pop('pos',None)
     if aArgs.get('op') == 'update' or vm != ret['data']['name']:
      ret['update'] = (db.do("UPDATE device_vm_uuid SET vm = '%s', config = '%s', snmp_id = '%s' WHERE device_uuid = '%s'"%(ret['data']['name'], ret['data']['config'], aArgs['vm_id'],  ret['data']['device_uuid'])) == 1)
  return ret

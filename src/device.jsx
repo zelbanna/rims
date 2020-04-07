@@ -187,12 +187,7 @@ export class Info extends Component {
   rest_call('api/device/info',{id:this.props.id, op:'lookup'}).then(result => this.setState({...result,content:null}))
  }
 
- changeInterfaces(){
-  import('./interface.jsx').then(lib => {
-   var InterfaceList = lib.List;
-   this.changeContent(<InterfaceList key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />);
-  })
- }
+ changeInterfaces = () => import('./interface.jsx').then(lib => this.changeContent(<lib.List key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />))
 
  render() {
   if(this.state.data){

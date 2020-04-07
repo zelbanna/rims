@@ -27,7 +27,7 @@ With standard margin @ 3px need to remove 6px from all heights and widths, chang
 * { box-sizing: border-box; color:var(--std-txt-color); }
 article { border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; float:left; background-color:var(--std-color); }
 article:hover {  box-shadow:0 0 3px 3px rgba(0,0,0,0.2); }
-body { margin:0; font-family:Verdana,sans-serif;}
+body { margin:0; font-family:Verdana,sans-serif; background-color:var(--main-color); }
 br { clear:both; }
 button::-moz-focus-inner { border-style: none; }
 div { z-index:100; }
@@ -36,7 +36,7 @@ iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 p { margin:2px; }
 pre { font-size:1rem; margin:0; }
 select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
- -webkit-appearance: none; background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:2px
+ -webkit-appearance: none; background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:2px; font-size:1rem;
 }
 select:focus,input:focus,textarea:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0 0 6px -2px var(--high-color), 0 0 3px -1px var(--high-color) inset;}
 span { background-color:transparent; }
@@ -102,7 +102,7 @@ div.trow:nth-child(odd) { background-color:var(--main-color); }
 div.trow > div { background-color:transparent; display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0 4px; white-space:nowrap; }
 input.searchfield { display:block; width: 99%; height:2rem; margin: 3px 0 3px 0; }
 
-button.text { font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; z-index:800; }
+button.text { font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; z-index:800; font-size:1rem; }
 button.text::-moz-focus-inner { border-style: dotted; }
 button.text:hover,button.text:focus { color:var(--high-color)!important; }
 
@@ -134,8 +134,8 @@ article.report div { white-space:unset!important; }
 /*************************************** Line Input Model ****************************************/
 
 article.lineinput { height:max-content; }
-article.lineinput > div { display:inline-flex; }
-
+article.lineinput > div { display:inline-flex; white-space:nowrap;}
+article.lineinput input,article.lineinput select { width:auto!important; }
 /*************************************** Code Model ****************************************/
 
 article.code { width:calc(100% - 6px); resize:horizontal; }

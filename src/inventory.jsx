@@ -19,12 +19,7 @@ export class Main extends Component {
   </NavBar>)
  }
 
- changeLocation(){
-  import('./location.jsx').then(lib => {
-   var LocList = lib.List;
-   this.setState(<LocList key='location_list' />);
-  })
- }
+ changeLocation = () => import('./location.jsx').then(lib => this.setState(<lib.List key='location_list' />));
 
  changeContent = (elem) => this.setState(elem)
 

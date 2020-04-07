@@ -10,7 +10,7 @@ export const HeaderButton = (props) => <button id={props.id} className='text' st
 
 // *********************** Info Types *************************
 
-const info_template = (type,props) => <button id={props.id} className='info fa' style={props.style} onClick={props.onClick} title={props.title}><i className={type} /></button>
+const info_template = (type,props) => <button id={props.id} className='info fa' onClick={props.onClick} title={props.title}><i className={type} /></button>
 export const TextButton = (props) => <button id={props.id} className='info text' onClick={props.onClick} title={props.title}>{props.text}</button>
 export const AddButton = (props) => info_template('fas fa-plus',props);
 export const BackButton = (props) => info_template('fas fa-arrow-left',props);
@@ -36,10 +36,10 @@ export const SaveButton = (props) => info_template('fas fa-download',props);
 export const SearchButton = (props) => info_template('fas fa-search',props);
 export const ShutdownButton = (props) => info_template('fas fa-power-off',props);
 export const SnapshotButton = (props) => info_template('fas fa-camera',props);
-export const StartButton = (props) => <button id={props.id} className='info fa green' style={props.style} onClick={props.onClick} title={props.title}><i className='fas fa-play' /></button>;
-export const StopButton = (props) => <button id={props.id} className='info fa red' style={props.style} onClick={props.onClick} title={props.title}><i className='fas fa-stop' /></button>;
+export const StartButton = (props) => <button id={props.id} className='info fa green' onClick={props.onClick} title={props.title}><i className='fas fa-play' /></button>;
+export const StopButton = (props) => <button id={props.id} className='info fa red' onClick={props.onClick} title={props.title}><i className='fas fa-stop' /></button>;
 export const SyncButton = (props) => info_template('fas fa-exchange-alt',props);
-export const TermButton = (props) => info_template('fas fa-terminal',props);
+export const TermButton = (props) => <button id={props.id} className='info fa' onClick={props.onClick} title={props.title}><i className='fas fa-terminal' style={{fontSize:'1.2rem'}} /></button>;
 export const UiButton = (props) => info_template('fas fa-globe-americas',props);
 export const UnlinkButton = (props) => info_template('fas fa-unlink',props);
 export const ViewButton = (props) => info_template('fas fa-search-plus',props);

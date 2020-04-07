@@ -44,7 +44,7 @@ export class List extends Component{
 
 // *************** Info ****************
 //
-class Info extends Component {
+export class Info extends Component {
  constructor(props){
   super(props)
   this.state = {op:this.props.op, connect:{name:'<N/A>',map:false}}
@@ -53,17 +53,12 @@ class Info extends Component {
  changeContent = (elem) => this.props.changeSelf(elem);
 
  componentDidMount(){
-  rest_call('api/interface/info',{interface_id:this.props.interface_id, device_id:this.props.device_id, extra:['classes']}).then(result => this.setState(result));
+  rest_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, device_id:this.props.device_id, class:this.props.class, extra:['classes']}).then(result => this.setState(result));
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- changeIpam = (id) => {
-  import('./ipam.jsx').then(lib => {
-   var AddressInfo = lib.AddressInfo;
-   this.changeContent(<AddressInfo key={'address_info_'+id} id={id} />);
-  })
- }
+ changeIpam = (id) => import('./ipam.jsx').then(lib => this.changeContent(<lib.AddressInfo key={'address_info_'+id} id={id} />))
 
  deleteIpam = () => (window.confirm('Delete IP mapping?') && rest_call('api/ipam/address_delete',{id:this.state.data.ipam_id}).then(result => ((result.status === 'OK') && this.setState({data:{...this.state.data, ipam_id:null}}))))
 
@@ -113,10 +108,7 @@ class Info extends Component {
     if(this.state.op === 'device')
      return (<article className='lineinput'>
      <div>
-      <span className='info'>Connect {this.state.data.name} to</span>
-      <TextInput key='ii_cnct_dev' id='id' label='Device ID' onChange={this.deviceChange} />
-      <span className='info'>with</span>
-      <TextLine key='ii_cnct_name' id='name' label='Name' text={this.state.connect.name} />
+      <span>Connect {this.state.data.name} to <TextInput key='ii_cnct_dev' id='id' label='Device ID' onChange={this.deviceChange} /> with name '{this.state.connect.name}'</span>
      </div>
      <BackButton key='ii_cnct_btn_back' onClick={() => this.setState({op:null})} title='Back' />
      <ForwardButton key='ii_cnct_btn_fwd' onClick={() => this.stateInterface()} title={'Connect interface on ' + this.state.connect.name} />
@@ -124,11 +116,12 @@ class Info extends Component {
     else if(this.state.op === 'interface')
      return (<article className='lineinput'>
      <div>
-      <span className='info'>Connect {this.state.data.name} to {this.state.connect.name} on</span>
-      <SelectInput key='ii_cnct_int' id='interface_id' label='Interface' value={this.state.connect.interface_id} onChange={this.interfaceChange}>
+      <span>Connect {this.state.data.name} to {this.state.connect.name} on
+       <SelectInput key='ii_cnct_int' id='interface_id' label='Interface' value={this.state.connect.interface_id} onChange={this.interfaceChange}>
        {this.state.interfaces.map(row => <option key={'ii_cnct_int_'+row.interface_id} value={row.interface_id}>{`${row.interface_id} (${row.name} - ${row.description})`}</option>)}
-      </SelectInput>
-      <CheckboxInput key='ii_cnct_map' id='map' value={this.state.connect.map} onChange={this.interfaceChange} />
+       </SelectInput>
+       <CheckboxInput key='ii_cnct_map' id='map' value={this.state.connect.map} onChange={this.interfaceChange} />
+      </span>
      </div>
      <BackButton key='ii_cnct_btn_back' onClick={() => this.setState({op:'device'})} title='Back' />
      <ForwardButton key='ii_cnct_btn_fwd' onClick={() => this.connectInterface()} title='Complete connection' />
@@ -163,15 +156,15 @@ class Info extends Component {
       <TextInput key='ii_ipam_id' id='ipam_id' value={this.state.data.ipam_id} onChange={this.onChange} /><div>
        {ipam && <GoButton key='ii_ipam' onClick={() => this.changeIpam(this.state.data.ipam_id)} title='View IPAM information' />}
        {ipam && <DeleteButton key='ii_delete' onClick={() => this.deleteIpam()} title='Delete IPAM entry' />}
-       {!ipam && this.props.interface_id !== 'new' && <SyncButton key='ii_btn_ipam' onClick={() => this.stateIpam()} title='Create IPAM entry' />}
+       {!ipam && this.state.data.interface_id !== 'new' && <AddButton key='ii_btn_ipam' onClick={() => this.stateIpam()} title='Create IPAM entry' />}
       </div>
       {peer && <Fragment key='ii_frag_peer_int'><TextLine key='ii_peer_int_id' id='peer_interface' label='Peer interface' text={this.state.peer.interface_id} /><UnlinkButton key='ii_peer_unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></Fragment>}
       {peer && <Fragment key='ii_frag_peer_dev'><TextLine key='ii_peer_dev_id' id='peer_device' text={this.state.peer.device_id} /><div/></Fragment>}
      </InfoColumns>
-     <BackButton key='ii_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />
+     {'changeSelf' in this.props && <BackButton key='ii_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />}
      <ReloadButton key='ii_btn_reload' onClick={() => this.componentDidMount()} />
      <SaveButton key='ii_btn_save' onClick={() => this.updateInfo()} title='Save interface information' />
-     {!peer && <NetworkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}
+     {!peer && this.state.data.interface_id !== 'new' && <NetworkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}
      <Result key='ii_result' result={(this.state.status !== 'OK') ? this.state.info : this.state.result} />
     </article>)
    }

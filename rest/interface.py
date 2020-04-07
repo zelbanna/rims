@@ -108,7 +108,7 @@ def info(aCTX, aArgs = None):
    if ret['data']['connection_id'] and (db.do("SELECT interface_id,device_id FROM device_interfaces AS di WHERE connection_id = %(connection_id)s AND device_id <> %(device_id)s"%ret['data']) > 0):
     ret['peer'] = db.get_row()
   else:
-   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'connection_id':None,'mac':'00:00:00:00:00:00','state':'unknown','snmp_index':None,'name':'Unknown','description':'Unknown','class':'wired'}
+   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':None,'name':aArgs.get('name','Unknown'),'description':'Unknown','class':aArgs.get('class','wired')}
  return ret
 
 #
