@@ -119,9 +119,14 @@ class List extends Component {
    this.state.data.sort((a,b) => a.hostname.localeCompare(b.hostname));
   else
    this.state.data.sort((a,b) => {
-    const num1 = Number(a.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
-    const num2 = Number(b.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
-    return num1-num2;
+    if (a.ip && b.ip){
+     const num1 = Number(a.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
+     const num2 = Number(b.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
+     return num1-num2;
+   } else if (a.ip)
+    return 1;
+   else
+    return a.hostname.localeCompare(b.hostname)
    });
   this.setState({sort:method})
  }
