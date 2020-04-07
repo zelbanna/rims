@@ -4,8 +4,6 @@ import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 
-// CONVERTED ENTIRELY
-
 // ************** List **************
 //
 export class List extends Component {

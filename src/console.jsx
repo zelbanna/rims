@@ -5,8 +5,6 @@ import { TextInput } from './infra/Inputs.jsx';
 import { ReloadButton, SaveButton, TermButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavInfo } from './infra/Navigation.js';
 
-// CONVERTED ENTIRELY
-
 // ************** Manage **************
 //
 export class Manage extends Component {

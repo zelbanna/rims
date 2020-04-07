@@ -5,8 +5,6 @@ import { BackButton, DeleteButton, EditButton, FixButton, NetworkButton, ReloadB
 
 import { Info as DeviceInfo } from './device.jsx';
 
-// CONVERTED ENTIRELY
-
 // ************** Main **************
 //
 export class Main extends Component {

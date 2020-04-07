@@ -3,8 +3,6 @@ import { rest_call } from './infra/Functions.js';
 import { MenuButton } from './infra/Buttons.jsx';
 import { RimsContext } from './infra/UI.jsx';
 
-// CONVERTED ENTIRELY
-
 // ************** Main **************
 //
 export class Main extends Component {

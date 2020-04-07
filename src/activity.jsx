@@ -5,8 +5,6 @@ import { TextInput, SelectInput, DateInput, TimeInput } from './infra/Inputs.jsx
 import { AddButton, DeleteButton, ConfigureButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton } from './infra/Navigation.js';
 
-// CONVERTED ENTIRELY
-
 // ************** Main **************
 //
 export class Main extends Component {

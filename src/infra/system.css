@@ -24,19 +24,18 @@ With standard margin @ 3px need to remove 6px from all heights and widths, chang
   /* For desktop: */
 }
 
-* { box-sizing: border-box; color:var(--std-txt-color); background-color:var(--std-color); }
-article { border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; float:left; }
+* { box-sizing: border-box; color:var(--std-txt-color); }
+article { border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; float:left; background-color:var(--std-color); }
 article:hover {  box-shadow:0 0 3px 3px rgba(0,0,0,0.2); }
 body { margin:0; font-family:Verdana,sans-serif;}
 br { clear:both; }
 button::-moz-focus-inner { border-style: none; }
 div { z-index:100; }
-h1 { font-size:1.3rem; font-weight: bold; text-align:center; margin:4px; white-space:nowrap; text-overflow:ellipsis; clear:both; }
+h1 { font-size:1.3rem; font-weight: bold; text-align:center; margin:4px; white-space:nowrap; text-overflow:ellipsis; clear:both; text-transform:capitalize; }
 iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 p { margin:2px; }
-pre { margin:0; }
+pre { font-size:1rem; margin:0; }
 select,input[type='text'],input[type='url'],input[type='email'],input[type='password'],input[type='date'],input[type='time'] { 
-
  -webkit-appearance: none; background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:2px
 }
 select:focus,input:focus,textarea:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0 0 6px -2px var(--high-color), 0 0 3px -1px var(--high-color) inset;}
@@ -72,17 +71,17 @@ section { float:left; height: 100%; width:auto; overflow-y: scroll; }
 section.content-left { min-width:max-content; overflow-x:hidden; width:25%; background-color:transparent; }
 section.content-right { overflow-x:scroll; background-color:transparent; }
 
-nav {     background-color: var(--ui-color); color:var(--ui-txt-color)!important; height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
+nav { background-color: var(--ui-color); color:var(--ui-txt-color)!important; height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
 nav ul {  margin:0 ;padding:0; overflow:hidden; background-color:transparent; }
 nav li {  display:block; float:left; background-color: transparent; }
 nav li:hover{ background-color: var(--head-color); }
-nav ul.dropdown { position: absolute; box-shadow:0 8px 16px 0 rgba(0,0,0,0.3); background-color: var(--ui-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
+nav ul.dropdown { position: absolute; box-shadow:0 8px 16px 0 rgba(0,0,0,0.3); background-color:var(--ui-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
 nav ul.dropdown > li { clear:left; float:unset; }
 nav li.navinfo {  background-color:#00CC66; color:white; font-weight:bold;}
 nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
 nav li.right { float:right; }
 
-nav button,nav label { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; line-height:3rem; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:3rem; z-index:1000}
+nav button,nav label { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; line-height:3rem; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:3rem; z-index:1000; }
 nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); transition-duration:0.15s}
 nav button:active{ opacity:0.8; }
 nav button.fa { padding:0; width:3rem; }
@@ -94,14 +93,14 @@ nav button.navinfo:hover, nav button.navinfo:focus{ color:var(--ui-txt-color)!im
 article.table { height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; }
 div.table { display: table; width:100% }
 div.thead { display: table-header-group; }
-div.thead > div { display: table-cell; text-align: center; padding: 3px 2px 6px 4px; font-size:1.2rem; font-weight:bold; }
+div.thead > div { display: table-cell; text-align: center; padding: 3px 2px 6px 4px; font-size:1.2rem; font-weight:bold; text-transform:capitalize; }
 div.thead > div * { font-size:1.2rem; font-weight: bold; }
 div.tbody { display: table-row-group; }
 div.trow { display: table-row; }
 div.trow:nth-child(even) { background-color:var(--std-color); }
 div.trow:nth-child(odd) { background-color:var(--main-color); }
 div.trow > div { background-color:transparent; display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0 4px; white-space:nowrap; }
-input.searchfield {    display:block; width: 99%; height:2rem; margin: 3px 0 3px 0; }
+input.searchfield { display:block; width: 99%; height:2rem; margin: 3px 0 3px 0; }
 
 button.text { font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; z-index:800; }
 button.text::-moz-focus-inner { border-style: dotted; }
@@ -114,7 +113,7 @@ article.info textarea { height:6rem; width:300px; display:block; }
 div.info { display:grid; margin:2px 0 2px 0; align-items:center; grid-gap:1px; }
 div.info *[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
 
-label.info { font-weight:bold; padding:2px; }
+label.info { font-weight:bold; padding:2px; text-transform:capitalize; }
 select.info, input.info[type=text], input.info[type=url], input.info[type=email], input.info[type=password], input.info[type=date], input.info[type=time] {  overflow:visible;  width: 99%; }
 input.info[type='checkbox'] { width:2rem; }
 input.info::-webkit-input-placeholder { color: #9CA6B0; }
@@ -129,8 +128,8 @@ button.fa > i:hover,button.fa > i:focus { color:var(--high-color)!important; tra
 
 /*************************************** Report Model *****************************************/
 
-article.report {       height:auto; width:calc(100% - 6px); overflow-y:scroll; overflow-x:hidden; }
-article.report div {   white-space:unset!important; }
+article.report { height:auto; width:calc(100% - 6px); overflow-y:scroll; overflow-x:hidden; }
+article.report div { white-space:unset!important; }
 
 /*************************************** Line Input Model ****************************************/
 
@@ -150,7 +149,6 @@ article.text > p { margin:1px; }
 
 article.files { overflow-y:scroll; min-width:200px; }
 article.files img { max-height:60px; }
-article.files h1 {  text-transform: capitalize; }
 
 /************************************** JS tools ********************************************/
 
@@ -192,9 +190,9 @@ div.centered { justify-content:space-evenly; background-color:transparent; }
 div.states { background-color:transparent; }
 div.state { border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin-left:2px; margin-right:2px;}
 
-span.results { font-size:9px; float:right; text-overflow:ellipsis; overflow:hidden; }
+span.results { font-size:0.8rem; float:right; text-overflow:ellipsis; overflow:hidden; }
 
-button.ipam { float:left; font-size:9px; font-weight:bold; padding:0; width:2rem; color:#000000; margin:2px; }
+button.ipam { float:left; font-size:0.8rem; font-weight:bold; padding:0; width:2rem; color:#000000; margin:2px; }
 
 /* media dependent */
 article.network { width:99%; }

@@ -4,8 +4,6 @@ import { Spinner, InfoColumns, TableHead, TableRow, ContentList, ContentData, Co
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
 
-// CONVERTED ENTIRELY
-
 // *************** Main ***************
 //
 export class Main extends Component {

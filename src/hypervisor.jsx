@@ -7,8 +7,6 @@ import { NavBar, NavInfo, NavButton } from './infra/Navigation.js';
 
 import { Info as DeviceInfo, Logs as DeviceLogs } from './device.jsx';
 
-// CONVERTED ENTIRELY
-
 // ************** Main **************
 //
 export class Main extends Component {

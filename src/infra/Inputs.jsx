@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import { StateMap } from './UI.jsx';
 
-const auto_label = (props) => (props.label) ? props.label : props.id.charAt(0).toUpperCase() + props.id.substring(1);
+const auto_label = (props) => (props.label) ? props.label : props.id;
 
 const input_template = (type,props) =>   <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className='info'>{auto_label(props)}:</label><input className='info' type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} /></Fragment>
 const line_template = (content,props) => <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className='info'>{auto_label(props)}:</label>{content}</Fragment>

@@ -162,7 +162,7 @@ export class Infra extends Component {
 
  render(){
   return <Fragment key='rinfra_fragment'>
-   <ContentList key='rinfra_cl' header={this.props.type.toUpperCase()} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='rinfra_cl' header={this.props.type} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='rinfra_btn_reload' onClick={() => this.componentDidMount()} />
    </ContentList>
    <ContentData key='rinfra_cd'>{this.state.content}</ContentData>

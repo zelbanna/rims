@@ -4,8 +4,6 @@ import { Spinner, StateMap, InfoColumns, Result, ContentReport } from './infra/U
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, NetworkButton, DeleteButton,ForwardButton, GoButton, InfoButton, LinkButton, ReloadButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
 
-// CONVERTED ENTIRELY
-
 // *************** List ****************
 //
 export class List extends Component{

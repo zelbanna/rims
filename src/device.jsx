@@ -7,8 +7,6 @@ import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 
-// CONVERTED ENTIRELY
-
 // **************** Main ****************
 //
 export class Main extends Component {

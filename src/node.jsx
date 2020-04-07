@@ -5,8 +5,6 @@ import { NavBar } from './infra/Navigation.js';
 import { TextInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
 
-// CONVERTED ENTIRELY
-
 // ************** List **************
 //
 export class List extends Component {

@@ -6,8 +6,6 @@ import { NavBar, NavButton, NavDropDown, NavInfo, NavReload } from './infra/Navi
 
 import { LogShow } from './node.jsx';
 
-// CONVERTED ENTIRELY
-
 // ************** Main **************
 //
 export class Main extends Component {
