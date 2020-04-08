@@ -197,10 +197,13 @@ class Info extends Component{
  }
 
  interfaceButton(intf){
-  if (intf[1].interface_id)
-   return <InfoButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport([intf[0],{interface_id:intf[1].interface_id}])} />
-  else
-   return <AddButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport({...intf,interface_id:'new'})} />
+  if(this.state.data.device_id){
+   if (intf[1].interface_id)
+    return <InfoButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport([intf[0],{interface_id:intf[1].interface_id}])} />
+   else
+    return <AddButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport({...intf,interface_id:'new'})} />
+  } else
+   return <div />
  }
 
  render(){

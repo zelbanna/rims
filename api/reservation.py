@@ -103,7 +103,7 @@ def expiration_status(aCTX, aArgs = None):
  Output:
   - result
  """
- from rims.rest.device import control as device_control
+ from rims.api.device import control as device_control
  ret = {}
  with aCTX.db as db:
   db.do("SELECT devices.id, vm, res.shutdown, hostname, res.user_id, users.alias, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id LEFT JOIN users ON res.user_id = users.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))

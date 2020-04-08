@@ -55,6 +55,25 @@ def sleep(aCTX, aArgs = None):
  sleep(int(aArgs.get('seconds',10)))
  return {'status':'OK'}
 
+#
+#
+def external_ip(aCTX, aArgs = None):
+ """Function docstring for external_ip. TBD
+
+ Args:
+
+ Output:
+ """
+ ret ={}
+ from rims.core.genlib import external_ip
+ try:  ret['ip'] = external_ip()
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['info'] = str(e)
+ else:
+  ret['status'] = 'OK'
+ return ret
+
 ################################# REST #############################
 #
 #
@@ -71,7 +90,7 @@ def rest_explore(aCTX, aArgs = None):
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
   try:
-   module = import_module("rims.rest.%s"%(aFile))
+   module = import_module("rims.api.%s"%(aFile))
    data['functions'] = [item for item in dir(module) if item[0:2] != "__" and isinstance(getattr(module,item,None),function)]
   except Exception as e: data['error'] = repr(e)
   return data
@@ -100,7 +119,7 @@ def rest_information(aCTX, aArgs = None):
  """
  from importlib import import_module
  try:
-  mod = import_module("rims.rest.%s"%(aArgs['api']))
+  mod = import_module("rims.api.%s"%(aArgs['api']))
   fun = getattr(mod,aArgs['function'],None)
   return {'api':aArgs['api'],'module':mod.__doc__.split('\n'),'information':fun.__doc__.split('\n')}
  except:
@@ -258,7 +277,7 @@ def database_backup(aCTX, aArgs = None):
 
  Output:
  """
- from rims.rest.mysql import dump
+ from rims.api.mysql import dump
  ret  = {'filename':aArgs['filename']}
  data = dump(aCTX, {'mode':'database'})['output']
  try:

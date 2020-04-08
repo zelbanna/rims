@@ -119,41 +119,27 @@ class Status extends Component {
   rest_call('api/dns/status').then(result => this.setState(result))
  }
 
- topTable = (node_service,rows) => {
-  const ns = node_service.split('_');
-  return (
-  <div className='table'>
-   <TableHead key={'top_thead_' + ns[0]} headers={['Node','Service','Hit','FQDN']} />
-   <div className='tbody'>
-    {rows.map((row,index) => <TableRow key={'top_trow_'+ ns[0] + '_' + index} cells={[ns[0],ns[1],row.count,row.fqdn]} /> )}
-   </div>
-  </div>
-  )
- }
-
- whoTable = (node_service,rows) => {
-  const ns = node_service.split('_');
-  return (
-  <div className='table'>
-   <TableHead key={'top_thead_' + ns[0]} headers={['Node','Service','Hit','Who','FQDN']} />
-   <div className='tbody'>
-    {rows.map((row,index) => <TableRow key={'top_trow_'+ ns[0] + '_' + index} cells={[ns[0],ns[1],row.count,row.who,row.fqdn]} /> )}
-   </div>
-  </div>
-  )
- }
-
  render(){
   if (this.state.top && this.state.who)
    return (
     <div style={{display:'flex'}}>
      <article className='report'>
       <h1>Top looked up FQDN</h1>
-      {Object.entries(this.state.top).map(entry => this.topTable(entry[0],entry[1]))}
+      <div className='table'>
+       <TableHead key='top_thead' headers={['Node','Service','Hit','FQDN']} />
+       <div className='tbody'>
+        {Object.entries(this.state.top).map(entry => { const ns = entry[0].split('_'); return entry[1].map((row,index) => <TableRow key={'top_trow_'+ ns[0] + '_' + index} cells={[ns[0],ns[1],row.count,row.fqdn]} />) }) }
+       </div>
+      </div>
      </article>
      <article className='report'>
       <h1>Top looked up WHO</h1>
-      {Object.entries(this.state.who).map(entry => this.whoTable(entry[0],entry[1]))}
+      <div className='table'>
+       <TableHead key='who_thead' headers={['Node','Service','Hit','Who','FQDN']} />
+       <div className='tbody'>
+        {Object.entries(this.state.who).map(entry => { const ns = entry[0].split('_'); return entry[1].map((row,index) => <TableRow key={'who_trow_'+ ns[0] + '_' + index} cells={[ns[0],ns[1],row.count,row.who,row.fqdn]} />) }) }
+       </div>
+      </div>
      </article>
     </div>
    )

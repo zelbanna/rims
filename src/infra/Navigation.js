@@ -22,13 +22,13 @@ export class NavDropDown extends Component{
  render(){
   return (
    <li className='nav' style={this.props.style} onMouseEnter={() => this.changeSize(`${3 * this.props.children.length}rem`)} onMouseLeave={() => this.changeSize(0)}>
-    <label>{this.props.title}</label>
+    <label className='nav'>{this.props.title}</label>
     <ul className='dropdown' style={{maxHeight:this.state.height}}>{this.props.children}</ul>
    </li>
   );
  }
 }
 
-export const NavReload = (props) => <li style={props.style}><button className='nav fa' onClick={props.onClick}><i className='fas fa-redo-alt' /></button></li>
+export const NavReload = (props) => <li style={props.style}><button className='nav nav-fa' onClick={props.onClick}><i className='nav-fa fas fa-redo-alt' /></button></li>
 
 export const NavInfo = (props) => <li className='navinfo right' style={props.style}><button className='nav navinfo' onClick={props.onClick}>{props.title}</button></li>

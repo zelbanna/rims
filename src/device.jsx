@@ -253,8 +253,8 @@ export class Info extends Component {
     </article>
     <NavBar key='di_navigation' id='di_navigation'>
      {this.state.navconf && <NavButton key='di_nav_management' title='Management' onClick={() => this.changeContent(<ManagementInfo key='device_configure' id={this.props.id} />)} />}
-     {this.state.navconf && data.class !== 'vm' && <NavButton key='di_nav_rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
-     {this.state.navconf && data.class !== 'vm' && <NavButton key='di_nav_pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
+     {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
+     {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && <NavButton key='di_nav_stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='device_statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {!this.state.navconf && function_strings.filter(fun => fun !== 'manage').map((op,idx) => <NavButton key={'di_nav_'+idx} title={op} onClick={() => this.changeContent(<Function key={'dev_func_'+op} id={this.props.id} op={op} type={this.state.extra.type_name} />)} />)}
     </NavBar>
@@ -487,6 +487,10 @@ class StatisticsInfo extends Component{
 // ************* Control **************
 //
 class Control extends Component {
+ constructor(props){
+  super(props)
+  this.state = {pems:[]}
+ }
 
  componentDidMount(){
   rest_call('api/device/control',{id:this.props.id}).then(result => this.setState(result));
@@ -748,7 +752,7 @@ export class ModelInfo extends Component {
       <TextInput key='defaults_file' id='defaults_file' label='Default File' value={this.state.data.defaults_file} onChange={this.onChange} />
       <TextInput key='image_file' id='image_file' label='Image  File' value={this.state.data.image_file} onChange={this.onChange} />
      </InfoColumns>
-     <label htmlFor='parameters'>Parameters:</label>
+     <label className='info' htmlFor='parameters'>Parameters:</label>
      <textarea className='info' id='parameters' name='parameters' onChange={this.onChange} value={this.state.data.parameters} />
      <SaveButton key='dm_btn_save' onClick={() => this.updateInfo()} title='Save' />
     </article>

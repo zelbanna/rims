@@ -191,7 +191,7 @@ def inventory_sync(aCTX, aArgs = None):
  else:
   search = ",".join(v for k,v in aArgs.items() if k[0:7] == 'device_')
   field  = 'id'
- from rims.rest.device import list as device_list
+ from rims.api.device import list as device_list
  devices = device_list(aCTX, {'search':search,'field':field,'extra':['type','domain']})['data']
  ret = {'devices':devices,'status':'OK','groups':{}}
  if len(devices) == 0:

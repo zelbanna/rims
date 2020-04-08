@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-"""Installer 5.9"""
+"""Installer"""
 __author__ = "Zacharias El Banna"
+__version__ = "6.0"
 
 from sys import argv, stdout, path as syspath
 from json import load,dump,dumps
@@ -116,13 +117,13 @@ if config['id'] == 'master':
  #
  # Service types
  #
- srvdir = ospath.abspath(ospath.join(pkgdir,'rest'))
+ srvdir = ospath.abspath(ospath.join(pkgdir,'api'))
  service_types = []
  for file in listdir(srvdir):
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("rims.rest.%s"%(pyfile))
+    mod = import_module("rims.api.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
    except: pass
    else:
@@ -134,7 +135,7 @@ if config['id'] == 'master':
  #
  # Common config and user - for master...
  #
- from rims.rest import mysql
+ from rims.api import mysql
  from crypt import crypt
  try:
   database,host,username,password = config['database']['name'],config['database']['host'],config['database']['username'],config['database']['password']

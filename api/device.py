@@ -245,7 +245,7 @@ def extended(aCTX, aArgs = None):
    if aArgs.get('a_domain_id') and not aArgs['management_id'] in ['NULL',None] and (db.do("SELECT ia.id, ia.hostname, ia.a_domain_id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %s"%aArgs['management_id']) > 0):
     ipam = db.get_row()
     if (ipam['hostname'] != aArgs['hostname']) or (int(aArgs['a_domain_id']) != ipam['a_domain_id']):
-     from rims.rest.ipam import address_info
+     from rims.api.ipam import address_info
      ret['result']['ipam'] = address_info(aCTX,{'id':ipam['id'],'hostname':aArgs['hostname'],'a_domain_id':aArgs['a_domain_id'],'op':'update_only'})['status']
     ret['result']['device'] = (db.do("UPDATE devices SET hostname = '%s', management_id = %s WHERE id = %s"%(aArgs['hostname'],aArgs['management_id'],id)) == 1)
 
@@ -349,6 +349,8 @@ def control(aCTX, aArgs = None):
     pem['state'] = pdu.get_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit']).get('state','unknown')
    except Exception as e:
     pem.update({'status':'NOT_OK_PEM','op':'NOT_OK','info':str(e)})
+  else:
+   ret['pems'] = []
  return ret
 
 #
@@ -399,7 +401,7 @@ def new(aCTX, aArgs = None):
 
  with aCTX.db as db:
   if aArgs.get('ipam_network_id') and __is_ip(aArgs.get('ip')):
-   from rims.rest.ipam import address_info, address_sanitize
+   from rims.api.ipam import address_info, address_sanitize
    res = address_info(aCTX, {'op':'insert','ip':aArgs['ip'],'network_id':aArgs['ipam_network_id'],'hostname':aArgs['hostname'],'a_domain_id':aArgs.get('a_domain_id')})
    if not res['status'] == 'OK':
     ret['info'] = res['info']
@@ -434,7 +436,7 @@ def delete(aCTX, aArgs = None):
  ret = {'status':'OK'}
  with aCTX.db as db:
   if (db.do("SELECT interface_id FROM device_interfaces WHERE device_id = %s"%aArgs['id']) > 0):
-   from rims.rest.interface import delete as interface_delete
+   from rims.api.interface import delete as interface_delete
    ret['interfaces'] = interface_delete(aCTX, {'interfaces':[x['interface_id'] for x in db.get_rows()]})
   if (db.do("SELECT dt.base FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = %s"%aArgs['id']) > 0) and (db.get_val('base') == 'pdu'):
    ret['pems'] = db.do("UPDATE device_pems SET pdu_id = NULL WHERE pdu_id = %s"%aArgs['id'])
@@ -455,7 +457,7 @@ def discover(aCTX, aArgs = None):
  Output:
  """
  from time import time
- from rims.rest.ipam import network_discover, address_info, address_delete
+ from rims.api.ipam import network_discover, address_info, address_delete
  from struct import unpack
  from socket import inet_aton
 

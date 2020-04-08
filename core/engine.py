@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.0"
-__build__ = 301
+__build__ = 302
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -199,7 +199,7 @@ class Context(object):
     self.log("Node Function REST failure: %s/%s@%s (%s) => %s"%(aModule,aFunction,aNode,dumps(kwargs),str(e)))
     ret = {'status':'NOT_OK','info':'NODE_FUNCTION_FAILURE: %s'%str(e)}
   else:
-   module = import_module("rims.rest.%s"%aModule)
+   module = import_module("rims.api.%s"%aModule)
    fun = getattr(module,aFunction,lambda aCTX,aArgs: None)
    ret = partial(fun,self)
   return ret
@@ -460,7 +460,7 @@ class WorkerPool(object):
  #
  def add_task(self, aModule, aFunction, aFrequency = 0, **kwargs):
   try:
-   mod = import_module("rims.rest.%s"%aModule)
+   mod = import_module("rims.api.%s"%aModule)
    func = getattr(mod, aFunction, None)
   except: self._ctx.log("WorkerPool ERROR: adding task failed (%s/%s)"%(aModule,aFunction))
   else:
@@ -573,7 +573,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      f.write(logstring)
   try:
    if self._headers['X-Route'] == self._ctx.node:
-    module = import_module("rims.rest.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
+    module = import_module("rims.api.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
     self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False, aDataOnly = True)

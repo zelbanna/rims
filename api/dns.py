@@ -227,18 +227,6 @@ def status(aCTX, aArgs = None):
 
 #
 #
-def external_ip(aCTX, aArgs = None):
- """Function docstring for external_ip. TBD
-
- Args:
-
- Output:
- """
- from rims.core.genlib import external_ip
- return {'ip':external_ip() }
-
-#
-#
 def reset_server(aCTX, aArgs = None):
  """ Function resets all A and PTR records for forward and reverse zones hosted by server X
 

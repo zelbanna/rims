@@ -65,7 +65,7 @@ def info(aCTX, aArgs = None):
      args['hostname'] = db.get_val('name')
     else:
      args['hostname'] = 'unknown'
-    from rims.rest.ipam import address_info
+    from rims.api.ipam import address_info
     ret['ipam'] = address_info(aCTX, args)
     ret['status'] = ret['ipam'].pop('status','NOT_OK')
     if ret['status'] == 'OK':
@@ -131,7 +131,7 @@ def delete(aCTX, aArgs = None):
    # ret['cleared'] = db.do("DELETE FROM device_connections WHERE id IN (SELECT DISTINCT connection_id FROM device_interfaces WHERE device_id = %s)"%aArgs['device_id'])
    ret['deleted'] = db.do("DELETE FROM device_interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s)"%aArgs)
   elif 'interfaces' in aArgs:
-   from rims.rest.ipam import address_delete
+   from rims.api.ipam import address_delete
    for id in aArgs['interfaces']:
     ipam = address_delete(aCTX, {'id':db.get_val('ipam_id')})['status'] if (db.do("SELECT ipam_id FROM device_interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id) > 0) else "NO_IPAM"
     ret['cleared'] += db.do("DELETE FROM device_connections WHERE id IN (SELECT DISTINCT connection_id FROM device_interfaces WHERE interface_id = %s)"%id)

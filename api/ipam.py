@@ -75,7 +75,7 @@ def network_info(aCTX, aArgs = None):
    ret['data'] = db.get_row()
   else:
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
- from rims.rest.dns import domain_ptr_list
+ from rims.api.dns import domain_ptr_list
  ret['domains'] = domain_ptr_list(aCTX, {'prefix':ret['data']['network']})
  return ret
 
@@ -337,7 +337,7 @@ def address_info(aCTX, aArgs = None):
 
     # Now there is an id with either default or updated values, correct them  with new a/ptr id or restore a_domain_id
     if ret['status'] == 'OK' and any(i in aArgs for i in ['a_domain_id','hostname','ip','network_id']):
-     from rims.rest.dns import record_info, record_delete
+     from rims.api.dns import record_info, record_delete
 
      if 'a_domain_id' in aArgs and aArgs['a_domain_id'] in [None,'NULL'] and old['a_domain_id'] and (old['a_id'] > 0 or old['ptr_id'] > 0):
       dns_args   = {'a_id':0,'ptr_id':0}
@@ -472,7 +472,7 @@ def address_delete(aCTX, aArgs = None):
   - status.
  """
  ret = {}
- from rims.rest.dns import record_delete
+ from rims.api.dns import record_delete
  with aCTX.db as db:
   if (db.do("SELECT a_id, a_domain_id, ptr_id, reverse_zone_id AS ptr_domain_id FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%aArgs['id']) > 0):
    dns = db.get_row()

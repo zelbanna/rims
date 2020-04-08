@@ -19,13 +19,11 @@ def list(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'files':[]}
+ ret = {'data':[]}
  try:
   ret['root'] = aCTX.config['multimedia']['torrent_directory']
   for path,_,files in walk(ret['root']):
-   for file in files:
-    if file[-3:] in ['mp4','mkv']:
-     ret['files'].append({'path':path,'file':file})
+   ret['data'].extend([{'path':path,'file':file} for file in files if file[-3:] in ['mp4','mkv']])
  except Exception as err:
   ret['status'] = 'NOT_OK'
   ret['info']= str(err)
@@ -41,19 +39,39 @@ def cleanup(aCTX, aArgs = None):
  Args:
 
  Output:
+  - <data> - type,path,item,status,(info)
  """
- ret = {'root':aCTX.config['multimedia']['torrent_directory'],'items':[]}
+ ret = {'root':aCTX.config['multimedia']['torrent_directory'],'data':[]}
  for path,dirs,files in walk(ret['root']):
   for item in files:
    try: remove(ospath.join(path,item))
-   except Exception as err: ret['items'].append({'item':'error','info':str(err)})
-   else: ret['items'].append({'item':'file','info':item})
+   except Exception as err: ret['data'].append({'type':'file','path':path,'item':item,'status':'NOT_OK','info':str(err)})
+   else: ret['data'].append({'type':'file','path':path,'item':item,'status':'OK'})
   for item in dirs:
    if item == '.':
     continue
    try: rmdir(ospath.join(path,item))
-   except Exception as err: ret['items'].append({'item':'error','info':str(err)})
-   else: ret['items'].append({'item':'dir','info':item})
+   except Exception as err: ret['data'].append({'type':'directory','path':path,'item':item,'status':'NOT_OK','info':str(err)}
+   else: ret['data'].append({'type':'directory','path':path,'item':item,'status':'OK'})
+ return ret
+
+#
+#
+def delete(aCTX, aArgs = None):
+ """Function docstring for delete TBD
+
+ Args:
+  - path (required)
+  - file (required)
+
+ Output:
+ """
+ ret = {'status':'NOT_OK'}
+ try: remove(ospath.join(aArgs['path'],aArgs['file']))
+ except Exception as err:
+  ret['error'] = str(err)
+ else:
+  ret['status'] = 'OK'
  return ret
 
 #
@@ -76,25 +94,6 @@ def transfer(aCTX, aArgs = None):
   ret['status'] = 'OK'
  return ret
 
-#
-#
-def delete(aCTX, aArgs = None):
- """Function docstring for delete TBD
-
- Args:
-  - path (required)
-  - file (required)
-
- Output:
- """
- ret = {'status':'NOT_OK'}
- try: remove(ospath.join(aArgs['path'],aArgs['file']))
- except Exception as err:
-  ret['error'] = str(err)
- else:
-  ret['status'] = 'OK'
- return ret
-
 ################################################# Media Functions ################################################
 #
 #
@@ -108,16 +107,17 @@ def check_srt(aCTX, aArgs = None):
 
  Output: Return anguage abbreviation, language name, srtfile if found
  """
- ret = {}
+ ret = {'status':'OK'}
  filename = (aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file')))[:-4]
  if   ospath.exists("%s.eng.srt"%filename):
-  ret = {'code':'eng','name':"English",'file':"%s.eng.srt"%filename}
+  ret['data'] = {'code':'eng','name':"English",'file':"%s.eng.srt"%filename}
  elif ospath.exists("%s.swe.srt"%filename):
-  ret = {'code':'swe','name':"Swedish",'file':"%s.swe.srt"%filename}
+  ret['data'] = {'code':'swe','name':"Swedish",'file':"%s.swe.srt"%filename}
  elif ospath.exists(filename + ".srt"):
-  ret = {'code':'eng','name':"English",'file':"%s.srt"%filename}
+  ret['data'] = {'code':'eng','name':"English",'file':"%s.srt"%filename}
  else:
-  ret = {'code':None,'name':None,'file':None}
+  ret['data'] = {'code':None,'name':None,'file':None}
+  ret['status'] = 'NOT_OK'
  return ret
 
 #
@@ -259,7 +259,7 @@ def process(aCTX, aArgs = None):
  from subprocess import check_call, call
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'status':'NOT_OK','error':None}
- srt  = check_srt(aCTX, {'filepath':filename})
+ srt  = check_srt(aCTX, {'filepath':filename})['data']
  info = aArgs if aArgs.get('name') and aArgs.get('info') else check_title(aCTX, {'filepath':filename})
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
  ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""},'dest':dest})
