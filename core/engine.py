@@ -491,7 +491,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  def do_GET(self):
-  print('GET: ' + self.path)
+  #print('GET: ' + self.path)
   """ Route request to the right function /<path>/mod_fun?get """
   path,_,query = self.path[1:].partition('/')
   if path in ['infra','images','files','static']:
@@ -510,7 +510,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    print("do_GET: Error writing above body => %s"%str(e))
 
  def do_POST(self):
-  print('POST:' + self.path)
+  # print('POST:' + self.path)
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
   if path in ['api','external']:
