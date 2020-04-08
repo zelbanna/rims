@@ -68,10 +68,14 @@ button.menu > img {  max-height:3rem; }
 
 header {  background-color: var(--head-color); height:5rem; width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; }
 main {    background-color: var(--main-color); height:calc(100vh - 8rem - 2px); width:100vw; display:flex }
-section.content-left { min-width:max-content; overflow:hidden; width:25%; background-color:transparent; position:relative; top:0; bottom:0; }
-section.content-right { overflow:scroll; background-color:transparent; width:auto; }
+section.content-left { min-width:max-content; overflow:hidden; width:25%; background-color:transparent; position:relative; top:0; bottom:0; scrollbar-width:none;}
+section.content-left::-webkit-scrollbar { display: none; }
+section.content-right { overflow:scroll; background-color:transparent; width:auto; scrollbar-width:none; }
+section.content-right::-webkit-scrollbar { display: none; }
 
-nav { background-color: var(--ui-color); color:var(--ui-txt-color)!important; height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
+/*************************************** Navigation Model *****************************************/
+
+nav { background-color: var(--ui-color); height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
 ul.nav {  margin:0 ;padding:0; overflow:hidden; background-color:transparent; }
 li.nav {  display:block; float:left;background-color: transparent; }
 li.nav:hover{ background-color: var(--head-color); }
@@ -90,7 +94,8 @@ nav button.navinfo:hover, nav button.navinfo:focus{ color:var(--ui-txt-color)!im
 
 /***************************************  List Model *****************************************/
 
-article.table { height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; }
+article.table { height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; scrollbar-width:none; }
+article.table::-webkit-scrollbar { display: none; }
 div.table { display: table; width:100% }
 div.thead { display: table-header-group; }
 div.thead > div { display: table-cell; text-align: center; padding: 3px 2px 6px 4px; font-size:1.2rem; font-weight:bold; text-transform:capitalize; }
