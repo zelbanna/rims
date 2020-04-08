@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.0"
-__build__ = 300
+__build__ = 301
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -491,7 +491,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  def do_GET(self):
-  #print('GET: ' + self.path)
+  print('GET: ' + self.path)
   """ Route request to the right function /<path>/mod_fun?get """
   path,_,query = self.path[1:].partition('/')
   if path in ['infra','images','files','static']:
@@ -500,6 +500,12 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers['X-Code'] = 304
    else:
     self.files(path,query)
+  elif path in ['api','external']:
+   self.api(path,query)
+  elif path == 'front':
+   self.front()
+  elif path == 'auth':
+   self.auth()
   elif path == 'system':
    self.system(query)
   elif len(path) == 0:
@@ -512,7 +518,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    print("do_GET: Error writing above body => %s"%str(e))
 
  def do_POST(self):
-  # print('POST:' + self.path)
+  print('POST:' + self.path)
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
   if path in ['api','external']:

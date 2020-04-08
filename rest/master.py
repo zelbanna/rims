@@ -18,9 +18,6 @@ def inventory(aCTX, aArgs = None):
  ret = {'navinfo':[]}
  if aArgs['node'] == 'master':
   ret.update({'node':True,'users':True})
-  ret['logs'] = [k for k,v in aCTX.nodes.items()]
- else:
-  ret['logs']  = [aArgs['node']]
  with aCTX.db as db:
   if 'user_id' in aArgs:
    db.do("SELECT alias FROM users WHERE id = %s"%aArgs['user_id'])

@@ -4,8 +4,6 @@ import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData
 import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.js';
 
-import { LogShow } from './node.jsx';
-
 // ************** Main **************
 //
 export class Main extends Component {
@@ -42,9 +40,6 @@ export class Main extends Component {
    {master && <NavButton key='sys_nav_erd' title='ERD'     onClick={() => window.open('erd.pdf','_blank')} />}
    {master && <NavButton key='sys_nav_user' title='Users'  onClick={() => this.changeImport('user','List')} />}
    {master && <NavButton key='sys_nav_ctrl' title='Controls' onClick={() => this.changeContent(<Controls key='system_controls' />)} />}
-   <NavDropDown key='sys_nav_logs' title='Logs'>
-    {this.state.logs.map((row,idx) => <NavDropButton key={'sys_nav_logs_'+idx} title={row} onClick={() => this.changeContent( <LogShow key={row.name} node={row} /> )} />)}
-   </NavDropDown>
    <NavDropDown key='sys_nav_reports' title='Reports'>
     <NavDropButton key='sys_nav_sys' title='System' onClick={() => this.changeContent(<Report key='system_report' />)} />
     <NavDropButton key='sys_nav_task' title='Tasks' onClick={() => this.changeContent(<TaskReport key='task_report' />)} />
