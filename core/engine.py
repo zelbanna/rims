@@ -500,6 +500,8 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers['X-Code'] = 304
    else:
     self.files(path,query)
+  elif path == 'system':
+   self.system(query)
   elif len(path) == 0:
    self._headers.update({'X-Process':'no route','Location':'index.html','X-Code':301})
   else:
