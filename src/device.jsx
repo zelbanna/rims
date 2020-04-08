@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { NavBar, NavButton, NavDropDown, NavReload } from './infra/Navigation.js'
+import { NavBar, NavButton, NavDropDown, NavDropButton, NavReload } from './infra/Navigation.js'
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
@@ -32,27 +32,27 @@ export class Main extends Component {
  compileNavItems = (state) => {
   this.context.loadNavigation(<NavBar key='device_navbar'>
    <NavDropDown key='dev_nav_devs' title='Devices'>
-    <NavButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' rack_id={state.rack_id} />)} />
-    <NavButton key='dev_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)} />
-    <NavButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
-    <NavButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
+    <NavDropButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' rack_id={state.rack_id} />)} />
+    <NavDropButton key='dev_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
    </NavDropDown>
    <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
-   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeImport('pdu','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
-   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeImport('console','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
+   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavDropButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeImport('pdu','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
+   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavDropButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeImport('console','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
    {(state.rack_id) && <NavButton key='dev_nav_rack' title={state.name} onClick={() => this.changeImport('rack','Layout',{id:state.rack_id})} />}
    <NavDropDown key='dev_nav_oui' title='OUI'>
-    <NavButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
-    <NavButton key='dev_nav_ouil' title='List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
+    <NavDropButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
+    <NavDropButton key='dev_nav_ouil' title='List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
    </NavDropDown>
    <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','List',{})} style={{float:'right'}} />
    <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
-    <NavButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DHCP'})} />
-    <NavButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
+    <NavDropButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DHCP'})} />
+    <NavDropButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
    </NavDropDown>
    <NavDropDown key='dev_nav_dns' title='DNS' style={{float:'right'}}>
-    <NavButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DNS'})} />
-    <NavButton key='dev_nav_doms' title='Domains' onClick={() => this.changeImport('dns','DomainList',{})} />
+    <NavDropButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DNS'})} />
+    <NavDropButton key='dev_nav_doms' title='Domains' onClick={() => this.changeImport('dns','DomainList',{})} />
    </NavDropDown>
    <NavReload key='dev_nav_reload' onClick={() => this.changeContent(null)} />
   </NavBar>)

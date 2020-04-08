@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { rest_call} from './infra/Functions.js';
 import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
-import { NavBar, NavButton, NavDropDown, NavInfo, NavReload } from './infra/Navigation.js';
+import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.js';
 
 import { LogShow } from './node.jsx';
 
@@ -43,18 +43,18 @@ export class Main extends Component {
    {master && <NavButton key='sys_nav_user' title='Users'  onClick={() => this.changeImport('user','List')} />}
    {master && <NavButton key='sys_nav_ctrl' title='Controls' onClick={() => this.changeContent(<Controls key='system_controls' />)} />}
    <NavDropDown key='sys_nav_logs' title='Logs'>
-    {this.state.logs.map((row,idx) => <NavButton key={'sys_nav_logs_'+idx} title={row} onClick={() => this.changeContent( <LogShow key={row.name} node={row} /> )} />)}
+    {this.state.logs.map((row,idx) => <NavDropButton key={'sys_nav_logs_'+idx} title={row} onClick={() => this.changeContent( <LogShow key={row.name} node={row} /> )} />)}
    </NavDropDown>
    <NavDropDown key='sys_nav_reports' title='Reports'>
-    <NavButton key='sys_nav_sys' title='System' onClick={() => this.changeContent(<Report key='system_report' />)} />
-    <NavButton key='sys_nav_task' title='Tasks' onClick={() => this.changeContent(<TaskReport key='task_report' />)} />
-    {master && <NavButton key='sys_nav_act' title='Activities' onClick={() => this.changeImport('activity','Report')} />}
-    {master && <NavButton key='sys_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','Report')} />}
-    {master && <NavButton key='sys_nav_dev' title='Devices' onClick={() => this.changeImport('device','Report')} />}
-    {master && <NavButton key='sys_nav_inv' title='Inventory' onClick={() => this.changeImport('inventory','Report')} />}
+    <NavDropButton key='sys_nav_sys' title='System' onClick={() => this.changeContent(<Report key='system_report' />)} />
+    <NavDropButton key='sys_nav_task' title='Tasks' onClick={() => this.changeContent(<TaskReport key='task_report' />)} />
+    {master && <NavDropButton key='sys_nav_act' title='Activities' onClick={() => this.changeImport('activity','Report')} />}
+    {master && <NavDropButton key='sys_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','Report')} />}
+    {master && <NavDropButton key='sys_nav_dev' title='Devices' onClick={() => this.changeImport('device','Report')} />}
+    {master && <NavDropButton key='sys_nav_inv' title='Inventory' onClick={() => this.changeImport('inventory','Report')} />}
    </NavDropDown>
    <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />
-   {this.state.services.length > 0 &&  <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
+   {this.state.services.length > 0 &&  <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavDropButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
    <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
    {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} />)}
   </NavBar>)

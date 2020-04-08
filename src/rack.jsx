@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
-import { NavBar, NavButton, NavDropDown } from './infra/Navigation.js'
+import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.js'
 
 import { Main as DeviceMain, Info as DeviceInfo } from './device.jsx';
 import { List as LocationList, Info as LocationInfo } from './location.jsx';
@@ -20,9 +20,9 @@ export class Main extends Component {
   this.context.loadNavigation(<NavBar key='rack_navbar'>
    <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)} style={{float:'right'}} />
    <NavDropDown key='dev_nav_racks' title='Rack' style={{float:'right'}}>
-    <NavButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<List key='rack_list' />)} />
-    <NavButton key='dev_nav_all_pdu' title='PDUs' onClick={() => this.changeContent(<Infra key='pdu_list' type='pdu' />)} />
-    <NavButton key='dev_nav_all_con' title='Consoles' onClick={() => this.changeContent(<Infra key='console_list' type='console' />)} />
+    <NavDropButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<List key='rack_list' />)} />
+    <NavDropButton key='dev_nav_all_pdu' title='PDUs' onClick={() => this.changeContent(<Infra key='pdu_list' type='pdu' />)} />
+    <NavDropButton key='dev_nav_all_con' title='Consoles' onClick={() => this.changeContent(<Infra key='console_list' type='console' />)} />
    </NavDropDown>
   </NavBar>)
  }

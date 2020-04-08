@@ -72,14 +72,14 @@ section.content-left { min-width:max-content; overflow:hidden; width:25%; backgr
 section.content-right { overflow:scroll; background-color:transparent; width:auto; }
 
 nav { background-color: var(--ui-color); color:var(--ui-txt-color)!important; height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
-nav ul {  margin:0 ;padding:0; overflow:hidden; background-color:transparent; }
-nav li {  display:block; float:left; background-color: transparent; }
-nav li:hover{ background-color: var(--head-color); }
-nav ul.dropdown { position: absolute; box-shadow:0 8px 16px 0 rgba(0,0,0,0.3); background-color:var(--ui-color); z-index:1000; max-height:0; overflow:hidden; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
-nav ul.dropdown > li { clear:left; float:unset; }
-nav li.navinfo {  background-color:#00CC66; color:white; font-weight:bold;}
-nav li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
-nav li.right { float:right; }
+ul.nav {  margin:0 ;padding:0; overflow:hidden; background-color:transparent; }
+li.nav {  display:block; float:left;background-color: transparent; }
+li.nav:hover{ background-color: var(--head-color); }
+ul.dropdown { margin:0 ;padding:0; overflow:hidden; position: absolute; box-shadow:0 8px 16px 0 rgba(0,0,0,0.3); background-color:var(--ui-color); z-index:1000; max-height:0; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
+li.dropdown { display:block; background-color:transparent; }
+li.navinfo {  background-color:#00CC66; color:white; font-weight:bold;}
+li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
+li.right { float:right; }
 
 nav button,nav label { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; line-height:3rem; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:3rem; z-index:1000; }
 nav button:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); transition-duration:0.15s}

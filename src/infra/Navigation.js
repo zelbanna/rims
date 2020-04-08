@@ -5,9 +5,11 @@ import React, { Component }  from 'react';
 // with children
 //
 
-export const NavBar = (props) => <nav id={props.id}><ul>{props.children}</ul></nav>
+export const NavBar = (props) => <nav id={props.id}><ul className='nav'>{props.children}</ul></nav>
 
-export const NavButton = (props) => <li style={props.style}><button className='nav' onClick={props.onClick}>{props.title}</button></li>
+export const NavButton = (props) => <li className='nav' style={props.style}><button className='nav' onClick={props.onClick}>{props.title}</button></li>
+
+export const NavDropButton = (props) => <li className='dropdown' style={props.style}><button className='nav' onClick={props.onClick}>{props.title}</button></li>
 
 export class NavDropDown extends Component{
  constructor(props){
@@ -19,7 +21,7 @@ export class NavDropDown extends Component{
 
  render(){
   return (
-   <li style={this.props.style} onMouseEnter={() => this.changeSize(`calc(var(--nav-height) * ${this.props.children.length})`)} onMouseLeave={() => this.changeSize(0)}>
+   <li className='nav' style={this.props.style} onMouseEnter={() => this.changeSize(`${3 * this.props.children.length}rem`)} onMouseLeave={() => this.changeSize(0)}>
     <label>{this.props.title}</label>
     <ul className='dropdown' style={{maxHeight:this.state.height}}>{this.props.children}</ul>
    </li>

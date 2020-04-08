@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, SearchField, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, HrefButton } from './infra/Buttons.jsx';
-import { NavBar, NavButton, NavDropDown } from './infra/Navigation.js';
+import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.js';
 
 // ************** Main **************
 //
@@ -11,9 +11,9 @@ export class Main extends Component {
  componentDidMount(){
   this.context.loadNavigation(<NavBar key='inventory_navbar'>
    <NavDropDown key='inv_nav_inv' title='Inventory'>
-    <NavButton key='inv_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='search_list' changeSelf={this.changeContent} />)} />
-    <NavButton key='inv_nav_vend' title='Vendor' onClick={() => this.changeContent(<Vendor key='vendor_list' changeSelf={this.changeContent} />)} />
-    <NavButton key='inv_nav_list' title='List'   onClick={() => this.changeContent(<List key='list' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='inv_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='search_list' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='inv_nav_vend' title='Vendor' onClick={() => this.changeContent(<Vendor key='vendor_list' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='inv_nav_list' title='List'   onClick={() => this.changeContent(<List key='list' changeSelf={this.changeContent} />)} />
    </NavDropDown>
    <NavButton key='inv_nav_loc' title='Locations' onClick={() => this.changeLocation()} />
   </NavBar>)
