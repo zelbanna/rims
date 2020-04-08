@@ -35,43 +35,36 @@
  },
  "menuitem": {
   "activity": {
-   "mod_fun": "activity_main",
    "module":  "activity",
    "function": "Main",
    "icon": "images/icon-calendar.png"
   },
   "device": {
-   "mod_fun": "device_main",
    "module": "device",
    "function": "Main",
    "icon": "images/icon-network.png"
   },
   "hypervisor": {
-   "mod_fun": "hypervisor_main",
    "module": "hypervisor",
    "function": "Main",
    "icon": "images/icon-servers.png"
   },
   "inventory": {
-   "mod_fun": "inventory_main",
    "module": "inventory",
    "function": "Main",
    "icon": "images/icon-inventory.png"
   },
   "rack": {
-   "mod_fun": "rack_main",
    "module": "rack",
    "function": "Main",
    "icon": "images/icon-rack.png"
   },
   "resource": {
-   "mod_fun": "resource_main",
    "module": "resource",
    "function": "Main",
    "icon": "images/icon-tools.png"
   },
   "visualize": {
-   "mod_fun": "visualize_main",
    "module": "visualize",
    "function": "Main",
    "icon": "images/icon-visualize.png"
@@ -79,7 +72,6 @@
  },
  "tool": {
   "images": {
-   "mod_fun": "system_images",
    "module": "system",
    "function": "FileList",
    "icon": "images/None"

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "5.9"
-__build__ = 219
+__version__ = "6.0"
+__build__ = 300
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -491,25 +491,21 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  def do_GET(self):
-  print('GET: '+self.path)
+  print('GET: ' + self.path)
   """ Route request to the right function /<path>/mod_fun?get """
   path,_,query = self.path[1:].partition('/')
-  if path in ['infra','images','files']:
+  if path in ['infra','images','files','static']:
    # Use caching here :-)
    if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
     self._headers['X-Code'] = 304
    else:
     self.files(path,query)
-  elif path in ['api','external']:
-   self.api(path,query)
-  elif path == 'front':
-   self.front()
-  elif path == 'system':
-   self.system(query)
-  #elif len(path) == 0:
-  # self._headers.update({'X-Process':'no route','Location':'portal_login','X-Code':301})
+  elif len(path) == 0:
+   self._headers.update({'X-Process':'no route','Location':'index.html','X-Code':301})
+  else:
+   self.files('',path)
   self.header()
-  try:   self.wfile.write(self._body)
+  try: self.wfile.write(self._body)
   except Exception as e:
    print("do_GET: Error writing above body => %s"%str(e))
 
@@ -525,12 +521,6 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.auth()
   elif path == 'system':
    self.system(query)
-  elif path in ['infra','images','files']:
-   # Use caching here :-)
-   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
-    self._headers['X-Code'] = 304
-   else:
-    self.files(path,query)
   else:
    self._headers.update({'X-Process':'no route','X-Code':404})
   self.header()
@@ -606,7 +596,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self._headers['Content-type']='text/html; charset=utf-8'
   try:
    if not path == 'files':
-    fullpath = ospath.join(self._ctx.path,'public',path,query)
+    fullpath = ospath.join(self._ctx.path,'build',path,query)
    else:
     param,_,file = query.partition('/')
     fullpath = ospath.join(self._ctx.config['files'][param],file)

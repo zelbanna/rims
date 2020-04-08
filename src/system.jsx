@@ -39,7 +39,7 @@ export class Main extends Component {
   this.context.loadNavigation(<NavBar key='system_navbar'>
    {master && <NavButton key='sys_nav_node' title='Nodes' onClick={() => this.changeImport('node','List')} />}
    {master && <NavButton key='sys_nav_srv' title='Servers' onClick={() => this.changeImport('server','List')} />}
-   {master && <NavButton key='sys_nav_erd' title='ERD'     onClick={() => window.open('infra/erd.pdf','_blank')} />}
+   {master && <NavButton key='sys_nav_erd' title='ERD'     onClick={() => window.open('erd.pdf','_blank')} />}
    {master && <NavButton key='sys_nav_user' title='Users'  onClick={() => this.changeImport('user','List')} />}
    {master && <NavButton key='sys_nav_ctrl' title='Controls' onClick={() => this.changeContent(<Controls key='system_controls' />)} />}
    <NavDropDown key='sys_nav_logs' title='Logs'>
