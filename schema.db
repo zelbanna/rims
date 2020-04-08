@@ -69,7 +69,7 @@ CREATE TABLE `device_interfaces` (
   `mac` bigint(20) DEFAULT 0,
   `snmp_index` int(10) unsigned DEFAULT NULL,
   `name` varchar(25) NOT NULL,
-  `description` varchar(25) DEFAULT NULL,
+  `description` varchar(25) DEFAULT '',
   `state` enum('unknown','up','down') NOT NULL,
   `class` enum('wired','optical','virtual','logical','wifi','bluetooth') NOT NULL,
   `connection_id` int(10) unsigned DEFAULT NULL,
@@ -140,10 +140,10 @@ DROP TABLE IF EXISTS `device_types`;
 CREATE TABLE `device_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `oid` int(10) unsigned DEFAULT 0,
-  `name` varchar(20) DEFAULT NULL,
-  `base` varchar(40) DEFAULT NULL,
+  `name` varchar(20) DEFAULT '',
+  `base` varchar(40) DEFAULT '',
   `functions` varchar(255) DEFAULT '',
-  `icon` varchar(60) DEFAULT NULL,
+  `icon` varchar(60) DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -225,13 +225,13 @@ CREATE TABLE `inventory` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `location_id` int(10) unsigned DEFAULT NULL,
   `external_id` varchar(40) DEFAULT '',
-  `description` varchar(50) DEFAULT NULL,
-  `vendor` varchar(30) DEFAULT NULL,
-  `serial` varchar(20) DEFAULT NULL,
-  `product` varchar(30) DEFAULT NULL,
-  `model` varchar(30) DEFAULT NULL,
+  `description` varchar(50) DEFAULT '',
+  `vendor` varchar(30) DEFAULT '',
+  `serial` varchar(20) DEFAULT '',
+  `product` varchar(30) DEFAULT '',
+  `model` varchar(30) DEFAULT '',
   `license` tinyint(1) unsigned DEFAULT 0,
-  `license_key` varchar(50) DEFAULT NULL,
+  `license_key` varchar(50) DEFAULT '',
   `purchase_order` varchar(50) DEFAULT '',
   `receive_date` date DEFAULT NULL,
   `support_contract` tinyint(1) DEFAULT 0,
@@ -281,7 +281,7 @@ CREATE TABLE `ipam_networks` (
   `network` int(10) unsigned NOT NULL,
   `mask` tinyint(3) unsigned NOT NULL DEFAULT 24,
   `gateway` int(10) unsigned DEFAULT NULL,
-  `description` text DEFAULT NULL,
+  `description` text DEFAULT '',
   `vrf` varchar(40) DEFAULT 'default',
   `reverse_zone_id` int(10) unsigned DEFAULT NULL,
   `server_id` int(10) unsigned DEFAULT NULL,
@@ -356,8 +356,8 @@ CREATE TABLE `rack_info` (
 DROP TABLE IF EXISTS `racks`;
 CREATE TABLE `racks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) DEFAULT NULL,
-  `size` int(10) unsigned DEFAULT NULL,
+  `name` varchar(20) DEFAULT '',
+  `size` int(10) unsigned DEFAULT 1,
   `console` int(10) unsigned DEFAULT NULL,
   `pdu_1` int(10) unsigned DEFAULT NULL,
   `pdu_2` int(10) unsigned DEFAULT NULL,
@@ -421,7 +421,7 @@ CREATE TABLE `tasks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node_id` int(10) unsigned NOT NULL,
   `module` varchar(30) NOT NULL,
-  `function` varchar(60) DEFAULT NULL,
+  `function` varchar(60) DEFAULT '',
   `args` varchar(300) NOT NULL,
   `frequency` int(10) unsigned DEFAULT 300,
   `output` enum('false','true') NOT NULL,
@@ -448,12 +448,12 @@ CREATE TABLE `user_tokens` (
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `alias` varchar(20) DEFAULT NULL,
+  `alias` varchar(20) NOT NULL DEFAULT 'error',
   `name` varchar(20) NOT NULL DEFAULT 'error',
-  `password` varchar(30) DEFAULT NULL,
-  `email` varchar(40) DEFAULT NULL,
+  `password` varchar(30) NOT NULL,
+  `email` varchar(40) DEFAULT '',
   `external_id` varchar(40) DEFAULT NULL,
-  `theme` varchar(16) DEFAULT 'blue',
+  `theme` varchar(16) DEFAULT 'black',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

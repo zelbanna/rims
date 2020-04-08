@@ -114,7 +114,7 @@ button.text:hover,button.text:focus { color:var(--high-color)!important; }
 /***************************************  Info  Model *****************************************/
 
 article.info { resize:horizontal; width:max-content; }
-article.info textarea { height:6rem; width:300px; display:block; }
+article.info textarea { height:6rem; width:300px; display:block; font-size:1rem; }
 div.info { display:grid; margin:2px 0 2px 0; align-items:center; grid-gap:1px; }
 div.info *[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
 
@@ -201,7 +201,7 @@ button.ipam { float:left; font-size:0.8rem; font-weight:bold; padding:0; width:2
 /* media dependent */
 article.network { width:99%; }
 div.network { height:500px; width:600px; resize:horizontal}
-div.network > textarea { height:500px; width:99%; }
+div.network > textarea { height:500px; width:99%; font-size:1rem; }
 div.hidden { display:none; }
 div.shown  { display:block; }
 
