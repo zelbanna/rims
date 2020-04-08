@@ -9,7 +9,7 @@ CREATE TABLE `activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `type_id` int(10) unsigned NOT NULL,
-  `event` text DEFAULT NULL,
+  `event` text DEFAULT '',
   `date_time` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `fk_user` (`user_id`),
@@ -394,7 +394,7 @@ DROP TABLE IF EXISTS `servers`;
 CREATE TABLE `servers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node` varchar(40) NOT NULL,
-  `ui` varchar(60) DEFAULT NULL,
+  `ui` varchar(60) NOT NULL DEFAULT '',
   `type_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `node_service` (`node`,`type_id`),
