@@ -51,7 +51,7 @@ def cleanup(aCTX, aArgs = None):
    if item == '.':
     continue
    try: rmdir(ospath.join(path,item))
-   except Exception as err: ret['data'].append({'type':'directory','path':path,'item':item,'status':'NOT_OK','info':str(err)}
+   except Exception as err: ret['data'].append({'type':'directory','path':path,'item':item,'status':'NOT_OK','info':str(err)})
    else: ret['data'].append({'type':'directory','path':path,'item':item,'status':'OK'})
  return ret
 
