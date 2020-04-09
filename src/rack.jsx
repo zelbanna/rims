@@ -109,6 +109,10 @@ class Info extends Component {
 // *************** Layout ***************
 //
 export class Layout extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/rack/devices',{id:this.props.id}).then(result => this.setState(result))
@@ -125,7 +129,7 @@ export class Layout extends Component {
  }
 
  render(){
-  if (this.state) {
+  if (this.state.size) {
    return (<Fragment key='rack_layout'>
      <article className='info'>
      <h1>Front</h1>

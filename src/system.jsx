@@ -132,13 +132,17 @@ class RestList extends Component {
 // ************** RestInfo **************
 //
 class RestInfo extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/system/rest_information',{api:this.props.api, function:this.props.function}).then(result => this.setState(result))
  }
 
  render() {
-  if (this.state) {
+  if (this.state.module && this.state.information) {
    return(
     <article className='text'>
      <h1>API: {this.props.api}</h1>

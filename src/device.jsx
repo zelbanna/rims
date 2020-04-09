@@ -328,6 +328,10 @@ class ManagementInfo extends Component {
 // ************* RackInfo **************
 //
 class RackInfo extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/device/rack',{device_id:this.props.device_id}).then(result => this.setState(result))
@@ -338,7 +342,7 @@ class RackInfo extends Component {
  updateInfo = () => rest_call('api/device/rack',{op:'update', ...this.state.data}).then(result => this.setState(result));
 
  render() {
-  if (this.state){
+  if (this.state.data){
    const racked = (this.state.data.rack_id && this.state.data.rack_id !== 'NULL');
    return <article className='info'>
     <h1>Rack</h1>
@@ -359,6 +363,10 @@ class RackInfo extends Component {
 // ************* PEMs **************
 //
 class PemList extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/pem/list',{device_id:this.props.device_id,lookup:true}).then(result => this.setState(result))
@@ -374,7 +382,7 @@ class PemList extends Component {
  </Fragment>]
 
  render(){
-  return (this.state) ? <ContentReport key='dev_pems' header='PEMs' thead={['ID','Name','PDU ID','PDU Name','PDU Slot','PDU Unit','']} trows={this.state.data} listItem={this.listItem}>
+  return (this.state.data) ? <ContentReport key='dev_pems' header='PEMs' thead={['ID','Name','PDU ID','PDU Name','PDU Slot','PDU Unit','']} trows={this.state.data} listItem={this.listItem}>
    <ReloadButton key='dev_pems_btn_reload' onClick={() => this.componentDidMount()} />
    <AddButton key='dev_pems_btn_add' onClick={() => this.changeContent(<PemInfo key={'device_pem_info_new_' + rnd()} id='new' device_id={this.props.device_id} />)} title='Add PEM' />
   </ContentReport>
@@ -426,6 +434,10 @@ class PemInfo extends Component{
 // ************* StatisticsList **************
 //
 class StatisticsList extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   this.loadList()
@@ -445,7 +457,7 @@ class StatisticsList extends Component {
  </Fragment>]
 
  render(){
-  return (this.state) ? <ContentReport key='dev_stats' header='Device statistics' thead={['ID','Measurement','Tags','Name','OID','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+  return (this.state.data) ? <ContentReport key='dev_stats' header='Device statistics' thead={['ID','Measurement','Tags','Name','OID','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='dev_stats_btn_reload' onClick={() => this.loadList(true)} />
    <SearchButton key='dev_stats_btn_lookup' onClick={() => this.lookupStats()} title='Lookup device type stats' />
    <AddButton key='dev_stats_btn_add' onClick={() => this.changeContent(<StatisticsInfo key={'device_statistics_info_new_' + rnd()} id='new' device_id={this.props.device_id} />)} title='Add statistics' />
@@ -457,6 +469,10 @@ class StatisticsList extends Component {
 // ************* PemInfo **************
 //
 class StatisticsInfo extends Component{
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/statistics/info',{id:this.props.id, device_id:this.props.device_id}).then(result => this.setState(result))
@@ -467,7 +483,7 @@ class StatisticsInfo extends Component{
  updateInfo = () => rest_call('api/statistics/info',{op:'update', ...this.state.data}).then(result => this.setState(result));
 
  render() {
-  if (this.state){
+  if (this.state.data){
    return <article className='info'>
     <h1>Data point</h1>
     <InfoColumns key='dev_stat_ic'>
@@ -513,27 +529,24 @@ class Control extends Component {
  lookupState = (id) => console.log('State lookup TODO');
 
  render() {
-  if(this.state)
-   return (
-    <article className='info'>
-     <h1>Device Control</h1>
-     <InfoColumns key='dc_ic'>
-      <label htmlFor='reboot'>Reboot:</label><ReloadButton id='reboot' key='dev_ctr_reboot' onClick={() => this.operationDev('reboot','Really reboot?')} title='Restart device' />
-      <label htmlFor='shutdown'>Shutdown:</label><ShutdownButton id='shutdown' key='dev_ctr_shutdown' onClick={() => this.operationDev('shutdown','Really shutdown?')} title='Shutdown' />
-      {this.state.pems.map(pem => {
-       if(pem.state === 'off')
-        return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><StartButton key={'dc_btn_start_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'on','Power on PEM?')} title='Power ON' /></Fragment>
-       else if (pem.state === 'on')
-        return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><ShutdownButton key={'dc_btn_stop_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'off','Power off PEM?')} title='Power OFF' /></Fragment>
-       else
-        return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><SearchButton key={'dc_btn_lookup_'+pem.id} id={pem.id} onClick={() => this.lookupState(pem.id)} title='Lookup State' /></Fragment>
-      })}
-     </InfoColumns>
-     <Result key='dc_result' result={JSON.stringify(this.state.result)} />
-     {this.state.wait}
-    </article>)
-  else
-   return <Spinner />
+  return (
+   <article className='info'>
+    <h1>Device Control</h1>
+    <InfoColumns key='dc_ic'>
+     <label htmlFor='reboot'>Reboot:</label><ReloadButton id='reboot' key='dev_ctr_reboot' onClick={() => this.operationDev('reboot','Really reboot?')} title='Restart device' />
+     <label htmlFor='shutdown'>Shutdown:</label><ShutdownButton id='shutdown' key='dev_ctr_shutdown' onClick={() => this.operationDev('shutdown','Really shutdown?')} title='Shutdown' />
+     {this.state.pems.map(pem => {
+      if(pem.state === 'off')
+       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><StartButton key={'dc_btn_start_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'on','Power on PEM?')} title='Power ON' /></Fragment>
+      else if (pem.state === 'on')
+       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><ShutdownButton key={'dc_btn_stop_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'off','Power off PEM?')} title='Power OFF' /></Fragment>
+      else
+       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><SearchButton key={'dc_btn_lookup_'+pem.id} id={pem.id} onClick={() => this.lookupState(pem.id)} title='Lookup State' /></Fragment>
+     })}
+    </InfoColumns>
+    <Result key='dc_result' result={JSON.stringify(this.state.result)} />
+    {this.state.wait}
+   </article>)
  }
 }
 
@@ -678,6 +691,11 @@ export class Report extends Component {
 // ************** Type List **************
 //
 class TypeList extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
+
  componentDidMount(){
   rest_call('api/device/type_list').then(result => this.setState(result))
  }
@@ -689,7 +707,7 @@ class TypeList extends Component {
  listItem = (row) => [row.base,<HrefButton text={row.name} onClick={() => this.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
 
  render(){
-  return (this.state) ? <Fragment key='dev_tp_fragment'>
+  return (this.state.data) ? <Fragment key='dev_tp_fragment'>
    <ContentList key='dev_tp_cl' header='Device Types' thead={['Class','Name','Icon']} trows={this.state.data} listItem={this.listItem} />
    <ContentData key='dev_tp_cd'>{this.state.content}</ContentData>
   </Fragment> : <Spinner />
@@ -699,6 +717,10 @@ class TypeList extends Component {
 // ************** Model List **************
 //
 class ModelList extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/device/model_list').then(result => this.setState({...result,result:'OK'}))
@@ -715,7 +737,7 @@ class ModelList extends Component {
  deleteList = (id) => (window.confirm('Really delete model?') && rest_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return (this.state) ? <Fragment key='dev_ml_fragment'>
+  return (this.state.data) ? <Fragment key='dev_ml_fragment'>
    <ContentList key='dev_ml_cl' header='Device Models' thead={['ID','Model','Type','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='ml_btn_reload' onClick={() => this.componentDidMount()} />
     <SyncButton key='_ml_btn_sync' onClick={() => this.syncModels() } title='Resync models' />
@@ -793,13 +815,17 @@ class OUISearch extends Component {
 // ************** OUI List **************
 //
 class OUIList extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/master/oui_list').then(result => this.setState(result))
  }
 
  render(){
-  if (this.state)
+  if (this.state.data)
    return <article className='table'>
     <h1>OUI</h1>
     <div className='table'>

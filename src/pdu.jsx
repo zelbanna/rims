@@ -30,6 +30,10 @@ Manage.contextType = RimsContext;
 // ************** Info **************
 //
 class Info extends Component{
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
@@ -38,7 +42,7 @@ class Info extends Component{
  lookupSlots = () => rest_call('api/'+this.props.type+'/info',{device_id:this.props.device_id,op:'lookup'}).then(result => this.setState(result))
 
  render(){
-  if (this.state){
+  if (this.state.data){
    let slots = [];
    for (let i = 0; i < this.state.data.slots; i++){
     slots.push(<TextLine key={'pi_slot_name_' + i} id={'pi_slot_name_' + i} label={'Slot ' + i + ' Name'} text={this.state.data[i + '_slot_name']} />);

@@ -52,13 +52,17 @@ Main.contextType = RimsContext;
 // ************* Cleanup ************
 //
 class Cleanup extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/multimedia/cleanup').then(result => this.setState(result));
  }
 
  render(){
-   return (this.state) ? <ContentReport key='mm_clean_cr' header='delete' thead={['Type','Path','Item','Status','Info']} trows={this.state.data} listItem={(row) => [row.type,row.path,row.item,row.status,row.info]} /> : <Spinner />
+   return (this.state.data) ? <ContentReport key='mm_clean_cr' header='delete' thead={['Type','Path','Item','Status','Info']} trows={this.state.data} listItem={(row) => [row.type,row.path,row.item,row.status,row.info]} /> : <Spinner />
  }
 }
 
@@ -81,13 +85,17 @@ class Lookup extends Component {
 // ************* Subtitles ************
 //
 class Subtitles extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/multimedia/check_srt',{path:this.props.path,file:this.props.file}).then(result => this.setState(result));
  }
 
  render(){
-  if (this.state) {
+  if (this.state.data) {
    return <article className='info'>
     <h1>{this.state.data.file}</h1>
     <InfoColumns key='mm_sub_ic'>

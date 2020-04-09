@@ -7,6 +7,11 @@ import { AddButton, BackButton, NetworkButton, DeleteButton,ForwardButton, GoBut
 // *************** List ****************
 //
 export class List extends Component{
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
+
  componentDidMount(){
   rest_call('api/interface/list',{device_id:this.props.device_id}).then(result => this.setState(result));
  }
@@ -28,7 +33,7 @@ export class List extends Component{
    </Fragment>]
 
  render(){
-  if (this.state) {
+  if (this.state.data) {
    return <ContentReport key='il_cl' header='Interfaces' thead={['ID','MAC','IP','SNMP','Name','Description','Class','Link','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='il_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='il_btn_add' onClick={() => this.changeContent(<Info key={'interface_info_' + rnd()} device_id={this.props.device_id} interface_id='new' changeSelf={this.props.changeSelf} />) } title='Add interface' />
@@ -176,6 +181,10 @@ export class Info extends Component {
 // *************** Connection ****************
 //
 class ConnectionInfo extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/interface/connection_info',{connection_id:this.props.id}).then(result => this.setState(result));
@@ -186,7 +195,7 @@ class ConnectionInfo extends Component {
  updateInfo = () => rest_call('api/interface/connection_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render(){
-  if(this.state){
+  if(this.state.interfaces){
    return <article className='info'>
     <h1>Connection {this.props.id}</h1>
     <InfoColumns key='ci_columns'>
@@ -204,6 +213,10 @@ class ConnectionInfo extends Component {
 // *************** LLDP ****************
 //
 class LLDP extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
 
  componentDidMount(){
   rest_call('api/interface/lldp_mapping',{device_id:this.props.device_id}).then(result => this.setState({data:Object.values(result.data)}))
@@ -212,7 +225,7 @@ class LLDP extends Component {
  listItem = (row) => [row.chassis_id,row.chassis_type,row.sys_name,row.port_id,row.port_type,row.port_desc,row.snmp_index,row.snmp_name,row.connection_id,row.status]
 
  render(){
-  if(this.state)
+  if(this.state.data)
    return <ContentReport key='il_cr' header='Interface' thead={['Chassis','Type','Name','Port ID','Type','Description','SNMP Index','SNMP Name','Conn','Status']} trows={this.state.data} listItem={this.listItem}>
    <BackButton key='il_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.props.device_id} />)} title='Back' />
    </ContentReport>
