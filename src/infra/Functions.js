@@ -2,11 +2,7 @@
 
 export async function rest_call(url = '', args = {}) {
  const response = await fetch(url, { method:'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(args) })
- //console.log(response)
- if (response.status === 200) {
-  return await response.json();
- } else
-  return {}
+ return await response.json();
 }
 
 export const rnd = () => Math.floor(Math.random() * 10);

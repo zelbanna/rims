@@ -73,6 +73,9 @@ section.content-left::-webkit-scrollbar { display: none; }
 section.content-right { overflow:scroll; background-color:transparent; width:auto; scrollbar-width:none; }
 section.content-right::-webkit-scrollbar { display: none; }
 
+article.error { border:solid 1px var(--high-color); }
+button.right {float:right}
+
 /*************************************** Navigation Model *****************************************/
 
 nav { background-color: var(--ui-color); height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
@@ -186,6 +189,13 @@ div.loader {
   87.5% {    box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;  }
 }
 
+/******************************************* RACK *********************************************/
+
+div.rack { display:grid; margin:10px; text-align:center }
+div.rack-left { color:grey; font-weight:bold; font-size:0.9rem; grid-column:1; border-right:1px solid grey;}
+div.rack-right { color:grey; font-weight:bold; font-size:0.9rem; grid-column:3; border-left:1px solid grey;}
+div.rack-data { border:solid 2px grey; display:inherit; grid-column:2; background-color:var(--ui-color); }
+
 /* **************************************** EXTRA/LAST/IMPORTANT ******************************************* */
 
 div.left { float:left!important; }
@@ -204,10 +214,3 @@ div.network { height:500px; width:600px; resize:horizontal}
 div.network > textarea { height:500px; width:99%; font-size:1rem; }
 div.hidden { display:none; }
 div.shown  { display:block; }
-
-/******************************************* RACK *********************************************/
-
-div.rack { display:grid; margin:10px; text-align:center }
-div.rack-left { color:grey; font-weight:bold; font-size:0.9rem; grid-column:1; border-right:1px solid grey;}
-div.rack-right { color:grey; font-weight:bold; font-size:0.9rem; grid-column:3; border-left:1px solid grey;}
-div.rack-data { border:solid 2px grey; display:inherit; grid-column:2; background-color:var(--ui-color); }

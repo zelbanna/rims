@@ -15,6 +15,7 @@ export const TextButton = (props) => <button id={props.id} className='info text'
 export const AddButton = (props) => info_template('fas fa-plus',props);
 export const BackButton = (props) => info_template('fas fa-arrow-left',props);
 export const CheckButton = (props) => info_template('fas fa-tasks',props);
+export const CloseButton = (props) => <button id={props.id} className='info fa right' onClick={props.onClick} title={props.title}><i className='fas fa-times-circle' /></button>
 export const ConfigureButton = (props) => info_template('fas fa-cog',props);
 export const ConnectionButton = (props) => info_template('fas fa-arrows-alt',props);
 export const DeleteButton = (props) => info_template('fas fa-trash-alt',props);

@@ -165,6 +165,10 @@ export class Info extends Component {
   this.state = {data:undefined, found:true, content:null, navconf:false}
  }
 
+ componentDidMount(){
+  rest_call('api/device/info',{id:this.props.id, extra:['types','classes']}).then(result => this.setState(result))
+ }
+
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
@@ -172,10 +176,6 @@ export class Info extends Component {
  changeSelf = (elem) => this.props.changeSelf(elem);
 
  updateInfo = () => rest_call('api/device/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
-
- componentDidMount(){
-  rest_call('api/device/info',{id:this.props.id, extra:['types','classes']}).then(result => this.setState(result))
- }
 
  reload = () => {
   this.setState({rack:undefined,vm:undefined});

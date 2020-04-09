@@ -22,6 +22,7 @@ export const PasswordInput = (props) => input_template('password',props);
 export const DateInput = (props) => input_template('date',props);
 export const TimeInput = (props) => input_template('time',props);
 
+export const TextAreaInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className='info' title={props.title}>{auto_label(props)}:</label><textarea id={props.id} name={props.id} onChange={props.onChange} className='info' value={props.value} /></Fragment>
 export const CheckboxInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className='info' title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} className='info' /></Fragment>
 export const RadioInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className='info' title={props.title}>{auto_label(props)}:</label><div>{
   props.options.map((opt,idx) => <Fragment key={'fragradio_'+props.id+'_'+idx}>

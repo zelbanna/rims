@@ -183,7 +183,7 @@ class Controls extends Component {
    {api:'device/vm_mapping',text:'VM UUID mapping'},
    {api:'master/oui_fetch',text:'Sync OUI database'},
    {api:'reservation/expiration_status',text:'Check reservation status'},
-   {api:'system/sleep',text:'Sleep Test', args:{seconds:10}},
+   {api:'system/sleep',text:'Sleep Test', args:{seconds:10}}
   ]}
  }
 

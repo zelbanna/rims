@@ -57,6 +57,12 @@ def sleep(aCTX, aArgs = None):
 
 #
 #
+def error(aCTX, aArgs = None):
+ """ Function throws an error """
+ return (test == 'error')
+
+#
+#
 def external_ip(aCTX, aArgs = None):
  """Function docstring for external_ip. TBD
 

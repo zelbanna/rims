@@ -66,12 +66,11 @@ def delete(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'status':'NOT_OK'}
  try: remove(ospath.join(aArgs['path'],aArgs['file']))
  except Exception as err:
-  ret['error'] = str(err)
+  ret = {'status':'NOT_OK','info':str(err),'deleted':False}
  else:
-  ret['status'] = 'OK'
+  ret = {'status':'OK','deleted':True}
  return ret
 
 #

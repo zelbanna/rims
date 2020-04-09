@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import './infra/system.css';
 import { rest_call } from  './infra/Functions.js';
 import { InfoColumns, RimsContext, Header, Theme } from './infra/UI.jsx';
-import { TextInput, PasswordInput } from './infra/Inputs.jsx';
-import { MenuButton, FontAwesomeMenuButton } from './infra/Buttons.jsx';
+import { TextInput, TextLine, PasswordInput } from './infra/Inputs.jsx';
+import { CloseButton, MenuButton, FontAwesomeMenuButton } from './infra/Buttons.jsx';
 import { NavBar } from './infra/Navigation.js';
 import * as serviceWorker from './serviceWorker';
 
@@ -13,6 +13,39 @@ import * as serviceWorker from './serviceWorker';
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
+// ************************* Portal  ****************************
+//
+
+class ErrorBoundary extends React.Component {
+ constructor(props) {
+  super(props);
+  this.state = { hasError: false, error: undefined, info:[] };
+ }
+
+ static getDerivedStateFromError(error) {
+  return {hasError: true};
+ }
+
+ componentDidCatch(error, errorInfo) {
+  this.setState({error:error.toString(),info:errorInfo.componentStack.split('\n')})
+ }
+
+ render() {
+  if (this.state.hasError)
+   return <div className='overlay' style={{top:0}}>
+    <article className='error'>
+     <CloseButton key='error_close' onClick={() => this.setState({hasError: false, error: undefined, info:[]})} />
+     <h1>UI Error</h1>
+     <InfoColumns key='error_ic'>
+      <TextLine key='error_type' id='type' text={this.state.error} />
+      <label htmlFor='info' className='info'>Info:</label><div id='info'>{this.state.info.map((row,idx) => <p key={'error_line'+idx}>{row}</p>)}</div>
+     </InfoColumns>
+    </article>
+   </div>
+  else
+   return this.props.children;
+ }
+}
 // ************************* Portal  ****************************
 //
 class Portal extends Component {
@@ -70,7 +103,9 @@ class Portal extends Component {
      {buttons}
     </Header>
     {this.state.navigation}
-    <main>{this.state.content}</main>
+    <ErrorBoundary key='portal_error'>
+     <main>{this.state.content}</main>
+    </ErrorBoundary>
   </React.Fragment>
   )
  }
