@@ -16,7 +16,7 @@ def database_list(aCTX, aArgs = None):
  """
  ret = {}
  db = aCTX.config['influxdb']
- try: ret['databases'] = [x[0] for x in aCTX.rest_call("%s/query"%(db['url']), aApplication = 'x-www-form-urlencoded', aArgs = {'q':'show databases'})['results'][0]['series'][0]['values']]
+ try: ret['databases'] = [x[0] for x in aCTX.rest_call("%s/query"%(db['url']), aMethod='POST', aApplication = 'x-www-form-urlencoded', aArgs = {'q':'show databases'})['results'][0]['series'][0]['values']]
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -43,7 +43,7 @@ def write_points(aCTX, aArgs = None):
  ret = {}
  db = aCTX.config['influxdb']
  args = '%s,%s value=%s'%(aArgs['series'],"default" if not 'tags' in aArgs else ','.join(['%s=%s'%(x[0],x[1]) for x in aArgs['tags']]),aArgs['value'])
- try:  aCTX.rest_call("%s/write?db=%s&precision=%s"%(db['url'],db['database'],aArgs.get('precision','s')), aApplication = 'octet-stream', aArgs = args.encode())
+ try:  aCTX.rest_call("%s/write?db=%s&precision=%s"%(db['url'],db['database'],aArgs.get('precision','s')), aMethod = 'POST', aApplication = 'octet-stream', aArgs = args.encode())
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
