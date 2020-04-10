@@ -691,7 +691,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif op == 'register':
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   params = {'node':arg,'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
+   params = {'node':arg,'url':"http://%s:%s"%(self.client_address[0],args['port'])}
    output = {'status':'OK'}
    with self._ctx.db as db:
     output['update'] = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params)
