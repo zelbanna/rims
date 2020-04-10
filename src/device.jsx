@@ -84,12 +84,16 @@ class Search extends Component {
     <h1>Device Search</h1>
     <div>
      <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field}>
-      <option value='hostname'>Hostname</option>
-      <option value='type'>Type</option>
-      <option value='id'>ID</option>
-      <option value='ip'>IP</option>
-      <option value='mac'>MAC</option>
-      <option value='ipam_id'>IPAM ID</option>
+      <optgroup label='Group'>
+       <option value='hostname'>Hostname</option>
+       <option value='type'>Type</option>
+      </optgroup>
+      <optgroup label='Unique'>
+       <option value='id'>ID</option>
+       <option value='ip'>IP</option>
+       <option value='mac'>MAC</option>
+       <option value='ipam_id'>IPAM ID</option>
+      </optgroup>
      </SelectInput>
      <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
     </div>

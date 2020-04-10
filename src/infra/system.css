@@ -114,7 +114,7 @@ button.text { font-weight:bold; border:none; display:inline-block; position:rela
 button.text::-moz-focus-inner { border-style: dotted; }
 button.text:hover,button.text:focus { color:var(--high-color)!important; }
 
-/***************************************  Info  Model *****************************************/
+/*************************************** Info Model *****************************************/
 
 article.info { resize:horizontal; width:max-content; }
 div.info { display:grid; margin:2px 0 2px 0; align-items:center; grid-gap:1px; }
