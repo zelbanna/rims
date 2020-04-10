@@ -529,6 +529,20 @@ def address_events(aCTX, aArgs = None):
 
 #################################### Monitor #################################
 #
+#
+def clear(aCTX, aArgs = None):
+ """ Clear all interface statistics
+
+ Args:
+
+ """
+ ret = {'status':'OK'}
+ with aCTX.db as db:
+  ret['count'] = db.do("UPDATE ipam_addresses SET state = 'unknown'")
+ return ret
+
+#
+#
 def check(aCTX, aArgs = None):
  """ Initiate a status check for all or a subset of IP:s that belongs to proper interfaces
 
@@ -545,10 +559,10 @@ def check(aCTX, aArgs = None):
 
  if 'repeat' in aArgs:
   aCTX.workers.add_task('ipam','process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
-  return {'status':'OK','info':'IPAM_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
+  return {'status':'OK','function':'ipam_check','detach_frequency':aArgs['repeat']}
  else:
   process(aCTX,{'addresses':addresses})
-  return {'status':'OK'}
+  return {'status':'OK','function':'ipam_check'}
 
 #
 #
@@ -560,7 +574,7 @@ def process(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'status':'OK'}
+ ret = {'status':'OK','function':'ipam_process'}
  from os import system
 
  def __check_ip(aDev):
@@ -592,7 +606,7 @@ def report(aCTX, aArgs = None):
   - up (number of updated up state)
   - down (number of updated down state)
  """
- ret = {}
+ ret = {'function':'ipam_report'}
  with aCTX.db as db:
   for chg in ['up','down']:
    change = aArgs.get(chg)

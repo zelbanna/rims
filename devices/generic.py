@@ -109,7 +109,7 @@ class Device(object):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(objs)
   except: return {}
-  else:   return {int(entry.iid):'up' if entry.val.decode() == '1' else 'down' for entry in objs} if (session.ErrorInd == 0) else {}
+  else: return {int(entry.iid):'up' if entry.val.decode() == '1' else 'down' for entry in objs if entry.iid} if (session.ErrorInd == 0) else {}
 
  #
  def data_points(self, aGeneric, aInterfaces):
