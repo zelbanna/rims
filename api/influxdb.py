@@ -86,7 +86,7 @@ def sync(aCTX, aArgs = None):
  if not db['database'] in database_list(aCTX, aArgs)['databases']:
   try:
    for line in ["CREATE DATABASE %s"%db['database'], "CREATE RETENTION POLICY one_week ON %s DURATION 1w REPLICATION 1 default"%db['database']]:
-    res = aCTX.rest_call("%s/query"%(db['url']), aApplication = 'x-www-form-urlencoded', aArgs = {'q':line}, aDataOnly = False)
+    res = aCTX.rest_call("%s/query"%(db['url']), aApplication = 'x-www-form-urlencoded', aArgs = {'q':line}, aDataOnly = False, aMethod = 'POST')
   except Exception as e:
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)

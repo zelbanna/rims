@@ -586,7 +586,7 @@ def task_add(aCTX, aArgs = None):
   aCTX.workers.add_task(aArgs['module'],aArgs['function'],freq, output = aArgs.get('output',False), args = aArgs.get('args',{}))
   ret['status'] = 'OK'
  else:
-  try: ret.update(aCTX.rest_call("%s/api/system/worker?node=%s"%(aCTX.nodes[node]['url'],node), aArgs = aArgs, aDataOnly = True))
+  try: ret.update(aCTX.rest_call("%s/api/system/worker?node=%s"%(aCTX.nodes[node]['url'],node), aMethod = 'POST', aArgs = aArgs, aDataOnly = True))
   except Exception as e:
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)

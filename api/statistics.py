@@ -203,7 +203,7 @@ def report(aCTX, aArgs = None):
   if 'data_points' in aArgs:
    tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
    args.extend([tmpl%(m['measurement'].encode(),m['tags'].replace(' ','\ ').encode(),(','.join(["%(name)s=%(value)s"%x for x in m['snmp']])).encode()) for m in aArgs['data_points']])
-  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aApplication = 'octet-stream', aArgs = b'\n'.join(args))
+  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
   except Exception as e:
    ret['info'] = str(e)
    aCTX.log("statistics_report_error: %s"%str(e))

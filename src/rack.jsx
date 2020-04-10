@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
-import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.js'
+import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
 
 import { Main as DeviceMain, Info as DeviceInfo } from './device.jsx';
 import { List as LocationList, Info as LocationInfo } from './location.jsx';

@@ -2,7 +2,8 @@ import React, { Component, Fragment } from 'react'
 import { rest_call} from './infra/Functions.js';
 import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
-import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.js';
+import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.jsx';
+import { TextLine } from './infra/Inputs.jsx'
 
 // ************** Main **************
 //
@@ -175,9 +176,9 @@ class Controls extends Component {
  constructor(props){
   super(props);
   this.state = {data:[
-   {api:'monitor/ipam_init',text:'IPAM status check'},
+   {api:'ipam/check',text:'IPAM status check'},
    {api:'ipam/address_events',text:'IPAM clear status logs',args:{op:'clear'}},
-   {api:'monitor/interface_init',text:'Interface status check'},
+   {api:'interface/check',text:'Interface status check'},
    {api:'device/network_info_discover',text:'Discover device system information (sysmac etc)'},
    {api:'device/model_sync',text:'Sync device model mapping'},
    {api:'device/vm_mapping',text:'VM UUID mapping'},
@@ -281,7 +282,7 @@ class ServiceInfo extends Component {
   return (
    <article className='lineinput'>
     <div>
-     <b>{this.props.name}</b>: {this.state.state} ({this.state.extra}) <Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} title='Operate service' />
+     <TextLine key='service_line' id='service' label={this.props.name} text={this.state.state + ' (' +this.state.extra +')'} /><Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} title='Operate service' />
     </div>
     {this.state.spinner}
    </article>

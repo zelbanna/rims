@@ -3,7 +3,7 @@ import { rest_call } from './infra/Functions.js';
 import { Result, Spinner, StateMap, RimsContext, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 import { StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
-import { NavBar, NavInfo, NavButton } from './infra/Navigation.js';
+import { NavBar, NavInfo, NavButton } from './infra/Navigation.jsx';
 
 import { Info as DeviceInfo, Logs as DeviceLogs } from './device.jsx';
 

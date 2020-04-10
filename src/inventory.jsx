@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, SearchField, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, HrefButton } from './infra/Buttons.jsx';
-import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.js';
+import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 
 // ************** Main **************
 //

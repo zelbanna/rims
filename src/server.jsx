@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
-import { NavBar }   from './infra/Navigation.js';
+import { NavBar }   from './infra/Navigation.jsx';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 

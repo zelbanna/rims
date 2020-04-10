@@ -5,7 +5,7 @@ import { rest_call } from  './infra/Functions.js';
 import { InfoColumns, RimsContext, Header, Theme } from './infra/UI.jsx';
 import { TextInput, TextLine, PasswordInput } from './infra/Inputs.jsx';
 import { CloseButton, MenuButton, FontAwesomeMenuButton } from './infra/Buttons.jsx';
-import { NavBar } from './infra/Navigation.js';
+import { NavBar } from './infra/Navigation.jsx';
 import * as serviceWorker from './serviceWorker';
 
 // If you want your app to work offline and load faster, you can change

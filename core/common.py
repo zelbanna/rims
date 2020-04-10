@@ -28,8 +28,7 @@ def rest_call(aURL, **kwargs):
   else:
    raise RestException("No recognized application type (%s)"%head['Content-Type'])
   req = Request(aURL, headers = head, data = args)
-  if kwargs.get('aMethod'):
-   req.get_method = lambda: kwargs['aMethod']
+  req.get_method = lambda: kwargs.get('aMethod','POST')
   if kwargs.get('aVerify',True):
    sock = urlopen(req, timeout = kwargs.get('aTimeout',20))
   else:

@@ -112,7 +112,7 @@ class Context(object):
    info['version'] = __version__
    info['build'] = __build__
   else:
-   info = self.rest_call("%s/system/environment/%s/%s"%(self.config['master'],aNode,__build__), aDataOnly = True)
+   info = self.rest_call("%s/system/environment/%s/%s"%(self.config['master'],aNode,__build__), aDataOnly = True, aMethod = 'POST')
   return info
 
  #
@@ -576,7 +576,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module("rims.api.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False, aDataOnly = True)
+    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False, aDataOnly = True, aMethod = 'POST')
   except Exception as e:
    if not (isinstance(e.args[0],dict) and e.args[0].get('code')):
     error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))}
@@ -658,7 +658,7 @@ class SessionHandler(BaseHTTPRequestHandler):
       output['info'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
     try:
-     output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True)
+     output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
      self._headers['X-Code'] = 200
      output['status'] = 'OK'
     except Exception as e:
@@ -681,7 +681,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif op == 'reload':
    if (len(arg) > 0) and arg != self._ctx.node:
     try:
-     output = self._ctx.rest_call(self._ctx.nodes[arg]['url'] + '/system/reload')
+     output = self._ctx.rest_call(self._ctx.nodes[arg]['url'] + '/system/reload', aMethod = 'POST')
     except Exception as e:
      output = {'node':arg,'modules':[],'status':'NOT_OK','info':'Remote reload error: %s'%str(e)}
    else:

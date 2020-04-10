@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextLine,TextInput } from './infra/Inputs.jsx';
-import { NavBar, NavInfo } from './infra/Navigation.js';
+import { NavBar, NavInfo } from './infra/Navigation.jsx';
 import { DocButton, DeleteButton, InfoButton, ReloadButton, SearchButton, StartButton, SyncButton } from './infra/Buttons.jsx';
 
 // ************* Main ************
