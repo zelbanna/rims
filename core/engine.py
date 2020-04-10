@@ -694,7 +694,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    params = {'node':arg,'url':"http://%s:%s"%(self.client_address[0],args['port']),'system':args.get('system','0')}
    output = {'status':'OK'}
    with self._ctx.db as db:
-    output['update'] = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE system = %(system)s, url = '%(url)s'"%params)
+    output['update'] = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params)
    self._ctx.log("Registered node %s: update:%s"%(arg,output['update']))
   elif op == 'import':
    output = self._ctx.module_register(arg)
