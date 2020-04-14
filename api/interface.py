@@ -366,6 +366,19 @@ def lldp_mapping(aCTX, aArgs = None):
 #################################### Monitor #################################
 #
 #
+def clear(aCTX, aArgs = None):
+ """ Clear all interface statistics
+
+ Args:
+
+ """
+ ret = {'status':'OK'}
+ with aCTX.db as db:
+  ret['count'] = db.do("UPDATE device_interfaces SET state = 'unknown'")
+ return ret
+
+#
+#
 def check(aCTX, aArgs = None):
  """ Initiate a status check for devices' interfaces.
 
@@ -389,8 +402,7 @@ def check(aCTX, aArgs = None):
   aCTX.workers.add_task('interface','process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
   return {'status':'OK','info':'INTERFACE_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
  else:
-  process(aCTX,{'devices':devices})
-  return {'status':'OK'}
+  return process(aCTX,{'devices':devices})
 
 #
 #
@@ -406,10 +418,13 @@ def process(aCTX, aArgs = None):
  report = aCTX.node_function('master','interface','report', aHeader= {'X-Log':'false'})
 
  def __check_if(aDev):
-  try:
-   if len(aDev['interfaces']) > 0:
+  if len(aDev['interfaces']) > 0:
+   try:
     device = Device(aCTX, aDev['device_id'], aDev['ip'])
     probe  = device.interfaces_state()
+   except Exception as e:
+    aCTX.log("interface_process issue for device %s: %s"%(aDev['device_id'],str(e)))
+   else:
     for intf in aDev['interfaces']:
      intf['old'] = intf['state']
      intf['state'] = probe.get(intf['snmp_index'],'unknown')
@@ -417,12 +432,8 @@ def process(aCTX, aArgs = None):
     if changed:
      report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
 
-  except Exception as e:
-   aCTX.log("interface_process issue for device %s: %s"%(aDev['device_id'],str(e)))
-   return True
-
  aCTX.workers.block_map(__check_if,aArgs['devices'])
- return True
+ return {'status':'OK','function':'interface_process'}
 
 #
 #
@@ -436,7 +447,7 @@ def report(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'status':'OK','update':0}
+ ret = {'status':'OK','function':'interface_report'}
  with aCTX.db as db:
   for chg in ['up','down']:
    if aArgs.get(chg):

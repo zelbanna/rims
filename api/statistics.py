@@ -120,7 +120,6 @@ def check(aCTX, aArgs = None):
  Output:
   - status
  """
- ret = {}
  devices = []
 
  with aCTX.db as db:
@@ -147,7 +146,7 @@ def check(aCTX, aArgs = None):
 
  if 'repeat' in aArgs:
   aCTX.workers.add_task('statistics','process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
-  return {'status':'OK','info':'STATISTICS_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
+  return {'status':'OK','function':'statistics_check','detach_frequency':aArgs['repeat']}
  else:
   return process(aCTX,{'devices':devices})
 
@@ -177,7 +176,7 @@ def process(aCTX, aArgs = None):
    return True
 
  aCTX.workers.block_map(__check_sp,aArgs['devices'])
- return {'status':'OK'}
+ return {'status':'OK','function':'statistics_process'}
 
 #
 #
@@ -191,7 +190,7 @@ def report(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'status':'NOT_OK'}
+ ret = {'status':'NOT_OK','function':'statistics_report'}
  if ('influxdb' in [x['service'] for x in aCTX.services.values() if x['node'] == aCTX.node]):
   from datetime import datetime
   args = []
