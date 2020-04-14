@@ -76,7 +76,7 @@ def delete(aCTX, aArgs = None):
 #
 #
 def transfer(aCTX, aArgs = None):
- """Function docstring for transfer TBD
+ """Function docstring TBD
 
  Args:
   - path (required)
@@ -84,13 +84,12 @@ def transfer(aCTX, aArgs = None):
 
  Output:
  """
- ret = {'status':'NOT_OK'}
  from shutil import move
  try: move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(aCTX.config['multimedia']['media_directory'],aArgs['file']) )
  except Exception as err:
-  ret['error'] = str(err)
+  ret = {'status':'NOT_OK','info':str(err)}
  else:
-  ret['status'] = 'OK'
+  ret = {'status':'OK','result':'transfered'}
  return ret
 
 ################################################# Media Functions ################################################
@@ -110,13 +109,16 @@ def check_srt(aCTX, aArgs = None):
  filename = (aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file')))[:-4]
  if   ospath.exists("%s.eng.srt"%filename):
   ret['data'] = {'code':'eng','name':"English",'file':"%s.eng.srt"%filename}
+  ret['found'] = True
  elif ospath.exists("%s.swe.srt"%filename):
   ret['data'] = {'code':'swe','name':"Swedish",'file':"%s.swe.srt"%filename}
+  ret['found'] = True
  elif ospath.exists(filename + ".srt"):
   ret['data'] = {'code':'eng','name':"English",'file':"%s.srt"%filename}
+  ret['found'] = True
  else:
   ret['data'] = {'code':None,'name':None,'file':None}
-  ret['status'] = 'NOT_OK'
+  ret['found'] = False
  return ret
 
 #
@@ -140,44 +142,45 @@ def check_title(aCTX, aArgs = None):
   fpath,filename = ospath.split(aArgs['filepath'])
  else:
   fpath,filename = aArgs.get('path'),aArgs.get('file')
- ret = {'path':fpath,'name':None,'info':None,'title':None}
+ data  = {'path':fpath,'name':None,'info':None,'title':None}
+ ret ={'status':'OK','data':data}
  prefix = filename[:-4].replace("."," ").title()
  # Info start means episode info, like S01E01."whatever".suffix
  is_series = search(r"[sS][0-9]{1,2}[eE][0-9]{1,2}-*[eE]*[0-9]*",prefix)
 
  if is_series:
-  ret['type'] = 'series'
+  data['type'] = 'series'
   info_start, info_end, title_end = is_series.end(), len(prefix), is_series.start()-1
-  ret['episode'] = prefix[is_series.start():info_start].upper().replace("-","")
+  data['episode'] = prefix[is_series.start():info_start].upper().replace("-","")
 
   # Title date is prefix[0] - prefix[where we found season info]
   # ... but maybe there is more, like the idiots who named Modus who added a " - " instead of a "." or just " "
-  ret['title'] = prefix[0:title_end] if not prefix[title_end-2:title_end+1] == " - " else prefix[0:title_end-2]
+  data['title'] = prefix[0:title_end] if not prefix[title_end-2:title_end+1] == " - " else prefix[0:title_end-2]
 
   clean_search = search(r" (?:720|1080|Swesub).",prefix)
   if clean_search:
    info_end = clean_search.start()
 
   if info_end != info_start:
-   ret['episode'] = ret['episode'] + prefix[info_start:info_end]
+   data['episode'] = data['episode'] + prefix[info_start:info_end]
 
-  ret['info'] = "%(title)s - %(episode)s"%ret
-  ret['name'] = "%(title)s %(episode)s"%ret
+  data['info'] = "%(title)s - %(episode)s"%data
+  data['name'] = "%(title)s %(episode)s"%data
  else:
-  ret['type'] = 'movie'
+  data['type'] = 'movie'
   has_year=search(r"\.(?:19|20)[0-9]{2}",prefix)
   if has_year:
    year = prefix[has_year.start()+1:has_year.end()]
-   ret['title'] = prefix[0:has_year.start()]
-   ret['info'] = "%s (%s)"%(ret['title'],year)
-   ret['name'] = "%s %s"%(ret['title'],year)
+   data['title'] = prefix[0:has_year.start()]
+   data['info'] = "%s (%s)"%(data['title'],year)
+   data['name'] = "%s %s"%(data['title'],year)
   else:
    clean_search = search(r" (?:720|1080|Swesub).",prefix)
-   ret['title'] = prefix
-   ret['info'] = prefix[0:clean_search.start()] if clean_search else prefix
-   ret['name'] = ret['info']
+   data['title'] = prefix
+   data['info'] = prefix[0:clean_search.start()] if clean_search else prefix
+   data['name'] = data['info']
 
- ret['name']="%s.%s"%(ret['name'].replace(" ","."),filename[-3:])
+ data['name']="%s.%s"%(data['name'].replace(" ","."),filename[-3:])
  return ret
 
 #
@@ -195,23 +198,25 @@ def check_content(aCTX, aArgs = None):
  Output:
  """
  from subprocess import Popen, PIPE, STDOUT
- ret = {'status':'NOT_OK'}
+ data = {}
+ ret = {'status':'NOT_OK','data':data}
+
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
- ret['video'] = {'language':'eng', 'set_default':False}
- ret['audio'] = {'add':[], 'remove':[], 'add_aac':True }
- ret['subtitle'] = {'add':[], 'remove':[], 'languages':[] }
+ data['video'] = {'language':'eng', 'set_default':False}
+ data['audio'] = {'add':[], 'remove':[], 'add_aac':True }
+ data['subtitle'] = {'add':[], 'remove':[], 'languages':[] }
 
  if aArgs.get('srt'):
-  ret['subtitle']['languages'].append(aArgs.get('srt'))
+  data['subtitle']['languages'].append(aArgs.get('srt'))
  if not ospath.exists(filename):
-  ret['error'] = 'NO_SUCH_FILE'
+  ret['info'] = 'NO_SUCH_FILE'
   return ret
  try:
   p1 = Popen(["avprobe", filename], stdout=PIPE, stderr=PIPE)
   p2 = Popen(["sed","-n","s/.*Stream #[0-9]\\:\\([0-9]*\\)\(.*\\): \\([AVS][a-z]*\\)/\\3#\\1#\\2#/p"], stdin=p1.stderr, stdout=PIPE)
   entries = p2.communicate()[0].decode()
  except Exception as e:
-  ret['error'] = str(err)
+  ret['info'] = str(err)
  else:
   from re import sub
   for line in entries.split('\n'):
@@ -221,24 +226,24 @@ def check_content(aCTX, aArgs = None):
     # Special case for Video, we are not interested in something without fps..
     if   type == 'Video' and "fps" in info:
      if lang:
-      ret['video']['language'] = lang
+      data['video']['language'] = lang
      else:
-      ret['video']['set_default'] = True
+      data['video']['set_default'] = True
     elif type == 'Audio':
-     if not lang or lang in ['eng','swe'] or (lang in ['fre','jpn','chi','ita','nor'] and '(default)' in info) or lang == ret['video']['language']:
-      ret['audio']['add'].append(slot)
-      if ret['audio']['add_aac'] and 'aac' in info and 'stereo' in info:
-       ret['audio']['add_aac'] = False
+     if not lang or lang in ['eng','swe'] or (lang in ['fre','jpn','chi','ita','nor'] and '(default)' in info) or lang == data['video']['language']:
+      data['audio']['add'].append(slot)
+      if data['audio']['add_aac'] and 'aac' in info and 'stereo' in info:
+       data['audio']['add_aac'] = False
      else:
-      ret['audio']['remove'].append(slot)
+      data['audio']['remove'].append(slot)
     elif type == 'Subtitle':
      if not lang: lang = 'eng'
      # if sub with lang is there already or not a sought lang then remove
-     if lang in ret['subtitle']['languages'] or not lang in ['eng','swe']:
-      ret['subtitle']['remove'].append(slot)
+     if lang in data['subtitle']['languages'] or not lang in ['eng','swe']:
+      data['subtitle']['remove'].append(slot)
      else:
-      ret['subtitle']['add'].append(slot)
-      ret['subtitle']['languages'].append(lang)
+      data['subtitle']['add'].append(slot)
+      data['subtitle']['languages'].append(lang)
   ret['status'] = 'OK'
  return ret
 
@@ -251,54 +256,56 @@ def process(aCTX, aArgs = None):
   - filepath (cond optional)
   - path (cond optional)
   - file (cond optional)
+  - name (optional)
+  - info (optional) 
+  - title (optional) - for mp4 series episode
+  - episode (optional) - for mp4 series
 
  Output:
  """
  from time import time
  from subprocess import check_call, call
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
- ret  = {'prefix':filename[:-4],'suffix':filename[-3:],'timestamp':int(time()),'rename':False,'status':'NOT_OK','error':None}
+ data = {'prefix':filename[:-4],'suffix':filename[-3:],'rename':False}
+ ret = {'status':'NOT_OK','info':None,'data':data,'seconds':int(time())}
  srt  = check_srt(aCTX, {'filepath':filename})['data']
- info = aArgs if aArgs.get('name') and aArgs.get('info') else check_title(aCTX, {'filepath':filename})
+ info = aArgs if aArgs.get('name') and aArgs.get('info') else check_title(aCTX, {'filepath':filename})['data']
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
- ret.update({'info':info,'srt':srt,'changes':{'subtitle':"",'audio':"",'srt':""},'dest':dest})
+ data.update({'changes':{'subtitle':"",'audio':"",'srt':"",'aac':""},'dest':dest})
 
  try:
-
   if filename != dest:
    try:  rename(filename,dest)
-   except Exception as e: ret['error'] = str(e)
-   else: ret['rename'] = True
+   except Exception as e: ret['info'] = str(e)
+   else: data['rename'] = True
 
-  if ret['suffix'] == 'mkv' and not ret['error']:
+  if data['suffix'] == 'mkv' and not ret['info']:
    if srt['code']:
     srtfile = "%s.process"%srt['file']
-    ret['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
+    data['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
     rename(srt['file'],srtfile)
 
-   probe = check_content(aCTX, {'filepath':dest,'srt':srt.get('code')})
-   ret['probe'] = probe
+   probe = check_content(aCTX, {'filepath':dest,'srt':srt.get('code')})['data']
 
    # if forced download or if there are subs to remove but no subs to add left
    if len(probe['subtitle']['remove']) > 0:
-    ret['changes']['subtitle'] = "--no-subtitles" if len(probe['subtitle']['add']) == 0 else "--stracks " + ",".join(map(str,probe['subtitle']['add']))
+    data['changes']['subtitle'] = "--no-subtitles" if len(probe['subtitle']['add']) == 0 else "--stracks " + ",".join(map(str,probe['subtitle']['add']))
 
    if len(probe['audio']['remove']) and len(probe['audio']['add']) > 0:
-    ret['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
+    data['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
 
-   if (ret['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or len(ret['changes']['subtitle']) or len(ret['changes']['audio']) or srt['code']):
+   if (data['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or len(data['changes']['subtitle']) or len(data['changes']['audio']) or srt['code']):
     FNULL = open(devnull, 'w')
 
-    if ret['rename']:
-     ret['update_title'] = info['info']
+    if data['rename']:
      call(['mkvpropedit', '--set', "title=" + info['info'], dest], stdout=FNULL, stderr=FNULL)
 
     if probe['video']['set_default']:
      call(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', dest], stdout=FNULL, stderr=FNULL)
 
-    if probe['audio']['add_aac'] or len(ret['changes']['audio']) or len(ret['changes']['subtitle']) or srt['code']:
+    if probe['audio']['add_aac'] or len(data['changes']['audio']) or len(data['changes']['subtitle']) or srt['code']:
      from tempfile import mkdtemp
-     ret['aac_probe'] = probe['audio']['add_aac']
+     data['aac_probe'] = probe['audio']['add_aac']
      tmpfile = filename + ".process"
      rename(dest,tmpfile)
      tempd   = aCTX.config['multimedia']['temp_directory']
@@ -307,16 +314,16 @@ def process(aCTX, aArgs = None):
      if probe['audio']['add_aac']:
       check_call(['avconv', '-i', tmpfile ,'-vn', '-acodec', 'pcm_s16le', '-ac', '2', tempdir + '/audiofile.wav'], stdout=FNULL, stderr=FNULL)
       check_call(['normalize-audio', tempdir + '/audiofile.wav'], stdout=FNULL, stderr=FNULL)
-      check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', '-s', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=FNULL, stderr=FNULL)
-      ret['changes']['srt'] = "--language 0:{} --default-track 0 {}/audiofile.aac ".format(probe['video']['language'], tempdir) + ret['changes']['srt']
-
-     call(["mkvmerge -o '{}' {} {} '{}' {}".format(dest,ret['changes']['subtitle'],ret['changes']['audio'],tmpfile, ret['changes']['srt'])], stdout=FNULL, stderr=FNULL, shell=True)
+      check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=FNULL, stderr=FNULL)
+      data['changes']['aac'] = "--language 0:{} --default-track 0 {}/audiofile.aac".format(probe['video']['language'], tempdir)
+     
+     call(["mkvmerge -o '{}' {} {} '{}' {} {}".format(dest,data['changes']['subtitle'],data['changes']['audio'],tmpfile, data['changes']['aac'], data['changes']['srt'])], stdout=FNULL, stderr=FNULL, shell=True)
      call(['rm','-fR',tempdir])
      remove(tmpfile)
 
     if srt['code']: rename(srtfile,srtfile + "ed")
 
-  elif ret['suffix'] == 'mp4' and ret['rename'] and (srt['code'] or aArgs.get('modify')):
+  elif data['suffix'] == 'mp4' and data['rename'] and (srt['code'] or aArgs.get('modify')):
    FNULL = open(devnull, 'w')
    if srt['code']:
     tmpfile = filename + ".process"
@@ -333,15 +340,14 @@ def process(aCTX, aArgs = None):
      ret['warn'] = "Movie modification not implemented"
 
  except Exception as err:
-  ret['error'] = str(err)
+  ret['info'] = str(err)
  else:
-  ret['seconds'] = (int(time()) - ret['timestamp'])
   if ospath.exists(dest):
    chmod(dest, 0o666)
    ret['status'] = 'OK'
   else:
-   ret['error'] = 'COMPLETE_NO_FILE'
-
+   ret['info'] = 'COMPLETE_NO_FILE'
+ ret['seconds'] = (int(time()) - ret['seconds'])
  return ret
 
 
