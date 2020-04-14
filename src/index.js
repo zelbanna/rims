@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './infra/system.css';
 import { rest_call } from  './infra/Functions.js';
-import { InfoColumns, RimsContext, Header, Theme } from './infra/UI.jsx';
-import { TextInput, TextLine, PasswordInput } from './infra/Inputs.jsx';
-import { CloseButton, MenuButton, FontAwesomeMenuButton } from './infra/Buttons.jsx';
+import { InfoColumns, ErrorBoundary, RimsContext, Theme } from './infra/UI.jsx';
+import { TextInput, PasswordInput } from './infra/Inputs.jsx';
 import { NavBar } from './infra/Navigation.jsx';
+import { Header, MenuButton } from './infra/Header.jsx';
 import * as serviceWorker from './serviceWorker';
 
 // If you want your app to work offline and load faster, you can change
@@ -15,43 +15,10 @@ serviceWorker.unregister();
 
 // ************************* Portal  ****************************
 //
-
-class ErrorBoundary extends React.Component {
- constructor(props) {
-  super(props);
-  this.state = { hasError: false, error: undefined, info:[] };
- }
-
- static getDerivedStateFromError(error) {
-  return {hasError: true};
- }
-
- componentDidCatch(error, errorInfo) {
-  this.setState({error:error.toString(),info:errorInfo.componentStack.split('\n')})
- }
-
- render() {
-  if (this.state.hasError)
-   return <div className='overlay' style={{top:0}}>
-    <article className='error'>
-     <CloseButton key='error_close' onClick={() => this.setState({hasError: false, error: undefined, info:[]})} />
-     <h1>UI Error</h1>
-     <InfoColumns key='error_ic'>
-      <TextLine key='error_type' id='type' text={this.state.error} />
-      <label htmlFor='info' className='info'>Info:</label><div id='info'>{this.state.info.map((row,idx) => <p key={'error_line'+idx}>{row}</p>)}</div>
-     </InfoColumns>
-    </article>
-   </div>
-  else
-   return this.props.children;
- }
-}
-// ************************* Portal  ****************************
-//
 class Portal extends Component {
  constructor(props){
   super(props)
-  this.state = { menu:[], navigation:<NavBar key='portal_navigation_empty' /> }
+  this.state = { menu:[], navigation:<NavBar key='portal_navigation_empty' />}
  }
 
  componentDidMount() {
@@ -73,7 +40,7 @@ class Portal extends Component {
    try {
     import("./"+panel.module+".jsx").then(lib => {
      var Elem = lib[panel.function];
-     this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />});
+     this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />,height:0});
     })
    } catch(err) {
     console.error("Mapper error: "+panel);
@@ -87,19 +54,19 @@ class Portal extends Component {
   let buttons = []
   for (let [key, panel] of Object.entries(this.state.menu)){
    if (panel.type === 'module')
-    buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => this.changeContent(panel)} />)
+    buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => this.changeContent(panel)} />)
    else if (panel.type === 'tab')
-    buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => window.open(panel.tab,'_blank')} />)
+    buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => window.open(panel.tab,'_blank')} />)
    else if (panel.type === 'frame')
-    buttons.push(<MenuButton key={'mb_'+key} title={key} {...panel} onClick={() => this.changeContent(<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>)} />)
+    buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => this.changeContent(<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>)} />)
   }
+  buttons.push(<MenuButton key='hb_user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})} />,
+   <MenuButton key='hb_system' title='System' onClick={() => this.changeContent({module:'system',function:'Main'})} />)
+
   return (
    <React.Fragment key='portal'>
     <Theme key='portal_theme' theme={this.context.cookie.theme} />
-    <Header key='portal_header'>
-     <FontAwesomeMenuButton key='mb_btn_logout' style={{float:'right', backgroundColor:'var(--high-color)'}} onClick={() => { this.context.clearCookie()}} title='Log out' type='fas fa-sign-out-alt' />
-     <FontAwesomeMenuButton key='mb_btn_system_Main' style={{float:'right'}} onClick={() => {this.changeContent({module:'system',function:'Main'})}} title='System information' type='fas fa-cogs' />
-     <FontAwesomeMenuButton key='mb_btn_user_User' style={{float:'right'}} onClick={() => {this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})}} title='User' type='fas fa-user' />
+    <Header key='portal_header' title={this.state.title} logOut={() => this.context.clearCookie()}>
      {buttons}
     </Header>
     {this.state.navigation}
@@ -150,7 +117,7 @@ class Login extends Component {
       <TextInput key='username' id='username' onChange={this.onChange} />
       <PasswordInput key='password' id='password' onChange={this.onChange} />
      </InfoColumns>
-     <FontAwesomeMenuButton key='login_btn_login' onClick={this.handleSubmit} title='Login' type='fas fa-sign-in-alt' />
+     <button className='login'  onClick={this.handleSubmit} title='Login'><i className='fas fa-sign-in-alt' /></button>
     </article>
    </div>
   )

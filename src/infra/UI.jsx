@@ -1,9 +1,39 @@
 import React, { createContext, Component, Fragment } from 'react';
 import { rest_call } from './Functions.js';
-
-export const Header = (props) => <header>{props.children}</header>
+import { CloseButton } from './Buttons.jsx';
 
 // **************************** Generic ********************************
+
+export class ErrorBoundary extends React.Component {
+ constructor(props) {
+  super(props);
+  this.state = { hasError: false, error: undefined, info:[] };
+ }
+
+ static getDerivedStateFromError(error) {
+  return {hasError: true};
+ }
+
+ componentDidCatch(error, errorInfo) {
+  this.setState({error:error.toString(),info:errorInfo.componentStack.split('\n')})
+ }
+
+ render() {
+  if (this.state.hasError)
+   return <div className='overlay' style={{top:0}}>
+    <article className='error'>
+     <CloseButton key='error_close' onClick={() => this.setState({hasError: false, error: undefined, info:[]})} />
+     <h1>UI Error</h1>
+     <InfoColumns key='error_ic'>
+      <label htmlFor='type' className='info'>Type</label><span id='type' className='info'>{this.state.error}</span>
+      <label htmlFor='info' className='info'>Info:</label><div id='info'>{this.state.info.map((row,idx) => <p key={'error_line'+idx}>{row}</p>)}</div>
+     </InfoColumns>
+    </article>
+   </div>
+  else
+   return this.props.children;
+ }
+}
 
 export const RimsContext = createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,changeMain:()=>{},loadNavigtion:()=>{}})
 RimsContext.displayName = 'RimsContext';
@@ -59,8 +89,9 @@ export const TableHead = (props) => <div className='thead'>{props.headers.map((r
 export const TableRow = (props) => <div className='trow'>{props.cells.map((row,index) => <div key={'tr_'+index}>{row}</div> )}</div>
 
 // ***************************** Content ********************************
-
+//
 // base,header,buttons,thead,trows,listItem
+//
 export const ContentList = (props) => <section id='div_content_left' className='content-left'>{content('table',props)}</section>
 export const ContentData = (props) => <section id='div_content_right' className='content-right'>{props.children}</section>
 export const ContentReport = (props) => content('report',props)

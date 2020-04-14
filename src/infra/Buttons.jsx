@@ -1,9 +1,5 @@
 import React from 'react';
 
-// ************************** Menu ****************************
-export const MenuButton = (props) => <button className='menu' title={props.title} form={props.form} onClick={props.onClick} style={props.style}>{('icon' in props) ? <img src={props.icon} alt={props.title} draggable='false' /> : props.title}</button>
-export const FontAwesomeMenuButton = (props) => <button id={props.id} className={'menu'} style={props.style} onClick={props.onClick} title={props.title}><i className={props.type} /></button>
-
 // ************************** Link ****************************
 export const HrefButton = (props) => <button id={props.id} className='text' style={props.style} onClick={props.onClick} title={props.title}>{props.text}</button>
 export const HeaderButton = (props) => <button id={props.id} className='text' style={(props.highlight) ? {color:'var(--high-color)'} : {}} onClick={props.onClick} title={props.title}>{props.text}</button>

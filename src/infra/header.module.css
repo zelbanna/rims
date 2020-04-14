@@ -1,0 +1,15 @@
+/* Header CSS */
+
+.header {  background-color: var(--head-color); height:4rem; width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; display:flex}
+
+.title { font-size:2.2rem; color:var(--head-txt-color); margin:auto; }
+.button { color:var(--head-txt-color); font-size:1.6rem; padding:0; border:none; cursor:pointer; background-color:transparent; height:4rem; width:4rem }
+.button:hover, .head-button:focus { color:var(--high-color); transition-duration:0.15s}
+.button:active{ opacity:0.8; }
+
+.menu { margin-left:0; z-index:1100;}
+.menuList { list-style:none; margin:0; padding:0; overflow:hidden; position: absolute; right:0; background-color:var(--head-color); max-height:0; -webkit-transition:0.15s; transition:0.15s; z-index:1100; }
+.menuItem:hover{ background-color: var(--head-color); }
+.menuButton { background-color:transparent; border:none; cursor:pointer; color:var(--head-txt-color); font-size:1.4rem; padding:0 1rem; height:2.8rem; text-transform:capitalize; white-space:nowrap }
+.menuButton:hover, .menu-button:focus { color:var(--high-color); transition-duration:0.15s}
+.menuButton:active{ opacity:0.8; }

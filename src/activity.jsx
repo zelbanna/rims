@@ -2,7 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { rest_call, rnd } from './infra/Functions.js';
 import { InfoColumns, Spinner, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SelectInput, DateInput, TimeInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, ConfigureButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, ConfigureButton, HrefButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton } from './infra/Navigation.jsx';
 
 // ************** Main **************
@@ -42,7 +42,7 @@ class List extends Component {
   rest_call('api/master/activity_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.date + ' - ' + row.time,row.type,<Fragment key={'activity_buttons_'+row.id}>
+ listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'act_hinfo_'+row.id} onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />)} text={row.type} />,<Fragment key={'activity_buttons_'+row.id}>
    <InfoButton key={'act_info_'+row.id} onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } title='Activity information' />
    <DeleteButton key={'act_delete_'+row.id} onClick={() => this.deleteList(row.id) } title='Delete activity' />
    </Fragment>

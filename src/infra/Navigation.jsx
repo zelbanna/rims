@@ -1,15 +1,13 @@
 import React, { Component }  from 'react';
+import styles from './navigation.module.css';
 
 // ************************** Navigation ******************************
 //
-// with children
-//
+export const NavBar = (props) => <nav className={styles.main} id={props.id}><ul className={styles.list}>{props.children}</ul></nav>
 
-export const NavBar = (props) => <nav id={props.id}><ul className='nav'>{props.children}</ul></nav>
+export const NavButton = (props) => <li className={styles.item} style={props.style}><button className={styles.button} onClick={props.onClick}>{props.title}</button></li>
 
-export const NavButton = (props) => <li className='nav' style={props.style}><button className='nav' onClick={props.onClick}>{props.title}</button></li>
-
-export const NavDropButton = (props) => <li className='dropdown' style={props.style}><button className='nav' onClick={props.onClick}>{props.title}</button></li>
+export const NavDropButton = (props) => <li className={styles.dropDownItem} style={props.style}><button className={styles.button} onClick={props.onClick}>{props.title}</button></li>
 
 export class NavDropDown extends Component{
  constructor(props){
@@ -17,18 +15,19 @@ export class NavDropDown extends Component{
   this.state = {height:0};
  }
 
- changeSize = (size) => this.setState({height:size});
+ expandList = () => this.setState({height:3 * this.props.children.length});
+ implodeList = () => this.setState({height:0});
 
  render(){
   return (
-   <li className='nav' style={this.props.style} onMouseEnter={() => this.changeSize(`${3 * this.props.children.length}rem`)} onMouseLeave={() => this.changeSize(0)}>
-    <label className='nav'>{this.props.title}</label>
-    <ul className='dropdown' style={{maxHeight:this.state.height}}>{this.props.children}</ul>
+   <li className={styles.item} style={this.props.style} onMouseEnter={() => this.expandList()} onMouseLeave={() => this.implodeList()}>
+    <button className={styles.button}>{this.props.title}</button>
+    <ul className={styles.dropDownList} style={{maxHeight:`${this.state.height}rem`}}>{this.props.children}</ul>
    </li>
   );
  }
 }
 
-export const NavReload = (props) => <li style={props.style}><button className='nav nav-fa' onClick={props.onClick}><i className='nav-fa fas fa-redo-alt' /></button></li>
+export const NavReload = (props) => <li className={styles.item} style={props.style}><button className={styles.button} onClick={props.onClick}><i className='fas fa-redo-alt' style={{fontSize:'2.1rem'}}/></button></li>
 
-export const NavInfo = (props) => <li className='navinfo right' style={props.style}><button className='nav navinfo' onClick={props.onClick}>{props.title}</button></li>
+export const NavInfo = (props) => <li className={styles.info} style={props.style}><button className={styles.button} onClick={props.onClick}>{props.title}</button></li>

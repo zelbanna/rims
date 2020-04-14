@@ -1,6 +1,7 @@
 {
  "portal": {
   "message": "Management portal",
+  "title":"Management",
   "start": "device",
   "theme": "black"
  },
@@ -36,49 +37,40 @@
  "menuitem": {
   "activity": {
    "module":  "activity",
-   "function": "Main",
-   "icon": "images/icon-calendar.png"
+   "function": "Main"
   },
   "device": {
    "module": "device",
-   "function": "Main",
-   "icon": "images/icon-network.png"
+   "function": "Main"
   },
   "hypervisor": {
    "module": "hypervisor",
-   "function": "Main",
-   "icon": "images/icon-servers.png"
+   "function": "Main"
   },
   "inventory": {
    "module": "inventory",
-   "function": "Main",
-   "icon": "images/icon-inventory.png"
+   "function": "Main"
   },
   "rack": {
    "module": "rack",
-   "function": "Main",
-   "icon": "images/icon-rack.png"
+   "function": "Main"
   },
   "resource": {
    "module": "resource",
-   "function": "Main",
-   "icon": "images/icon-tools.png"
+   "function": "Main"
   },
   "visualize": {
    "module": "visualize",
-   "function": "Main",
-   "icon": "images/icon-visualize.png"
+   "function": "Main"
   }
  },
  "tool": {
   "images": {
    "module": "system",
-   "function": "FileList",
-   "icon": "images/None"
+   "function": "FileList"
   },
   "gitHub": {
-   "tab": "https://github.com",
-   "icon": "files/images/icon-github.png"
+   "tab": "https://github.com"
   }
  }
 }

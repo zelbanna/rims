@@ -8,6 +8,7 @@ With standard margin @ 3px need to remove 6px from all heights and widths, chang
  font-size:0.7em;
  --main-color:#F1F1F1;
  --head-color:#1A1A1A;
+ --head-txt-color:#FFFFFF;
  --high-color:#CB2026;
  --std-color:#FFFFFF;
  --std-txt-color:#000000;
@@ -52,22 +53,11 @@ label {color:var(--std-txt-color);}
 div.login { position: absolute; height:100vh; width:100vw; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.2); }
 article.login {  border:solid 1px #9CA6B0; width:auto; height:auto; padding:1rem;}
 article.login h1 { margin:1.3rem; }
-
-/***************************************** Menu Model *****************************************/
-
-button.menu { 
- -webkit-text-decoration-skip:objects; background-color:#FFFFFF; background-size:contain; background-position:center; background-repeat:no-repeat;
- border:1px solid #9CA6B0; border-radius:4px; color:#71808E; float:left; font-family: "Courier New", serif; font-size:1.3rem; font-weight:bold;
- height:calc(5rem - 10px); margin:3px 2px; min-width:4rem;  overflow:hidden; padding:4px; text-align:center; white-space:nowrap;
-}
-button.menu:hover, button.menu:focus { opacity:0.9; border:1px solid #000000; }
-button.menu > i { font-size:3rem; color:#71808E; background-color:transparent; }
-button.menu > img {  max-height:3rem; }
+button.login { background-color:transparent; border: none; color:var(--std-txt-color); cursor:pointer; font-size:3rem; padding:0; }
 
 /*************************************** Content Model *****************************************/
 
-header {  background-color: var(--head-color); height:5rem; width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; }
-main {    background-color: var(--main-color); height:calc(100vh - 8rem - 2px); width:100vw; display:flex }
+main {  background-color: var(--main-color); height:calc(100vh - 7rem - 2px); width:100vw; display:flex }
 section.content-left { min-width:max-content; overflow:hidden; width:25%; background-color:transparent; position:relative; top:0; bottom:0; scrollbar-width:none;}
 section.content-left::-webkit-scrollbar { display: none; }
 section.content-right { overflow:scroll; background-color:transparent; width:auto; scrollbar-width:none; }
@@ -75,25 +65,6 @@ section.content-right::-webkit-scrollbar { display: none; }
 
 article.error { border:solid 1px var(--high-color); }
 button.right {float:right}
-
-/*************************************** Navigation Model *****************************************/
-
-nav { background-color: var(--ui-color); height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
-ul.nav {  margin:0 ;padding:0; overflow:hidden; background-color:transparent; }
-li.nav {  display:block; float:left;background-color: transparent; }
-li.nav:hover{ background-color: var(--head-color); }
-ul.dropdown { margin:0 ;padding:0; overflow:hidden; position: absolute; box-shadow:0 8px 16px 0 rgba(0,0,0,0.3); background-color:var(--ui-color); z-index:1000; max-height:0; -webkit-transition:150ms; -moz-transition:150ms; transition:150ms;}
-li.dropdown { display:block; background-color:transparent; }
-li.navinfo {  background-color:#00CC66; font-weight:bold;}
-li.navinfo:hover, nav li.navinfo:focus { background-color:#00CC66; }
-li.right { float:right; }
-
-button.nav, label.nav { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; line-height:3rem; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; height:3rem; z-index:1000; text-transform:capitalize; }
-button.nav:hover, nav button:focus, nav label:hover, nav label:focus { color:var(--high-color); transition-duration:0.15s}
-button.nav:active{ opacity:0.8; }
-button.nav-fa { padding:0; width:3rem; }
-i.nav-fa { font-size:2.1rem; padding:0.45rem; }
-button.navinfo:hover, nav button.navinfo:focus{ color:var(--ui-txt-color)!important; }
 
 /***************************************  List Model *****************************************/
 
@@ -143,6 +114,7 @@ article.report { height:auto; width:calc(100% - 6px); overflow-y:scroll; overflo
 article.lineinput { height:max-content; }
 article.lineinput > div { display:inline-flex; white-space:nowrap;}
 article.lineinput input,article.lineinput select { width:auto!important; }
+
 /*************************************** Code Model ****************************************/
 
 article.code { width:calc(100% - 6px); resize:horizontal; }
@@ -159,10 +131,10 @@ article.files img { max-height:60px; }
 
 /************************************** JS tools ********************************************/
 
-div.overlay { position: absolute; top:8rem; bottom:0; left:0; right:0; z-index:900; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.4); }
+div.overlay { position: absolute; top:7rem; bottom:0; left:0; right:0; z-index:900; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.4); }
 div.loader {
   background-color:transparent; border-radius: 50%; color: var(--high-color);
-  width: 1em;  height: 1em;
+  width: 1em; height: 1em;
   -webkit-animation: bubbles 1.1s infinite linear; animation: bubbles 1.1s infinite linear;
   -webkit-transform: translateZ(0); -ms-transform: translateZ(0); transform: translateZ(0);
 }
