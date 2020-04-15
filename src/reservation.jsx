@@ -21,7 +21,7 @@ export class List extends Component {
  }
 
  changeContent = (elem) => this.setState({content:elem})
- deleteItem = (dev,user) => (window.confirm('Remove reservation?') && rest_call('api/reservation/update',{op:'delete', device_id:dev, user_id:user}).then(result => result.result && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
+ deleteItem = (dev,user) => (window.confirm('Remove reservation?') && rest_call('api/reservation/update',{op:'delete', device_id:dev, user_id:user}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
 
  listItem = (row) => {
   const buttons = (this.context.cookie.id === row.user_id || !row.valid);

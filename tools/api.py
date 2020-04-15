@@ -11,15 +11,20 @@ if __name__ == "__main__":
   print(argv[0] + " module/func [<json-arg>]")
   exit(0)
 
- from json import loads, dumps
+ from json import loads, dumps, load
  from time import time
  from rims.core.common import rest_call
  timestamp = int(time())
  try:    args = loads(argv[2])
  except: args = {}
+ try:
+  with open(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','config.json'))) as f:
+   token = load(f).get('token',None)
+ except:
+  token = None
  started = "Executing:%s(%s)"%(argv[1],args)
  print(started)
- try:  res = rest_call("http://127.0.0.1:8080/api/%s"%argv[1], aArgs = args, aTimeout = 300, aDataOnly = False, aVerify = True)
+ try:  res = rest_call("http://127.0.0.1:8080/internal/%s"%argv[1], aArgs = args, aTimeout = 300, aDataOnly = False, aVerify = True, aHeader = {'X-Token':token})
  except Exception as e: output = e.args[0]
  else:
   output = res['data']

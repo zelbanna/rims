@@ -19,17 +19,15 @@ def update(aCTX, aArgs = None):
  Output:
   - alias
  """
- ret = {'op':aArgs['op']}
- if aArgs['op'] == 'reserve':
-  sql = "INSERT INTO reservations (device_id,user_id,time_end) VALUES('%(device_id)s','%(user_id)s',NOW() + INTERVAL %(days)s DAY)"
- elif aArgs['op'] == 'delete':
-  sql = "DELETE FROM reservations WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
- elif aArgs['op'] == 'extend':
-  sql = "UPDATE reservations SET time_end = NOW() + INTERVAL %(days)s DAY WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"
+ ret = {}
+ op = aArgs['op']
  with aCTX.db as db:
-  ret['result'] = (db.do(sql%aArgs) ==  0)
-  db.do("SELECT alias FROM users WHERE id = '%(user_id)s'"%aArgs)
-  ret['alias']  = db.get_val('alias')
+  if op == 'reserve':
+   ret['insert'] = (db.do("INSERT INTO reservations (device_id,user_id,time_end) VALUES('%(device_id)s','%(user_id)s',NOW() + INTERVAL %(days)s DAY)"%aArgs) == 1)
+  elif op == 'delete':
+   ret['deleted'] = (db.do("DELETE FROM reservations WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"%aArgs) > 0)
+  elif op == 'extend':
+   ret['extended'] = (db.do("UPDATE reservations SET time_end = NOW() + INTERVAL %(days)s DAY WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"%aArgs) == 1)
  return ret
 
 #
@@ -106,7 +104,7 @@ def expiration_status(aCTX, aArgs = None):
  from rims.api.device import control as device_control
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT devices.id, vm, res.shutdown, hostname, res.user_id, users.alias, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id LEFT JOIN users ON res.user_id = users.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
+  db.do("SELECT devices.id, res.shutdown, devices.hostname, res.user_id, users.alias, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id LEFT JOIN users ON res.user_id = users.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
   ret['hosts'] = db.get_rows()
   for host in ret['hosts']:
    if host['remaining'] < 0:

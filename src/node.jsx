@@ -90,7 +90,7 @@ class Info extends Component {
 class Reload extends Component {
 
  componentDidMount(){
-  rest_call('system/reload/' + this.props.node).then(result => this.setState(result))
+  rest_call('api/system/reload',{node:this.props.node}).then(result => this.setState(result))
  }
 
  render(){

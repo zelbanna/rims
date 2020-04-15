@@ -80,6 +80,83 @@ def external_ip(aCTX, aArgs = None):
   ret['status'] = 'OK'
  return ret
 
+#
+#
+def environment(aCTX, aArgs = None):
+ """Function environment produces settings for nodes
+
+ Args:
+  - node (required)
+  - build (required)
+
+ Output:
+ """
+ aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
+ return aCTX.system_info(aArgs['node'])
+
+#
+#
+def mode(aCTX, aArgs = None):
+ """ Function sets run mode
+
+ Args:
+  - mode (optional) - 'api'/'debug'
+
+ Output:
+ """
+ if 'mode' in aArgs and aArgs['mode'] in ['api','debug']:
+  aCTX.config['mode'] = aArgs['mode']
+ return {'mode':aCTX.config['mode']}
+
+#
+#
+def report(aCTX, aArgs = None):
+ """ Function generates a system report
+
+ Args:
+
+ Output:
+  <data>
+ """
+ return aCTX.report()
+
+#
+#
+def reload(aCTX, aArgs = None):
+ """ Function reloads all system modules
+
+ Args:
+  node (optional)
+
+ Output:
+ """
+ if aArgs.get('node',aCTX.node) != aCTX.node:
+  try:
+   ret = aCTX.node_function(aArgs['node'],'system','reload')(aArgs = aArgs)
+  except Exception as e:
+   ret = {'node':aArgs['node'],'modules':[],'status':'NOT_OK','info':'Remote reload error: %s'%str(e)}
+ else:
+  ret = {'node':aCTX.node, 'modules':aCTX.module_reload(),'status':'OK'}
+ return ret
+
+#
+#
+def shutdown(aCTX, aArgs = None):
+ """ Function shuts down system (!!!)
+
+ Args:
+
+ Output:
+ """
+ from threading import Thread
+ from time import sleep
+ def __shutdown():
+  sleep(1)
+  aCTX.close()
+ process = Thread(target=__shutdown, args=[])
+ process.start()
+ return {'status':'OK','state':'shutdown in progress'}
+
 ################################# REST #############################
 #
 #

@@ -96,7 +96,7 @@ class Login extends Component {
 
  handleSubmit = (event) => {
   event.preventDefault();
-  rest_call('auth',{username:this.state.username,password:this.state.password})
+  auth_call({username:this.state.username,password:this.state.password})
    .then((result) => {
     if (result.status === 'OK')
      this.props.setCookie({node:result.node,token:result.token,id:result.id,theme:result.theme,expires:result.expires});

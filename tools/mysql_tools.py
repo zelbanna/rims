@@ -8,7 +8,7 @@ from sys import path as syspath, argv, exit, stdout
 from os import path as ospath, getcwd
 from argparse import ArgumentParser
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-from rims.rest import mysql
+from rims.api import mysql
 from rims.core.engine import Context
 
 parser = ArgumentParser(prog='mysql_tools', description = 'MySQL interworking tool')

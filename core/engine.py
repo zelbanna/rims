@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "6.0"
-__build__ = 302
+__version__ = "6.1"
+__build__ = 303
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -37,7 +37,7 @@ class Context(object):
   - Prepare database and workers
   - Load config
   - initiate the 'kill' switch
-  - create datastore (i.e. dict) for nodes, services and external modules
+  - create datastore (i.e. dict) for nodes, services
   """
   if isinstance(aConfig, dict):
    self.config = aConfig
@@ -54,7 +54,6 @@ class Context(object):
   self.path     = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.tokens   = {}
   self.nodes    = {}
-  self.external = {}
   self.services = {}
   self.config['logging'] = self.config.get('logging',{})
   self.config['logging']['rest']   = self.config['logging'].get('rest',{'enabled':False,'file':None})
@@ -112,7 +111,7 @@ class Context(object):
    info['version'] = __version__
    info['build'] = __build__
   else:
-   info = self.rest_call("%s/system/environment/%s/%s"%(self.config['master'],aNode,__build__), aDataOnly = True, aMethod = 'POST')
+   info = self.rest_call("%s/internal/system/environment"%self.config['master'], aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
   return info
 
  #
@@ -194,7 +193,9 @@ class Context(object):
   """ Node function freezes a REST call or a function with enough info so that they can be used multiple times AND interchangably """
   if self.node != aNode:
    kwargs['aDataOnly'] = True
-   try: ret = partial(self.rest_call,"%s/api/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), **kwargs)
+   kwargs['aHeader'] = kwargs.get('aHeader',{})
+   kwargs['aHeader']['X-token'] = self.config.get('token')
+   try: ret = partial(self.rest_call,"%s/internal/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), **kwargs)
    except Exception as e:
     self.log("Node Function REST failure: %s/%s@%s (%s) => %s"%(aModule,aFunction,aNode,dumps(kwargs),str(e)))
     ret = {'status':'NOT_OK','info':'NODE_FUNCTION_FAILURE: %s'%str(e)}
@@ -205,26 +206,11 @@ class Context(object):
   return ret
 
  #
- def module_register(self, aName):
-  """ Register "external" modules - for dynamic modules """
-  ret = {}
-  try:   module = import_module(aName)
-  except Exception as e:
-   ret['status'] = 'NOT_OK'
-   ret['info'] = str(e)
-  else:
-   ret['status'] = 'OK'
-   self.external[aName] = module
-   ret['import'] = repr(module)
-  return ret
-
- #
  def module_reload(self):
   """ Reload modules and return which ones were reloaded """
   from sys import modules as sys_modules
   from types import ModuleType
   modules = {x:sys_modules[x] for x in sys_modules.keys() if x.startswith('rims.')}
-  modules.update(self.external)
   ret = []
   for k,v in modules.items():
    if isinstance(v,ModuleType):
@@ -492,7 +478,6 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def do_GET(self):
   print('GET: ' + self.path)
-  """ Route request to the right function /<path>/mod_fun?get """
   path,_,query = self.path[1:].partition('/')
   if path in ['infra','images','files','static']:
    # Use caching here :-)
@@ -500,14 +485,6 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers['X-Code'] = 304
    else:
     self.files(path,query)
-  elif path in ['api','external']:
-   self.api(path,query)
-  elif path == 'front':
-   self.front()
-  elif path == 'auth':
-   self.auth()
-  elif path == 'system':
-   self.system(query)
   elif len(path) == 0:
    self._headers.update({'X-Process':'no route','Location':'index.html','X-Code':301})
   else:
@@ -515,20 +492,25 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.header()
   try: self.wfile.write(self._body)
   except Exception as e:
-   print("do_GET: Error writing above body => %s"%str(e))
+   print("GET: Error writing above body => %s"%str(e))
 
  def do_POST(self):
-  print('POST:' + self.path)
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
-  if path in ['api','external']:
-   self.api(path,query)
+  if path == 'api':
+   try:    cookie = loads(b64decode(self.headers['Cookie'][5:]).decode('utf-8'))
+   except: self._ctx.log("API Error: malformed cookie in call: %s"%query)
+   else:   self.api(query)
+  elif path == 'internal':
+   if self.headers.get('X-Token') == self._ctx.config['token']:
+    print("Token verified")
+   self.api(query)
   elif path == 'front':
    self.front()
   elif path == 'auth':
    self.auth()
-  elif path == 'system':
-   self.system(query)
+  elif path == 'register':
+   self.register(query)
   else:
    self._headers.update({'X-Process':'no route','X-Code':404})
   self.header()
@@ -541,10 +523,9 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def api(self,path,query):
-  """ API serves the REST functions x.y.z.a:<port>/api|external/module/function
+ def api(self,query):
+  """ API serves the REST functions x.y.z.a:<port>/api/module/function
    - extra arguments can be sent as GET or using headers (using X-prefix in the latter case): node
-   - Should get a cookie
   """
   extras = {}
   (api,_,get) = query.partition('?')
@@ -573,7 +554,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      f.write(logstring)
   try:
    if self._headers['X-Route'] == self._ctx.node:
-    module = import_module("rims.api.%s"%mod) if not path == 'external' else self._ctx.external.get(mod)
+    module = import_module("rims.api.%s"%mod)
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
     self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False, aDataOnly = True, aMethod = 'POST')
@@ -679,41 +660,17 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def system(self,query):
-  """ /system/<op>/<args> """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'system','Access-Control-Allow-Origin':'*'})
-  op,_,arg = query.partition('/')
-  if op == 'environment':
-   env = arg.partition('/')
-   if len(env[0]) > 0:
-    self._ctx.log("Node '%s' connected, running version: %s"%(env[0],env[2]))
-   output = self._ctx.system_info(env[0])
-  elif op == 'reload':
-   if (len(arg) > 0) and arg != self._ctx.node:
-    try:
-     output = self._ctx.rest_call(self._ctx.nodes[arg]['url'] + '/system/reload', aMethod = 'POST')
-    except Exception as e:
-     output = {'node':arg,'modules':[],'status':'NOT_OK','info':'Remote reload error: %s'%str(e)}
-   else:
-    output = {'node':self._ctx.node, 'modules':self._ctx.module_reload(),'status':'OK'}
-  elif op == 'report':
-   output = self._ctx.report()
-  elif op == 'register':
+ def register(self,query):
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'register','Access-Control-Allow-Origin':'*'})
+  try:
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   params = {'node':arg,'url':"http://%s:%s"%(self.client_address[0],args['port'])}
+   params = {'node':args['id'],'url':"http://%s:%s"%(self.client_address[0],args['port'])}
+  except Exception as e:
+    output = {'status':'NOT_OK','info':str(e)}
+  else:
    output = {'status':'OK'}
    with self._ctx.db as db:
-    output['update'] = db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params)
+    output['update'] = (db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
    self._ctx.log("Registered node %s: update:%s"%(arg,output['update']))
-  elif op == 'import':
-   output = self._ctx.module_register(arg)
-  elif op == 'shutdown':
-   self._ctx.close()
-   output = {'status':'OK','state':'shutdown in progress'}
-  elif op == 'mode':
-   self._ctx.config['mode'] = arg
-   output = {'status':'OK','mode':arg}
-  else:
-   output = {'status':'NOT_OK','info':'system/<environment|reload|report|register|import|shutdown|mode>/<args: node|module_to_import> where import, environment without args and reload runs on any node'}
   self._body = dumps(output).encode('utf-8')

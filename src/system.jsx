@@ -45,6 +45,7 @@ export class Main extends Component {
     {master && <NavDropButton key='sys_nav_dev' title='Devices' onClick={() => this.changeImport('device','Report')} />}
     {master && <NavDropButton key='sys_nav_inv' title='Inventory' onClick={() => this.changeImport('inventory','Report')} />}
    </NavDropDown>
+   <NavButton key='sys_nav_logs' title='Logs' onClick={() => this.changeImport('node','LogShow',{node:this.context.cookie.node})} />
    <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />
    {this.state.services.length > 0 &&  <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavDropButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
    <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
@@ -54,10 +55,10 @@ export class Main extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- changeImport(module,func){
+ changeImport(module,func,args){
   import('./'+module+'.jsx').then(lib => {
    var Elem = lib[func];
-   this.setState({content:<Elem key={module+'_'+func} />})
+   this.setState({content:<Elem key={module+'_'+func} {...args} />})
   })
  }
 
@@ -76,7 +77,7 @@ export class Report extends Component{
  }
 
  componentDidMount(){
-  rest_call('system/report').then(result => this.setState({data:Object.keys(result).sort((a,b) => a.localeCompare(b)).map(key => ({info:key,value:result[key]})) }))
+  rest_call('api/system/report').then(result => this.setState({data:Object.keys(result).sort((a,b) => a.localeCompare(b)).map(key => ({info:key,value:result[key]})) }))
  }
 
  listItem = (row) => [row.info,row.value]
@@ -181,8 +182,9 @@ class Controls extends Component {
  constructor(props){
   super(props);
   this.state = {data:[
+   {api:'ipam/address_events',text:'IPAM clear all status logs',args:{op:'clear'}},
+   {api:'device/log_clear',text:'Device clear all status logs'},
    {api:'ipam/check',text:'IPAM status check'},
-   {api:'ipam/address_events',text:'IPAM clear status logs',args:{op:'clear'}},
    {api:'interface/check',text:'Interface status check'},
    {api:'device/network_info_discover',text:'Discover device system information (sysmac etc)'},
    {api:'device/model_sync',text:'Sync device model mapping'},

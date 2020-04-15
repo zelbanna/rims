@@ -45,21 +45,6 @@ CREATE TABLE `device_connections` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `device_statistics`;
-CREATE TABLE `device_statistics` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device_id` int(10) unsigned NOT NULL,
-  `measurement` varchar(20) NOT NULL,
-  `tags` varchar(40) NOT NULL DEFAULT '',
-  `name` varchar(16) NOT NULL,
-  `oid` varchar(40) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `device_oid` (`device_id`,`oid`),
-  KEY `device_id` (`device_id`),
-  CONSTRAINT `device_data_points_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `device_interfaces`;
 CREATE TABLE `device_interfaces` (
   `interface_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -133,6 +118,21 @@ CREATE TABLE `device_pems` (
   KEY `pdu_id` (`pdu_id`),
   CONSTRAINT `device_pems_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `device_pems_ibfk_2` FOREIGN KEY (`pdu_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `device_statistics`;
+CREATE TABLE `device_statistics` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned NOT NULL,
+  `measurement` varchar(20) NOT NULL,
+  `tags` varchar(40) NOT NULL DEFAULT '',
+  `name` varchar(16) NOT NULL,
+  `oid` varchar(40) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `device_oid` (`device_id`,`oid`),
+  KEY `device_id` (`device_id`),
+  CONSTRAINT `device_data_points_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -382,7 +382,7 @@ CREATE TABLE `reservations` (
   `time_start` timestamp NOT NULL DEFAULT current_timestamp(),
   `time_end` timestamp NOT NULL DEFAULT current_timestamp(),
   `info` varchar(150) NOT NULL DEFAULT '',
-  `shutdown` tinyint(1) DEFAULT 1,
+  `shutdown` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`device_id`,`user_id`),
   KEY `fk_user` (`user_id`),
   CONSTRAINT `reservations_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
