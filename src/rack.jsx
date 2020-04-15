@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoColumns, RimsContext, ContentList, ContentData } from './infra/UI.jsx';
+import { rest_call, rnd, RimsContext } from './infra/Functions.js';
+import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
@@ -17,7 +17,15 @@ export class Main extends Component {
  }
 
  componentDidMount(){
-  this.context.loadNavigation(<NavBar key='rack_navbar'>
+  this.compileNavItems()
+ }
+
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.compileNavItems();
+ }
+
+ compileNavItems = () => this.context.loadNavigation(<NavBar key='rack_navbar'>
    <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)} style={{float:'right'}} />
    <NavDropDown key='dev_nav_racks' title='Rack' style={{float:'right'}}>
     <NavDropButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<List key='rack_list' />)} />
@@ -25,7 +33,6 @@ export class Main extends Component {
     <NavDropButton key='dev_nav_all_con' title='Consoles' onClick={() => this.changeContent(<Infra key='console_list' type='console' />)} />
    </NavDropDown>
   </NavBar>)
- }
 
  changeContent = (elem) => this.setState(elem)
 
@@ -118,7 +125,10 @@ export class Layout extends Component {
   rest_call('api/rack/devices',{id:this.props.id}).then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.props.changeSelf(elem);
+ changeContent = (elem) => {
+  if(this.props.changeSelf)
+   this.props.changeSelf(elem);
+ }
 
  createRack(name,content,sign){
   const rack = [];

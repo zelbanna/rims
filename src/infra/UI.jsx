@@ -1,4 +1,4 @@
-import React, { createContext, Component, Fragment } from 'react';
+import React, { Component, Fragment } from 'react';
 import { rest_call } from './Functions.js';
 import { CloseButton } from './Buttons.jsx';
 
@@ -34,9 +34,6 @@ export class ErrorBoundary extends React.Component {
    return this.props.children;
  }
 }
-
-export const RimsContext = createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,changeMain:()=>{},loadNavigtion:()=>{}})
-RimsContext.displayName = 'RimsContext';
 
 export const Spinner = () => <div className='overlay'><div className='loader'></div></div>
 

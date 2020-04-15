@@ -635,27 +635,37 @@ class SessionHandler(BaseHTTPRequestHandler):
   output = {'status':'NOT_OK'}
   try:
    length = int(self.headers.get('Content-Length',0))
-   args   = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   username, password = args['username'], args['password']
-  # except: output['info'] = "Provide username and password arguments"
+   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+   if args.get('verify'):
+    token = args['verify']
+   else:
+    username, password = args['username'], args['password']
   except Exception as e:
    output['info'] = {'argument':str(e)}
   else:
    if self._ctx.node == 'master':
-    from rims.core.genlib import random_string
-    passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
-    with self._ctx.db as db:
-     if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
-      output.update(db.get_row())
-      output['token']   = random_string(16)
-      db.do("INSERT INTO user_tokens (user_id,token,source_ip,source_port) VALUES(%s,'%s',INET_ATON('%s'),%s)"%(output['id'],output['token'],self.client_address[0],self.client_address[1]))
-      expires = datetime.now(timezone.utc) + timedelta(days=5)
-      output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
-      self._ctx.tokens[output['token']] = (output['id'],expires)
-      self._headers['X-Code'] = 200
+    if args.get('verify'):
+     if (self._ctx.tokens.get(token,None)):
       output['status'] = 'OK'
+      output['id'] = self._ctx.tokens[token][0]
+      self._headers['X-Code'] = 200
      else:
-      output['info'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
+      output['status'] = 'NOT_OK'
+    else:
+     from rims.core.genlib import random_string
+     passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
+     with self._ctx.db as db:
+      if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+       output.update(db.get_row())
+       output['token']   = random_string(16)
+       db.do("INSERT INTO user_tokens (user_id,token,source_ip,source_port) VALUES(%s,'%s',INET_ATON('%s'),%s)"%(output['id'],output['token'],self.client_address[0],self.client_address[1]))
+       expires = datetime.now(timezone.utc) + timedelta(days=5)
+       output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
+       self._ctx.tokens[output['token']] = (output['id'],expires)
+       self._headers['X-Code'] = 200
+       output['status'] = 'OK'
+      else:
+       output['info'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
     try:
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')

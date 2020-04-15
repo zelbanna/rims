@@ -531,14 +531,22 @@ def address_events(aCTX, aArgs = None):
 #
 #
 def clear(aCTX, aArgs = None):
- """ Clear all interface statistics
+ """ Clear all interface statistics, for all or subset of ipam addresses
 
  Args:
+  - device_id (optional)
+  - network_id (optional)
 
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.do("UPDATE ipam_addresses SET state = 'unknown'")
+  if aArgs.get('device_id'):
+   filter = "id IN (SELECT ia.id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.id = di.device_id WHERE devices.id = %s)"%aArgs['device_id']
+  elif aArgs.get('network_id'):
+   filter = "network_id = %s"%aArgs['network_id']
+  else:
+   filter = 'TRUE'
+  ret['count'] = db.do("UPDATE ipam_addresses SET state = 'unknown' WHERE %s"%filter)
  return ret
 
 #

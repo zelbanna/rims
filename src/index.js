@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import './infra/system.css';
-import { rest_call } from  './infra/Functions.js';
-import { InfoColumns, ErrorBoundary, RimsContext, Theme } from './infra/UI.jsx';
+import { auth_call, rest_call, RimsContext } from './infra/Functions.js';
+import { InfoColumns, ErrorBoundary, Theme } from './infra/UI.jsx';
 import { TextInput, PasswordInput } from './infra/Inputs.jsx';
 import { NavBar } from './infra/Navigation.jsx';
-import { Header, MenuButton } from './infra/Header.jsx';
+import { Header, MenuButton, MenuSeparator } from './infra/Header.jsx';
 import * as serviceWorker from './serviceWorker';
 
 // If you want your app to work offline and load faster, you can change
@@ -35,8 +35,6 @@ class Portal extends Component {
  changeContent = (panel) => {
   // Native RIMS or something else?
   if (panel.hasOwnProperty('module')) {
-   if (this.state.content && (this.state.content.key === `${panel.module}_${panel.function}`))
-    return
    try {
     import("./"+panel.module+".jsx").then(lib => {
      var Elem = lib[panel.function];
@@ -60,7 +58,8 @@ class Portal extends Component {
    else if (panel.type === 'frame')
     buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => this.changeContent(<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>)} />)
   }
-  buttons.push(<MenuButton key='hb_user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})} />,
+  buttons.push(<MenuSeparator key='hs_1' />,
+   <MenuButton key='hb_user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})} />,
    <MenuButton key='hb_system' title='System' onClick={() => this.changeContent({module:'system',function:'Main'})} />)
 
   return (
@@ -132,6 +131,17 @@ class RIMS extends Component {
 
   this.state = this.readCookie();
   this.provider = {}
+ }
+
+ componentDidMount(){
+  if(this.state.token){
+   auth_call({verify:this.state.token}).then(result => {
+    if(result.status !== 'OK')
+     this.setState({token:null})
+    else
+     console.log('Token verified')
+   })
+  }
  }
 
  readCookie = () => {

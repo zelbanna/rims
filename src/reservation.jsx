@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call } from './infra/Functions.js';
-import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call, RimsContext } from './infra/Functions.js';
+import { Spinner, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 

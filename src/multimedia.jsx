@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoColumns, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call, rnd, RimsContext } from './infra/Functions.js';
+import { Spinner, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextLine,TextInput } from './infra/Inputs.jsx';
 import { NavBar, NavInfo } from './infra/Navigation.jsx';
 import { DocButton, DeleteButton, InfoButton, ReloadButton, SearchButton, StartButton, SyncButton } from './infra/Buttons.jsx';
@@ -13,15 +13,22 @@ export class Main extends Component {
   this.state = {content:undefined,ip:undefined}
  }
 
- changeContent = (elem) => this.setState({content:elem});
-
  componentDidMount(){
   rest_call('api/system/external_ip').then(result => {
-   const ip = (result && result.status === 'OK') ? result.ip : '0.0.0.0'
-   this.context.loadNavigation(<NavBar key='multimedia_navbar'><NavInfo key='mm_nav_ip' title={ip} /></NavBar>)
+   Object.assign(this.state,{ip:(result && result.status === 'OK') ? result.ip : '0.0.0.0'})
+   this.compileNavItems()
   })
   this.reloadList()
  }
+
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.compileNavItems()
+ }
+
+ compileNavItems = () => this.context.loadNavigation(<NavBar key='multimedia_navbar'><NavInfo key='mm_nav_ip' title={this.state.ip} /></NavBar>)
+
+ changeContent = (elem) => this.setState({content:elem});
 
  reloadList = () => rest_call('api/multimedia/list').then(result => this.setState(result));
 

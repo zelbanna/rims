@@ -1,8 +1,14 @@
-/* Header CSS */
+/* Header CSS 
+
+- head-color
+- head-txt-color
+- high-color
+
+*/
 
 .header {  background-color: var(--head-color); height:4rem; width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; display:flex}
 
-.title { font-size:2.2rem; color:var(--head-txt-color); margin:auto; }
+.title { font-size:2.2rem; color:var(--head-txt-color); margin:auto; font-weight:normal; }
 .button { color:var(--head-txt-color); font-size:1.6rem; padding:0; border:none; cursor:pointer; background-color:transparent; height:4rem; width:4rem }
 .button:hover, .head-button:focus { color:var(--high-color); transition-duration:0.15s}
 .button:active{ opacity:0.8; }
@@ -13,3 +19,5 @@
 .menuButton { background-color:transparent; border:none; cursor:pointer; color:var(--head-txt-color); font-size:1.4rem; padding:0 1rem; height:2.8rem; text-transform:capitalize; white-space:nowrap }
 .menuButton:hover, .menu-button:focus { color:var(--high-color); transition-duration:0.15s}
 .menuButton:active{ opacity:0.8; }
+
+.menuSeparator { border-top:solid 1px var(--high-color); }

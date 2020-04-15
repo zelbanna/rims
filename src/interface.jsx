@@ -22,6 +22,8 @@ export class List extends Component{
 
  cleanUp = () => (window.confirm('Clean up empty interfaces?') && rest_call('api/interface/delete',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
+ resetStatus = () => rest_call('api/interface/clear',{device_id:this.props.device_id}).then(result => this.componentDidMount())
+
  discoverInterfaces = () => (window.confirm('Rediscover interfaces?') && rest_call('api/interface/snmp',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
  listItem = (row) => [row.interface_id,row.mac,(row.ip) ? `${row.ip} (${row.ipam_id})` : '-',row.snmp_index,row.name,row.description,row.class,
@@ -37,6 +39,7 @@ export class List extends Component{
    return <ContentReport key='il_cl' header='Interfaces' thead={['ID','MAC','IP','SNMP','Name','Description','Class','Link','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='il_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='il_btn_add' onClick={() => this.changeContent(<Info key={'interface_info_' + rnd()} device_id={this.props.device_id} interface_id='new' changeSelf={this.props.changeSelf} />) } title='Add interface' />
+    <TextButton key='il_btn_rset' onClick={() => this.resetStatus()} title='Reset interface state manually' text='Reset' />
     <TextButton key='il_btn_disc' onClick={() => this.discoverInterfaces()} title='Discover device interfaces' text='Discover' />
     <TextButton key='il_btn_lldp' onClick={() => this.changeContent(<LLDP key='interface_lldp' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />) } title='Map interface connections' text='LLDP' />
     <TextButton key='il_btn_clean' onClick={() => this.cleanUp()} title='Clean up empty interfaces' text='Cleanup' />

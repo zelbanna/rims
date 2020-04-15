@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd, int2ip } from './infra/Functions.js';
-import { Spinner, InfoColumns, StateMap, Result, RimsContext, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { Spinner, InfoColumns, StateMap, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 
@@ -18,7 +18,6 @@ export class Main extends Component {
   return  <Fragment key='main_base'>{this.state}</Fragment>
  }
 }
-Main.contextType = RimsContext;
 
 // *************** NetworkList ***************
 //
@@ -37,11 +36,14 @@ export class NetworkList extends Component {
    <ItemsButton key={'net_btn_items_'+row.id} onClick={() => this.changeContent(<AddressList changeSelf={this.changeContent} key={'address_list_'+row.id} network_id={row.id} />)} title='View addresses' />
    <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout changeSelf={this.changeContent} key={'address_layout_'+row.id} network_id={row.id} />)} title='View usage map' />
    <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete network' />
+   <ReloadButton key={'net_btn_rset_'+row.id} onClick={() => this.resetStatus(row.id)} title='Reset state for network addresses' />
   </Fragment>
  ]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete network') && rest_call('api/ipam/network_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+
+ resetStatus = (id) => rest_call('api/ipam/clear',{network_id:id}).then(result => this.setState({result:result.count}))
 
  render(){
   return <Fragment key='nl_fragment'>

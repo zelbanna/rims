@@ -370,11 +370,12 @@ def clear(aCTX, aArgs = None):
  """ Clear all interface statistics
 
  Args:
+  - device_id (optional)
 
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.do("UPDATE device_interfaces SET state = 'unknown'")
+  ret['count'] = db.do("UPDATE device_interfaces SET state = 'unknown' WHERE %s"%('TRUE' if not aArgs.get('device_id') else 'device_id = %s'%aArgs['device_id']))
  return ret
 
 #

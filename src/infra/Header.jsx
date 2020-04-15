@@ -7,6 +7,8 @@ import styles from './header.module.css';
 //
 export const MenuButton = (props) => <li className={styles.menuItem}><button className={styles.menuButton} onClick={props.onClick}>{props.title}</button></li>
 
+export const MenuSeparator = (props) => <li className={styles.menuSeparator}></li>
+
 export class Header extends Component {
  constructor(props){
   super(props)

@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call} from './infra/Functions.js';
-import { Spinner, TableRow, RimsContext, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
+import { rest_call, RimsContext } from './infra/Functions.js';
+import { Spinner, TableRow, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.jsx';
 import { TextLine } from './infra/Inputs.jsx'
@@ -24,13 +24,9 @@ export class Main extends Component {
   })
  }
 
- changeContent = (elem) => this.setState({content:elem})
-
- changeImport(module,func){
-  import('./'+module+'.jsx').then(lib => {
-   var Elem = lib[func];
-   this.setState({content:<Elem key={module+'_'+func} />})
-  })
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.compileNavItems();
  }
 
  compileNavItems = () => {
@@ -54,6 +50,15 @@ export class Main extends Component {
    <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
    {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} />)}
   </NavBar>)
+ }
+
+ changeContent = (elem) => this.setState({content:elem})
+
+ changeImport(module,func){
+  import('./'+module+'.jsx').then(lib => {
+   var Elem = lib[func];
+   this.setState({content:<Elem key={module+'_'+func} />})
+  })
  }
 
  render(){
@@ -205,23 +210,29 @@ class Controls extends Component {
 export class FileList extends Component {
  constructor(props){
   super(props)
-  this.state = {files:null}
-  if (this.props.hasOwnProperty('directory')){
-   this.state.mode = 'directory'
-   this.state.args = {directory:this.props.directory}
-  } else if (this.props.hasOwnProperty('fullpath')){
-   this.state.mode = 'fullpath'
-   this.state.args = {fullpath:this.props.fullpath}
-  } else {
-   this.state.mode = 'images'
-   this.state.args = {}
-  }
+  this.state = {}
+ }
+
+ componentDidUpdate(prevProps){
+  if (prevProps !== this.props)
+   this.loadFiles();
  }
 
  componentDidMount(){
-  rest_call('api/system/file_list',this.state.args).then(result => {
+  this.loadFiles()
+ }
+
+ loadFiles = () => {
+  let state = {};
+  if (this.props.hasOwnProperty('directory'))
+   state = {mode:'directory',args:{directory:this.props.directory},files:undefined}
+  else if (this.props.hasOwnProperty('fullpath'))
+   state = {mode:'fullpath',args:{fullpath:this.props.fullpath},files:undefined}
+  else
+   state = {mode:'images',args:{},files:undefined}
+  rest_call('api/system/file_list',state.args).then(result => {
    if (result.status === 'OK')
-    this.setState(result)
+    this.setState({mode:state.mode,...result})
    else {
     window.alert('Error retrieving files:' + result.info);
     this.setState({files:[]})

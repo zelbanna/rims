@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, StateMap, SearchField, InfoColumns, RimsContext, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call, rnd, RimsContext } from './infra/Functions.js';
+import { Spinner, StateMap, SearchField, InfoColumns, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavReload } from './infra/Navigation.jsx'
 import { TextInput, TextLine, StateLine, SelectInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
@@ -12,35 +12,36 @@ import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = {}
+  this.state = {pdu:[], console:[], name:'N/A', rack_id:undefined}
  }
 
  componentDidMount(){
   if (this.props.rack_id)
-   rest_call('api/rack/inventory',{id:this.props.rack_id}).then(result => this.compileNavItems({rack_id:this.props.rack_id, ...result}))
+   rest_call('api/rack/inventory',{id:this.props.rack_id}).then(result => {
+    Object.assign(this.state,{rack_id:this.props.rack_id, ...result})
+    this.compileNavItems();
+   })
   else
-   this.compileNavItems({pdu:[], console:[], name:'N/A', rack_id:undefined});
+   this.compileNavItems();
  }
 
- changeImport(module,func,args){
-  import('./'+module+'.jsx').then(lib => {
-   var Elem = lib[func];
-   this.setState({content:<Elem key={module+'_'+func} {...args} />})
-  })
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.compileNavItems();
  }
 
- compileNavItems = (state) => {
+ compileNavItems = () => {
   this.context.loadNavigation(<NavBar key='device_navbar'>
    <NavDropDown key='dev_nav_devs' title='Devices'>
-    <NavDropButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' rack_id={state.rack_id} />)} />
+    <NavDropButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' rack_id={this.state.rack_id} />)} />
     <NavDropButton key='dev_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
    </NavDropDown>
    <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
-   {(state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{state.pdu.map((row,idx) => <NavDropButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeImport('pdu','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
-   {(state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{state.console.map((row,idx) => <NavDropButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeImport('console','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
-   {(state.rack_id) && <NavButton key='dev_nav_rack' title={state.name} onClick={() => this.changeImport('rack','Layout',{id:state.rack_id})} />}
+   {(this.state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{this.state.pdu.map((row,idx) => <NavDropButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeImport('pdu','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
+   {(this.state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{this.state.console.map((row,idx) => <NavDropButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeImport('console','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
+   {(this.state.rack_id) && <NavButton key='dev_nav_rack' title={this.state.name} onClick={() => this.changeImport('rack','Layout',{id:this.state.rack_id})} />}
    <NavDropDown key='dev_nav_oui' title='OUI'>
     <NavDropButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
     <NavDropButton key='dev_nav_ouil' title='List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
@@ -56,6 +57,13 @@ export class Main extends Component {
    </NavDropDown>
    <NavReload key='dev_nav_reload' onClick={() => this.changeContent(null)} />
   </NavBar>)
+ }
+
+ changeImport(module,func,args){
+  import('./'+module+'.jsx').then(lib => {
+   var Elem = lib[func];
+   this.setState({content:<Elem key={module+'_'+func} {...args} />})
+  })
  }
 
  changeContent = (elem) => this.setState({content:elem})

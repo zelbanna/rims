@@ -1,4 +1,11 @@
-/* Navigation CSS */
+/* Navigation CSS 
+
+- head-color
+- ui-color
+- ui-txt-color
+- high-color
+
+*/
 
 .main { background-color: var(--ui-color); height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
 .list { margin:0; padding:0; overflow:hidden; background-color:transparent; list-style:none; }
