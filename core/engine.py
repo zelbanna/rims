@@ -502,7 +502,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: self._ctx.log("API Error: malformed cookie in call: %s"%query)
    else:   self.api(query)
   elif path == 'internal':
-   if self.headers.get('X-Token') == self._ctx.config['token']:
+   if self.headers.get('X-Token') == self._ctx.config.get('token'):
     print("Token verified")
    self.api(query)
   elif path == 'front':
