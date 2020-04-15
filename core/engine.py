@@ -49,6 +49,7 @@ class Context(object):
   self.config['mode'] = self.config.get('mode','api')
   self.config['workers']= self.config.get('workers',20)
   self.node     = self.config['id']
+  self.token    = self.config.get('token')
   self.db       = DB(self.config['database']['name'],self.config['database']['host'],self.config['database']['username'],self.config['database']['password']) if self.config.get('database') else None
   self.workers  = WorkerPool(self.config['workers'],self)
   self.path     = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
@@ -111,7 +112,7 @@ class Context(object):
    info['version'] = __version__
    info['build'] = __build__
   else:
-   info = self.rest_call("%s/internal/system/environment"%self.config['master'], aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
+   info = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
   return info
 
  #
@@ -194,7 +195,7 @@ class Context(object):
   if self.node != aNode:
    kwargs['aDataOnly'] = True
    kwargs['aHeader'] = kwargs.get('aHeader',{})
-   kwargs['aHeader']['X-token'] = self.config.get('token')
+   kwargs['aHeader']['X-Token'] = self.token
    try: ret = partial(self.rest_call,"%s/internal/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), **kwargs)
    except Exception as e:
     self.log("Node Function REST failure: %s/%s@%s (%s) => %s"%(aModule,aFunction,aNode,dumps(kwargs),str(e)))
@@ -502,7 +503,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: self._ctx.log("API Error: malformed cookie in call: %s"%query)
    else:   self.api(query)
   elif path == 'internal':
-   if self.headers.get('X-Token') == self._ctx.config.get('token'):
+   if self.headers.get('X-Token') == self._ctx.token:
     print("Token verified")
    self.api(query)
   elif path == 'front':
@@ -557,7 +558,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module("rims.api.%s"%mod)
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call("%s/%s/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],path,query), aArgs = args, aDecode = False, aDataOnly = True, aMethod = 'POST')
+    self._body = self._ctx.rest_call("%s/internal/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],query), aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
   except Exception as e:
    if not (isinstance(e.args[0],dict) and e.args[0].get('code')):
     error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))}
