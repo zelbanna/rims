@@ -111,7 +111,7 @@ class Context(object):
    info['version'] = __version__
    info['build'] = __build__
   else:
-   info = self.rest_call("%s/internal/system/environment"%self.config['master'], aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
+   info = self.rest_call("%s/internal/system/environment"%self.config['master'], aArgs = {'node':aNode,'build':__build__}, aHeader = {'X-Token':self.config.get('token')}, aDataOnly = True)
   return info
 
  #
