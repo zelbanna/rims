@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
-import { NavBar }   from './infra/Navigation.jsx';
+import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import { NavBar } from './infra/Navigation.jsx';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 
@@ -63,12 +63,12 @@ class Info extends Component {
 
  render() {
   if (!this.state.found)
-   return <article>Server with id: {this.props.id} removed</article>
+   return <InfoArticle key='si_art'>Server with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data){
    const old = (this.state.data.id !== 'new');
    return (
     <Fragment key='si_info_fragment'>
-    <article className='info'>
+    <InfoArticle key='si_art'>
      <h1>Server</h1>
      <InfoColumns key='si_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
@@ -80,7 +80,7 @@ class Info extends Component {
      {old && <SyncButton key='si_sync' onClick={() => this.changeContent(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />)} title='Sync service' />}
      {old && <ReloadButton key='si_restart' onClick={() => this.changeContent(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />)} title='Restart service' />}
      {old && <ItemsButton key='si_status' onClick={() => this.changeContent(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />)} title='Service status' />}
-    </article>
+    </InfoArticle>
     <NavBar key='server_navigation' id='server_navigation' />
     {this.state.content}
     </Fragment>

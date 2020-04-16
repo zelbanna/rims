@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, StateMap, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
+import { Spinner, StateMap, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, NetworkButton, DeleteButton,ForwardButton, GoButton, InfoButton, LinkButton, ReloadButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
 
@@ -135,7 +135,7 @@ export class Info extends Component {
      <ForwardButton key='ii_cnct_btn_fwd' onClick={() => this.connectInterface()} title='Complete connection' />
     </article>)
     else if (this.state.op === 'ipam'){
-     return <article className='info'>
+     return <InfoArticle key='ii_ipam_article'>
       <h1>Create IPAM record</h1>
       <InfoColumns key='ii_ipam_create'>
        <SelectInput key='ii_ipam_net' id='network_id' label='Network' value={this.state.ipam.network_id} onChange={this.ipamChange}>{this.state.networks.map((row,idx) => <option key={'ii_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
@@ -145,7 +145,7 @@ export class Info extends Component {
       <BackButton key='ii_ipam_btn_back' onClick={() => this.setState({op:null})} title='Back'/>
       <SearchButton key='ii_ipam_btn_find' onClick={() => this.searchIP()} title='Search IP within network' />
       <ForwardButton key='ii_ipam_btn_fwd' onClick={() => this.createIpam()} title='Create IPAM entry' />
-     </article>
+     </InfoArticle>
     } else if (this.state.op === 'wait')
      return <Spinner />
     else
@@ -153,7 +153,7 @@ export class Info extends Component {
    } else {
     const ipam = (this.state.data.ipam_id);
     const peer = (this.state.peer);
-    return (<article className='info'>
+    return (<InfoArticle key='ii_article'>
      <h1>Interface</h1>
      <InfoColumns key='ii_columns' columns={3}>
       <TextInput key='ii_name' id='name' value={this.state.data.name} onChange={this.onChange} /><div>{ipam && <SyncButton key='ii_btn_dns' onClick={() => this.updateDNS()} title='Sync DNS information using name' />}</div>
@@ -174,7 +174,7 @@ export class Info extends Component {
      <SaveButton key='ii_btn_save' onClick={() => this.updateInfo()} title='Save interface information' />
      {!peer && this.state.data.interface_id !== 'new' && <NetworkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}
      <Result key='ii_result' result={(this.state.status !== 'OK') ? this.state.info : this.state.result} />
-    </article>)
+    </InfoArticle>)
    }
   } else
    return <Spinner />
@@ -199,7 +199,7 @@ class ConnectionInfo extends Component {
 
  render(){
   if(this.state.interfaces){
-   return <article className='info'>
+   return <InfoArticle key='ci_article'>
     <h1>Connection {this.props.id}</h1>
     <InfoColumns key='ci_columns'>
      <CheckboxInput key='map' id='map' value={this.state.data.map} onChange={this.onChange} />
@@ -207,7 +207,7 @@ class ConnectionInfo extends Component {
     </InfoColumns>
     <BackButton key='ci_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />
     <SaveButton key='ci_btn_save' onClick={() => this.updateInfo()} title='Save connection information' />
-   </article>
+   </InfoArticle>
   } else
    return <Spinner />
  }

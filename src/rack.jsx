@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
@@ -94,20 +94,18 @@ class Info extends Component {
 
  render() {
   if (this.state.data)
-   return (
-    <article className='info'>
-     <h1>Rack</h1>
-     <InfoColumns key='rack_content'>
-      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
-      <TextInput key='size' id='size' value={this.state.data.size} onChange={this.onChange} />
-      <SelectInput key='console' id='console' value={this.state.data.console} onChange={this.onChange}>{this.state.consoles.map(row => <option key={'ri_con_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
-      <SelectInput key='location_id' id='location_id' label='Location' value={this.state.data.location_id} onChange={this.onChange}>{this.state.locations.map(row => <option key={'ri_loc_'+row.id} value={row.id}>{row.name}</option>)}</SelectInput>
-      <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu1_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
-      <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu2_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
-     </InfoColumns>
-     <SaveButton key='ri_btn_save' onClick={() => this.updateInfo()} title='Save' />
-    </article>
-   )
+   return <InfoArticle key='rack_article'>
+    <h1>Rack</h1>
+    <InfoColumns key='rack_content'>
+     <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
+     <TextInput key='size' id='size' value={this.state.data.size} onChange={this.onChange} />
+     <SelectInput key='console' id='console' value={this.state.data.console} onChange={this.onChange}>{this.state.consoles.map(row => <option key={'ri_con_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
+     <SelectInput key='location_id' id='location_id' label='Location' value={this.state.data.location_id} onChange={this.onChange}>{this.state.locations.map(row => <option key={'ri_loc_'+row.id} value={row.id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='pdu_1' id='pdu_1' label='PDU1' value={this.state.data.pdu_1} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu1_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
+     <SelectInput key='pdu_2' id='pdu_2' label='PDU2' value={this.state.data.pdu_2} onChange={this.onChange}>{this.state.pdus.map(row => <option key={'ri_pdu2_'+row.id} value={row.id}>{row.hostname}</option>)}</SelectInput>
+    </InfoColumns>
+    <SaveButton key='ri_btn_save' onClick={() => this.updateInfo()} title='Save' />
+   </InfoArticle>
   else
    return <Spinner />
  }
@@ -141,15 +139,15 @@ export class Layout extends Component {
  render(){
   if (this.state.size) {
    return (<Fragment key='rack_layout'>
-     <article className='info'>
+    <InfoArticle key='rl_front'>
      <h1>Front</h1>
-    <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('front',this.state.front,1)}</div>
-   </article>
-   <article className='info'>
-    <h1>Back</h1>
-    <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('back',this.state.back,-1)}</div>
-   </article>
-  </Fragment>)
+     <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('front',this.state.front,1)}</div>
+    </InfoArticle>
+    <InfoArticle key='rl_back'>
+     <h1>Back</h1>
+     <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('back',this.state.back,-1)}</div>
+    </InfoArticle>
+   </Fragment>)
   } else
    return <Spinner />
  }

@@ -74,11 +74,11 @@ def oui_info(aCTX, aArgs = None):
  """
  ret = {}
  try:
-  oui = int(aArgs['oui'].translate(str.maketrans({':':'','-':''}))[:6],16)
+  oui = int(aArgs['oui'].translate(str.maketrans({":":"","-":""}))[:6],16)
   with aCTX.db as db:
    found = (db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) == 1)
    ret['data']= db.get_row() if found else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
-   ret['status'] = 'OK' if ret['oui'] != 'NOT_FOUND' else 'NOT_FOUND'
+   ret['status'] = 'OK' if ret['data']['oui'] != 'NOT_FOUND' else 'NOT_FOUND'
  except Exception as e:
   ret = {'status':'NOT_OK','info':repr(e),'data':{'oui':None,'company':''}}
  return ret
@@ -460,7 +460,7 @@ def activity_info(aCTX, aArgs = None):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  db.do("SELECT * FROM activity_types")
+  db.do("SELECT * FROM activity_types ORDER BY type ASC")
   ret['types'] = db.get_rows()
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()
@@ -510,7 +510,7 @@ def activity_type_list(aCTX, aArgs = None):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT * FROM activity_types")
+  db.do("SELECT * FROM activity_types ORDER BY type ASC")
   ret['data'] = db.get_rows()
  return ret
 

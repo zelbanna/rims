@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { rest_call } from './Functions.js';
 import { CloseButton } from './Buttons.jsx';
+import tableStyles from './table.module.css';
 
 // **************************** Generic ********************************
 
@@ -39,9 +40,9 @@ export const Spinner = () => <div className='overlay'><div className='loader'></
 
 export const StateMap = (props) =>  <div className={'state '+ {on:'green',off:'red',unknown:'grey',up:'green',down:'red',undefined:'orange',null:'orange'}[props.state] || 'orange'} title={props.state} />
 
-export const SearchField = (props) => <input type='text' className='searchfield' onChange={props.searchHandler} value={props.value} placeholder={props.placeholder} />
-
 export const Result = (props) => <span className='results'>{props.result}</span>
+
+export const InfoArticle = (props) => <article className='info'>{props.children}</article>
 
 export const InfoColumns = (props) => {
  let start = ['max-content','auto'];
@@ -50,10 +51,7 @@ export const InfoColumns = (props) => {
    start.push((i % 2 === 0) ? 'max-content' :'auto');
  return <div className={('className' in props) ? `info ${props.className}` : 'info'} style={{gridTemplateColumns:start.join(' ')}}>{props.children}</div>
 }
-
 InfoColumns.defaultProps = {columns:2};
-
-export const InfoArticle = (props) => <article className='info'>{props.children}</article>
 
 export class Theme extends Component {
 
@@ -81,27 +79,27 @@ export class Theme extends Component {
 
 // ***************************** Table ********************************
 
-export const TableHead = (props) => <div className='thead'>{props.headers.map((row,index) => <div key={'th_'+index}>{row}</div> )}</div>
+export const TableHead = (props) => <div className={tableStyles.thead}>{props.headers.map((row,index) => <div key={'th_'+index} className={tableStyles.th}>{row}</div> )}</div>
 
-export const TableRow = (props) => <div className='trow'>{props.cells.map((row,index) => <div key={'tr_'+index}>{row}</div> )}</div>
+export const TableRow = (props) => <div className={tableStyles.trow}>{props.cells.map((row,index) => <div key={'tr_'+index} className={tableStyles.td}>{row}</div> )}</div>
 
 // ***************************** Content ********************************
 //
-// base,header,buttons,thead,trows,listItem
+// base,header,buttons,thead,trows,listItem()
 //
-export const ContentList = (props) => <section id='div_content_left' className='content-left'>{content('table',props)}</section>
+export const ContentList = (props) => <section id='div_content_left' className='content-left'>{content(tableStyles.list,props)}</section>
 export const ContentData = (props) => <section id='div_content_right' className='content-right'>{props.children}</section>
-export const ContentReport = (props) => content('report',props)
+export const ContentReport = (props) => content(tableStyles.report,props)
 
 const content = (type,props) => {
  if (props.trows)
-  return <article className={(props.hasOwnProperty('articleClass')) ? props.articleClass : type}>
-    <h1>{props.header}</h1>
+  return <article className={type}>
+    <h1 className={tableStyles.title}>{props.header}</h1>
     {props.children}
     <Result key='con_result' result={props.result} />
-    <div className={(props.hasOwnProperty('tableClass')) ? props.tableClass : 'table'}>
+    <div className={tableStyles.table}>
      <TableHead key={'con_thead'} headers={props.thead} />
-     <div className='tbody'>
+     <div className={tableStyles.tbody}>
       {props.trows.map((row,idx) => <TableRow key={'tr_'+idx} cells={props.listItem(row,idx)} /> )}
      </div>
     </div>

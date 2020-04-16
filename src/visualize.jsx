@@ -84,7 +84,7 @@ class Show extends Component {
  }
 
  render(){
-  return <article><div className='network' id='div_network' ref='show_canvas' /></article>
+  return <article className='network'><div className='network' id='div_network' ref='show_canvas' /></article>
  }
 }
 

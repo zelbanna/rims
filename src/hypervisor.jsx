@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, RimsContext } from './infra/Functions.js';
-import { Result, Spinner, StateMap, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { Result, Spinner, StateMap, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 import { StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
 import { NavBar, NavInfo, NavButton } from './infra/Navigation.jsx';
@@ -210,7 +210,7 @@ class Info extends Component{
   if (this.state.data) {
    const data = this.state.data;
    return <Fragment key='hyp_frag'>
-    <article className='info'>
+    <InfoArticle key='hyp_article'>
      <h1>VM info</h1>
      <InfoColumns key='hyp_ic' columns={3}>
       <TextLine key='hyp_name' id='name' text={data.name} /><div />
@@ -226,7 +226,7 @@ class Info extends Component{
      <SyncButton key='hyp_btn_sync' onClick={() => this.syncDatabase()} title='Resync database with VM info' />
      {data.device_id && <GoButton key='hyp_btn_device_vm_info' onClick={() => this.changeSelf(<DeviceInfo key='device_info' id={data.device_id} changeSelf={this.props.changeSelf} />)} title='VM device info' />}
      <Result key='hyp_res' result={JSON.stringify(this.state.update)} />
-    </article>
+    </InfoArticle>
     <NavBar />
     {this.state.content}
    </Fragment>

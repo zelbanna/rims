@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, RimsContext } from './infra/Functions.js';
-import { InfoColumns, Spinner, ContentList, ContentData, Result } from './infra/UI.jsx';
+import { InfoArticle, InfoColumns, Spinner, ContentList, ContentData, Result } from './infra/UI.jsx';
 import { TextInput, TextLine } from './infra/Inputs.jsx';
 import { HrefButton, ReloadButton, SaveButton, SearchButton, StartButton, StopButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavInfo } from './infra/Navigation.jsx';
@@ -49,7 +49,7 @@ class Info extends Component{
     slots.push(<TextLine key={'pi_slot_id_' + i} id={'pi_slot_id_' + i} label={'Slot ' + i + ' ID'} text={this.state.data[i + '_slot_id']} />);
    }
    return (<div className='flexdiv centered'>
-    <article className='info'>
+    <InfoArticle key='pi_article'>
      <h1>PDU Device Info ({this.props.type})</h1>
      <InfoColumns key='pi_info'>
       <TextLine key='pi_slots' id='slots' label='Right/Left slots' text={JSON.stringify(this.state.data.slots === 2)} />
@@ -57,7 +57,7 @@ class Info extends Component{
      </InfoColumns>
      <ReloadButton key='pi_btn_reload' onClick={() => this.componentDidMount() } />
      <SearchButton key='pi_btn_search' onClick={() => this.lookupSlots() } />
-    </article>
+    </InfoArticle>
    </div>)
   } else
    return <Spinner />
@@ -136,7 +136,7 @@ class Unit extends Component {
   let result = ''
   if (this.state.status)
    result = (this.state.status === 'OK') ? 'OK' : this.state.info;
-  return <article className='info'>
+  return <InfoArticle key='pu_article'>
    <InfoColumns key='pu_info'>
     <TextLine key='pu_slot_unit' id='su' label='Slot.Unit' text={`${this.props.slotname}.${this.props.unit}`} />
     <TextInput key='pu_slot_text' id='text' value={this.state.text} onChange={this.onChange} />
@@ -144,6 +144,6 @@ class Unit extends Component {
    <Result key='pu_result' result={result} />
    <SaveButton key='pu_btn_save' onClick={() => this.updatePDU()} title='Update pdu' />
    {this.state.wait}
-  </article>
+  </InfoArticle>
  }
 }

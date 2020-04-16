@@ -1,16 +1,16 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { TextInput, SelectInput, DateInput, TimeInput } from './infra/Inputs.jsx';
+import { InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HrefButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
-import { NavBar, NavButton } from './infra/Navigation.jsx';
+import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 
 // ************** Main **************
 //
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = <List key='activity_list' />
+  this.state = <Info key='activity_new' id='new' />
  }
 
  componentDidMount(){
@@ -24,7 +24,10 @@ export class Main extends Component {
  }
 
  compileNavItems = () => this.context.loadNavigation(<NavBar key='activity_navbar'>
-   <NavButton key='act_nav_list' title='Activities' onClick={() => this.changeContent(<List key='activity_list' />)} />
+   <NavDropDown key='act_nav' title='Activities'>
+   <NavDropButton key='act_nav_new' title='New' onClick={() => this.changeContent(<Info key='activity_info' id='new' />)} />
+   <NavDropButton key='act_nav_list' title='List' onClick={() => this.changeContent(<List key='activity_list' />)} />
+   </NavDropDown>
    <NavButton key='act_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='activity_type_list' />)} />
    <NavButton key='act_nav_report' title='Report' onClick={() => this.changeContent(<Report key='activity_report' />)} />
   </NavBar>)
@@ -43,7 +46,7 @@ Main.contextType = RimsContext;
 class List extends Component {
  constructor(props){
   super(props)
-  this.state = {}
+  this.state = {searchfield:''}
  }
 
  componentDidMount(){
@@ -56,17 +59,25 @@ class List extends Component {
    </Fragment>
   ]
 
+ searchHandler = (e) => { this.setState({searchfield:e.target.value}) }
+
  changeContent = (elem) => this.setState({content:elem})
+
  deleteList = (id) => (window.confirm('Delete activity') && rest_call('api/master/activity_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='act_fragment'>
-   <ContentList key='act_cl' header='Activities' thead={['Date','Type','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='act_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='act_btn_add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
-   </ContentList>
-   <ContentData key='act_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  if (this.state.data) {
+   let activity_list = this.state.data.filter(row => row.type.includes(this.state.searchfield));
+   return <Fragment key='act_fragment'>
+    <ContentList key='act_cl' header='Activities' thead={['Date','Type','']} trows={activity_list} listItem={this.listItem}>
+     <ReloadButton key='act_btn_reload' onClick={() => this.componentDidMount() } />
+     <AddButton key='act_btn_add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
+     <SearchInput key='act_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search activities' />
+    </ContentList>
+    <ContentData key='act_cd'>{this.state.content}</ContentData>
+   </Fragment>
+  } else
+   return <Spinner />
  }
 }
 
@@ -93,7 +104,7 @@ class Info extends Component {
  render() {
   if (this.state.data)
    return (
-    <article className='info'>
+    <InfoArticle key='act_article'>
      <h1>Activity</h1>
      <InfoColumns key='activity_content'>
       <SelectInput key='user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
@@ -103,7 +114,7 @@ class Info extends Component {
      </InfoColumns>
      <label htmlFor='event'>Info</label><textarea className='info' id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
      <SaveButton key='activity_save' onClick={() => this.updateInfo()} title='Save' />
-    </article>
+    </InfoArticle>
    );
   else
    return <Spinner />
@@ -184,13 +195,13 @@ class TypeInfo extends Component {
  render() {
   if (this.state.data)
    return (
-    <article className='info'>
+    <InfoArticle key='activity_type_article'>
      <h1>Activity Type</h1>
      <InfoColumns key='activity_type_content'>
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
      </InfoColumns>
      <SaveButton key='activity_type_save' onClick={() => this.updateInfo()} title='Save' />
-    </article>
+    </InfoArticle>
    )
   else
    return <Spinner />

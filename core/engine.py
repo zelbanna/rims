@@ -504,8 +504,9 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:   self.api(query)
   elif path == 'internal':
    if self.headers.get('X-Token') == self._ctx.token:
-    print("Token verified")
-   self.api(query)
+    self.api(query)
+   else:
+    self._headers.update({'X-Process':'internal','X-Code':401})
   elif path == 'front':
    self.front()
   elif path == 'auth':

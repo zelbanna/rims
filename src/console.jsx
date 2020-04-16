@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, RimsContext } from './infra/Functions.js';
-import { InfoColumns, Spinner, ContentList, ContentData } from './infra/UI.jsx';
+import { InfoArticle, InfoColumns, Spinner, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 import { ReloadButton, SaveButton, TermButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavInfo } from './infra/Navigation.jsx';
@@ -46,7 +46,7 @@ class Info extends Component{
  render(){
   if (this.state.data){
    return (<div className='flexdiv centered'>
-    <article className='info'>
+    <InfoArticle key='ci_article'>
      <h1>Console Info ({this.props.type})</h1>
      <InfoColumns key='ci_info'>
       <TextInput key='ci_access_url' id='access_url' label='Access URL' value={this.state.data.access_url} onChange={this.onChange} title='URL used as base together with port' />
@@ -54,7 +54,7 @@ class Info extends Component{
      </InfoColumns>
      <ReloadButton key='ci_btn_reload' onClick={() => this.componentDidMount() } />
      <SaveButton key='ci_btn_save' onClick={() => this.updateInfo() } />
-    </article>
+    </InfoArticle>
    </div>)
   } else
    return <Spinner />

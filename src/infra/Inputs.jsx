@@ -37,3 +37,5 @@ export const SelectInput = (props) => <Fragment key={'fraginput_'+props.id}>
   {props.children}
   </select>
  </Fragment>
+
+export const SearchInput = (props) => <input type='text' className='searchfield' onChange={props.searchHandler} value={props.value} placeholder={props.placeholder} />

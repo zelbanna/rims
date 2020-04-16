@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import {Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import {Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { TextInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
@@ -58,12 +58,11 @@ class Info extends Component {
 
  render() {
   if (!this.state.found)
-   return <article>Node with id: {this.props.id} removed</article>
+   return <InfoArticle key='node_art'>Node with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data) {
    const old = (this.state.data.id !== 'new');
-   return (
-   <Fragment key='node_info_fragment'>
-    <article className='info'>
+   return <Fragment key='node_info_fragment'>
+    <InfoArticle key='node_art'>
      <h1>Node</h1>
      <InfoColumns key='node_content'>
       <TextInput key='node' id='node' value={this.state.data.node} onChange={this.onChange} />
@@ -75,11 +74,10 @@ class Info extends Component {
      {old && <ReloadButton key='ni_btn_reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />)} />}
      {old && <LogButton key='ni_btn_logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />)} title='View node logs' />}
      {old && <DeleteButton key='ni_btn_logc' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />)} title='Clear logs' />}
-    </article>
+    </InfoArticle>
     <NavBar key='node_navigation' id='node_navigation' />
     {this.state.content}
    </Fragment>
-   );
   } else
    return <Spinner />
  }

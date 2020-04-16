@@ -1,6 +1,7 @@
+
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd, int2ip } from './infra/Functions.js';
-import { Spinner, InfoColumns, StateMap, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { Spinner, InfoArticle, InfoColumns, StateMap, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 
@@ -77,8 +78,7 @@ class NetworkInfo extends Component {
 
  render() {
   if (this.state.data)
-   return (
-    <article className='info'>
+   return <InfoArticle key='net_article'>
      <h1>Network</h1>
      <InfoColumns key='network_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
@@ -94,8 +94,7 @@ class NetworkInfo extends Component {
       </SelectInput>
      </InfoColumns>
      <SaveButton key='network_btn_save' onClick={() => this.updateInfo()} title='Save' />
-    </article>
-   );
+    </InfoArticle>
   else
    return <Spinner />
  }
@@ -126,12 +125,10 @@ class Layout extends Component {
     else
      layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam green' onClick={() => this.createDevice(this.props.network_id,int2ip(this.state.start + cnt))}>{cnt%256}</button>)
    }
-   return (
-    <article>
-     <h1>{this.state.network}/{this.state.mask}</h1>
-     {layout}
-    </article>
-   );
+   return <article>
+    <h1>{this.state.network}/{this.state.mask}</h1>
+    {layout}
+   </article>
   }
  }
 }
@@ -203,8 +200,7 @@ export class AddressInfo extends Component {
 
  render() {
   if (this.state && this.state.data && this.state.domains)
-   return (
-    <article className='info'>
+   return <InfoArticle key='ip_article'>
      <h1>IP Address</h1>
      <InfoColumns key='ip_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
@@ -217,8 +213,7 @@ export class AddressInfo extends Component {
      </InfoColumns>
      <SaveButton key='ip_save' onClick={() => this.updateInfo()} title='Save' />
      <Result key='ip_operation' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
-    </article>
-   );
+    </InfoArticle>
   else
    return <Spinner />
  }

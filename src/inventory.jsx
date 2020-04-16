@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { Spinner, SearchField, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { TextInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
+import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { TextInput, SearchInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 
@@ -67,7 +67,7 @@ class List extends Component {
     <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
      <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
-     <SearchField key='dl_searchfield' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search inventory' />
+     <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search inventory' />
     </ContentList>
     <ContentData key='inv_cd'>{this.state.content}</ContentData>
    </Fragment>
@@ -122,10 +122,9 @@ export class Info extends Component {
  render() {
   if (this.state.data){
    const data = this.state.data;
-   return (
-    <article className='info'>
+   return <InfoArticle key='inv_article'>
      <h1>Inventory Item</h1>
-     <InfoColumns key='inventory_content'>
+     <InfoColumns key='inv_content'>
       <TextInput key='vendor' id='vendor' value={data.vendor} onChange={this.onChange} />
       <TextInput key='serial' id='serial' label='S/N' value={data.serial} onChange={this.onChange} />
       <TextInput key='product' id='product' value={data.product} onChange={this.onChange} />
@@ -142,8 +141,7 @@ export class Info extends Component {
      </InfoColumns>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
      <SaveButton key='inv_btn_save' onClick={() => this.updateInfo()} title='Save' />
-    </article>
-   );
+    </InfoArticle>
   } else
    return <Spinner />
  }

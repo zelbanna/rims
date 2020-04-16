@@ -7,6 +7,7 @@ import { TextInput, PasswordInput } from './infra/Inputs.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { Header, MenuButton, MenuSeparator } from './infra/Header.jsx';
 import * as serviceWorker from './serviceWorker';
+import loginStyles from './infra/login.module.css';
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -109,14 +110,14 @@ class Login extends Component {
 
  render() {
   return (
-   <div className='login'>
-    <article className='login'>
-     <h1>{this.state.message}</h1>
+   <div className={loginStyles.overlay}>
+    <article className={loginStyles.article}>
+     <h1 className={loginStyles.title}>{this.state.message}</h1>
      <InfoColumns className='left'>
       <TextInput key='username' id='username' onChange={this.onChange} />
       <PasswordInput key='password' id='password' onChange={this.onChange} />
      </InfoColumns>
-     <button className='login'  onClick={this.handleSubmit} title='Login'><i className='fas fa-sign-in-alt' /></button>
+     <button className={loginStyles.button} onClick={this.handleSubmit} title='Login'><i className='fas fa-sign-in-alt' /></button>
     </article>
    </div>
   )
@@ -138,8 +139,6 @@ class RIMS extends Component {
    auth_call({verify:this.state.token}).then(result => {
     if(result.status !== 'OK')
      this.setState({token:null})
-    else
-     console.log('Token verified')
    })
   }
  }

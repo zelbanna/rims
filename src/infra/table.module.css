@@ -1,0 +1,16 @@
+/* Table CSS */
+
+.report { height:auto; width:calc(100% - 6px); overflow-y:scroll; overflow-x:hidden; }
+.report::-webkit-scrollbar { display: none; }
+.list { height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; scrollbar-width:none; resize:horizontal; }
+.list::-webkit-scrollbar { display: none; }
+.title { color:var(--std-txt-color); font-size:1.3rem; font-weight: bold; text-align:center; margin:0.5rem; text-transform:capitalize; }
+.table { display: table; width:100% }
+.thead { display: table-header-group; }
+.th { display: table-cell; text-align: center; padding: 3px 2px 6px 4px; font-size:1.2rem; font-weight:bold; text-transform:capitalize; color:var(--std-txt-color); } 
+.th * { font-size:1.2rem; font-weight: bold; }
+.tbody { display: table-row-group; }
+.trow { display: table-row; }
+.trow:nth-child(even) { background-color:var(--std-color); }
+.trow:nth-child(odd) { background-color:var(--main-color); }
+.td { font-size:1rem; background-color:transparent; display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0 4px; white-space:nowrap; color:var(--std-txt-color); }

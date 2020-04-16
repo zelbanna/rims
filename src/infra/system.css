@@ -32,7 +32,6 @@ body { margin:0; font-family:Verdana,sans-serif; background-color:var(--main-col
 br { clear:both; }
 button { color:var(--std-txt-color); }
 button::-moz-focus-inner { border-style: none; }
-div { z-index:100; }
 h1 { color:var(--std-txt-color); font-size:1.3rem; font-weight: bold; text-align:center; margin:4px; white-space:nowrap; text-overflow:ellipsis; clear:both; text-transform:capitalize; }
 iframe { border-style: none; border-width: thin; height:100%; width:100%; }
 p { margin:2px; color:var(--std-txt-color); }
@@ -48,16 +47,9 @@ label {color:var(--std-txt-color);}
 .grey {   background-color:#9CA6B0!important; }
 .orange { background-color:orange!important;  }
 
-/***************************************  Login Model *****************************************/
-
-div.login { position: absolute; height:100vh; width:100vw; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.2); }
-article.login {  border:solid 1px #9CA6B0; width:auto; height:auto; padding:1rem;}
-article.login h1 { margin:1.3rem; }
-button.login { background-color:transparent; border: none; color:var(--std-txt-color); cursor:pointer; font-size:3rem; padding:0; }
-
 /*************************************** Content Model *****************************************/
 
-main {  background-color: var(--main-color); height:calc(100vh - 7rem - 2px); width:100vw; display:flex }
+main { background-color: var(--main-color); height:calc(100vh - 7rem - 2px); width:100vw; display:flex }
 section.content-left { min-width:max-content; overflow:hidden; width:25%; background-color:transparent; position:relative; top:0; bottom:0; scrollbar-width:none;}
 section.content-left::-webkit-scrollbar { display: none; }
 section.content-right { overflow:scroll; background-color:transparent; width:auto; scrollbar-width:none; }
@@ -67,18 +59,6 @@ article.error { border:solid 1px var(--high-color); }
 button.right {float:right}
 
 /***************************************  List Model *****************************************/
-
-article.table { height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; scrollbar-width:none; resize:horizontal; }
-article.table::-webkit-scrollbar { display: none; }
-div.table { display: table; width:100% }
-div.thead { display: table-header-group; }
-div.thead > div { display: table-cell; text-align: center; padding: 3px 2px 6px 4px; font-size:1.2rem; font-weight:bold; text-transform:capitalize; color:var(--std-txt-color); } 
-div.thead > div * { font-size:1.2rem; font-weight: bold; }
-div.tbody { display: table-row-group; }
-div.trow { display: table-row; }
-div.trow:nth-child(even) { background-color:var(--std-color); }
-div.trow:nth-child(odd) { background-color:var(--main-color); }
-div.trow > div { background-color:transparent; display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0 4px; white-space:nowrap; color:var(--std-txt-color); }
 input.searchfield { display:block; width: 99%; height:2rem; margin: 3px 0 3px 0; }
 
 button.text { font-weight:bold; border:none; display:inline-block; position:relative; cursor:pointer; background-color:transparent; vertical-align:bottom; z-index:800; font-size:1rem; color:var(--std-txt-color);}
@@ -87,7 +67,7 @@ button.text:hover,button.text:focus { color:var(--high-color)!important; }
 
 /*************************************** Info Model *****************************************/
 
-article.info { resize:horizontal; width:max-content; }
+article.info { resize:horizontal; width:max-content; height:max-content; }
 div.info { display:grid; margin:2px 0 2px 0; align-items:center; grid-gap:1px; }
 div.info *[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
 
@@ -104,10 +84,6 @@ button.fa {  width:2rem; padding:0; }
 button.fa > i{ font-size:1.4rem; background-color:transparent; color:var(--ui-txt-color); }
 button.fa > i:hover,button.fa > i:focus { color:var(--high-color)!important; transition-duration:0.15s; }
 textarea.info { height:6rem; width:300px; display:block; font-size:1rem; color:var(--std-txt-color); background-color:transparent; border:1px solid var(--std-txt-color); }
-
-/*************************************** Report Model *****************************************/
-
-article.report { height:auto; width:calc(100% - 6px); overflow-y:scroll; overflow-x:hidden; }
 
 /*************************************** Line Input Model ****************************************/
 
@@ -171,8 +147,8 @@ div.rack-data { border:solid 2px grey; display:inherit; grid-column:2; backgroun
 /* **************************************** EXTRA/LAST/IMPORTANT ******************************************* */
 
 div.left { float:left!important; }
-div.flexdiv { display:flex; flex-wrap:wrap; width:100%; height:max-content; }
-div.centered { justify-content:space-evenly; background-color:transparent; }
+div.flexdiv { display:flex; flex-wrap:wrap; width:100%; background-color:transparent; }
+div.centered { justify-content:space-evenly; }
 div.states { background-color:transparent; }
 div.state { border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin-left:2px; margin-right:2px;}
 

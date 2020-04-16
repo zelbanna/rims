@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 
@@ -56,17 +56,15 @@ export class Info extends Component {
 
  render() {
   if (!this.state.found)
-   return <article>Location id: {this.props.id} removed</article>
+   return <InfoArticle key='loc_removed'>Location id: {this.props.id} removed</InfoArticle>
   else if (this.state.data)
-   return (
-    <article className='info'>
+   return <InfoArticle key='loc_article'>
      <h1>Location</h1>
      <InfoColumns key='loc_content'>
      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
      </InfoColumns>
      <SaveButton key='loc_btn_save' onClick={() => this.updateInfo()} title='Save' />
-    </article>
-   );
+    </InfoArticle>
   else
    return <Spinner />
  }

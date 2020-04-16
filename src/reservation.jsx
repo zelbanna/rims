@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call, RimsContext } from './infra/Functions.js';
-import { Spinner, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 
@@ -61,8 +61,7 @@ class Info extends Component {
 
  render() {
   if (this.state.data){
-   return (
-    <article className='info'>
+   return <InfoArticle key='rsv_article'>
      <h1>Reservation</h1>
      <InfoColumns key='reservation_content'>
       <TextLine key='alias' id='alias' text={this.state.data.alias} />
@@ -72,8 +71,7 @@ class Info extends Component {
       <TextInput key='info' id='info' value={this.state.data.info} onChange={this.onChange} />
      </InfoColumns>
      <SaveButton key='rsv_btn_save' onClick={() => this.updateInfo()} title='Save' />
-    </article>
-   );
+    </InfoArticle>
   } else
    return <Spinner />
  }
