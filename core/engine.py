@@ -110,7 +110,7 @@ class Context(object):
      task['output'] = (task['output']== 'true')
     db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
     db.do("SELECT user_id, token, created + INTERVAL 5 DAY as expires FROM user_tokens ORDER BY created DESC")
-    info['tokens'] = {x['token']:(x['user_id'],x['expires']) for x in db.get_rows()}
+    info['tokens'] = {x['token']:{'id':x['user_id'],'expires':x['expires']} for x in db.get_rows()}
    info['version'] = __version__
    info['build'] = __build__
   else:
@@ -182,7 +182,7 @@ class Context(object):
   elif sig == SIGUSR2:
    data = self.report()
    data.update(self.config)
-   data['tokens'] = {k:(v[0],v[1].strftime("%a, %d %b %Y %H:%M:%S GMT")) for k,v in self.tokens.items()}
+   data['tokens'] = {k:{'id':v[0],'expires':v[1].strftime("%a, %d %b %Y %H:%M:%S GMT")} for k,v in self.tokens.items()}
    data['site'] = self.site
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
 
@@ -538,7 +538,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers.update({'X-Code':401})
     self._ctx.log("API Error: %s sent malformed cookie in call: %s"%(self.client_address[0],self.path))
    else:
-    try: id = self._ctx.tokens[cookie['token']][0]
+    try: id = self._ctx.tokens[cookie['token']]['id']
     except: self._headers.update({'X-Code':401})
     else: self.api(query,id)
   elif path == 'internal':
@@ -633,11 +633,10 @@ class SessionHandler(BaseHTTPRequestHandler):
     if args.get('verify'):
      if (self._ctx.tokens.get(token)):
       entry = self._ctx.tokens[token] 
-      print("Verify:%s"%entry)
       output['status'] = 'OK'
-      output['id'] = entry[0]
+      output['id'] = entry['id']
       output['token'] = token
-      output['expires'] = entry[1].strftime("%a, %d %b %Y %H:%M:%S GMT")
+      output['expires'] = entry['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
       self._headers['X-Code'] = 200
      else:
       output['status'] = 'NOT_OK'
@@ -650,7 +649,7 @@ class SessionHandler(BaseHTTPRequestHandler):
        output['token'] = random_string(16)
        db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%s,'%s',INET_ATON('%s'))"%(output['id'],output['token'],self.client_address[0]))
        expires = datetime.now(timezone.utc) + timedelta(days=5)
-       self._ctx.tokens[output['token']] = (output['id'],expires)
+       self._ctx.tokens[output['token']] = {'id':output['id'],'expires':expires}
        output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
        self._headers['X-Code'] = 200
        output['status'] = 'OK'
@@ -660,7 +659,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     try:
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
      self._headers['X-Code'] = 200
-     self._ctx.tokens[output['token']] = (output['id'],datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT"))
+     self._ctx.tokens[output['token']] = {'id':output['id'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT")}
     except Exception as e:
      output = {'info':e.args[0]}
      self._headers['X-Code'] = e.args[0]['code']

@@ -93,6 +93,9 @@ def environment(aCTX, aArgs = None):
  """
  aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
  info = aCTX.system_info(aArgs['node'])
+ for k,v in info['tokens'].items():
+  v['expires'] = v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
+  print(k,v)
  info.pop('tokens',None)
  return info
 
