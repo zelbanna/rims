@@ -183,7 +183,7 @@ if config['id'] == 'master':
   print("Error: %s"%str(e))
 
 else:
- try: res['data']['register'] = rest_call("%s/register"%config['master'], aArgs = {'id':config['id'],'port':config['port']}, aDataOnly = True)
+ try: res['data']['register'] = rest_call("%s/register"%config['master'], aHeader = {'X-Token':config.get('token')}, aArgs = {'id':config['id'],'port':config['port']}, aDataOnly = True)
  except Exception as e: res['info']['register'] = str(e)
 
 res['status'] = 'OK' if len(res['info']) == 0 else 'NOT_OK'

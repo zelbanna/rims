@@ -4,7 +4,7 @@ __version__ = "6.1"
 __build__ = 304
 __all__ = ['Context','WorkerPool']
 
-from os import path as ospath, getpid, walk
+from os import path as ospath, getpid, walk, stat as osstat
 from sys import stdout
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
@@ -65,6 +65,8 @@ class Context(object):
   except:
    self.log("Site file could not be loaded/found: %s"%self.config.get('site_file','N/A'))
    self.site = {}
+  else:
+   self.build = ospath.join(self.path,'build')
   for type in ['menuitem','tool']:
    for k,item in self.site.get(type,{}).items():
     for tp in ['module','frame','tab']:
@@ -466,111 +468,98 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._ctx     = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
- def header(self):
+ def header(self,code,text,size):
   # Sends X-Code as response, self.command == POST/GET/OPTION
-  code = self._headers.pop('X-Code',200)
-  self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,self.responses.get(code,('Other','Server specialized return code'))[0])).encode('utf-8'))
-  self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
+  self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,text)).encode('utf-8'))
+  self.send_header('Content-Length',size)
+  self.send_header('Connection','close')
   for k,v in self._headers.items():
    try: self.send_header(k,v)
    except: self.send_header('X-Header-Error',k)
   self.end_headers()
 
  def do_OPTIONS(self):
-  print('OPTION:' + self.path)
-  self.wfile.write('HTTP/1.1 200 OK\r\n'.encode('utf-8'))
-  self.send_header('X-Powered-By','RIMS Engine %s.%s'%(__version__,__build__))
-  self.send_header('Access-Control-Allow-Headers','X-Token,Content-Type')
-  self.send_header('Access-Control-Allow-Origin','*')
-  self.send_header('Connection','close')
-  self.send_header('Content-Length',0)
-  self.send_header('Date',self.date_time_string())
-  self.wfile.write(self._body)
+  self._headers.update({'Access-Control-Allow-Headers':'X-Token,Content-Type','Access-Control-Allow-Origin':'*'})
+  self.header('200','OK',0)
 
  def do_GET(self):
-  print('GET: ' + self.path)
-  path,_,query = self.path[1:].partition('/')
-  if len(path) == 0:
-   self.wfile.write('HTTP/1.1 301 Moved Permanently\r\n'.encode('utf-8'))
-   self.send_header('X-Powered-By','RIMS Engine %s.%s'%(__version__,__build__))
-   self.send_header('Connection','close')
-   self.send_header('Content-Length',0)
-   self.send_header('Date',self.date_time_string())
-   self.send_header('Location','index.html')
-   self.end_headers()
-  elif self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
-   self.wfile.write('HTTP/1.1 304 Not Modified\r\n'.encode('utf-8'))
-   self.send_header('X-Powered-By','RIMS Engine %s.%s'%(__version__,__build__))
-   self.send_header('Connection','close')
-   self.send_header('Content-Length',0)
-   self.send_header('Date',self.date_time_string())
-   self.end_headers()
-  else:
-   path = path if (path in ['infra','images','files','static']) else ''
-   self.files(path,query)
-   self.header()
-   try: self.wfile.write(self._body)
-   except Exception as e:
-    print("GET: Error writing above body => %s"%str(e))
-
-
- #
- #
- def files(self,path,query):
-  """ Serve "common" system files and also route 'files' """
-  query = unquote(query)
-  self._ctx.analytics('files', path, query)
-  self._headers.update({'X-Process':'files','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
-  _,_,ftype = query.rpartition('.')
-  if ftype == 'js':
-   self._headers['Content-type']='application/javascript; charset=utf-8'
-  elif ftype == 'css':
-   self._headers['Content-type']='text/css; charset=utf-8'
-  elif ftype == 'html':
-   self._headers['Content-type']='text/html; charset=utf-8'
-  try:
-   if not path == 'files':
-    fullpath = ospath.join(self._ctx.path,'build',path,query)
+  if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
+   self.header('304','Not Modified',0)
+  elif self.path != '/':
+   path,_,query = unquote(self.path[1:]).rpartition('/')
+   if not path[:5] == 'files':
+    fullpath = ospath.join(self._ctx.build,path,query)
    else:
-    param,_,file = query.partition('/')
-    fullpath = ospath.join(self._ctx.config['files'][param],file)
-   if not fullpath.endswith("/"):
-    with open(fullpath, 'rb') as file:
-     self._body = file.read()
-   else:
+    param,_,rest = path[6:].partition('/')
+    fullpath = ospath.join(self._ctx.config['files'][param],rest,query)
+   self._ctx.analytics('files', path, query)
+   # print("FULLPATH:%s"%fullpath)
+   if query == '' and ospath.isdir(fullpath):
     self._headers['Content-type']='text/html; charset=utf-8'
-    _, _, filelist = next(walk(fullpath), (None, None, []))
-    self._body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
-  except Exception as e:
-   self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
-   self._body = b''
+    try:
+     _, _, filelist = next(walk(fullpath), (None, None, []))
+     body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
+     self.header(200,'OK',len(body))
+     self.wfile.write(body)
+    except:
+     self._headers.update({'X-Exception':str(e),'Content-type':'text/html; charset=utf-8'})
+     self.header(404,'Not Found',0)
+   elif ospath.isfile(fullpath):
+    self._headers.update({'Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
+    _,_,ftype = query.rpartition('.')
+    if ftype == 'js':
+     self._headers['Content-type']='application/javascript; charset=utf-8'
+    elif ftype == 'css':
+     self._headers['Content-type']='text/css; charset=utf-8'
+    elif ftype == 'html':
+     self._headers['Content-type']='text/html; charset=utf-8'
+    try:
+     with open(fullpath, 'rb') as file:
+      self.header(200,'OK',osstat(fullpath).st_size)
+      # TODO, do this in chunks instead
+      self.wfile.write(file.read())
+    except Exception as e:
+     self._headers.update({'X-Exception':str(e),'Content-type':'text/html; charset=utf-8'})
+     self.header(404,'Not Found',0)
+   else:
+    self.headers(404,'Not Found',0)
+  else:
+   self._headers.update({'Location':'index.html'})
+   self.header('301','Moved Permanently',0)
 
+ #
+ #
  def do_POST(self):
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
   if path == 'api':
-   try:    cookie = loads(b64decode(self.headers['Cookie'][5:]).decode('utf-8'))
-   except: self._ctx.log("API Error: malformed cookie in call: %s"%query)
-   else:   self.api(query)
-  elif path == 'internal':
-   if self.headers.get('X-Token') == self._ctx.token:
-    self.api(query)
+   try: cookie = loads(b64decode(self.headers['Cookie'][5:]).decode('utf-8'))
+   except:
+    self._headers.update({'X-Code':401})
+    self._ctx.log("API Error: %s sent malformed cookie in call: %s"%(self.client_address[0],self.path))
    else:
-    self._headers.update({'X-Process':'internal','X-Code':401})
+    try: id = self._ctx.tokens[cookie['token']][0]
+    except: self._headers.update({'X-Code':401})
+    else: self.api(query,id)
+  elif path == 'internal':
+   if self.headers.get('X-Token') == self._ctx.token: self.api(query,0)
+   else: self._headers.update({'X-Code':401})
   elif path == 'front':
    self.front()
   elif path == 'auth':
    self.auth()
   elif path == 'register':
-   self.register(query)
+   if self.headers.get('X-Token') == self._ctx.token: self.register(query)
+   else: self._headers.update({'X-Code':401})
   else:
-   self._headers.update({'X-Process':'no route','X-Code':404})
-  self.header()
+   self._headers.update({'X-Code':404})
+  code = self._headers.pop('X-Code',200)
+  self.header(code,self.responses.get(code,('Other','Server specialized return code'))[0],len(self._body))
   self.wfile.write(self._body)
 
  #
  #
- def api(self,query):
+ def api(self,query,id):
   """ API serves the REST functions x.y.z.a:<port>/api/module/function
    - extra arguments can be sent as GET or using headers (using X-prefix in the latter case): node
   """
@@ -581,7 +570,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   for part in get.split("&"):
    (k,_,v) = part.partition('=')
    extras[k] = v
-  self._headers.update({'X-Module':mod, 'X-Function': fun,'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Process':'API','X-Route':self.headers.get('X-Route',extras.get('node',self._ctx.node if not mod == 'master' else 'master'))})
+  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',extras.get('node',self._ctx.node if not mod == 'master' else 'master'))})
   try:
    length = int(self.headers.get('Content-Length',0))
    if length > 0:
@@ -593,7 +582,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:  args = {}
   except: args = {}
   if self._ctx.config['logging']['rest']['enabled'] and self.headers.get('X-Log','true') == 'true':
-   logstring = str("%s: %s '%s' @%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", self._ctx.node, get.strip()))
+   logstring = str("%s: %s '%s' %s@%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", id, self._ctx.node, get.strip()))
    if self._ctx.config['logging']['rest']['enabled'] == 'debug':
     stdout.write(logstring)
    else:
@@ -619,7 +608,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def front(self):
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'front','Access-Control-Allow-Origin':"*"})
+  self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
   output = {'message':"Welcome to the Management Portal",'title':'Portal'}
   output.update(self._ctx.site.get('portal'))
   self._body = dumps(output).encode('utf-8')
@@ -628,7 +617,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  def auth(self):
   """ Authenticate using node function instead of API """
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'auth','X-Code':401,'Access-Control-Allow-Origin':"*"})
+  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Code':401,'Access-Control-Allow-Origin':"*"})
   output = {'status':'NOT_OK'}
   try:
    length = int(self.headers.get('Content-Length',0))
@@ -677,7 +666,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def register(self,query):
-  self._headers.update({'Content-type':'application/json; charset=utf-8','X-Process':'register','Access-Control-Allow-Origin':'*'})
+  self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':'*'})
   try:
    length = int(self.headers.get('Content-Length',0))
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
