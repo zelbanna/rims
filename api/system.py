@@ -92,7 +92,9 @@ def environment(aCTX, aArgs = None):
  Output:
  """
  aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
- return aCTX.system_info(aArgs['node'])
+ info = aCTX.system_info(aArgs['node'])
+ info.pop('tokens',None)
+ return info
 
 #
 #

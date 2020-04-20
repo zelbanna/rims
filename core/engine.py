@@ -129,7 +129,7 @@ class Context(object):
    self.log("______ Loading system - version: %s mode: %s ______"%(__build__,self.config['mode']))
    self.nodes.update(system['nodes'])
    self.services.update(system['services'])
-   self.tokens.update(system['tokens'])
+   self.tokens.update(system.get('tokens',{}))
    for task in system['tasks']:
     try:    freq = int(task.pop('frequency'))
     except: freq = 0
