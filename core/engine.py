@@ -650,7 +650,7 @@ class SessionHandler(BaseHTTPRequestHandler):
        output['token'] = random_string(16)
        db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%s,'%s',INET_ATON('%s'))"%(output['id'],output['token'],self.client_address[0]))
        expires = datetime.now(timezone.utc) + timedelta(days=5)
-       self._ctx.tokens[output['token']] = (output['id'],expires)
+       self._ctx.tokens[output['token']] = (output['id'],expires,args.get('node','master'))
        output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
        self._headers['X-Code'] = 200
        output['status'] = 'OK'
@@ -658,9 +658,10 @@ class SessionHandler(BaseHTTPRequestHandler):
        output['info'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
     try:
+     args['node'] = self._ctx.node
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
      self._headers['X-Code'] = 200
-     self._ctx.tokens[output['token']] = (output['id'],datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT"))
+     self._ctx.tokens[output['token']] = (output['id'],datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT"), self._ctx.node)
     except Exception as e:
      output = {'info':e.args[0]}
      self._headers['X-Code'] = e.args[0]['code']
