@@ -182,7 +182,7 @@ class Context(object):
   elif sig == SIGUSR2:
    data = self.report()
    data.update(self.config)
-   data['tokens'] = {k:{'id':v[0],'expires':v[1].strftime("%a, %d %b %Y %H:%M:%S GMT")} for k,v in self.tokens.items()}
+   data['tokens'] = {k:{'id':v['id'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")} for k,v in self.tokens.items()}
    data['site'] = self.site
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
 
