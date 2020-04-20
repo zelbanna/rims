@@ -9,7 +9,7 @@ from sys import stdout
 from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
-from time import localtime, strftime, time, sleep
+from time import localtime, strftime, strptime, time, sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
 from functools import partial
@@ -632,8 +632,11 @@ class SessionHandler(BaseHTTPRequestHandler):
    if self._ctx.node == 'master':
     if args.get('verify'):
      if (self._ctx.tokens.get(token,None)):
+      entry = self._ctx.tokens[token] 
       output['status'] = 'OK'
-      output['id'] = self._ctx.tokens[token][0]
+      output['id'] = entry[0]
+      output['token'] = token
+      output['expires'] = entry[1].strftime("%a, %d %b %Y %H:%M:%S GMT")
       self._headers['X-Code'] = 200
      else:
       output['status'] = 'NOT_OK'
@@ -646,8 +649,8 @@ class SessionHandler(BaseHTTPRequestHandler):
        output['token']   = random_string(16)
        db.do("INSERT INTO user_tokens (user_id,token,source_ip,source_port) VALUES(%s,'%s',INET_ATON('%s'),%s)"%(output['id'],output['token'],self.client_address[0],self.client_address[1]))
        expires = datetime.now(timezone.utc) + timedelta(days=5)
-       output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
        self._ctx.tokens[output['token']] = (output['id'],expires)
+       output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
        self._headers['X-Code'] = 200
        output['status'] = 'OK'
       else:
@@ -656,7 +659,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     try:
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
      self._headers['X-Code'] = 200
-     output['status'] = 'OK'
+     self._ctx.tokens[output['token']] = (output['id'],strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT"))
     except Exception as e:
      output = {'info':e.args[0]}
      self._headers['X-Code'] = e.args[0]['code']
