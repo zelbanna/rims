@@ -110,7 +110,7 @@ class Context(object):
      task['output'] = (task['output']== 'true')
     db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
     db.do("SELECT user_id, token, created + INTERVAL 5 DAY as expires FROM user_tokens ORDER BY created DESC")
-    info['tokens'] = {x['token']:(x['user_id'],x['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")) for x in db.get_rows()}
+    info['tokens'] = {x['token']:(x['user_id'],x['expires']) for x in db.get_rows()}
    info['version'] = __version__
    info['build'] = __build__
   else:
@@ -182,7 +182,7 @@ class Context(object):
   elif sig == SIGUSR2:
    data = self.report()
    data.update(self.config)
-   data['tokens'] = {k:(v[0],v[1]) for k,v in self.tokens.items()}
+   data['tokens'] = {k:(v[0],v[1].strftime("%a, %d %b %Y %H:%M:%S GMT")) for k,v in self.tokens.items()}
    data['site'] = self.site
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
 
@@ -616,7 +616,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def auth(self):
-  """ Authenticate using node function instead of API """
+  """ Authenticate using node function """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Code':401,'Access-Control-Allow-Origin':"*"})
   output = {'status':'NOT_OK'}
   try:
@@ -631,8 +631,9 @@ class SessionHandler(BaseHTTPRequestHandler):
   else:
    if self._ctx.node == 'master':
     if args.get('verify'):
-     if (self._ctx.tokens.get(token,None)):
+     if (self._ctx.tokens.get(token)):
       entry = self._ctx.tokens[token] 
+      print("Verify:%s"%entry)
       output['status'] = 'OK'
       output['id'] = entry[0]
       output['token'] = token
@@ -646,8 +647,8 @@ class SessionHandler(BaseHTTPRequestHandler):
      with self._ctx.db as db:
       if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
        output.update(db.get_row())
-       output['token']   = random_string(16)
-       db.do("INSERT INTO user_tokens (user_id,token,source_ip,source_port) VALUES(%s,'%s',INET_ATON('%s'),%s)"%(output['id'],output['token'],self.client_address[0],self.client_address[1]))
+       output['token'] = random_string(16)
+       db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%s,'%s',INET_ATON('%s'),%s)"%(output['id'],output['token'],self.client_address[0]))
        expires = datetime.now(timezone.utc) + timedelta(days=5)
        self._ctx.tokens[output['token']] = (output['id'],expires)
        output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
