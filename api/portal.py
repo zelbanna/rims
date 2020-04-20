@@ -26,11 +26,11 @@ def menu(aCTX, aArgs = None):
 
  Output:
  """
- ret = {}
- ret['start'] = aCTX.site['portal'].get('start')
- ret['menu'] = resources(aCTX,{'type':'menuitem'})['data']
- ret['title'] = aCTX.site.get('portal',{}).get('title','Portal')
- return ret
+ data = {}
+ data['start'] = aCTX.site['portal'].get('start')
+ data['menu'] = resources(aCTX,{'type':'menuitem'})['data']
+ data['title'] = aCTX.site.get('portal',{}).get('title','Portal')
+ return {'status':'OK','data':data}
 
 #
 #

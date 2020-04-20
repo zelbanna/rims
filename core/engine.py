@@ -626,19 +626,29 @@ class SessionHandler(BaseHTTPRequestHandler):
    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
    if args.get('verify'):
     token = args['verify']
+   elif args.get('destroy'):
+    token = args['destroy']
    else:
     username, password = args['username'], args['password']
   except Exception as e:
    output['info'] = {'argument':str(e)}
   else:
    if self._ctx.node == 'master':
-    if args.get('verify'):
+    if 'verify' in args:
      if (self._ctx.tokens.get(token)):
-      entry = self._ctx.tokens[token] 
+      entry = self._ctx.tokens[token]
       output['status'] = 'OK'
       output['id'] = entry['id']
       output['token'] = token
       output['expires'] = entry['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
+      self._headers['X-Code'] = 200
+     else:
+      output['status'] = 'NOT_OK'
+    elif 'destroy' in args:
+     local = self._ctx.tokens.get(token)
+     if local and local['id'] == args.get('id'):
+      self._ctx.tokens.pop(token,None)
+      output['status'] = 'OK'
       self._headers['X-Code'] = 200
      else:
       output['status'] = 'NOT_OK'
@@ -660,8 +670,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:
     try:
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
-     self._headers['X-Code'] = 200
-     self._ctx.tokens[output['token']] = {'id':output['id'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT")}
+     if not 'destroy' in args:
+      self._ctx.tokens[output['token']] = {'id':output['id'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT")}
+      self._headers['X-Code'] = 200
+     elif output['status'] == 'OK':
+      self._ctx.tokens.pop(args['destroy'],None)
+      self._headers['X-Code'] = 200
     except Exception as e:
      output = {'info':e.args[0]}
      self._headers['X-Code'] = e.args[0]['code']

@@ -121,7 +121,7 @@ class Theme extends Component {
 
  loadTheme = (theme) => {
   rest_call('api/portal/theme_info',{theme:theme}).then(result => {
-   if(result.status === 'OK')
+   if(result && result.status === 'OK')
     for (var [param,val] of Object.entries(result.data))
      document.documentElement.style.setProperty(param, val);
   })
@@ -143,10 +143,12 @@ export class Portal extends Component {
  componentDidMount() {
   this.props.providerMounting({changeMain:this.changeContent,loadNavigation:this.loadNavigation});
   rest_call('api/portal/menu',{id:this.context.cookie.id}).then(result => {
-    this.setState(result);
-    result.start && this.changeContent(result.menu[result.start]);
-    document.title = result.title;
-   })
+   if(result && result.status === 'OK'){
+    const data = result.data
+    this.setState(data);
+    data.start && this.changeContent(data.menu[data.start]);
+    document.title = data.title;
+   }})
  }
 
  loadNavigation = (navbar) => this.setState({navigation:navbar})
@@ -167,6 +169,11 @@ export class Portal extends Component {
    this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:panel})
  }
 
+ logOut = () => {
+  auth_call({destroy:this.context.cookie.token,id:this.context.cookie.id})
+  this.context.clearCookie()
+ }
+
  render() {
   let buttons = []
   for (let [key, panel] of Object.entries(this.state.menu)){
@@ -184,7 +191,7 @@ export class Portal extends Component {
   return (
    <React.Fragment key='portal'>
     <Theme key='portal_theme' theme={this.context.cookie.theme} />
-    <Header key='portal_header' title={this.state.title} logOut={() => this.context.clearCookie()}>
+    <Header key='portal_header' title={this.state.title} logOut={() => this.logOut()}>
      {buttons}
     </Header>
     {this.state.navigation}
