@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import { Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, SyncButton, UiButton } from './infra/Buttons.jsx';
@@ -68,8 +68,7 @@ class Info extends Component {
    const old = (this.state.data.id !== 'new');
    return (
     <Fragment key='si_info_fragment'>
-    <InfoArticle key='si_art'>
-     <h1>Server</h1>
+    <InfoArticle key='si_art' header='Server'>
      <InfoColumns key='si_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
       <SelectInput key='node' id='node' value={this.state.data.node} onChange={this.onChange}>{this.state.nodes.map((row,idx) => <option key={'si_node_'+idx} value={row}>{row}</option>)}</SelectInput>
@@ -98,6 +97,6 @@ class Operation extends Component {
  }
 
  render(){
-  return (this.state) ? <article className='code'><pre>{JSON.stringify(this.state,null,2)}</pre></article> : <Spinner />
+  return (this.state) ? <CodeArticle key='srv_operation'>{JSON.stringify(this.state,null,2)}</CodeArticle> : <Spinner />
  }
 }

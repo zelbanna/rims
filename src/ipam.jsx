@@ -1,9 +1,9 @@
 
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd, int2ip } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, StateMap, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton, IpamGreenButton, IpamRedButton } from './infra/Buttons.jsx';
 
 // *************** Main ***************
 //
@@ -78,8 +78,7 @@ class NetworkInfo extends Component {
 
  render() {
   if (this.state.data)
-   return <InfoArticle key='net_article'>
-     <h1>Network</h1>
+   return <InfoArticle key='net_article' header='Network'>
      <InfoColumns key='network_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
       <TextInput key='description' id='description'  value={this.state.data.description} onChange={this.onChange} />
@@ -119,16 +118,15 @@ class Layout extends Component {
    return <Spinner />
   else {
    const layout = [];
-   for (let cnt = 0; cnt <= this.state.size; cnt++){
+   for (let cnt = 0; cnt < this.state.size; cnt++){
     if (this.state.data.hasOwnProperty(this.state.start + cnt))
-     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam red' onClick={() => this.changeDevice(this.state.data[this.state.start + cnt].device_id)}>{cnt%256}</button>)
+     layout.push(<IpamRedButton key={'btn_' + this.state.start + cnt} onClick={() => this.changeDevice(this.state.data[this.state.start + cnt].device_id)} text={cnt%256} />)
     else
-     layout.push(<button key={'btn_' + this.state.start + cnt} className='info ipam green' onClick={() => this.createDevice(this.props.network_id,int2ip(this.state.start + cnt))}>{cnt%256}</button>)
+     layout.push(<IpamGreenButton key={'btn_' + this.state.start + cnt} onClick={() => this.createDevice(this.props.network_id,int2ip(this.state.start + cnt))} text={cnt%256} />)
    }
-   return <article>
-    <h1>{this.state.network}/{this.state.mask}</h1>
+   return <Article key='il_art' header={this.state.network + '/' + this.state.mask}>
     {layout}
-   </article>
+   </Article>
   }
  }
 }
@@ -166,7 +164,7 @@ class AddressList extends Component{
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,StateMap({state:row.state}),<Fragment key={'ip_button_'+row.id}>
+ listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,<StateLeds state={row.state} />,<Fragment key={'ip_button_'+row.id}>
    <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} title='Edit address entry' />
    <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
   </Fragment>]
@@ -200,8 +198,7 @@ export class AddressInfo extends Component {
 
  render() {
   if (this.state && this.state.data && this.state.domains)
-   return <InfoArticle key='ip_article'>
-     <h1>IP Address</h1>
+   return <InfoArticle key='ip_article' header='IP Address'>
      <InfoColumns key='ip_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
       <TextLine key='network' id='network' text={this.state.extra.network} />

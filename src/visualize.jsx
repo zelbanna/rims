@@ -1,7 +1,9 @@
 import React, { Fragment, Component } from 'react';
 import { rest_call } from './infra/Functions.js';
-import { ContentData, ContentList, Result } from './infra/UI.jsx';
+import { Article, ContentData, ContentList, Result } from './infra/UI.jsx';
 import { BackButton, DeleteButton, EditButton, FixButton, NetworkButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton } from './infra/Buttons.jsx';
+import { TextInput } from './infra/Inputs.jsx';
+import styles from './infra/ui.module.css';
 
 import { Info as DeviceInfo } from './device.jsx';
 
@@ -84,7 +86,7 @@ class Show extends Component {
  }
 
  render(){
-  return <article className='network'><div className='network' id='div_network' ref='show_canvas' /></article>
+  return <Article key='viz_show'><div className={styles.network} id='div_network' ref='show_canvas' /></Article>
  }
 }
 
@@ -159,13 +161,12 @@ export class Edit extends Component {
   this.setState({data:{...this.state.data, nodes:this.viz.nodes.get(), edges:this.viz.edges.get()}, result:'Moved ' + this.viz.nodes.get(params.nodes[0]).label})
  }
 
- showDiv = (id) => (id === this.state.content) ? 'network show' : 'hidden';
+ showDiv = (id) => (id === this.state.content) ? {display:'block'} : {display:'none'}
 
  render(){
   const PhysicsButton = this.state.physics_button;
   return(
-   <article className='network'>
-    <h1>Network Map</h1>
+   <Article key='viz_art' header='Network Map'>
     {(this.props.type === 'device') && (this.props.changeSelf) && <BackButton key='viz_back' onClick={() => this.changeContent(<DeviceInfo key={'di_'+this.props.id} id={this.props.id} />)} />}
     <ReloadButton key='viz_reload' onClick={() => this.componentDidMount()} />
     <EditButton key='viz_edit' onClick={() => this.toggleEdit()} />
@@ -176,13 +177,13 @@ export class Edit extends Component {
     <TextButton key='viz_opt' text='Options' onClick={() => this.setState({content:'options'})} />
     <TextButton key='viz_nodes' text='Nodes' onClick={() => this.setState({content:'nodes'})} />
     <TextButton key='viz_edges' text='Edges' onClick={() => this.setState({content:'edges'})} />
-    <label className='info' key='name' htmlFor='name'>Name:</label><input key='input_text_name' type='text' id='name' name='name' value={this.state.data.name} onChange={this.onChange} />
+    <TextInput key='viz_name' id='name' value={this.state.data.name} onChange={this.onChange} />
     <Result key='viz_result' result={this.state.result} />
-    <div className={this.showDiv('network')} ref='edit_canvas' />
-    <div className={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>
-    <div className={this.showDiv('nodes')}><textarea id='nodes' name='nodes' value={JSON.stringify(this.state.data.nodes,undefined,2)} onChange={this.jsonHandler} /></div>
-    <div className={this.showDiv('edges')}><textarea id='edged' name='edges' value={JSON.stringify(this.state.data.edges,undefined,2)} onChange={this.jsonHandler} /></div>
-   </article>
+    <div className={styles.network} style={this.showDiv('network')} ref='edit_canvas' />
+    <div className={styles.network} style={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>
+    <div className={styles.network} style={this.showDiv('nodes')}><textarea id='nodes' name='nodes' value={JSON.stringify(this.state.data.nodes,undefined,2)} onChange={this.jsonHandler} /></div>
+    <div className={styles.network} style={this.showDiv('edges')}><textarea id='edges' name='edges' value={JSON.stringify(this.state.data.edges,undefined,2)} onChange={this.jsonHandler} /></div>
+   </Article>
   )
  }
 }

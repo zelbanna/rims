@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, RimsContext } from './infra/Functions.js';
-import { InfoArticle, InfoColumns, Spinner, ContentList, ContentData } from './infra/UI.jsx';
+import { rest_call } from './infra/Functions.js';
+import { RimsContext, Flex, InfoArticle, InfoColumns, Spinner, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 import { ReloadButton, SaveButton, TermButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavInfo } from './infra/Navigation.jsx';
@@ -45,9 +45,8 @@ class Info extends Component{
 
  render(){
   if (this.state.data){
-   return (<div className='flexdiv centered'>
-    <InfoArticle key='ci_article'>
-     <h1>Console Info ({this.props.type})</h1>
+   return <Flex key='ci_flex' style={{justifyContent:'space-evenly'}}>
+    <InfoArticle key='ci_article' header={'Console Info - ' + this.props.type}>
      <InfoColumns key='ci_info'>
       <TextInput key='ci_access_url' id='access_url' label='Access URL' value={this.state.data.access_url} onChange={this.onChange} title='URL used as base together with port' />
       <TextInput key='ci_port' id='port' value={this.state.data.port} onChange={this.onChange} />
@@ -55,7 +54,7 @@ class Info extends Component{
      <ReloadButton key='ci_btn_reload' onClick={() => this.componentDidMount() } />
      <SaveButton key='ci_btn_save' onClick={() => this.updateInfo() } />
     </InfoArticle>
-   </div>)
+   </Flex>
   } else
    return <Spinner />
  }

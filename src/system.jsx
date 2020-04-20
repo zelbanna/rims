@@ -1,9 +1,11 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, RimsContext } from './infra/Functions.js';
-import { Spinner, TableRow, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
+import { rest_call } from './infra/Functions.js';
+import { RimsContext, Title, Spinner, Article, CodeArticle, LineArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.jsx';
 import { TextLine } from './infra/Inputs.jsx'
+
+import styles from './infra/ui.module.css';
 
 // ************** Main **************
 //
@@ -151,12 +153,11 @@ class RestInfo extends Component {
  render() {
   if (this.state.module && this.state.information) {
    return(
-    <article className='text'>
-     <h1>API: {this.props.api}</h1>
-     {this.state.module.map((row,index) => {return <p key={'ria_'+index}>{row}</p> })}
-     <h1>Function: {this.props.function}</h1>
-     {this.state.information.map((row,index) => {return <p key={'rif_'+index}>{row}</p> })}
-    </article>
+    <Article key='ri_art' header={this.props.api}>
+     {this.state.module.join('\n')}
+     <Title text={this.props.function} />
+     {this.state.information.join('\n')}
+    </Article>
    )
   } else
    return <Spinner />
@@ -171,7 +172,7 @@ class RestExecute extends Component {
  }
 
  render(){
-  return (this.state) ? <article className='code'><h1>{this.props.text}</h1><pre>{JSON.stringify(this.state,null,2)}</pre></article> : <Spinner />
+  return (this.state) ? <CodeArticle key='re_code' header={this.props.text}>{JSON.stringify(this.state,null,2)}</CodeArticle> : <Spinner />
  }
 }
 
@@ -246,23 +247,11 @@ export class FileList extends Component {
   if (this.state.mode === 'images')
    return (row.substr(row.length - 4) === '.png') ? [row,<img src={this.state.path +'/'+row} alt={this.state.path +'/'+row} />] : []
   else
-   return [<Fragment key={row}>{this.state.path + '/'}<a href={this.state.path + '/' + row} target='_blank' rel='noopener noreferrer'>{row}</a></Fragment>]
+   return [<Fragment key={row}>{this.state.path + '/'}<a className={styles.href} href={this.state.path + '/' + row} target='_blank' rel='noopener noreferrer'>{row}</a></Fragment>]
  }
 
  render() {
-  if (!this.state.files)
-   return <Spinner />
-  else
-   return (
-    <article className='files'>
-     <h1>{this.state.mode}</h1>
-     <div className='table'>
-      <div className='tbody'>
-      {this.state.files.map((row,index) => <TableRow key={'content_trow_files_'+index} cells={this.listItem(row)} /> )}
-      </div>
-     </div>
-    </article>
-   )
+  return (!this.state.files) ? <Spinner /> : <ContentReport header={this.state.mode} thead={[]} trows={this.state.files} listItem={this.listItem} />
  }
 }
 
@@ -292,13 +281,9 @@ class ServiceInfo extends Component {
  render() {
   const inactive = (this.state.state === 'inactive');
   const Elem = (inactive) ? StartButton : StopButton;
-  return (
-   <article className='lineinput'>
-    <div>
-     <TextLine key='service_line' id='service' label={this.props.name} text={this.state.state + ' (' +this.state.extra +')'} /><Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} title='Operate service' />
-    </div>
+  return <LineArticle key='svc_art'>
+    <TextLine key='service_line' id='service' label={this.props.name} text={this.state.state + ' (' +this.state.extra +')'} /><Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} title='Operate service' />
     {this.state.spinner}
-   </article>
-   );
+   </LineArticle>
  }
 }

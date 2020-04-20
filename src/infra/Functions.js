@@ -1,8 +1,3 @@
-import { createContext } from 'react';
-
-export const RimsContext = createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,changeMain:()=>{},loadNavigtion:()=>{}})
-RimsContext.displayName = 'RimsContext';
-
 export async function rest_call(url = '', args = {}) {
  const response = await fetch(url, { method:'POST', headers: {'Content-Type': 'application/json'}, credentials:'include', body: JSON.stringify(args) })
  return await response.json();

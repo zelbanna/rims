@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, RimsContext } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call } from './infra/Functions.js';
+import { RimsContext, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton }  from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
 
@@ -25,7 +25,7 @@ export class List extends Component {
 
  listItem = (row) => {
   const buttons = (this.context.cookie.id === row.user_id || !row.valid);
-  return [row.alias,row.hostname,<span className={(row.valid) ? '' : 'orange'}>{row.end}</span>,<Fragment key='reservation_buttons'>
+  return [row.alias,row.hostname,row.end,<Fragment key='reservation_buttons'>
    {buttons && <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>}
    {buttons && <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />}
    {buttons && <DeleteButton key={'rsv_btn_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />}
@@ -61,8 +61,7 @@ class Info extends Component {
 
  render() {
   if (this.state.data){
-   return <InfoArticle key='rsv_article'>
-     <h1>Reservation</h1>
+   return <InfoArticle key='rsv_article' header='Reservation'>
      <InfoColumns key='reservation_content'>
       <TextLine key='alias' id='alias' text={this.state.data.alias} />
       <TextLine key='time_start' id='Start' text={this.state.data.time_start} />

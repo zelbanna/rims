@@ -3,36 +3,7 @@
   "message": "Management portal",
   "title":"Management",
   "start": "device",
-  "theme": "black"
- },
- "themes": {
-  "black":{
-   "main":"#F1F1F1",
-   "head":"#1A1A1A",
-   "high":"#CB2026",
-   "std":"#FFFFFF",
-   "std-txt":"#000000",
-   "ui":"#000000",
-   "ui-txt":"#FFFFFF"
-  },
-  "blue":{
-   "main":"#F1F1F1",
-   "head":"#3E84F4",
-   "high":"#000000",
-   "std":"#FFFFFF",
-   "std-txt":"#000000",
-   "ui":"#2674F2",
-   "ui-txt":"#FFFFFF"
-  },
-  "dark":{
-   "main":"#0A0A0A",
-   "head":"#1A1A1A",
-   "high":"#CB2026",
-   "std":"#1A1A1A",
-   "std-txt":"#8A8A8A",
-   "ui":"#000000",
-   "ui-txt":"#FFFFFF"
-  }
+  "theme": "light"
  },
  "menuitem": {
   "activity": {

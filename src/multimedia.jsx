@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call, rnd } from './infra/Functions.js';
+import { RimsContext, Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextLine,TextInput } from './infra/Inputs.jsx';
 import { NavBar, NavInfo } from './infra/Navigation.jsx';
 import { DocButton, DeleteButton, InfoButton, ReloadButton, SearchButton, StartButton, SyncButton } from './infra/Buttons.jsx';
@@ -99,21 +99,16 @@ class Title extends Component {
  render(){
   if (this.state.op) {
    if(this.state.thread || this.state.op === 'transfer')
-    return <InfoArticle key='mm_trans_article'>
-     <h1>{(this.state.thread) ? 'Task activation' : 'Transfer'}</h1>
-     <label className='info' htmlFor='res'>Result:</label><span id='res'>{JSON.stringify(this.state.result)}</span>
+    return <InfoArticle key='mm_trans_article' header={(this.state.thread) ? 'Task activation' : 'Transfer'}>
+     <TextLine key='mm_trans_res' id='result' text={JSON.stringify(this.state.result)} />
     </InfoArticle>
    else {
     if(this.state.result.status === 'NOT_OK')
-     return <InfoArticle key='mm_error_article'>
-      <h1>Process Error</h1>
-      <pre>{JSON.stringify(this.state.result.info,null,2)}</pre>
-     </InfoArticle>
+     return <CodeArticle key='mm_error_code' header='Process Error'>{JSON.stringify(this.state.result.info,null,2)}</CodeArticle>
     else {
      const data = this.state.result.data;
-     return <InfoArticle key='mm_proc_article'>
-      <h1>Process success</h1>
-      <span>Elapsed time for processing file: {this.state.result.seconds} seconds</span>
+     return <InfoArticle key='mm_proc_article' header='Process success'>
+      Elapsed time for processing file: {this.state.result.seconds} seconds
       <InfoColumns key='mm_proc_ic'>
        <TextLine key='mm_proc_prefix' id='prefix' text={data.prefix} />
        <TextLine key='mm_proc_suffix' id='suffix' text={data.suffix} />
@@ -130,8 +125,7 @@ class Title extends Component {
    }
   } else if(this.state.data){
    const data = this.state.data
-   return <InfoArticle key='mm_tit_article'>
-    <h1>Title</h1>
+   return <InfoArticle key='mm_tit_article' header='Title'>
     <InfoColumns key='mm_tit_ic'>
      <TextLine key='mm_tit_type' id='type' text={data.type} />
      <TextLine key='mm_tit_title' id='title' text={data.title} />
@@ -165,8 +159,7 @@ class Lookup extends Component {
  render(){
   if (this.state.data) {
    const data = this.state.data
-   return <InfoArticle key='mm_lu_article'>
-    <h1>Lookup</h1>
+   return <InfoArticle key='mm_lu_article' header='Lookup'>
     <InfoColumns key='mm_lu_ic'>
      <TextLine key='mm_lu_file' id='file' label='File' text={this.props.file} />
      <TextLine key='mm_lu_status' id='status' label='Result' text={this.state.status} />
@@ -200,8 +193,7 @@ class Subtitles extends Component {
 
  render(){
   if (this.state.data) {
-   return <InfoArticle key='mm_sub_art'>
-    <h1>Extra subtitles</h1>
+   return <InfoArticle key='mm_sub_art' header='Extra subtitles'>
     <InfoColumns key='mm_sub_ic'>
      <TextLine key='mm_sub_path' id='path' text={this.props.path} />
      <TextLine key='mm_sub_item' id='item' text={this.props.file} />

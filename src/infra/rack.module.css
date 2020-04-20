@@ -1,0 +1,6 @@
+/* Rack */
+
+.rack { display:grid; margin:10px; text-align:center }
+.rackLeft { color:grey; font-weight:bold; font-size:0.9rem; grid-column:1; border-right:1px solid grey;}
+.rackRight { color:grey; font-weight:bold; font-size:0.9rem; grid-column:3; border-left:1px solid grey;}
+.rackItem { border:solid 2px grey; display:inherit; grid-column:2; background-color:var(--ui-color); }

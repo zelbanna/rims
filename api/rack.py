@@ -106,7 +106,6 @@ def devices(aCTX, aArgs = None):
   ret.update(db.get_row())
   db.do("SELECT devices.id, devices.hostname, ri.rack_unit, ri.rack_size FROM devices INNER JOIN rack_info AS ri ON devices.id = ri.device_id WHERE ri.rack_id = %s ORDER BY %s"%(id,ret['sort']))
   devices = db.get_rows()
-  print(devices)
   ret['front'] = [dev for dev in devices if dev['rack_unit'] > 0]
   ret['back'] = [dev for dev in devices if dev['rack_unit'] < 0]
  return ret

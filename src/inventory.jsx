@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call, rnd } from './infra/Functions.js';
+import { RimsContext, Spinner, LineArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SearchInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
@@ -88,16 +88,11 @@ class Search extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
  render() {
-  return (
-   <article className='lineinput'>
-    <h1>Inventory Search</h1>
-    <div>
-     <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange}><option value='serial'>Serial</option><option value='vendor'>Vendor</option></SelectInput>
-     <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
-    </div>
-    <SearchButton key='inv_btn_search' onClick={() => this.changeContent(<List key='inventory_list' args={this.state.data} />)} title='Search inventory' />
-   </article>
-  )
+  return <LineArticle key='inv_srch_art' header='Inventory search'>
+   <SelectInput key='field' id='field' value={this.state.data.field} onChange={this.onChange}><option value='serial'>Serial</option><option value='vendor'>Vendor</option></SelectInput>
+   <TextInput key='search' id='search' value={this.state.data.search} placeholder='search' onChange={this.onChange} />
+   <SearchButton key='inv_btn_search' onClick={() => this.changeContent(<List key='inventory_list' args={this.state.data} />)} title='Search inventory' />
+  </LineArticle>
  }
 }
 
@@ -122,8 +117,7 @@ export class Info extends Component {
  render() {
   if (this.state.data){
    const data = this.state.data;
-   return <InfoArticle key='inv_article'>
-     <h1>Inventory Item</h1>
+   return <InfoArticle key='inv_article' header='Inventory Item'>
      <InfoColumns key='inv_content'>
       <TextInput key='vendor' id='vendor' value={data.vendor} onChange={this.onChange} />
       <TextInput key='serial' id='serial' label='S/N' value={data.serial} onChange={this.onChange} />

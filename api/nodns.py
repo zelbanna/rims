@@ -1,4 +1,5 @@
-"""NoDNS API module. Backend in case no DNS is available, only on master node, records can be exported :-)
+"""
+NoDNS API module. Backend in case no DNS is available, only on master node, records can be exported :-)
 
 TODO: Add notified_serial to domain_cache and enable domain update
 
@@ -11,7 +12,7 @@ __type__ = "DNS"
 #
 #
 def domain_list(aCTX, aArgs = None):
- """ Function returns all domains by this DNS server
+ """Function returns all domains by this DNS server
 
  Args:
   - filter (optional)

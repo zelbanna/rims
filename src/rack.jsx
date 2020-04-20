@@ -1,9 +1,10 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import { rest_call, rnd } from './infra/Functions.js';
+import { RimsContext, Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
+import styles from './infra/rack.module.css';
 
 import { Main as DeviceMain, Info as DeviceInfo } from './device.jsx';
 import { List as LocationList, Info as LocationInfo } from './location.jsx';
@@ -94,8 +95,7 @@ class Info extends Component {
 
  render() {
   if (this.state.data)
-   return <InfoArticle key='rack_article'>
-    <h1>Rack</h1>
+   return <InfoArticle key='rack_article' header='Rack'>
     <InfoColumns key='rack_content'>
      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
      <TextInput key='size' id='size' value={this.state.data.size} onChange={this.onChange} />
@@ -128,24 +128,22 @@ export class Layout extends Component {
    this.props.changeSelf(elem);
  }
 
- createRack(name,content,sign){
+ createRack(id,content,sign){
   const rack = [];
   for (let i = 1; i < this.state.size+1; i++)
-   rack.push(<div key={name+'_left_'+i} className='rack-left' style={{gridRow:-i}}>{i}</div>,<div key={name+'_right_'+i} className='rack-right' style={{gridRow:-i}}>{i}</div>)
-  content.forEach(dev => rack.push(<div key={'rd_' + dev.id} className='rack-data' style={{gridRowStart:this.state.size+2-sign*dev.rack_unit, gridRowEnd:this.state.size+2-(sign*dev.rack_unit+dev.rack_size)}}><HrefButton key={'rd_btn_'+dev.id} style={{color:'var(--ui-txt-color)'}} onClick={() => this.changeContent(<DeviceInfo key='device_info' id={dev.id} />)} text={dev.hostname} /></div>))
-  return rack
+   rack.push(<div key={id+'_left_'+i} className={styles.rackLeft} style={{gridRow:-i}}>{i}</div>,<div key={id+'_right_'+i} className={styles.rackRight} style={{gridRow:-i}}>{i}</div>)
+  content.forEach(dev => rack.push(<div key={'rd_' + dev.id} className={styles.rackItem} style={{gridRowStart:this.state.size+2-sign*dev.rack_unit, gridRowEnd:this.state.size+2-(sign*dev.rack_unit+dev.rack_size)}}><HrefButton key={'rd_btn_'+dev.id} style={{color:'var(--ui-txt-color)'}} onClick={() => this.changeContent(<DeviceInfo key='device_info' id={dev.id} />)} text={dev.hostname} /></div>))
+  return <div className={styles.rack} style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{rack}</div>
  }
 
  render(){
   if (this.state.size) {
-   return (<Fragment key='rack_layout'>
-    <InfoArticle key='rl_front'>
-     <h1>Front</h1>
-     <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('front',this.state.front,1)}</div>
+   return (<Fragment key='rt_frag'>
+    <InfoArticle key='rl_front' header='Front'>
+     {this.createRack('front',this.state.front,1)}
     </InfoArticle>
-    <InfoArticle key='rl_back'>
-     <h1>Back</h1>
-     <div className='rack' style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{this.createRack('back',this.state.back,-1)}</div>
+    <InfoArticle key='rl_back' header='Back'>
+     {this.createRack('back',this.state.back,-1)}
     </InfoArticle>
    </Fragment>)
   } else

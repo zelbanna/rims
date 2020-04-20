@@ -406,33 +406,3 @@ def worker(aCTX, aArgs = None):
   freq = int(aArgs.pop('frequency',0))
   aCTX.workers.add_task(aArgs['module'],aArgs['function'],freq, output = aArgs.get('output',False), args = aArgs.get('args',{}))
  return {'status':'OK'}
-
-
-############################### Site ###########################
-#
-#
-def theme_list(aCTX, aArgs = None):
- """ Function returns a list of available themes
-
- Args:
-
- Output:
-  - list of theme names
- """
- return {'data':list(aCTX.site.get('themes',{}).keys())}
-
-#
-#
-def theme_info(aCTX, aArgs = None):
- """ Function returns theme parameters
-
- Args:
-  - theme (required)
-
- Output:
-  - data - dictionary of values
-  - status
- """
- theme_data = aCTX.site.get('themes',{}).get(aArgs['theme'])
- theme = {"--%s-color"%k:v for k,v in theme_data.items()}
- return {'status':"OK" if theme else "NOT_OK", 'data':theme}

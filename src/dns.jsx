@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
 import { rest_call, rnd,  } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, TableHead, TableRow, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
+import { Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
 
@@ -86,8 +86,7 @@ class DomainInfo extends Component {
    return <InfoArticle key='dom_art'>Domain with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data) {
    const old = (this.state.data.id !== 'new');
-   return <InfoArticle key='dom_art'>
-     <h1>Domain</h1>
+   return <InfoArticle key='dom_art' header='Domain'>
      <InfoColumns key='domain_content'>
       {old && <TextLine key='node' id='node' text={this.state.infra.node} />}
       {old && <TextLine key='service' id='service' text={this.state.infra.service} />}
@@ -114,35 +113,26 @@ class Status extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/dns/status').then(result => this.setState(result))
+  rest_call('api/dns/status').then(result => {
+   const top = []
+   for (let [node,rows] of Object.entries(result.top)){
+    const ns = node.split('_');
+    rows.forEach(row => top.push([ns[0],ns[1],row.count,row.fqdn]))
+   }
+   const who = []
+   for (let [node,rows] of Object.entries(result.who)){
+    const ns = node.split('_');
+    rows.forEach(row => who.push([ns[0],ns[1],row.count,row.who,row.fqdn]))
+   }
+   this.setState({top:top,who:who})
+  })
  }
 
  render(){
-  if (this.state.top && this.state.who)
-   return (
-    <div style={{display:'flex'}}>
-     <article className='report'>
-      <h1>Top looked up FQDN</h1>
-      <div className='table'>
-       <TableHead key='top_thead' headers={['Node','Service','Hit','FQDN']} />
-       <div className='tbody'>
-        {Object.entries(this.state.top).map(entry => { const ns = entry[0].split('_'); return entry[1].map((row,index) => <TableRow key={'top_trow_'+ ns[0] + '_' + index} cells={[ns[0],ns[1],row.count,row.fqdn]} />) }) }
-       </div>
-      </div>
-     </article>
-     <article className='report'>
-      <h1>Top looked up WHO</h1>
-      <div className='table'>
-       <TableHead key='who_thead' headers={['Node','Service','Hit','Who','FQDN']} />
-       <div className='tbody'>
-        {Object.entries(this.state.who).map(entry => { const ns = entry[0].split('_'); return entry[1].map((row,index) => <TableRow key={'who_trow_'+ ns[0] + '_' + index} cells={[ns[0],ns[1],row.count,row.who,row.fqdn]} />) }) }
-       </div>
-      </div>
-     </article>
-    </div>
-   )
-  else
-   return <Spinner />
+  return (this.state.top && this.state.who) ? <Flex key='status_flex'>
+    <ContentReport key='top_cr' header='Top looked up FQDN' thead={['Node','Service','Hit','FQDN']} trows={this.state.top} listItem={(row) => row} />
+    <ContentReport key='who_cr' header='Top looked up who' thead={['Node','Service','Hit','Who','FQDN']} trows={this.state.who} listItem={(row) => row} />
+   </Flex> : <Spinner />
  }
 }
 
@@ -194,8 +184,7 @@ class RecordInfo extends Component {
 
  render() {
   if (this.state.data)
-   return <InfoArticle key='rec_art'>
-     <h1>Record</h1>
+   return <InfoArticle key='rec_art' header='Record'>
      <InfoColumns key='record_content'>
       <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' onChange={this.onChange} />
       <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' onChange={this.onChange} />

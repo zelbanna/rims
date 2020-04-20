@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import {Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import {Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { TextInput, UrlInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
@@ -62,8 +62,7 @@ class Info extends Component {
   else if (this.state.data) {
    const old = (this.state.data.id !== 'new');
    return <Fragment key='node_info_fragment'>
-    <InfoArticle key='node_art'>
-     <h1>Node</h1>
+    <InfoArticle key='node_art' header='Node'>
      <InfoColumns key='node_content'>
       <TextInput key='node' id='node' value={this.state.data.node} onChange={this.onChange} />
       <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />
@@ -73,7 +72,7 @@ class Info extends Component {
      {old && !this.state.data.hostname && <SearchButton key='ni_btn_srch' onClick={this.searchInfo} title='Try to map node to device' />}
      {old && <ReloadButton key='ni_btn_reload' onClick={() => this.changeContent(<Reload key={'node_reload'} node={this.state.data.node} />)} />}
      {old && <LogButton key='ni_btn_logs' onClick={() => this.changeContent(<LogShow key={'node_logs'} node={this.state.data.node} />)} title='View node logs' />}
-     {old && <DeleteButton key='ni_btn_logc' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} msg='Really clear logs?' />)} title='Clear logs' />}
+     {old && <DeleteButton key='ni_btn_logc' onClick={() => this.changeContent(<LogClear key={'node_logc'} node={this.state.data.node} />)} title='Clear logs' />}
     </InfoArticle>
     <NavBar key='node_navigation' id='node_navigation' />
     {this.state.content}
@@ -92,16 +91,7 @@ class Reload extends Component {
  }
 
  render(){
-  if (!this.state)
-   return <Spinner />
-  else {
-   return (
-    <article className='code'>
-     <h1>Module</h1>
-     {this.state.modules.map((row,index) => <span key={index}>{row}</span> )}
-   </article>
-   )
-  }
+  return (!this.state) ? <Spinner /> : <CodeArticle key='nr_code' header='Module'>{this.state.modules.join('\n')}</CodeArticle>
  }
 }
 
@@ -114,7 +104,7 @@ class LogClear extends Component {
  }
 
  render(){
-  return (!this.state) ? <Spinner /> : <article className='code'><h1>Cleared</h1>{Object.entries(this.state.logs).map(log => <span key={log[0]}>{log[0]}: {log[1]}</span>)}</article>
+  return (!this.state) ? <Spinner /> : <CodeArticle key='nc_code' header='Cleared'>{(Object.entries(this.state.logs).map(log => `${log[0]}: ${log[1]}`)).join('\n')}</CodeArticle>
  }
 }
 
@@ -127,6 +117,6 @@ export class LogShow extends Component {
  }
 
  render(){
-  return (!this.state) ? <Spinner /> : <article className='code'>{Object.entries(this.state.logs).map(log => <Fragment><h1>{log[0]}</h1>{log[1].map((line,idx) => <span key={log[0]+'_'+idx}>{line}</span> )}</Fragment>)}</article>
+  return (!this.state) ? <Spinner /> : <div>{Object.entries(this.state.logs).map((log,idx) => <CodeArticle key={idx} header={log[0]}>{log[1].join('\n')}</CodeArticle>)}</div>
  }
 }

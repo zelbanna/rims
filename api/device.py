@@ -349,8 +349,8 @@ def control(aCTX, aArgs = None):
     pem['state'] = pdu.get_state(pem['%s_slot_id'%pem['pdu_slot']],pem['pdu_unit']).get('state','unknown')
    except Exception as e:
     pem.update({'status':'NOT_OK_PEM','op':'NOT_OK','info':str(e)})
-  else:
-   ret['pems'] = []
+ else:
+  ret['pems'] = []
  return ret
 
 #

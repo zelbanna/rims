@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
+import { rest_call, rnd } from './infra/Functions.js';
+import { RimsContext, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HrefButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 
@@ -103,19 +103,16 @@ class Info extends Component {
 
  render() {
   if (this.state.data)
-   return (
-    <InfoArticle key='act_article'>
-     <h1>Activity</h1>
-     <InfoColumns key='activity_content'>
-      <SelectInput key='user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
-      <SelectInput key='type_id' id='type_id' label='Type' value={this.state.data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'ai_t_'+idx} value={row.id}>{row.type}</option>)}</SelectInput>
-      <DateInput key='date' id='date' value={this.state.data.date} onChange={this.onChange} />
-      <TimeInput key='time' id='time' value={this.state.data.time} onChange={this.onChange} />
+   return <InfoArticle key='act_art' header='Activity'>
+     <InfoColumns key='act_content'>
+      <SelectInput key='act_user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
+      <SelectInput key='act_type_id' id='type_id' label='Type' value={this.state.data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'ai_t_'+idx} value={row.id}>{row.type}</option>)}</SelectInput>
+      <DateInput key='act_date' id='date' value={this.state.data.date} onChange={this.onChange} />
+      <TimeInput key='act_time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoColumns>
-     <label htmlFor='event'>Info</label><textarea className='info' id='event' name='event' onChange={this.onChange} value={this.state.data.event} />
-     <SaveButton key='activity_save' onClick={() => this.updateInfo()} title='Save' />
+     <TextAreaInput key='act_event' id='event' value={this.state.data.event} onChange={this.onChange} />
+     <SaveButton key='act_btn_save' onClick={() => this.updateInfo()} title='Save' />
     </InfoArticle>
-   );
   else
    return <Spinner />
  }
@@ -195,8 +192,7 @@ class TypeInfo extends Component {
  render() {
   if (this.state.data)
    return (
-    <InfoArticle key='activity_type_article'>
-     <h1>Activity Type</h1>
+    <InfoArticle key='activity_type_art' header='Activity Type'>
      <InfoColumns key='activity_type_content'>
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
      </InfoColumns>

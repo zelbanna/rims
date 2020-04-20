@@ -1,9 +1,16 @@
-/* Table CSS */
+/* Table CSS 
 
-.report { height:auto; width:calc(100% - 6px); overflow-y:scroll; overflow-x:hidden; }
+- main-color
+- std-color
+- std-txt-color
+
+*/
+
+.report { border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; background-color:var(--std-color); height:auto; overflow-y:scroll; overflow-x:hidden; }
 .report::-webkit-scrollbar { display: none; }
-.list { height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; scrollbar-width:none; resize:horizontal; }
+.list { border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; background-color:var(--std-color); height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; scrollbar-width:none; resize:horizontal; }
 .list::-webkit-scrollbar { display: none; }
+.report:hover, .list:hover { box-shadow:0 0 3px 3px rgba(0,0,0,0.2); }
 .title { color:var(--std-txt-color); font-size:1.3rem; font-weight: bold; text-align:center; margin:0.5rem; text-transform:capitalize; }
 .table { display: table; width:100% }
 .thead { display: table-header-group; }

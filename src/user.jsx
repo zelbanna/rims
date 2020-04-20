@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import { rest_call, rnd } from './infra/Functions.js';
+import { RimsContext, Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput, TextLine, PasswordInput, SelectInput } from './infra/Inputs.jsx';
 
@@ -46,7 +46,7 @@ export class Info extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  componentDidMount(){
-  rest_call('api/system/theme_list').then(result => this.setState({themes:result.data}))
+  rest_call('api/portal/theme_list').then(result => this.setState({themes:result.data}))
   rest_call('api/master/user_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
@@ -60,8 +60,7 @@ export class Info extends Component {
   if (!this.state.found)
    return <InfoArticle key='ui_art'>User with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data && this.state.themes){
-   return <InfoArticle key='ui_art'>
-     <h1>User</h1>
+   return <InfoArticle key='ui_art' header='User'>
      <InfoColumns key='ui_content'>
       {(this.context.cookie.id === this.props.id) ?  <TextLine key='alias' id='alias' text='alias' /> : <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />}
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
@@ -81,6 +80,6 @@ Info.contextType = RimsContext;
 //
 export class User extends Component {
  render() {
-  return <div className='flexdiv centered'><Info id={this.props.id} /></div>
+  return <Flex key='u_flex' style={{justifyContent:'space-evenly'}}><Info id={this.props.id} /></Flex>
  }
 }

@@ -9,7 +9,8 @@
 .header {  background-color: var(--head-color); height:4rem; width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; display:flex}
 
 .title { font-size:2.2rem; color:var(--head-txt-color); margin:auto; font-weight:normal; }
-.button { color:var(--head-txt-color); font-size:1.6rem; padding:0; border:none; cursor:pointer; background-color:transparent; height:4rem; width:4rem }
+
+.button { color:var(--head-txt-color); font-size:1.6rem; padding:0; border:none; cursor:pointer; background-color:transparent; height:4rem; width:3rem }
 .button:hover, .head-button:focus { color:var(--high-color); transition-duration:0.15s}
 .button:active{ opacity:0.8; }
 

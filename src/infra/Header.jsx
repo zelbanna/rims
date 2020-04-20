@@ -12,7 +12,7 @@ export const MenuSeparator = (props) => <li className={styles.menuSeparator}></l
 export class Header extends Component {
  constructor(props){
   super(props)
-  this.state = {height:0};
+  this.state = {height:0,zoom:false};
  }
 
  implodeMenu = () => {
@@ -27,6 +27,15 @@ export class Header extends Component {
    this.setState({height:0})
  }
 
+ zoomTxt = () => {
+  const size = window.getComputedStyle(document.documentElement).fontSize.replace('px','');
+  if(this.state.zoom) {
+   document.documentElement.style.setProperty('font-size', `${size*0.8}px`);
+  } else {
+   document.documentElement.style.setProperty('font-size', `${size*1.25}px`);
+  }
+  this.setState({zoom:!this.state.zoom})
+ }
  render(){
   return (<header className={styles.header}>
    <h1 className={styles.title}>{this.props.title}</h1>
@@ -36,6 +45,7 @@ export class Header extends Component {
      {this.props.children}
     </ul>
    </div>
+   <button className={styles.button} onClick={() => this.zoomTxt()} title='Zoom'><i className={(this.state.zoom) ? 'fas fa-search-minus' : 'fas fa-search-plus'} /></button>
    <button className={styles.button} onClick={this.props.logOut} title='Log out'><i className='fas fa-sign-out-alt' /></button>
   </header>);
  }

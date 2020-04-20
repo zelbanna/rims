@@ -1,6 +1,8 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, RimsContext } from './infra/Functions.js';
+import { rest_call } from './infra/Functions.js';
 import { NavBar, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
+import { RimsContext } from './infra/UI.jsx';
+import styles from './infra/ui.module.css';
 
 // ************** Main **************
 //
@@ -31,7 +33,7 @@ export class Main extends Component {
    else if (panel.type === 'tab')
     buttons.push(<NavDropButton key={'mb_'+key} title={key} onClick={() => window.open(panel.tab,'_blank')} />)
    else if (panel.type === 'frame')
-    buttons.push(<NavDropButton key={'mb_'+key} title={key} onClick={() => this.context.changeMain(<iframe id='resource_frame' name='resource_frame' title={key} src={panel.frame}></iframe>)} />)
+    buttons.push(<NavDropButton key={'mb_'+key} title={key} onClick={() => this.context.changeMain(<iframe className={styles.frame} title={key} src={panel.frame} />)} />)
   }
   this.context.loadNavigation(<NavBar key='resource_navbar'><NavDropDown key='resources' title='Resources'>{buttons}</NavDropDown></NavBar>)
  }

@@ -1,4 +1,6 @@
-"""IPAM API module. Provides IP network and address management"""
+"""
+IPAM API module. Provides IP network and address management
+"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 

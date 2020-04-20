@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { rest_call, rnd } from './infra/Functions.js';
-import { Spinner, StateMap, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
+import { Spinner, StateLeds, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, NetworkButton, DeleteButton,ForwardButton, GoButton, InfoButton, LinkButton, ReloadButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
 
@@ -26,9 +26,9 @@ export class List extends Component{
 
  discoverInterfaces = () => (window.confirm('Rediscover interfaces?') && rest_call('api/interface/snmp',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
- listItem = (row) => [row.interface_id,row.mac,(row.ip) ? `${row.ip} (${row.ipam_id})` : '-',row.snmp_index,row.name,row.description,row.class,
+ listItem = (row) => [row.interface_id,row.mac,(row.ip) ? row.ip : '-',row.snmp_index,row.name,row.description,row.class,
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
-   <div className='states'><StateMap key={'il_if_state_' + row.interface_id} state={row.if_state} /><StateMap key={'il_ip_state_' + row.interface_id}state={row.ip_state} /></div>,<Fragment key={'il_btns_'+row.interface_id}>
+   <StateLeds key={'il_if_state_' + row.interface_id} state={[row.if_state,row.ip_state]} />,<Fragment key={'il_btns_'+row.interface_id}>
     <InfoButton key={'il_btn_info_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
     <DeleteButton key={'il_btn_del_' + row.interface_id} onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
     {!row.connection_id && <LinkButton key={'il_btn_sync_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
@@ -114,29 +114,23 @@ export class Info extends Component {
   if(this.state.data){
    if (this.state.op){
     if(this.state.op === 'device')
-     return (<article className='lineinput'>
-     <div>
-      <span>Connect {this.state.data.name} to <TextInput key='ii_cnct_dev' id='id' label='Device ID' onChange={this.deviceChange} /> with name '{this.state.connect.name}'</span>
-     </div>
+     return <LineArticle key='ii_cnct_art'>
+     Connect {this.state.data.name} to <TextInput key='ii_cnct_dev' id='id' label='Device ID' onChange={this.deviceChange} /> with name '{this.state.connect.name}'
      <BackButton key='ii_cnct_btn_back' onClick={() => this.setState({op:null})} title='Back' />
      <ForwardButton key='ii_cnct_btn_fwd' onClick={() => this.stateInterface()} title={'Connect interface on ' + this.state.connect.name} />
-    </article>)
+    </LineArticle>
     else if(this.state.op === 'interface')
-     return (<article className='lineinput'>
-     <div>
-      <span>Connect {this.state.data.name} to {this.state.connect.name} on
-       <SelectInput key='ii_cnct_int' id='interface_id' label='Interface' value={this.state.connect.interface_id} onChange={this.interfaceChange}>
+     return <LineArticle key='ii_cnct_art'>
+      Connect {this.state.data.name} to {this.state.connect.name} on
+      <SelectInput key='ii_cnct_int' id='interface_id' label='Interface' value={this.state.connect.interface_id} onChange={this.interfaceChange}>
        {this.state.interfaces.map(row => <option key={'ii_cnct_int_'+row.interface_id} value={row.interface_id}>{`${row.interface_id} (${row.name} - ${row.description})`}</option>)}
-       </SelectInput>
-       <CheckboxInput key='ii_cnct_map' id='map' value={this.state.connect.map} onChange={this.interfaceChange} />
-      </span>
-     </div>
-     <BackButton key='ii_cnct_btn_back' onClick={() => this.setState({op:'device'})} title='Back' />
-     <ForwardButton key='ii_cnct_btn_fwd' onClick={() => this.connectInterface()} title='Complete connection' />
-    </article>)
+      </SelectInput>
+      <CheckboxInput key='ii_cnct_map' id='map' value={this.state.connect.map} onChange={this.interfaceChange} />
+      <BackButton key='ii_cnct_btn_back' onClick={() => this.setState({op:'device'})} title='Back' />
+      <ForwardButton key='ii_cnct_btn_fwd' onClick={() => this.connectInterface()} title='Complete connection' />
+     </LineArticle>
     else if (this.state.op === 'ipam'){
-     return <InfoArticle key='ii_ipam_article'>
-      <h1>Create IPAM record</h1>
+     return <InfoArticle key='ii_ipam_article' header='Create IPAM record'>
       <InfoColumns key='ii_ipam_create'>
        <SelectInput key='ii_ipam_net' id='network_id' label='Network' value={this.state.ipam.network_id} onChange={this.ipamChange}>{this.state.networks.map((row,idx) => <option key={'ii_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
        <TextInput key='ii_ipam_ip' id='ip' value={this.state.ipam.ip} label='IP' onChange={this.ipamChange} />
@@ -153,8 +147,7 @@ export class Info extends Component {
    } else {
     const ipam = (this.state.data.ipam_id);
     const peer = (this.state.peer);
-    return (<InfoArticle key='ii_article'>
-     <h1>Interface</h1>
+    return (<InfoArticle key='ii_article' header='Interface'>
      <InfoColumns key='ii_columns' columns={3}>
       <TextInput key='ii_name' id='name' value={this.state.data.name} onChange={this.onChange} /><div>{ipam && <SyncButton key='ii_btn_dns' onClick={() => this.updateDNS()} title='Sync DNS information using name' />}</div>
       <SelectInput key='ii_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'ii_class_'+row} value={row}>{row}</option>)}</SelectInput><div />
@@ -199,8 +192,7 @@ class ConnectionInfo extends Component {
 
  render(){
   if(this.state.interfaces){
-   return <InfoArticle key='ci_article'>
-    <h1>Connection {this.props.id}</h1>
+   return <InfoArticle key='ci_article' header={'Connection '+ this.props.id}>
     <InfoColumns key='ci_columns'>
      <CheckboxInput key='map' id='map' value={this.state.data.map} onChange={this.onChange} />
      {this.state.interfaces.map((row,idx) => <TextLine key={'conn_int_'+idx} id={'interface_' +idx} text={`${row.device_name} - ${row.interface_name} (${row.interface_id})`} />)}

@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, RimsContext } from './infra/Functions.js';
-import { InfoArticle, InfoColumns, Spinner, ContentList, ContentData, Result } from './infra/UI.jsx';
+import { rest_call } from './infra/Functions.js';
+import { RimsContext, Flex, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, Result } from './infra/UI.jsx';
 import { TextInput, TextLine } from './infra/Inputs.jsx';
 import { HrefButton, ReloadButton, SaveButton, SearchButton, StartButton, StopButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavInfo } from './infra/Navigation.jsx';
@@ -45,12 +45,11 @@ class Info extends Component{
   if (this.state.data){
    let slots = [];
    for (let i = 0; i < this.state.data.slots; i++){
-    slots.push(<TextLine key={'pi_slot_name_' + i} id={'pi_slot_name_' + i} label={'Slot ' + i + ' Name'} text={this.state.data[i + '_slot_name']} />);
-    slots.push(<TextLine key={'pi_slot_id_' + i} id={'pi_slot_id_' + i} label={'Slot ' + i + ' ID'} text={this.state.data[i + '_slot_id']} />);
+    slots.push(<TextLine key={'pi_sn_' + i} id={'pi_slot_name_' + i} label={'Slot ' + i + ' Name'} text={this.state.data[i + '_slot_name']} />);
+    slots.push(<TextLine key={'pi_si_' + i} id={'pi_slot_id_' + i} label={'Slot ' + i + ' ID'} text={this.state.data[i + '_slot_id']} />);
    }
-   return (<div className='flexdiv centered'>
-    <InfoArticle key='pi_article'>
-     <h1>PDU Device Info ({this.props.type})</h1>
+   return <Flex key='pi_flex' style={{justifyContent:'space-evenly'}}>
+    <InfoArticle key='pi_article' header={'PDU Device Info - '+this.props.type}>
      <InfoColumns key='pi_info'>
       <TextLine key='pi_slots' id='slots' label='Right/Left slots' text={JSON.stringify(this.state.data.slots === 2)} />
       {slots}
@@ -58,7 +57,7 @@ class Info extends Component{
      <ReloadButton key='pi_btn_reload' onClick={() => this.componentDidMount() } />
      <SearchButton key='pi_btn_search' onClick={() => this.lookupSlots() } />
     </InfoArticle>
-   </div>)
+   </Flex>
   } else
    return <Spinner />
  }

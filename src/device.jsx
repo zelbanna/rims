@@ -1,10 +1,9 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rnd, RimsContext } from './infra/Functions.js';
-import { Spinner, StateMap, InfoArticle, InfoColumns, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call, rnd } from './infra/Functions.js';
+import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavReload } from './infra/Navigation.jsx'
-import { TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
+import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
-import tableStyles from './infra/table.module.css';
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 
@@ -88,27 +87,22 @@ class Search extends Component {
  onChange = (e) => this.setState({[e.target.name]:e.target.value})
 
  render() {
-  return (
-   <article className='lineinput'>
-    <h1>Device Search</h1>
-    <div>
-     <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field}>
-      <optgroup label='Group'>
-       <option value='hostname'>Hostname</option>
-       <option value='type'>Type</option>
-      </optgroup>
-      <optgroup label='Unique'>
-       <option value='id'>ID</option>
-       <option value='ip'>IP</option>
-       <option value='mac'>MAC</option>
-       <option value='ipam_id'>IPAM ID</option>
-      </optgroup>
-     </SelectInput>
-     <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
-    </div>
+  return <LineArticle key='d_srch_art' header='Device Search'>
+   <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field}>
+    <optgroup label='Group'>
+     <option value='hostname'>Hostname</option>
+     <option value='type'>Type</option>
+    </optgroup>
+    <optgroup label='Unique'>
+     <option value='id'>ID</option>
+     <option value='ip'>IP</option>
+     <option value='mac'>MAC</option>
+     <option value='ipam_id'>IPAM ID</option>
+    </optgroup>
+    </SelectInput>
+    <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
     <SearchButton key='ds_btn_search' onClick={() => this.changeContent(<List key='device_list' {...this.state} />)} title='Search devices' />
-   </article>
-  )
+   </LineArticle>
  }
 }
 // ************** List **************
@@ -144,7 +138,7 @@ class List extends Component {
   this.setState({sort:method})
  }
 
- listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,StateMap({state:row.state}),<Fragment key={'dl_buttons_'+row.id}>
+ listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<StateLeds key={'dl_state_' + row.id} state={row.state} />,<Fragment key={'dl_buttons_'+row.id}>
   <InfoButton key={'dl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />
   <DeleteButton key={'dl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete device' />
  </Fragment>]
@@ -212,9 +206,8 @@ export class Info extends Component {
    const has_ip = (extra.interface_ip);
    const function_strings = (extra.functions.length >0) ? extra.functions.split(',') : [];
    return <Fragment key='di_fragment'>
-    <InfoArticle key='di_art'>
-     <h1>Device</h1>
-     <InfoColumns key='di_info' className='left'>
+    <InfoArticle key='di_art' header='Device'>
+     <InfoColumns key='di_info' style={{float:'left'}}>
       <TextLine key='hostname' id='hostname' text={data.hostname} />
       <TextInput key='mac' id='mac' label='Sys Mac' value={data.mac} title='System MAC' onChange={this.onChange} />
       <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={extra.interface_mac} title='Management Interface MAC' />
@@ -222,7 +215,7 @@ export class Info extends Component {
       <TextLine key='snmp' id='snmp' label='SNMP' text={data.snmp} />
       <StateLine key='state' id='state' state={[extra.if_state,extra.ip_state]} />
      </InfoColumns>
-     <InfoColumns key='di_extra' className='left'>
+     <InfoColumns key='di_extra' style={{float:'left'}}>
       <TextLine key='id' id='id' text={this.props.id} />
       <SelectInput key='class' id='class' value={data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'di_class_'+row} value={row}>{row}</option>)}</SelectInput>
       <SelectInput key='type_id' id='type_id' label='Type' value={data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'di_type_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
@@ -230,24 +223,22 @@ export class Info extends Component {
       <TextLine key='version' id='version' text={data.version} onChange={this.onChange} />
       <TextInput key='serial' id='serial' label='S/N' value={data.serial} onChange={this.onChange} />
      </InfoColumns>
-     <InfoColumns key='di_rack' className='left'>
+     <InfoColumns key='di_rack' style={{float:'left'}}>
       {rack && <TextLine key='rack_pos' id='rack_pos' label='Rack/Pos' text={`${rack.rack_name} (${rack.rack_unit})`} />}
       {rack && <TextLine key='rack_size' id='rack_size' label='Size (U)' text={rack.rack_size} />}
       {rack && <TextLine key='rack_con' id='rack_con' label='TS/Port' text={`${rack.console_name} (${rack.console_port})`} />}
       {rack && this.state.pems.map(pem => <TextLine key={'pem_'+pem.id} id={'pem_'+pem.id} label={pem.name+' PDU'} text={`${pem.pdu_name} (${pem.pdu_unit})`} />)}
      </InfoColumns>
-     <InfoColumns key='di_vm' className='left'>
+     <InfoColumns key='di_vm' style={{float:'left'}}>
       {vm && <TextLine key='vm_name' id ='vm_name' label='VM Name' text={vm.name} />}
       {vm && <TextLine key='vm_host' id ='vm_host' label='VM Host' text={vm.host} />}
       {vm && <TextLine key='vm_uuid' id ='vm_uuid' label='VM UUID' text={vm.device_uuid} style={{maxWidth:170}} extra={vm.device_uuid} />}
       {vm && <TextLine key='vm_uuhost' id ='vm_uuhost' label='Host UUID' text={vm.server_uuid} style={{maxWidth:170}} extra={vm.server_uuid} />}
      </InfoColumns>
-     <br />
-     <InfoColumns key='di_text'>
+     <InfoColumns key='di_text' style={{clear:'both'}}>
       <TextInput key='comment' id='comment' value={data.comment} onChange={this.onChange} />
       <UrlInput key='url' id='url' label='URL' value={data.url} onChange={this.onChange} />
      </InfoColumns>
-     <br />
      <ReloadButton key='di_btn_reload' onClick={() => this.reload()} />
      <SaveButton key='di_btn_save' onClick={() => this.updateInfo()} title='Save' />
      <ConnectionButton key='di_btn_conn' onClick={() => this.changeInterfaces()} title='Interfaces' />
@@ -268,7 +259,7 @@ export class Info extends Component {
      {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
      {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && <NavButton key='di_nav_stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='device_statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
-     {!this.state.navconf && function_strings.filter(fun => fun !== 'manage').map((op,idx) => <NavButton key={'di_nav_'+idx} title={op} onClick={() => this.changeContent(<Function key={'dev_func_'+op} id={this.props.id} op={op} type={this.state.extra.type_name} />)} />)}
+     {!this.state.navconf && function_strings.filter(fun => fun !== 'manage').map((op,idx) => <NavButton key={'di_nav_'+idx} title={op.replace('_',' ')} onClick={() => this.changeContent(<Function key={'dev_func_'+op} id={this.props.id} op={op} type={this.state.extra.type_name} />)} />)}
     </NavBar>
     {this.state.content}
    </Fragment>
@@ -320,8 +311,7 @@ class ManagementInfo extends Component {
 
  render() {
   if (this.state.data && this.state.domains)
-   return <InfoArticle key='d_conf_art'>
-    <h1>Management Configuration</h1>
+   return <InfoArticle key='d_conf_art' header='Management Configuration'>
     <InfoColumns key='d_conf_ic'>
      <TextInput key='d_conf_hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
      <SelectInput key='d_conf_management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={'de_intf_'+idx} value={row.interface_id}>{`${row.name} (${row.ip} - ${row.fqdn})`}</option>)}</SelectInput>
@@ -355,8 +345,7 @@ class RackInfo extends Component {
  render() {
   if (this.state.data){
    const racked = (this.state.data.rack_id && this.state.data.rack_id !== 'NULL');
-   return <InfoArticle key='d_rack_art'>
-    <h1>Rack</h1>
+   return <InfoArticle key='d_rack_art' header='Rack'>
     <InfoColumns key='d_rack_ic'>
      <SelectInput key='d_rack_id' id='rack_id' label='Rack ID' value={this.state.data.rack_id} onChange={this.onChange}>{this.state.racks.map((row,idx) => <option key={'d_rack_id_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      {racked && <TextInput key='d_rack_size' id='rack_size' label='Size' value={this.state.data.rack_size} onChange={this.onChange} title='Size of device in U' />}
@@ -426,8 +415,7 @@ class PemInfo extends Component{
     for (let i = 0; i < pdu_info.slots; i++)
      slots.push({id:i,name:pdu_info[`${i}_slot_name`]});
    }
-   return <InfoArticle key='d_pem_art'>
-    <h1>PEM</h1>
+   return <InfoArticle key='d_pem_art' header='PEM'>
     <InfoColumns key='d_pem_ic'>
      <TextInput key='d_pem_name' id='name' value={this.state.data.name} onChange={this.onChange} />
      <SelectInput key='d_pem_pdu_id' id='pdu_id' label='PDU' value={this.state.data.pdu_id} onChange={this.onChange}>{this.state.pdus.map((row,idx) => <option key={'d_pem_pdu_id_'+idx} value={row.device_id}>{row.name}</option>)}</SelectInput>
@@ -495,8 +483,7 @@ class StatisticsInfo extends Component{
 
  render() {
   if (this.state.data){
-   return <InfoArticle key='d_stat_art'>
-    <h1>Data point</h1>
+   return <InfoArticle key='d_stat_art' header='Data point'>
     <InfoColumns key='d_stat_ic'>
      <TextInput key='d_stat_measurement' id='measurement' value={this.state.data.measurement} onChange={this.onChange} title='Group, or measurement, that the data point belongs to' />
      <TextInput key='d_stat_tags' id='tags' value={this.state.data.tags} onChange={this.onChange} title='Tags are comma separated values that extend TSDB grouping' />
@@ -541,18 +528,17 @@ class Control extends Component {
 
  render() {
   return (
-   <InfoArticle key='dc_art'>
-    <h1>Device Control</h1>
+   <InfoArticle key='dc_art' header='Device Control'>
     <InfoColumns key='dc_ic'>
      <label htmlFor='reboot'>Reboot:</label><ReloadButton id='reboot' key='dev_ctr_reboot' onClick={() => this.operationDev('reboot','Really reboot?')} title='Restart device' />
      <label htmlFor='shutdown'>Shutdown:</label><ShutdownButton id='shutdown' key='dev_ctr_shutdown' onClick={() => this.operationDev('shutdown','Really shutdown?')} title='Shutdown' />
      {this.state.pems.map(pem => {
       if(pem.state === 'off')
-       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><StartButton key={'dc_btn_start_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'on','Power on PEM?')} title='Power ON' /></Fragment>
+       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}:</label><StartButton key={'dc_btn_start_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'on','Power on PEM?')} title='Power ON' /></Fragment>
       else if (pem.state === 'on')
-       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><ShutdownButton key={'dc_btn_stop_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'off','Power off PEM?')} title='Power OFF' /></Fragment>
+       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}:</label><ShutdownButton key={'dc_btn_stop_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'off','Power off PEM?')} title='Power OFF' /></Fragment>
       else
-       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}</label><SearchButton key={'dc_btn_lookup_'+pem.id} id={pem.id} onClick={() => this.lookupState(pem.id)} title='Lookup State' /></Fragment>
+       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}:</label><SearchButton key={'dc_btn_lookup_'+pem.id} id={pem.id} onClick={() => this.lookupState(pem.id)} title='Lookup State' /></Fragment>
      })}
     </InfoColumns>
     <Result key='dc_result' result={JSON.stringify(this.state.result)} />
@@ -585,7 +571,7 @@ class Template extends Component {
  }
 
  render() {
-  return (!this.state) ? <Spinner /> : <InfoArticle key='dtemp_art'>{(this.state.status === 'OK') ? this.state.data.map((row,idx) => <p key={'conf_'+idx}>{row}</p>) : <b>{this.state.info}</b>}</InfoArticle>
+  return (!this.state) ? <Spinner /> : <CodeArticle key='dtemp_art'>{(this.state.status === 'OK') ? this.state.data.join('\n') : this.state.info}</CodeArticle>
  }
 }
 
@@ -620,8 +606,7 @@ export class New extends Component {
    return <Spinner />
   else
    return (
-    <InfoArticle key='dn_art'>
-     <h1>Device Add</h1>
+    <InfoArticle key='dn_art' header='Device Add'>
      <InfoColumns key='dn_content'>
       <TextInput key='dn_hostname' id='hostname' value={this.state.data.hostname} placeholder='Device hostname' onChange={this.onChange} />
       <SelectInput key='dn_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'dn_class_'+row} value={row}>{row}</option>)}</SelectInput>
@@ -655,21 +640,16 @@ class Discover extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- Result(props){
-  return  <article className='code'><pre>{JSON.stringify(props.result,null,2)}</pre></article>
- }
-
  runDiscovery(){
   this.setState({content:<Spinner />})
-  rest_call('api/device/discover',{network_id:this.state.ipam_network_id, a_domain_id:this.state.a_domain_id}).then(result => this.setState({content:<article className='code'><pre>{JSON.stringify(result,null,2)}</pre></article>}))
+  rest_call('api/device/discover',{network_id:this.state.ipam_network_id, a_domain_id:this.state.a_domain_id}).then(result => this.setState({content:<CodeArticle key='dd_result'>{JSON.stringify(result,null,2)}</CodeArticle>}))
  }
 
  render() {
   if (this.state.networks && this.state.domains){
    return (
     <Fragment key='dd_fragment'>
-     <InfoArticle key='dd_art'>
-      <h1>Device Discovery</h1>
+     <InfoArticle key='dd_art' header='Device Discovery'>
       <InfoColumns key='dd_content'>
        <SelectInput key='dd_ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={'dd_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
        <SelectInput key='dd_a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dd_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
@@ -692,7 +672,7 @@ export class Report extends Component {
   rest_call('api/device/list', { extra:['system','type','mac','oui','class']}).then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,StateMap({state:row.state})]
+ listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,<StateLeds key={'dr_'+row.id} state={row.state} />]
 
  render(){
   return (!this.state) ? <Spinner /> : <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','Class','IP','MAC','OUI','Model','OID','Serial','State']} trows={this.state.data} listItem={this.listItem} />
@@ -776,16 +756,14 @@ export class ModelInfo extends Component {
 
  render() {
   if (this.state.data)
-   return <InfoArticle key='dm_art'>
-    <h1>Device Model</h1>
+   return <InfoArticle key='dm_art' header='Device Model'>
     <InfoColumns key='dm_content'>
      <TextLine key='dm_name' id='name' text={this.state.data.name} />
      <TextLine key='dm_type' id='type' text={this.state.extra.type} />
      <TextInput key='dm_defaults_file' id='defaults_file' label='Default File' value={this.state.data.defaults_file} onChange={this.onChange} />
      <TextInput key='dm_image_file' id='image_file' label='Image  File' value={this.state.data.image_file} onChange={this.onChange} />
     </InfoColumns>
-    <label className='info' htmlFor='parameters'>Parameters:</label>
-    <textarea className='info' id='parameters' name='parameters' onChange={this.onChange} value={this.state.data.parameters} />
+    <TextAreaInput key='dm_parameters'  id='parameters' onChange={this.onChange} value={this.state.data.parameters} />
     <SaveButton key='dm_btn_save' onClick={() => this.updateInfo()} title='Save' />
    </InfoArticle>
   else
@@ -808,16 +786,13 @@ class OUISearch extends Component {
  }
 
  render() {
-  return (<div className='flexdiv'>
-   <article className='lineinput'>
-    <h1>OUI Search</h1>
-    <div>
-     <span>Type OUI or MAC address to find OUI/company name:<input type='text' id='oui' name='oui' required='required' onChange={this.onChange} value={this.state.data.oui} placeholder='00:00:00' /></span>
-     <SearchButton key='oui_btn_search' onClick={() => this.ouiSearch()} title='Search for OUI' />
-    </div>
-   </article>
+  return <Flex key='flex'>
+   <LineArticle key='oui_src_art'>
+    Type OUI or MAC address to find OUI/company name,<TextInput key='oui' id='oui' onChange={this.onChange} value={this.state.data.oui} placeholder='00:00:00' />
+    <SearchButton key='oui_btn_search' onClick={() => this.ouiSearch()} title='Search for OUI' />
+   </LineArticle>
    {this.state.content}
-  </div>)
+  </Flex>
  }
 }
 
@@ -834,18 +809,7 @@ class OUIList extends Component {
  }
 
  render(){
-  if (this.state.data)
-   return <article className={tableStyles.list}>
-    <h1 className={tableStyles.title}>OUI</h1>
-    <div className={tableStyles.table}>
-     <div className={tableStyles.thead}><div className={tableStyles.th}>oui</div><div className={tableStyles.th}>company</div></div>
-     <div className={tableStyles.tbody}>
-      {this.state.data.map((row,index) => <div key={'tr_'+index} className={tableStyles.trow}><div className={tableStyles.td}>{`${row.oui.substring(0,2)}:${row.oui.substring(2,4)}:${row.oui.substring(4,6)}`}</div><div className={tableStyles.td}>{row.company}</div></div>)}
-     </div>
-    </div>
-   </article>
-  else
-   return <Spinner />
+   return (this.state.data) ? <ContentReport key='oui_list_cr' header='OUI' thead={['oui','company']} trows={this.state.data} listItem={(row)=> [`${row.oui.substring(0,2)}:${row.oui.substring(2,4)}:${row.oui.substring(4,6)}`,row.company]} /> : <Spinner />
  }
 }
 
@@ -866,6 +830,6 @@ class Function extends Component {
    } else
     return <InfoArticle key='df_art'>No Data</InfoArticle>
   } else
-   return <InfoArticle key='df_art'><b>Error in devdata: {this.state.info}</b></InfoArticle>
+   return <CodeArticle key='df_art'>Error in devdata: {this.state.info}</CodeArticle>
  }
 }

@@ -1,0 +1,28 @@
+/* Button CSS
+
+- high-color
+- std-color
+- std-txt-color
+- ui-color
+- ui-txt-color
+
+*/
+
+.href { font-weight:bold; border:none; cursor:pointer; background-color:transparent; font-size:1rem; color:var(--std-txt-color);}
+.href:hover,button.text:focus { color:var(--high-color)!important; }
+.href::-moz-focus-inner { border-style: dotted; }
+
+.info { background-color:var(--ui-color); border:none; color:var(--ui-txt-color); height:2rem; width:2rem; outline-width:0; border-radius:4px; margin-left:1px; margin-right:1px; padding:0 }
+.info:hover, .info:focus {  opacity:0.9; color:var(--high-color)!important; transition-duration:0.15s; }
+.info:active { opacity:0.7; transform: translateY(1px); }
+.info::-moz-focus-inner { border-style: none; }
+.info > i{ font-size:1.4rem; background-color:transparent; color:var(--ui-txt-color); }
+.info > i:hover, .info > i:focus { color:var(--high-color)!important; transition-duration:0.15s; }
+
+.text { background-color:var(--ui-color); border:none; color:var(--ui-txt-color); font-size:1rem; font-weight:bold; height:2rem; vertical-align:bottom; outline-width:0; border-radius:4px; margin-left:1px; margin-right:1px;}
+.text:hover, .text:focus {  opacity:0.9; color:var(--high-color)!important; transition-duration:0.15s; }
+.text:active { opacity:0.7; transform: translateY(1px); }
+.text::-moz-focus-inner { border-style: dotted; }
+
+.ipam { border:none; color:#000000; float:left; font-size:0.8rem; font-weight:bold; outline-width:0; border-radius:4px; padding:0; height:2rem; width:2rem; margin:2px;  }
+.ipam:hover, .ipam:focus {  opacity:0.9; color:#FFFFFF; transition-duration:0.15s; }

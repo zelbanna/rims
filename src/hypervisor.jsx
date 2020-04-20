@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, RimsContext } from './infra/Functions.js';
-import { Result, Spinner, StateMap, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { rest_call } from './infra/Functions.js';
+import { RimsContext, Result, Spinner, StateLeds, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 import { StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
 import { NavBar, NavInfo, NavButton } from './infra/Navigation.jsx';
@@ -21,7 +21,7 @@ export class Main extends Component {
 
  listItem = (row) => {
   const up =  (row.state === 'up');
-  return [row.hostname,row.type_name,<StateMap state={row.state} />,<Fragment key={'hyp_buttons_'+row.id}>
+  return [row.hostname,row.type_name,<StateLeds state={row.state} />,<Fragment key={'hyp_buttons_'+row.id}>
    {up && row.type_functions === 'manage' && <InfoButton key={'hyp_btn_info_'+row.id} onClick={() => this.context.changeMain(<Manage key={'hypervisor_manage_'+row.id} device_id={row.id} type={row.type_name} />)} />}
    {up && row.url && row.url.length > 0 && <UiButton key={'hyp_ btn_ui_'+row.id} onClick={() => window.open(row.url,'_blank') } />}
    </Fragment>]
@@ -210,8 +210,7 @@ class Info extends Component{
   if (this.state.data) {
    const data = this.state.data;
    return <Fragment key='hyp_frag'>
-    <InfoArticle key='hyp_article'>
-     <h1>VM info</h1>
+    <InfoArticle key='hyp_article' header='VM info'>
      <InfoColumns key='hyp_ic' columns={3}>
       <TextLine key='hyp_name' id='name' text={data.name} /><div />
       <TextInput key='hyp_device_id' id='device_id' label='Device ID' value={data.device_id} onChange={this.onChange} /><div />

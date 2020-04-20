@@ -58,8 +58,7 @@ export class Info extends Component {
   if (!this.state.found)
    return <InfoArticle key='loc_removed'>Location id: {this.props.id} removed</InfoArticle>
   else if (this.state.data)
-   return <InfoArticle key='loc_article'>
-     <h1>Location</h1>
+   return <InfoArticle key='loc_article' header='Location'>
      <InfoColumns key='loc_content'>
      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
      </InfoColumns>

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.1"
-__build__ = 303
+__build__ = 304
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk
@@ -461,14 +461,13 @@ class WorkerPool(object):
 class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
-  self._headers = {}
+  self._headers = {'X-Powered-By':'RIMS Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()}
   self._body    = b'null'
   self._ctx     = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
  def header(self):
-  # Sends X-Code as response
-  self._headers.update({'X-Method':self.command,'X-Powered-By':'RIMS Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()})
+  # Sends X-Code as response, self.command == POST/GET/OPTION
   code = self._headers.pop('X-Code',200)
   self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,self.responses.get(code,('Other','Server specialized return code'))[0])).encode('utf-8'))
   self._headers.update({'Content-Length':len(self._body),'Connection':'close'})
@@ -477,23 +476,74 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: self.send_header('X-Header-Error',k)
   self.end_headers()
 
+ def do_OPTIONS(self):
+  print('OPTION:' + self.path)
+  self.wfile.write('HTTP/1.1 200 OK\r\n'.encode('utf-8'))
+  self.send_header('X-Powered-By','RIMS Engine %s.%s'%(__version__,__build__))
+  self.send_header('Access-Control-Allow-Headers','X-Token,Content-Type')
+  self.send_header('Access-Control-Allow-Origin','*')
+  self.send_header('Connection','close')
+  self.send_header('Content-Length',0)
+  self.send_header('Date',self.date_time_string())
+  self.wfile.write(self._body)
+
  def do_GET(self):
   print('GET: ' + self.path)
   path,_,query = self.path[1:].partition('/')
-  if path in ['infra','images','files','static']:
-   # Use caching here :-)
-   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
-    self._headers['X-Code'] = 304
-   else:
-    self.files(path,query)
-  elif len(path) == 0:
-   self._headers.update({'X-Process':'no route','Location':'index.html','X-Code':301})
+  if len(path) == 0:
+   self.wfile.write('HTTP/1.1 301 Moved Permanently\r\n'.encode('utf-8'))
+   self.send_header('X-Powered-By','RIMS Engine %s.%s'%(__version__,__build__))
+   self.send_header('Connection','close')
+   self.send_header('Content-Length',0)
+   self.send_header('Date',self.date_time_string())
+   self.send_header('Location','index.html')
+   self.end_headers()
+  elif self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
+   self.wfile.write('HTTP/1.1 304 Not Modified\r\n'.encode('utf-8'))
+   self.send_header('X-Powered-By','RIMS Engine %s.%s'%(__version__,__build__))
+   self.send_header('Connection','close')
+   self.send_header('Content-Length',0)
+   self.send_header('Date',self.date_time_string())
+   self.end_headers()
   else:
-   self.files('',path)
-  self.header()
-  try: self.wfile.write(self._body)
+   path = path if (path in ['infra','images','files','static']) else ''
+   self.files(path,query)
+   self.header()
+   try: self.wfile.write(self._body)
+   except Exception as e:
+    print("GET: Error writing above body => %s"%str(e))
+
+
+ #
+ #
+ def files(self,path,query):
+  """ Serve "common" system files and also route 'files' """
+  query = unquote(query)
+  self._ctx.analytics('files', path, query)
+  self._headers.update({'X-Process':'files','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
+  _,_,ftype = query.rpartition('.')
+  if ftype == 'js':
+   self._headers['Content-type']='application/javascript; charset=utf-8'
+  elif ftype == 'css':
+   self._headers['Content-type']='text/css; charset=utf-8'
+  elif ftype == 'html':
+   self._headers['Content-type']='text/html; charset=utf-8'
+  try:
+   if not path == 'files':
+    fullpath = ospath.join(self._ctx.path,'build',path,query)
+   else:
+    param,_,file = query.partition('/')
+    fullpath = ospath.join(self._ctx.config['files'][param],file)
+   if not fullpath.endswith("/"):
+    with open(fullpath, 'rb') as file:
+     self._body = file.read()
+   else:
+    self._headers['Content-type']='text/html; charset=utf-8'
+    _, _, filelist = next(walk(fullpath), (None, None, []))
+    self._body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
   except Exception as e:
-   print("GET: Error writing above body => %s"%str(e))
+   self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
+   self._body = b''
 
  def do_POST(self):
   """ Route request to the right function /<path>/mod_fun?get"""
@@ -515,11 +565,6 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.register(query)
   else:
    self._headers.update({'X-Process':'no route','X-Code':404})
-  self.header()
-  self.wfile.write(self._body)
-
- def do_OPTIONS(self):
-  self._headers.update({'Access-Control-Allow-Headers':'X-Token,Content-Type','Access-Control-Allow-Origin':'*'})
   self.header()
   self.wfile.write(self._body)
 
@@ -570,37 +615,6 @@ class SessionHandler(BaseHTTPRequestHandler):
     from traceback import format_exc
     for n,v in enumerate(format_exc().split('\n')):
      self._headers["X-Debug-%02d"%n] = v
-
- #
- #
- def files(self,path,query):
-  """ Serve "common" system files and also route 'files' """
-  query = unquote(query)
-  self._ctx.analytics('files', path, query)
-  self._headers.update({'X-Process':'files','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
-  _,_,ftype = query.rpartition('.')
-  if ftype == 'js':
-   self._headers['Content-type']='application/javascript; charset=utf-8'
-  elif ftype == 'css':
-   self._headers['Content-type']='text/css; charset=utf-8'
-  elif ftype == 'html':
-   self._headers['Content-type']='text/html; charset=utf-8'
-  try:
-   if not path == 'files':
-    fullpath = ospath.join(self._ctx.path,'build',path,query)
-   else:
-    param,_,file = query.partition('/')
-    fullpath = ospath.join(self._ctx.config['files'][param],file)
-   if not fullpath.endswith("/"):
-    with open(fullpath, 'rb') as file:
-     self._body = file.read()
-   else:
-    self._headers['Content-type']='text/html; charset=utf-8'
-    _, _, filelist = next(walk(fullpath), (None, None, []))
-    self._body = ("<BR>".join("<A HREF='{0}'>{0}</A>".format(file) for file in filelist)).encode('utf-8')
-  except Exception as e:
-   self._headers.update({'X-Exception':str(e),'X-Query':query,'X-Path':path,'Content-type':'text/html; charset=utf-8','X-Code':404})
-   self._body = b''
 
  #
  #
