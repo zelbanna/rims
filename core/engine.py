@@ -115,6 +115,8 @@ class Context(object):
    info['build'] = __build__
   else:
    info = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
+   for k,v in info['tokens'].items(): 
+    v['expires'] = strptime(v['expires'],"%a, %d %b %Y %H:%M:%S GMT")
   return info
 
  #
