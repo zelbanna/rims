@@ -522,7 +522,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      self._headers.update({'X-Exception':str(e),'Content-type':'text/html; charset=utf-8'})
      self.header(404,'Not Found',0)
    else:
-    self.headers(404,'Not Found',0)
+    self.header(404,'Not Found',0)
   else:
    self._headers.update({'Location':'index.html'})
    self.header('301','Moved Permanently',0)
