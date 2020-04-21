@@ -436,7 +436,6 @@ CREATE TABLE `user_tokens` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `source_ip` int(10) unsigned NOT NULL,
-  `source_port` int(10) unsigned DEFAULT NULL,
   `token` varchar(16) NOT NULL,
   `created` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
