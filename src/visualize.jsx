@@ -37,7 +37,7 @@ export class List extends Component {
 
  listItem = (row) => [row.id,row.name,<Fragment key='vl_buttons'>
   <EditButton key={'vl_btn_edt_'+row.id} onClick={() => this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)} title='Show and edit map' />
-  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => window.open(`viz.html?id=${row.id}`,'_blank')} />
+  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => window.open(`viz.html?id=${row.id}`,'_blank')} title='Show resulting map' />
   <DeleteButton key={'vl_btn_del_'+row.id}  onClick={() => this.deleteList(row.id)} />
  </Fragment>]
 

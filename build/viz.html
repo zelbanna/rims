@@ -32,7 +32,6 @@ rest_call("vizmap",{id:id}).then(result => {
  var nodes = new vis.DataSet(result.data.nodes);
  var edges = new vis.DataSet(result.data.edges);
  var network = new window.vis.Network(document.getElementById("rims_network"), {nodes:nodes, edges:edges}, result.data.options);
- network.on("stabilizationIterationsDone", () => network.setOptions({ physics: false }))
  network.on("doubleClick", (params) => doubleClick(params))
 });
 </script>
