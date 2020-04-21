@@ -70,7 +70,7 @@ const content = (type,props) => {
 
 // ********************* Portal Components *********************
 //
-export const RimsContext = createContext({setCookie:()=>{},clearCookie:()=>{},cookie:null,changeMain:()=>{},loadNavigtion:()=>{}})
+export const RimsContext = createContext({settings:null,logIn:()=>{},logOut:()=>{},changeMain:()=>{},loadNavigtion:()=>{},changeTheme:()=>{}})
 RimsContext.displayName = 'RimsContext';
 
 // *** Error boundary for fault management ***
@@ -142,7 +142,7 @@ export class Portal extends Component {
 
  componentDidMount() {
   this.props.providerMounting({changeMain:this.changeContent,loadNavigation:this.loadNavigation});
-  rest_call('api/portal/menu',{id:this.context.cookie.id}).then(result => {
+  rest_call('api/portal/menu',{id:this.context.settings.id}).then(result => {
    if(result && result.status === 'OK'){
     const data = result.data
     this.setState(data);
@@ -159,7 +159,7 @@ export class Portal extends Component {
    try {
     import("../"+panel.module+".jsx").then(lib => {
      var Elem = lib[panel.function];
-     this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />,height:0});
+     this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />});
     })
    } catch(err) {
     console.error("Mapper error: "+panel);
@@ -167,11 +167,6 @@ export class Portal extends Component {
    }
   } else
    this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:panel})
- }
-
- logOut = () => {
-  auth_call({destroy:this.context.cookie.token,id:this.context.cookie.id})
-  this.context.clearCookie()
  }
 
  render() {
@@ -185,13 +180,13 @@ export class Portal extends Component {
     buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => this.changeContent(<iframe className={uiStyles.frame} title={key} src={panel.frame} />)} />)
   }
   buttons.push(<MenuSeparator key='hs_1' />,
-   <MenuButton key='hb_user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.cookie.id}})} />,
+   <MenuButton key='hb_user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.settings.id}})} />,
    <MenuButton key='hb_system' title='System' onClick={() => this.changeContent({module:'system',function:'Main'})} />)
 
   return (
    <React.Fragment key='portal'>
-    <Theme key='portal_theme' theme={this.context.cookie.theme} />
-    <Header key='portal_header' title={this.state.title} logOut={() => this.logOut()}>
+    <Theme key='portal_theme' theme={this.context.settings.theme} />
+    <Header key='portal_header' title={this.state.title} logOut={() => this.context.logOut()}>
      {buttons}
     </Header>
     {this.state.navigation}
@@ -226,7 +221,7 @@ export class Login extends Component {
   auth_call({username:this.state.username,password:this.state.password})
    .then((result) => {
     if (result.status === 'OK')
-     this.props.setCookie({node:result.node,token:result.token,id:result.id,theme:result.theme,expires:result.expires});
+     this.context.logIn({node:result.node,token:result.token,id:result.id,theme:result.theme,expires:result.expires});
     else {
      document.getElementById("password").value = "";
      this.setState(prevState => ({ ...prevState,   password : '' }))
@@ -249,3 +244,4 @@ export class Login extends Component {
   )
  }
 }
+Login.contextType = RimsContext;

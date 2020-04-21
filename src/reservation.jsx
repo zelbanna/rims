@@ -24,7 +24,7 @@ export class List extends Component {
  deleteItem = (dev,user) => (window.confirm('Remove reservation?') && rest_call('api/reservation/update',{op:'delete', device_id:dev, user_id:user}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
 
  listItem = (row) => {
-  const buttons = (this.context.cookie.id === row.user_id || !row.valid);
+  const buttons = (this.context.settings.id === row.user_id || !row.valid);
   return [row.alias,row.hostname,row.end,<Fragment key='reservation_buttons'>
    {buttons && <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>}
    {buttons && <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />}

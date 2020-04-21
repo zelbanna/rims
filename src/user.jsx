@@ -51,8 +51,8 @@ export class Info extends Component {
  }
 
  updateInfo = () => {
-  if(this.context.cookie.id === this.state.data.id)
-   this.context.setCookie({...this.context.cookie, theme:this.state.data.theme});
+  if(this.context.settings.id === this.state.data.id)
+   this.context.changeTheme(this.state.data.theme);
   rest_call('api/master/user_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
  }
 
@@ -62,7 +62,7 @@ export class Info extends Component {
   else if (this.state.data && this.state.themes){
    return <InfoArticle key='ui_art' header='User'>
      <InfoColumns key='ui_content'>
-      {(this.context.cookie.id === this.props.id) ?  <TextLine key='alias' id='alias' text='alias' /> : <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />}
+      {(this.context.settings.id === this.props.id) ?  <TextLine key='alias' id='alias' text={this.state.data.alias} /> : <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />}
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
       <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />

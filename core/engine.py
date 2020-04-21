@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "6.1"
-__build__ = 304
+__version__ = "6.2"
+__build__ = 305
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk, stat as osstat
@@ -13,8 +13,7 @@ from time import localtime, time, sleep, strftime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
 from functools import partial
-from base64 import b64encode, b64decode
-from datetime import datetime,timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from crypt import crypt
 from rims.core.common import DB, rest_call
 
@@ -547,14 +546,14 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
   if path == 'api':
-   try: cookie = loads(b64decode(self.headers['Cookie'][5:]).decode('utf-8'))
+   try:
+    cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])
+    id = self._ctx.tokens[cookies['rims']]['id']
    except:
     self._headers.update({'X-Code':401})
-    self._ctx.log("API Error: %s sent malformed cookie in call: %s"%(self.client_address[0],self.path))
+    self._ctx.log("API Cookie error: %s sent non-matching cookie in call: %s"%(self.client_address[0],self.path))
    else:
-    try: id = self._ctx.tokens[cookie['token']]['id']
-    except: self._headers.update({'X-Code':401})
-    else: self.api(query,id)
+    self.api(query,id)
   elif path == 'internal':
    if self.headers.get('X-Token') == self._ctx.token: self.api(query,0)
    else: self._headers.update({'X-Code':401})
@@ -677,21 +676,15 @@ class SessionHandler(BaseHTTPRequestHandler):
     if 'verify' in args:
      if (self._ctx.tokens.get(token)):
       entry = self._ctx.tokens[token]
-      output['status'] = 'OK'
       output['id'] = entry['id']
       output['token'] = token
       output['expires'] = entry['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
-      self._headers['X-Code'] = 200
-     else:
-      output['status'] = 'NOT_OK'
-    elif 'destroy' in args:
-     local = self._ctx.tokens.get(token)
-     if local and local['id'] == args.get('id'):
-      self._ctx.tokens.pop(token,None)
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
-     else:
-      output['status'] = 'NOT_OK'
+    elif 'destroy' in args:
+     if self._ctx.tokens.pop(token,None):
+      output['status'] = 'OK'
+      self._headers['X-Code'] = 200
     else:
      from rims.core.genlib import random_string
      passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
@@ -703,8 +696,8 @@ class SessionHandler(BaseHTTPRequestHandler):
        expires = datetime.now(timezone.utc) + timedelta(days=5)
        self._ctx.tokens[output['token']] = {'id':output['id'],'expires':expires}
        output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
-       self._headers['X-Code'] = 200
        output['status'] = 'OK'
+       self._headers['X-Code'] = 200
       else:
        output['info'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:

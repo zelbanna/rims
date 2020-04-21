@@ -20,7 +20,7 @@ export class Main extends Component {
    Object.assign(this.state,result)
    this.compileNavItems()
   })
-  rest_call('api/master/inventory',{node:this.context.cookie.node, user_id:this.context.cookie.id}).then(result => {
+  rest_call('api/master/inventory',{node:this.context.settings.node, user_id:this.context.settings.id}).then(result => {
    Object.assign(this.state,result)
    this.compileNavItems()
   })
@@ -32,7 +32,7 @@ export class Main extends Component {
  }
 
  compileNavItems = () => {
-  const master = (this.context.cookie.node === 'master')
+  const master = (this.context.settings.node === 'master')
   this.context.loadNavigation(<NavBar key='system_navbar'>
    {master && <NavButton key='sys_nav_node' title='Nodes' onClick={() => this.changeImport('node','List')} />}
    {master && <NavButton key='sys_nav_srv' title='Servers' onClick={() => this.changeImport('server','List')} />}
@@ -47,7 +47,7 @@ export class Main extends Component {
     {master && <NavDropButton key='sys_nav_dev' title='Devices' onClick={() => this.changeImport('device','Report')} />}
     {master && <NavDropButton key='sys_nav_inv' title='Inventory' onClick={() => this.changeImport('inventory','Report')} />}
    </NavDropDown>
-   <NavButton key='sys_nav_logs' title='Logs' onClick={() => this.changeImport('node','LogShow',{node:this.context.cookie.node})} />
+   <NavButton key='sys_nav_logs' title='Logs' onClick={() => this.changeImport('node','LogShow',{node:this.context.settings.node})} />
    <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />
    {this.state.services.length > 0 &&  <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavDropButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
    <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
@@ -98,7 +98,7 @@ export class TaskReport extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/task_list',{node:this.context.cookie.node}).then(result => this.setState(result))
+  rest_call('api/master/task_list',{node:this.context.settings.node}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.node,row.frequency,row.module,row.function,row.args]

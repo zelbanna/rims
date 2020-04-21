@@ -96,7 +96,7 @@ class Info extends Component {
  componentDidMount(){
   rest_call('api/master/activity_info',{id:this.props.id}).then(result => {
    if (result.data.user_id === null)
-    result.data.user_id = this.context.cookie.id;
+    result.data.user_id = this.context.settings.id;
    this.setState(result);
   })
  }

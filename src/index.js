@@ -15,39 +15,46 @@ class RIMS extends Component {
  constructor(props) {
   super(props);
 
-  this.state = this.readCookie();
+  this.state = {token:null, theme:undefined}
+  const cookies = document.cookie.split("; ");
+  for(let i=0;i < cookies.length;i++) {
+   let c = cookies[i];
+   if (c.indexOf("rims=") === 0)
+    this.state.token = c.substring(5,c.length);
+   if (c.indexOf("rims_theme=") === 0)
+    this.state.theme = c.substring(11,c.length);
+  }
   this.provider = {}
  }
 
  componentDidMount(){
   if(this.state.token){
    auth_call({verify:this.state.token}).then(result => {
-    if(result.status !== 'OK')
+    if(result.status === 'OK')
+     this.setState({node:result.node,token:result.token,id:result.id,expires:result.expires});
+    else
      this.setState({token:null})
    })
   }
  }
 
- readCookie = () => {
-  var cookies = document.cookie.split("; ");
-  for(var i=0;i < cookies.length;i++) {
-   var c = cookies[i];
-   if (c.indexOf("rims=") === 0)
-    // Parse from 5th letter to end
-    return JSON.parse(atob(c.substring(5,c.length)));
-  }
-  return {token:null};
+ changeTheme = (theme) => {
+  document.cookie = "rims_theme="+ theme + "; Path=/; expires=" + this.state.expires + "; Path=/";
+  this.setState({theme:theme})
  }
 
- clearCookie = () => {
+ logOut = () => {
+  auth_call({destroy:this.state.token,id:this.state.id})
   document.cookie = "rims=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie = "rims_theme=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  document.documentElement.removeAttribute("style");
   this.setState({token:null})
  }
 
- setCookie = (cookie) => {
-  const encoded = btoa(JSON.stringify(cookie));
-  document.cookie = "rims=" + encoded + "; expires=" + cookie.expires + "; Path=/";
-  this.setState(cookie)
+ logIn = (settings) => {
+  document.cookie = "rims=" + settings.token + "; expires=" + settings.expires + "; Path=/";
+  document.cookie = "rims_theme="+ settings.theme + "; Path=/; expires=" + settings.expires + "; Path=/";
+  this.setState(settings)
  }
 
  providerMounting = (options) => {
@@ -57,8 +64,8 @@ class RIMS extends Component {
 
  render(){
   return (
-   <RimsContext.Provider value={{setCookie:this.setCookie,clearCookie:this.clearCookie,cookie:this.state,...this.provider}}>
-    {(this.state.token === null) ?<Login setCookie={this.setCookie}/> : <Portal providerMounting={this.providerMounting} />}
+   <RimsContext.Provider value={{settings:this.state,logIn:this.logIn,logOut:this.logOut,changeTheme:this.changeTheme,...this.provider}}>
+    {(this.state.token === null) ?<Login /> : <Portal providerMounting={this.providerMounting} />}
    </RimsContext.Provider>
   )
  }
