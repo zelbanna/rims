@@ -249,8 +249,8 @@ export class Info extends Component {
      {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} title='Information lookup' />}
      {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title='Logs' />}
      {function_strings.includes('manage') && <GoButton key='d_btn_manage' onClick={() => this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{device_id:this.props.id, type:this.state.extra.type_name}})} title={'Manage ' + data.hostname} />}
-     {has_ip && <TermButton key='di_btn_ssh' onClick={() => { const sshWin = window.open(`ssh://${extra.username}@${extra.interface_ip}`,'_blank'); sshWin.close(); }} title='SSH connection' />}
-     {rack && rack.console_url && <TermButton key='di_btn_console' onClick={() => { const termWin = window.open(rack.console_url,'_blank'); termWin.close(); }} title='Serial Connection' /> }
+     {has_ip && <TermButton key='di_btn_ssh' onClick={() => window.open(`ssh://${extra.username}@${extra.interface_ip}`,'_self')} title='SSH connection' />}
+     {rack && rack.console_url && <TermButton key='di_btn_console' onClick={() => window.open(rack.console_url,'_self')} title='Serial Connection' /> }
      {data.url && <UiButton key='di_btn_ui' onClick={() => window.open(data.url,'_blank')} title='Web UI' />}
      <Result key='dev_result' result={JSON.stringify(this.state.update)} />
     </InfoArticle>

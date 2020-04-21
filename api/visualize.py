@@ -35,7 +35,6 @@ def delete(aCTX, aArgs = None):
  return ret
 
 #
-# TODO: Create a 'static' html with GET method to create a show page for a given id - to use in non-RIMS environment
 #
 def show(aCTX, aArgs = None):
  """ Get map data from name or id

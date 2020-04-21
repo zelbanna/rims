@@ -75,8 +75,7 @@ export class Inventory extends Component{
 
  cnctFunction = (intf) => {
   const port = parseInt(intf) + parseInt(this.state.extra.port);
-  const termWin = window.open(`${this.state.extra.access_url}:${port}`,'_blank');
-  termWin.close();
+  window.open(`${this.state.extra.access_url}:${port}`,'_self');
  }
 
  listItem = (row) => [row.interface,row.name,<TermButton key={'con_inv_btn_cnct_' + row.interface} onClick={() => this.cnctFunction(row.interface)} title='Connect' />]

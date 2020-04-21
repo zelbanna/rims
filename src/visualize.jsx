@@ -37,7 +37,7 @@ export class List extends Component {
 
  listItem = (row) => [row.id,row.name,<Fragment key='vl_buttons'>
   <EditButton key={'vl_btn_edt_'+row.id} onClick={() => this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)} title='Show and edit map' />
-  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => this.changeContent(<Show key={'viz_show_'+row.id} id={row.id} />)} />
+  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => window.open(`viz.html?id=${row.id}`,'_blank')} />
   <DeleteButton key={'vl_btn_del_'+row.id}  onClick={() => this.deleteList(row.id)} />
  </Fragment>]
 
@@ -56,7 +56,7 @@ export class List extends Component {
 
 // ************** Show **************
 //
-class Show extends Component {
+export class Show extends Component {
 
  componentDidMount(){
   var args = (this.props.hasOwnProperty('id')) ? {id:this.props.id}:{name:this.props.name};

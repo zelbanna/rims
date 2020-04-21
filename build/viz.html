@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Viz Map</title>
+<meta charset="utf-8" />
+<link rel="stylesheet" type="text/css" href="infra/system.css">
+<link rel="stylesheet" type="text/css" href="infra/vis-network.min.css">
+<script src="infra/vis-network.min.js"></script>
+<script>
+async function rest_call(url,args){
+ const response = await fetch(url, { method:"POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(args) })
+ return await response.json();
+}
+
+function doubleClick(params){
+ if (params.nodes[0]){
+  rest_call("vizmap",{device:params.nodes[0]}).then(result => {
+   if (result && result.status === "OK"){
+    if(result.data.url && result.data.url.length > 0)
+     window.open(result.data.url);
+    else
+     window.open("ssh://" + result.data.username + "@" + result.data.ip,"_self");
+   }
+  })
+ }
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const id = urlParams.get("id");
+
+rest_call("vizmap",{id:id}).then(result => {
+ var nodes = new vis.DataSet(result.data.nodes);
+ var edges = new vis.DataSet(result.data.edges);
+ var network = new window.vis.Network(document.getElementById("rims_network"), {nodes:nodes, edges:edges}, result.data.options);
+ network.on("stabilizationIterationsDone", () => network.setOptions({ physics: false }))
+ network.on("doubleClick", (params) => doubleClick(params))
+});
+</script>
+</head>
+<body>
+ <noscript>You need to enable JavaScript to run this app.</noscript>
+ <div id="rims_network" style="width:100vw; height:100vh"></div>
+</body>
+</html>

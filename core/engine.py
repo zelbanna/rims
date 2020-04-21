@@ -466,9 +466,16 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  def __init__(self, *args, **kwargs):
   self._headers = {'X-Powered-By':'RIMS Engine %s.%s'%(__version__,__build__),'Date':self.date_time_string()}
-  self._body    = b'null'
-  self._ctx     = args[2]._ctx
+  self._body = b'null'
+  self._ctx = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
+
+ def __read_generator(self,fd, size = 1024):
+  while True:
+   chunk = fd.read(size)
+   if not chunk:
+    break
+   yield chunk
 
  def header(self,code,text,size):
   # Sends X-Code as response, self.command == POST/GET/OPTION
@@ -489,14 +496,16 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.header('304','Not Modified',0)
   elif self.path != '/':
    path,_,query = unquote(self.path[1:]).rpartition('/')
+   file,_,_ = query.partition('?')
+   # split query in file and params
    if not path[:5] == 'files':
-    fullpath = ospath.join(self._ctx.build,path,query)
+    fullpath = ospath.join(self._ctx.build,path,file)
    else:
     param,_,rest = path[6:].partition('/')
-    fullpath = ospath.join(self._ctx.config['files'][param],rest,query)
-   self._ctx.analytics('files', path, query)
+    fullpath = ospath.join(self._ctx.config['files'][param],rest,file)
+   self._ctx.analytics('files', path, file)
    # print("FULLPATH:%s"%fullpath)
-   if query == '' and ospath.isdir(fullpath):
+   if file == '' and ospath.isdir(fullpath):
     self._headers['Content-type']='text/html; charset=utf-8'
     try:
      _, _, filelist = next(walk(fullpath), (None, None, []))
@@ -507,22 +516,25 @@ class SessionHandler(BaseHTTPRequestHandler):
      self._headers.update({'X-Exception':str(e),'Content-type':'text/html; charset=utf-8'})
      self.header(404,'Not Found',0)
    elif ospath.isfile(fullpath):
-    self._headers.update({'Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
-    _,_,ftype = query.rpartition('.')
+    _,_,ftype = file.rpartition('.')
     if ftype == 'js':
-     self._headers['Content-type']='application/javascript; charset=utf-8'
+     self._headers.update({'Content-type':'application/javascript; charset=utf-8','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
     elif ftype == 'css':
-     self._headers['Content-type']='text/css; charset=utf-8'
+     self._headers.update({'Content-type':'text/css; charset=utf-8','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
     elif ftype == 'html':
      self._headers['Content-type']='text/html; charset=utf-8'
+     #self._headers.update({'Content-type':'text/html; charset=utf-8','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
+    else:
+     self._headers.update({'Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
     try:
      with open(fullpath, 'rb') as file:
       self.header(200,'OK',osstat(fullpath).st_size)
-      # TODO, do this in chunks instead
-      self.wfile.write(file.read())
+      for chunk in self.__read_generator(file):
+       self.wfile.write(chunk)
     except Exception as e:
      self._headers.update({'X-Exception':str(e),'Content-type':'text/html; charset=utf-8'})
-     self.header(404,'Not Found',0)
+     try: self.header(404,'Not Found',0)
+     except: pass
    else:
     self.header(404,'Not Found',0)
   else:
@@ -547,12 +559,48 @@ class SessionHandler(BaseHTTPRequestHandler):
    if self.headers.get('X-Token') == self._ctx.token: self.api(query,0)
    else: self._headers.update({'X-Code':401})
   elif path == 'front':
-   self.front()
+   self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
+   output = {'message':"Welcome to the Management Portal",'title':'Portal'}
+   output.update(self._ctx.site.get('portal'))
+   self._body = dumps(output).encode('utf-8')
   elif path == 'auth':
    self.auth()
+  elif path == 'vizmap':
+   # Bypass auth for visualize
+   self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
+   try:
+    length = int(self.headers.get('Content-Length',0))
+    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+   except Exception as e:
+    output = {'status':'NOT_OK','info':str(e)}
+   else:
+    if args.get('id'):
+     module = import_module("rims.api.visualize")
+     output = getattr(module,"show", lambda x,y: None)(self._ctx, {'id':args['id']})
+    elif args.get('device'):
+     module = import_module("rims.api.device")
+     output = getattr(module,"management", lambda x,y: None)(self._ctx, {'id':args['device']})
+    else:
+     output = {'status':'NOT_OK','info':'no suitable argument','data':{}}
+   self._body = dumps(output).encode('utf-8')
   elif path == 'register':
-   if self.headers.get('X-Token') == self._ctx.token: self.register(query)
-   else: self._headers.update({'X-Code':401})
+   # Register uses internal tokens
+   if self.headers.get('X-Token') == self._ctx.token:
+    self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':'*'})
+    try:
+     length = int(self.headers.get('Content-Length',0))
+     args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+     params = {'node':args['id'],'url':"http://%s:%s"%(self.client_address[0],args['port'])}
+    except Exception as e:
+     output = {'status':'NOT_OK','info':str(e)}
+    else:
+     output = {'status':'OK'}
+     with self._ctx.db as db:
+      output['update'] = (db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
+     self._ctx.log("Registered node %s: update:%s"%(arg,output['update']))
+    self._body = dumps(output).encode('utf-8')
+   else:
+    self._headers.update({'X-Code':401})
   else:
    self._headers.update({'X-Code':404})
   code = self._headers.pop('X-Code',200)
@@ -606,14 +654,6 @@ class SessionHandler(BaseHTTPRequestHandler):
     from traceback import format_exc
     for n,v in enumerate(format_exc().split('\n')):
      self._headers["X-Debug-%02d"%n] = v
-
- #
- #
- def front(self):
-  self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
-  output = {'message':"Welcome to the Management Portal",'title':'Portal'}
-  output.update(self._ctx.site.get('portal'))
-  self._body = dumps(output).encode('utf-8')
 
  #
  #
@@ -680,21 +720,4 @@ class SessionHandler(BaseHTTPRequestHandler):
      output = {'info':e.args[0]}
      self._headers['X-Code'] = e.args[0]['code']
   output['node'] = self._ctx.node
-  self._body = dumps(output).encode('utf-8')
-
- #
- #
- def register(self,query):
-  self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':'*'})
-  try:
-   length = int(self.headers.get('Content-Length',0))
-   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
-   params = {'node':args['id'],'url':"http://%s:%s"%(self.client_address[0],args['port'])}
-  except Exception as e:
-    output = {'status':'NOT_OK','info':str(e)}
-  else:
-   output = {'status':'OK'}
-   with self._ctx.db as db:
-    output['update'] = (db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
-   self._ctx.log("Registered node %s: update:%s"%(arg,output['update']))
   self._body = dumps(output).encode('utf-8')

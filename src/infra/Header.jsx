@@ -12,7 +12,7 @@ export const MenuSeparator = (props) => <li className={styles.menuSeparator}></l
 export class Header extends Component {
  constructor(props){
   super(props)
-  this.state = {height:0,zoom:false};
+  this.state = {height:0,zoom:(document.documentElement.style.getPropertyValue('font-size') !== '')};
  }
 
  implodeMenu = () => {
@@ -29,11 +29,10 @@ export class Header extends Component {
 
  zoomTxt = () => {
   const size = window.getComputedStyle(document.documentElement).fontSize.replace('px','');
-  if(this.state.zoom) {
-   document.documentElement.style.setProperty('font-size', `${size*0.8}px`);
-  } else {
-   document.documentElement.style.setProperty('font-size', `${size*1.25}px`);
-  }
+  if(this.state.zoom)
+   document.documentElement.style.removeProperty('font-size');
+  else
+   document.documentElement.style.setProperty('font-size', `${size*1.20}px`);
   this.setState({zoom:!this.state.zoom})
  }
  render(){
