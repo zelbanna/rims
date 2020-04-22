@@ -38,13 +38,13 @@ export class Header extends Component {
  render(){
   return (<header className={styles.header}>
    <h1 className={styles.title}>{this.props.title}</h1>
+   <button className={styles.button} onClick={() => this.zoomTxt()} title='Zoom'><i className={(this.state.zoom) ? 'fas fa-search-minus' : 'fas fa-search-plus'} /></button>
    <div className={styles.menu} onMouseLeave={() => this.implodeMenu()}>
     <button className={styles.button} onClick={() => this.toggleMenu()}><i className='fas fa-bars' style={{transform:(this.state.height === 0)?'rotate(0deg)':'rotate(90deg)'}}/></button>
     <ul className={styles.menuList} style={{maxHeight:`${this.state.height}rem`}} >
      {this.props.children}
     </ul>
    </div>
-   <button className={styles.button} onClick={() => this.zoomTxt()} title='Zoom'><i className={(this.state.zoom) ? 'fas fa-search-minus' : 'fas fa-search-plus'} /></button>
    <button className={styles.button} onClick={this.props.logOut} title='Log out'><i className='fas fa-sign-out-alt' /></button>
   </header>);
  }

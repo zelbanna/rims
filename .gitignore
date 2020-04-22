@@ -4,14 +4,20 @@
 # Server files
 *.log
 
+# Certs
+*.pem
+*.pub
+*.crt
+*.srl
+
+# Settings should never be pushed to central repo
+*.json
+
 # Setuptools distribution folder.
 /dist/
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
-
-# Settings should never be pushed to central repo
-*.json
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 *.lock

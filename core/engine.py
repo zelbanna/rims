@@ -12,6 +12,7 @@ from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enume
 from time import localtime, time, sleep, strftime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
+from ssl import SSLContext, SSLError, PROTOCOL_TLS_SERVER, PROTOCOL_SSLv23
 from functools import partial
 from datetime import datetime, timedelta, timezone
 from crypt import crypt
@@ -114,7 +115,7 @@ class Context(object):
    info['build'] = __build__
   else:
    info = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
-   for k,v in info['tokens'].items(): 
+   for k,v in info['tokens'].items():
     v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S GMT")
   return info
 
@@ -142,20 +143,12 @@ class Context(object):
 
  #
  def start(self):
-  """ Start "moving" parts of context, set up socket and start processing incoming requests and scheduled tasks """
-  from sys import setcheckinterval
+  """ Start "moving" parts of context, workers and signal handlers to start processing incoming requests and scheduled tasks """
   from signal import signal, SIGINT, SIGUSR1, SIGUSR2
-  from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   try:
-   addr = ("", int(self.config['port']))
-   sock = socket(AF_INET, SOCK_STREAM)
-   sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-   sock.bind(addr)
-   sock.listen(5)
-   self.workers.start(addr,sock)
+   self.workers.start()
    for sig in [SIGINT, SIGUSR1, SIGUSR2]:
     signal(sig, self.signal_handler)
-   setcheckinterval(200)
   except Exception as e:
    print(str(e))
    return False
@@ -360,6 +353,8 @@ class WorkerPool(object):
   def run(self):
    try: self._httpd.serve_forever()
    except: pass
+   #except SSLError as e: print("SSLError: %s => %s"%(self.name,str(e)))
+   #except Exception as e: print("Error: %s => %s"%(self.name,str(e)))
 
   def shutdown(self):
    self._httpd.shutdown()
@@ -373,6 +368,7 @@ class WorkerPool(object):
   self._ctx       = aContext
   self._abort     = Event()
   self._sock      = None
+  self._ssock     = None
   self._idles     = []
   self._workers   = []
   self._servers   = []
@@ -381,10 +377,29 @@ class WorkerPool(object):
  def __str__(self):
   return "WorkerPool(count = %s, queue = %s, schedulers = %s, alive = %s)"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
 
- def start(self, aAddr, aSock):
+ def start(self):
+  from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+  def create_socket(port):
+   addr = ("0.0.0.0", port)
+   sock = socket(AF_INET, SOCK_STREAM, 0)
+   sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+   sock.bind(addr)
+   sock.listen(5)
+   return (addr,sock)
+  servers = 0
   self._abort.clear()
-  self._sock    = aSock
-  self._servers = [self.ServerWorker(n,aAddr,aSock,self._ctx) for n in range(4)]
+  if (self._ctx.config.get('port')):
+   addr,sock = create_socket(int(self._ctx.config['port']))
+   self._sock = sock
+   self._servers.extend(self.ServerWorker(n,addr,sock,self._ctx) for n in range(servers,servers+4))
+   servers = 4
+  if (self._ctx.config.get('ssl')):
+   ssl_config = self._ctx.config['ssl']
+   context = SSLContext(PROTOCOL_SSLv23)
+   context.load_cert_chain(ssl_config['certfile'], keyfile=ssl_config['keyfile'], password=ssl_config.get('password'))
+   addr,ssock = create_socket(int(ssl_config['port']))
+   self._ssock = context.wrap_socket(ssock, server_side=True)
+   self._servers.extend(self.ServerWorker(n,addr,self._ssock,self._ctx) for n in range(servers,servers+4))
   self._workers = [self.QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
   self._idles   = [w._idle for w in self._workers]
 
@@ -395,6 +410,9 @@ class WorkerPool(object):
   try: self._sock.close()
   except: pass
   finally: self._sock = None
+  try: self._ssock.close()
+  except: pass
+  finally: self._ssock = None
   active = self.alive()
   while active > 0:
    for x in range(0,active - self._queue.qsize()):

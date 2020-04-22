@@ -9,6 +9,12 @@
  "id": "master",
  "master": "http://127.0.0.1:8080",
  "port": 8080,
+ "ssl": {
+  "port": 8081,
+  "certfile": "",
+  "keyfile": "",
+  "password": ""
+ },
  "template": "engine.init",
  "workers": 30,
  "logging": {
