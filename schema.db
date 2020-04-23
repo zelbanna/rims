@@ -452,7 +452,7 @@ CREATE TABLE `users` (
   `password` varchar(30) NOT NULL,
   `email` varchar(40) DEFAULT '',
   `external_id` varchar(40) DEFAULT NULL,
-  `theme` varchar(16) DEFAULT 'black',
+  `theme` varchar(16) DEFAULT 'light',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

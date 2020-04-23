@@ -15,6 +15,7 @@
   "keyfile": "",
   "password": ""
  },
+ "token": "INTERNALTOKEN",
  "template": "engine.init",
  "workers": 30,
  "logging": {
@@ -40,12 +41,12 @@
  },
  "netconf": {
   "password": "PASSWORD",
-  "username": "USERNAME"
+  "username": "USERNAME",
   "anonftp": "127.0.0.1",
   "dns": "127.0.0.1",
   "encrypted": "<encrypted password>",
   "ntp": "127.0.0.1",
-  "tacplus": "127.0.0.1",
+  "tacplus": "127.0.0.1"
  },
  "oui": {
   "location": "http://standards-oui.ieee.org/oui.txt"
