@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 openssl genrsa -aes256 -out ../CA-key.pem 4096
 openssl rsa -in ../CA-key.pem -outform PEM -pubout -out ../CA.pub
