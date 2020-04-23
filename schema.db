@@ -259,7 +259,7 @@ CREATE TABLE `ipam_addresses` (
   UNIQUE KEY `ip_network` (`ip`,`network_id`),
   UNIQUE KEY `hostname` (`hostname`,`a_domain_id`),
   KEY `network_id` (`network_id`),
-  KEY `a_dom_id` (`a_domain_id`),
+  KEY `a_domain_id` (`a_domain_id`),
   CONSTRAINT `ipam_addresses_ibfk_1` FOREIGN KEY (`network_id`) REFERENCES `ipam_networks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `ipam_addresses_ibfk_2` FOREIGN KEY (`a_domain_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
