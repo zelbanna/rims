@@ -68,8 +68,7 @@ case "$1" in
  clear)
   echo "Clearing old .pyc files"
   rm -fR $PKGDIR/__pycache__
-  rm -fR $PKGDIR/site/__pycache__
-  rm -fR $PKGDIR/rest/__pycache__
+  rm -fR $PKGDIR/api/__pycache__
   rm -fR $PKGDIR/core/__pycache__
   rm -fR $PKGDIR/devices/__pycache__
   rm -fR $PKGDIR/tools/__pycache__

@@ -31,7 +31,7 @@ export class List extends Component{
    <StateLeds key={'il_if_state_' + row.interface_id} state={[row.if_state,row.ip_state]} />,<Fragment key={'il_btns_'+row.interface_id}>
     <InfoButton key={'il_btn_info_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
     <DeleteButton key={'il_btn_del_' + row.interface_id} onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
-    {!row.connection_id && <LinkButton key={'il_btn_sync_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
+    {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key={'il_btn_sync_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
    </Fragment>]
 
  render(){
@@ -165,7 +165,7 @@ export class Info extends Component {
      {'changeSelf' in this.props && <BackButton key='ii_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />}
      <ReloadButton key='ii_btn_reload' onClick={() => this.componentDidMount()} />
      <SaveButton key='ii_btn_save' onClick={() => this.updateInfo()} title='Save interface information' />
-     {!peer && this.state.data.interface_id !== 'new' && <NetworkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}
+     {!peer && this.state.data.interface_id !== 'new' && ['wired','optical'].includes(this.state.data.class) && <NetworkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}
      <Result key='ii_result' result={(this.state.status !== 'OK') ? this.state.info : this.state.result} />
     </InfoArticle>)
    }

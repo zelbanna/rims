@@ -138,7 +138,7 @@ class List extends Component {
   this.setState({sort:method})
  }
 
- listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<StateLeds key={'dl_state_' + row.id} state={row.state} />,<Fragment key={'dl_buttons_'+row.id}>
+ listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<StateLeds key={'dl_state_' + row.id} state={(row.ip_state) ? row.ip_state : row.if_state} />,<Fragment key={'dl_buttons_'+row.id}>
   <InfoButton key={'dl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />
   <DeleteButton key={'dl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete device' />
  </Fragment>]
@@ -147,7 +147,7 @@ class List extends Component {
 
  render(){
   if (this.state.data){
-   let device_list = this.state.data.filter(row => row.hostname.includes(this.state.searchfield));
+   let device_list = this.state.data.filter(row => (row.hostname.includes(this.state.searchfield) || (row.ip && row.ip.includes(this.state.searchfield))))
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,'',''];
    return <Fragment key={'dl_fragment'}>
     <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={device_list}>
@@ -210,10 +210,10 @@ export class Info extends Component {
      <InfoColumns key='di_info' style={{float:'left'}}>
       <TextLine key='hostname' id='hostname' text={data.hostname} />
       <TextInput key='mac' id='mac' label='Sys Mac' value={data.mac} title='System MAC' onChange={this.onChange} />
-      <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={extra.interface_mac} title='Management Interface MAC' />
-      <TextLine key='if_ip' id='if_ip' label='Mgmt IP' text={extra.interface_ip} />
+      {data.management_id && <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={extra.interface_mac} title='Management Interface MAC' />}
+      {data.management_id && <TextLine key='if_ip' id='if_ip' label='Mgmt IP' text={extra.interface_ip} />}
       <TextLine key='snmp' id='snmp' label='SNMP' text={data.snmp} />
-      <StateLine key='state' id='state' state={[extra.if_state,extra.ip_state]} />
+      {data.management_id && <StateLine key='state' id='state' state={[extra.if_state,extra.ip_state]} />}
      </InfoColumns>
      <InfoColumns key='di_extra' style={{float:'left'}}>
       <TextLine key='id' id='id' text={this.props.id} />

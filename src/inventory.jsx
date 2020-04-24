@@ -67,7 +67,7 @@ class List extends Component {
     <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
      <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
-     <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search inventory' />
+     <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search inventory (case sensitive)' />
     </ContentList>
     <ContentData key='inv_cd'>{this.state.content}</ContentData>
    </Fragment>

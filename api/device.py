@@ -27,7 +27,7 @@ def list(aCTX, aArgs = None):
  """
  ret = {}
  sort = 'ORDER BY ia.ip' if aArgs.get('sort','ip') == 'ip' else 'ORDER BY devices.hostname'
- fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip', 'devices.model','ia.state']
+ fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip','ia.state AS ip_state','di.state AS if_state']
  tables = ['device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id']
  filter = ['TRUE']
  if aArgs.get('rack_id'):
@@ -64,6 +64,8 @@ def list(aCTX, aArgs = None):
     tables.append("device_types AS dt ON dt.id = devices.type_id")
   if 'url' in extras:
    fields.append('devices.url')
+  if 'model' in extras:
+   fields.append('devices.model')
   if 'mac' in extras or 'oui' in extras:
    fields.append('LPAD(hex(di.mac),12,0) AS mac')
    if 'oui' in extras:
@@ -248,6 +250,8 @@ def extended(aCTX, aArgs = None):
      from rims.api.ipam import address_info
      ret['result']['ipam'] = address_info(aCTX,{'id':ipam['id'],'hostname':aArgs['hostname'],'a_domain_id':aArgs['a_domain_id'],'op':'update_only'})['status']
     ret['result']['device'] = (db.do("UPDATE devices SET hostname = '%s', management_id = %s WHERE id = %s"%(aArgs['hostname'],aArgs['management_id'],id)) == 1)
+   elif aArgs['management_id'] in ['NULL',None]:
+    ret['result']['device'] = (db.do("UPDATE devices SET hostname = '%s', management_id = NULL WHERE id = %s"%(aArgs['hostname'],id)) == 1)
 
   ret['found'] = (db.do("SELECT management_id, CONCAT('.1.3.6.1.4.1.',devices.oid) AS oid, devices.hostname, oui.company AS oui FROM devices LEFT JOIN oui ON oui.oui = (devices.mac >> 24) AND devices.mac != 0  WHERE devices.id = %s"%id) == 1)
   if ret['found']:
