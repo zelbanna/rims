@@ -6,7 +6,7 @@ from os import path as ospath, getpid
 from sys import path as syspath, argv, exit
 from argparse import ArgumentParser
 
-parser = ArgumentParser(prog='rims',description='RIMS engine bootstrap')
+parser = ArgumentParser(prog='engine',description='RIMS engine bootstrap')
 parser.add_argument('-c','--config', help = 'Config file',default = 'config.json', required=False)
 input = parser.parse_args()
 
@@ -20,7 +20,6 @@ syspath.insert(1, basepath)
 from core.engine import Context
 
 ctx = Context(input.config)
-
 while not ctx.load_system():
  sleep(30)
 

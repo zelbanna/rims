@@ -125,7 +125,7 @@ class Context(object):
   try:
    system = self.system_info(self.node)
   except Exception as e:
-   print(str(e))
+   print("Load system error: %s"%str(e))
    return False
   else:
    self.log("______ Loading system - version: %s mode: %s ______"%(__build__,self.config['mode']))
@@ -150,7 +150,7 @@ class Context(object):
    for sig in [SIGINT, SIGUSR1, SIGUSR2]:
     signal(sig, self.signal_handler)
   except Exception as e:
-   print(str(e))
+   print("Starting error: %s"%str(e))
    return False
   else:
    self.log("______ REST server workers started ______")
