@@ -36,9 +36,11 @@ else:
 args['node'] = input.node
 with open(input.config,'r') as f:
  config = load(f)
+ token = config.get('token',None)
+
 started = "Executing:system_task_%s(%s)"%(func, args)
 try:
- output = rest_call("%s/api/master/task_%s"%(config['master'],func),aArgs = args, aTimeout = 300, aDataOnly = True)
+ output = rest_call("%s/internal/master/task_%s"%(config['master'],func),aArgs = args, aTimeout = 300, aDataOnly = True, aHeader = {'X-Token':token})
 except Exception as e:
  output = e.args[0]
 print(started)

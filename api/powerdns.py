@@ -192,7 +192,7 @@ def sync(aCTX, aArgs = None):
     remove.append(row)
    else:
     previous = row
- return {'removed':remove}
+ return {'removed':remove,'status':'OK'}
 
 #
 #
@@ -226,7 +226,7 @@ def status(aCTX, aArgs = None):
  for item in  Counter(fqdn_who).most_common(count):
   parts = item[0].split('#')
   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL_get_host_name(parts[1]), 'count':item[1]})
- return {'top':top,'who':who }
+ return {'top':top,'who':who,'status':'OK' }
 
 #
 #
