@@ -566,7 +566,7 @@ def task_add(aCTX, aArgs = None):
   - node (required)
   - module (required)
   - function (required)
-  - args (required)
+  - args (optional)
   - frequency (optional required, > 0 seconds for periodic tasks)
   - output (optional)
   - on_boot (optional). For transients, indicate if this should be run every boot
@@ -580,7 +580,7 @@ def task_add(aCTX, aArgs = None):
  freq = aArgs.get('frequency',0)
  if freq > 0 or aArgs.get('on_boot'):
   with aCTX.db as db:
-   db.do("INSERT INTO tasks (node_id, module, function, args, frequency, output) VALUES(%s,'%s','%s','%s',%i,'%s')"%(aCTX.nodes[node]['id'],aArgs['module'],aArgs['function'],dumps(aArgs['args']),freq,'true' if aArgs.get('output',False) else 'false'))
+   db.do("INSERT INTO tasks (node_id, module, function, args, frequency, output) VALUES(%s,'%s','%s','%s',%i,'%s')"%(aCTX.nodes[node]['id'],aArgs['module'],aArgs['function'],dumps(aArgs.get('args',{})),freq,'true' if aArgs.get('output',False) else 'false'))
  # activate
  if node == 'master':
   aCTX.workers.add_task(aArgs['module'],aArgs['function'],freq, output = aArgs.get('output',False), args = aArgs.get('args',{}))
