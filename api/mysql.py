@@ -12,18 +12,19 @@ def dump(aCTX, aArgs = None):
   - username (optional)
   - password (optional)
   - database (optional)
+  - host (optional)
 
  Output:
  """
  from subprocess import check_output
- if all(i in aArgs for i in ['username','password','database']):
-  db,username,password = aArgs['database'],aArgs['username'],aArgs['password']
+ if all(i in aArgs for i in ['username','password','database','host']):
+  db,host,username,password = aArgs['database'],aArgs['host'],aArgs['username'],aArgs['password']
  else:
-  db,username,password = aCTX.config['database']['name'], aCTX.config['database']['username'], aCTX.config['database']['password']
+  db,host,username,password = aCTX.config['database']['name'], aCTX.config['database']['host'], aCTX.config['database']['username'], aCTX.config['database']['password']
  try:
   line_number = 0
   mode = aArgs.get('mode','schema')
-  cmd  = ["mysqldump", "-u" + username, "-p" + password, db]
+  cmd  = ["mysqldump", "-u" + username, "-p" + password, '-h',host,db]
   output = []
 
   if   mode == 'schema':
@@ -65,18 +66,19 @@ def restore(aCTX, aArgs = None):
  Args:
   - username (optional)
   - password (optional)
+  - host (optional)
 
  Output:
   - result
  """
  from subprocess import check_output
- if all(i in aArgs for i in ['username','password']):
-  username,password = aArgs['username'],aArgs['password']
+ if all(i in aArgs for i in ['username','password','host']):
+  username,password,host = aArgs['username'],aArgs['password'],aArgs['host']
  else:
-  username,password = aCTX.config['database']['username'], aCTX.config['database']['password']
+  username,password,host = aCTX.config['database']['username'], aCTX.config['database']['password'], aCTX.config['database']['host']
 
  try:
-  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '<',aArgs['file']]
+  cmd  = ["mysql","--init-command='SET SESSION FOREIGN_KEY_CHECKS=0;'", "-u%s"%username, "-p%s"%password, '-h',host,'<',aArgs['file']]
   output = check_output(" ".join(cmd), shell=True).decode()
   return { 'status':'OK','output':output.split('\n') }
  except Exception as e:
@@ -92,6 +94,7 @@ def diff(aCTX, aArgs = None):
   - username (optional)
   - password (optional)
   - database (optional)
+  - host (optional)
 
  Output:
   - diffs. counter
@@ -123,6 +126,7 @@ def patch(aCTX, aArgs = None):
   - username (optional)
   - password (optional)
   - database (optional)
+  - host (optional)
 
  Output:
  """
@@ -164,5 +168,5 @@ def patch(aCTX, aArgs = None):
     remove('mysql.backup')
     remove('mysql.values')
     ret['status'] = 'OK'
- 
+
  return {'status':ret['status'],'output':dumps(ret,indent=2,sort_keys=True).split('\n')}

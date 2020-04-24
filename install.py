@@ -18,8 +18,8 @@ if len(argv) < 2:
  print("Usage: %s </path/json file>\n"%argv[0])
  print("1) Set up config.json first - see example 'templates/config.json'")
  print("2) Then import database schema.db")
- print("3a) tools/mysql_dumps </path/json file> -r schema.db  (first time install)")
- print("3b) tools/mysql_patch </path/json file> schema.db     (subsequent install)")
+ print("3a) tools/mysql_tools </path/json file> -r schema.db  (first time install)")
+ print("3b) tools/mysql_tools </path/json file> -p schema.db  (subsequent install)")
  print("\nAlso, it is good to use github project log2ram for various purposes, foremost debug logging but also influxdb et al..")
  exit(0)
 else:
