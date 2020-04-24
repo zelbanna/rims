@@ -586,6 +586,7 @@ def process(aCTX, aArgs = None):
  """
  ret = {'status':'OK','function':'ipam_process'}
  from os import system
+ report = aCTX.node_function('master','ipam','report', aHeader= {'X-Log':'false'})
 
  def __check_ip(aDev):
   aDev['old'] = aDev['state']
@@ -600,7 +601,7 @@ def process(aCTX, aArgs = None):
   args = {'up':[x['id'] for x in changed if x['state'] == 'up'], 'down':[x['id'] for x in changed if x['state'] == 'down']}
   ret['up'] = len(args['up'])
   ret['down'] = len(args['down'])
-  report(aCTX,args)
+  report(aArgs = args)
  return ret
 
 #

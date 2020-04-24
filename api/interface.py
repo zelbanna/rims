@@ -417,6 +417,7 @@ def process(aCTX, aArgs = None):
  """
  from rims.devices.generic import Device
  report = aCTX.node_function('master','interface','report', aHeader= {'X-Log':'false'})
+ ret = {'status':'OK','function':'interface_process','changed':0}
 
  def __check_if(aDev):
   if len(aDev['interfaces']) > 0:
@@ -431,10 +432,11 @@ def process(aCTX, aArgs = None):
      intf['state'] = probe.get(intf['snmp_index'],'unknown')
     changed = [intf for intf in aDev['interfaces'] if intf['state'] != intf['old']]
     if changed:
+     ret['changed'] += len(changed)
      report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
 
  aCTX.workers.block_map(__check_if,aArgs['devices'])
- return {'status':'OK','function':'interface_process'}
+ return ret
 
 #
 #
