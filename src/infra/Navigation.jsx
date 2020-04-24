@@ -30,4 +30,4 @@ export class NavDropDown extends Component{
 
 export const NavReload = (props) => <li className={styles.item} style={props.style}><button className={styles.button} onClick={props.onClick}><i className='fas fa-redo-alt' style={{fontSize:'2.1rem'}}/></button></li>
 
-export const NavInfo = (props) => <li className={styles.info} style={props.style}><button className={styles.button} onClick={props.onClick}>{props.title}</button></li>
+export const NavInfo = (props) => <li className={styles.info} style={props.style}><button className={styles.infobutton}>{props.title}</button></li>

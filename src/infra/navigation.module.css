@@ -16,6 +16,8 @@
 .info {  background-color:#00CC66; font-weight:bold; float:right }
 .info:hover, .info:focus { background-color:#00CC66; }
 
+.infobutton { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; }
+
 .button { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; border:none; cursor:pointer; background-color:transparent; height:3rem; text-transform:capitalize; }
 .button:hover, .button:focus { color:var(--high-color); transition-duration:0.15s}
 .button:active{ opacity:0.8; }
