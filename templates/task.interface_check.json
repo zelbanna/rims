@@ -1,0 +1,7 @@
+{
+ "node": "master",
+ "module": "interface",
+ "function": "check",
+ "args": { "repeat": 60 },
+ "on_boot": true
+}
