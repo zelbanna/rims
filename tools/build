@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""Build a new front-end and bump engine version for cache system"""
+__author__ = "Zacharias El Banna"
+
+from subprocess import call
+from sys import argv, exit, path as syspath, stderr, stdout
+from os import path as ospath
+engine_file = ospath.abspath(ospath.join(ospath.dirname(__file__), '..','core','engine.py'))
+
+def patch_engine(change):
+ with open(engine_file,'r') as f:
+  code = f.read().split('\n')
+ for index,line in enumerate(code):
+  if line.startswith('__build__ = '):
+   parts   = line.split()
+   version = int(parts[2]) + change
+   code[index] = "__build__ = %d"%version
+   break
+ with open(engine_file,'w') as f:
+  f.write("\n".join(code))
+ return version
+
+if __name__ == "__main__":
+ version = patch_engine(1)
+ args = ['git','commit']
+ args.extend(argv[1:])
+ res = call(args)
+ if res > 0:
+  version = patch_engine(-1)
+ else:
+  call(['yarn','build'])
+ print("Build version: %s"%version)
