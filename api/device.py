@@ -753,8 +753,10 @@ def vm_mapping(aCTX, aArgs = None):
  with aCTX.db as db:
   if aArgs.get('clear'):
    db.do("TRUNCATE device_vm_uuid")
-  db.do("SELECT device_id, vm, device_uuid FROM device_vm_uuid")
-  existing = {row.pop('device_uuid',None):row for row in db.get_rows()}
+   existing = {}
+  else:
+   db.do("SELECT device_id, vm, device_uuid FROM device_vm_uuid")
+   existing = {row.pop('device_uuid',None):row for row in db.get_rows()}
   db.do("SELECT di.device_id, di.interface_id, LPAD(hex(di.mac),12,0) AS mac FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.class = 'vm' and di.mac > 0")
   vms = {row.pop('mac',None):row for row in db.get_rows()}
   db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.base = 'hypervisor' AND ia.state = 'up'")
