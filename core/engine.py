@@ -518,7 +518,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    if not path[:5] == 'files':
     fullpath = ospath.join(self._ctx.build,path,file)
    else:
-    param,_,rest = path[6:].partition('/')
+    param,_,rest = self.path[7:].partition('/')
     fullpath = ospath.join(self._ctx.config['files'][param],rest,file)
    self._ctx.analytics('files', path, file)
    # print("FULLPATH:%s"%fullpath)
@@ -614,7 +614,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      output = {'status':'OK'}
      with self._ctx.db as db:
       output['update'] = (db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
-     self._ctx.log("Registered node %s: update:%s"%(arg,output['update']))
+     self._ctx.log("Registered node %s: update:%s"%(args['id'],output['update']))
     self._body = dumps(output).encode('utf-8')
    else:
     self._headers.update({'X-Code':401})
