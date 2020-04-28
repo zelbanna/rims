@@ -150,7 +150,7 @@ class Context(object):
    for sig in [SIGINT, SIGUSR1, SIGUSR2]:
     signal(sig, self.signal_handler)
   except Exception as e:
-   print("Starting error: %s"%str(e))
+   print("Starting error - check IP and SSL settings: %s"%str(e))
    return False
   else:
    self.log("______ REST server workers started ______")
