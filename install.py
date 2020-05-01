@@ -2,35 +2,41 @@
 # -*- coding: utf-8 -*-
 """Installer"""
 __author__ = "Zacharias El Banna"
-__version__ = "6.0"
+__version__ = "6.1"
 
 from sys import argv, stdout, path as syspath
 from json import load,dump,dumps
 from os import remove, chmod, listdir, path as ospath
 from subprocess import check_call
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
 from rims.core.common import DB, rest_call
 res = {'data':{},'info':{}}
 
-if len(argv) < 2:
- print("Usage: %s </path/json file>\n"%argv[0])
- print("1) Set up config.json first - see example 'templates/config.json'")
- print("2) Then import database schema.db")
- print("3a) tools/mysql_tools </path/json file> -r schema.db  (first time install)")
- print("3b) tools/mysql_tools </path/json file> -p schema.db  (subsequent install)")
- print("\nAlso, it is good to use github project log2ram for various purposes, foremost debug logging but also influxdb et al..")
+parser = ArgumentParser(prog='install',formatter_class=RawDescriptionHelpFormatter,description="""RIMS installation
+
+1) Set up config.json first - see example 'templates/config.json'
+2) Then import database schema.db
+3a) tools/mysql_tools </path/config json file> -r <schema>  (first time install)
+3b) tools/mysql_tools </path/config json file> -p <schema>  (subsequent install)
+""")
+parser.add_argument('-c','--config', help = 'Config file',default = 'config.json', required=False)
+parser.add_argument('-s','--schema', help = 'Database Schema file',default = 'schema.db', required=False)
+parser.add_argument('-t','--startup', help = 'Startup template file',default = 'debian.init', required=False)
+input = parser.parse_args()
+
+if not input.config:
+ parser.print_help()
  exit(0)
-else:
- config_filename = argv[1]
 
 ############################################### ALL #################################################
 #
 # load config
 #
 config = {}
-config_file = ospath.abspath(config_filename)
+config_file = ospath.abspath(input.config)
 with open(config_file,'r') as sfile:
  config = load(sfile)
 config['config_file'] = config_file
@@ -38,17 +44,17 @@ config['salt'] = config.get('salt','WBEUAHfO')
 
 ############################################### ALL #################################################
 #
-# Write engine operations files
+# Write OS dependent startup file and call 'install' upon it
 #
-with open(ospath.abspath(ospath.join(pkgdir,'templates',config['template'])),'r') as f:
+with open(ospath.abspath(ospath.join(pkgdir,'templates',input.startup)),'r') as f:
  template = f.read()
 template = template.replace("%PKGDIR%",pkgdir)
 template = template.replace("%CFGFILE%",config_file)
-engine_run = ospath.abspath(ospath.join(pkgdir,config['template']))
+engine_run = ospath.abspath(ospath.join(pkgdir,input.startup))
 with open(engine_run,'w+') as f:
  f.write(template)
 chmod(engine_run,0o755)
-res['data']['engine']= {'template':config['template'],'install':check_call([engine_run,"install"])}
+res['data']['engine']= {'startup':input.startup,'install':check_call([engine_run,"install"])}
 
 ############################################### ALL #################################################
 #
@@ -70,10 +76,6 @@ try: import paramiko
 except ImportError:
  res['info']['ssh'] = 'installing'
  pipmain(["install", "-q","paramiko"])
-try: import git
-except ImportError:
- res['info']['git'] = 'installing'
- pipmain(["install","-q","gitpython"])
 try: import pyVmomi
 except ImportError:
  res['info']['pyVmomi'] = 'installing'
@@ -139,7 +141,7 @@ if config['id'] == 'master':
  from crypt import crypt
  try:
   database,host,username,password = config['database']['name'],config['database']['host'],config['database']['username'],config['database']['password']
-  database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,'schema.db')}
+  database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,input.schema)}
   res['data']['database']= {}
   res['data']['database']['diff'] = mysql.diff(None, database_args)
   if res['data']['database']['diff']['diffs'] > 0:
@@ -180,7 +182,7 @@ if config['id'] == 'master':
  except Exception as e:
   #from traceback import print_exc
   # print_exc(5)
-  print("Error: %s"%str(e))
+  print("Database error: %s"%str(e))
 
 else:
  try: res['data']['register'] = rest_call("%s/register"%config['master'], aHeader = {'X-Token':config.get('token')}, aArgs = {'id':config['id'],'port':config['port']}, aDataOnly = True)

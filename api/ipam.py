@@ -139,7 +139,7 @@ def network_discover(aCTX, aArgs = None):
   sema = aCTX.workers.semaphore(simultaneous)
   for ip in range(ip_start,ip_end):
    if not ip_list.get(ip):
-    aCTX.workers.add_semaphore(__detect_thread,sema,ip,addresses)
+    aCTX.workers.queue_semaphore(__detect_thread,sema,ip,addresses)
   aCTX.workers.block(sema,simultaneous)
  except Exception as err:
   ret['status'] = 'NOT_OK'
@@ -568,7 +568,7 @@ def check(aCTX, aArgs = None):
   addresses = db.get_rows()
 
  if 'repeat' in aArgs:
-  aCTX.workers.add_task('ipam','process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
+  aCTX.workers.schedule_periodic_function(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
   return {'status':'OK','function':'ipam_check','detach_frequency':aArgs['repeat']}
  else:
   process(aCTX,{'addresses':addresses})

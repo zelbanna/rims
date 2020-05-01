@@ -109,7 +109,7 @@ def expiration_status(aCTX, aArgs = None):
   for host in ret['hosts']:
    if host['remaining'] < 0:
     if host['shutdown'] > 0:
-     aCTX.workers.add_function(device_control, aCTX, {'id':host['id'], 'pem_op':'off','pem_id':'all','device_op':'shutdown' if host['shutdown'] == 1 else 'reset'})
+     aCTX.workers.queue_function(device_control, aCTX, {'id':host['id'], 'pem_op':'off','pem_id':'all','device_op':'shutdown' if host['shutdown'] == 1 else 'reset'})
     message = 'Host %(hostname)s reservation expired (reserved by %(alias)s)'%host
    else:
     message = 'Host %(hostname)s reservation about to expire - remaining time: %(remaining)s (reserved by %(alias)s)'%host

@@ -83,19 +83,20 @@ def external_ip(aCTX, aArgs = None):
 #
 #
 def environment(aCTX, aArgs = None):
- """Function environment produces settings for nodes
+ """Function environment produces non-config environment for nodes
 
  Args:
-  - node (required)
-  - build (required)
+  - node (optinal)
+  - build (optional)
 
  Output:
  """
- aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
- info = aCTX.system_info(aArgs['node'])
- for k,v in info['tokens'].items():
+ if all(i in aArgs for i in ['node','build']):
+  aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
+ ret = aCTX.system_environment(aArgs.get('node',aCTX.node))
+ for k,v in ret['tokens'].items():
   v['expires'] = v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
- return info
+ return ret
 
 #
 #
@@ -195,7 +196,7 @@ def rest_explore(aCTX, aArgs = None):
 #
 #
 def rest_information(aCTX, aArgs = None):
- """Function docstring for rest_explore TBD
+ """ rest_information provides easy access to docstring for api/function
 
  Args:
   - api (required)
@@ -393,19 +394,20 @@ def node_to_api(aCTX, aArgs = None):
 #
 #
 def worker(aCTX, aArgs = None):
- """Function instantiate a worker thread with arguments and bind to global worker dictionary
+ """Function instantiate a worker thread with arguments
 
  Args:
   - module (required)
   - function (required)
+  - args (optional)
   - frequency (optional required, 0 for transients)
   - output (optional)
-  - args (required)
 
  Output:
   - result
  """
  if all(i in aArgs for i in ['module','function']):
-  freq = int(aArgs.pop('frequency',0))
-  aCTX.workers.add_task(aArgs['module'],aArgs['function'],freq, output = aArgs.get('output',False), args = aArgs.get('args',{}))
- return {'status':'OK'}
+  aCTX.workers.schedule_task(aArgs['module'],aArgs['function'],int(aArgs.get('frequency',0)), output = aArgs.get('output',False), args = aArgs.get('args',{}))
+  return {'status':'OK'}
+ else:
+  return {'status':'NOT_OK'}

@@ -1,0 +1,7 @@
+{
+ "module": "system",
+ "function": "database_backup",
+ "args": { "filename": "/var/log/rims.backup" },
+ "frequency": 87600,
+ "output": false
+}

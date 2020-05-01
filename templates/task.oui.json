@@ -4,5 +4,5 @@
  "function":"oui_fetch",
  "args":{"clear":true},
  "output":false,
- "frequency":876000
+ "frequency":864000
 }

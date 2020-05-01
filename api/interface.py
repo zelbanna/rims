@@ -400,7 +400,7 @@ def check(aCTX, aArgs = None):
     devices.append(dev)
 
  if 'repeat' in aArgs:
-  aCTX.workers.add_task('interface','process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
+  aCTX.workers.schedule_periodic_function(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
   return {'status':'OK','info':'INTERFACE_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
  else:
   return process(aCTX,{'devices':devices})

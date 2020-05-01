@@ -24,8 +24,8 @@ start() {
  if [ -f $PIDFILE ]; then
   echo "System already running @ `cat $PIDFILE`"
  else
-  # $PKGDIR/engine.py &
-  $PKGDIR/engine.py -c $CFGFILE > /dev/null 2>&1 &
+  # $PKGDIR/daemon.py &
+  $PKGDIR/daemon.py -c $CFGFILE > /dev/null 2>&1 &
   echo $! > $PIDFILE
   echo "Starting service handler @`cat $PIDFILE`"
  fi
@@ -72,7 +72,6 @@ case "$1" in
   rm -fR $PKGDIR/core/__pycache__
   rm -fR $PKGDIR/devices/__pycache__
   rm -fR $PKGDIR/tools/__pycache__
-  chown -R www-data:www-data $PKGDIR/*
   clear;
   ;;
  install)

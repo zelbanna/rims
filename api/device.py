@@ -483,7 +483,7 @@ def discover(aCTX, aArgs = None):
 
  sema = aCTX.workers.semaphore(20)
  for ip in ipam['addresses']:
-  aCTX.workers.add_semaphore(__detect_thread, sema, ip, ip_addresses, aCTX)
+  aCTX.workers.queue_semaphore(__detect_thread, sema, ip, ip_addresses, aCTX)
  aCTX.workers.block(sema,20)
 
  # We can now do inserts only (no update) as we skip existing :-)
@@ -608,7 +608,7 @@ def network_info_discover(aCTX, aArgs = None):
    devices = db.get_rows()
    sema = aCTX.workers.semaphore(20)
    for dev in devices:
-    aCTX.workers.add_semaphore(__detect_thread, sema, aCTX, dev, lookup != 'TRUE')
+    aCTX.workers.queue_semaphore(__detect_thread, sema, aCTX, dev, lookup != 'TRUE')
    aCTX.workers.block(sema,20)
    for dev in devices:
     id = dev.pop('id',None)

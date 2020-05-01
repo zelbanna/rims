@@ -145,7 +145,7 @@ def check(aCTX, aArgs = None):
     devices.append(dev)
 
  if 'repeat' in aArgs:
-  aCTX.workers.add_task('statistics','process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
+  aCTX.workers.schedule_periodic_function(process,'statistics_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
   return {'status':'OK','function':'statistics_check','detach_frequency':aArgs['repeat']}
  else:
   return process(aCTX,{'devices':devices})

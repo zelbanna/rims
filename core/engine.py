@@ -16,7 +16,7 @@ from ssl import SSLContext, SSLError, PROTOCOL_TLS_SERVER, PROTOCOL_SSLv23
 from functools import partial
 from datetime import datetime, timedelta, timezone
 from crypt import crypt
-from rims.core.common import DB, rest_call
+from rims.core.common import DB, rest_call, Scheduler
 
 ########################################### Context ########################################
 #
@@ -59,26 +59,22 @@ class Context(object):
   self.config['logging'] = self.config.get('logging',{})
   self.config['logging']['rest']   = self.config['logging'].get('rest',{'enabled':False,'file':None})
   self.config['logging']['system'] = self.config['logging'].get('system',{'enabled':False,'file':None})
+  self.build = ospath.join(self.path,'build')
   try:
    with open(self.config['site_file'],'r') as sfile:
     self.site = load(sfile)
   except:
    self.log("Site file could not be loaded/found: %s"%self.config.get('site_file','N/A'))
    self.site = {}
-  else:
-   self.build = ospath.join(self.path,'build')
   for type in ['menuitem','tool']:
    for k,item in self.site.get(type,{}).items():
     for tp in ['module','frame','tab']:
      if tp in item:
       item['type'] = tp
       break
-  self._kill    = Event()
-  self._analytics= {'files':{},'modules':{}}
+  self._kill = Event()
+  self._analytics = {'files':{},'modules':{}}
   self.rest_call = rest_call
-
- def __str__(self):
-  return "Context(node=%s)"%(self.node)
 
  #
  def clone(self):
@@ -93,37 +89,38 @@ class Context(object):
   self._kill.wait()
 
  #
- def system_info(self,aNode):
-  """ Function retrieves all central info for a certain node, or itself if node is given"""
+ def system_environment(self,aNode):
+  """ Function retrieves all central environment for a certain node, or itself if node is given"""
   if len(aNode) == 0 or aNode is None:
-   info = {'nodes':self.nodes,'services':self.services,'config':self.config,'tasks':self.workers.scheduler_tasks(),'site':(len(self.site) > 0),'version':__version__,'build':__build__}
+   environment = {'nodes':self.nodes,'services':self.services,'config':self.config,'tasks':self.workers.scheduler_tasks(),'site':(len(self.site) > 0),'version':__version__,'build':__build__}
   elif self.config.get('database'):
-   info = {'tokens':{}}
+   environment = {'tokens':{}}
    with self.db as db:
     db.do("SELECT id, node, url FROM nodes")
-    info['nodes']   = {x['node']:{'id':x['id'],'url':x['url']} for x in db.get_rows()}
+    environment['nodes']   = {x['node']:{'id':x['id'],'url':x['url']} for x in db.get_rows()}
     db.do("SELECT servers.id, node, st.service, st.type FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id")
-    info['services'] = {x['id']:{'node':x['node'],'service':x['service'],'type':x['type']} for x in db.get_rows()}
+    environment['services'] = {x['id']:{'node':x['node'],'service':x['service'],'type':x['type']} for x in db.get_rows()}
     db.do("SELECT tasks.id, module, function, args, frequency, output FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node = '%s'"%aNode)
-    info['tasks']   = db.get_rows()
-    for task in info['tasks']:
+    environment['tasks']   = db.get_rows()
+    for task in environment['tasks']:
      task['output'] = (task['output']== 'true')
     db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
     db.do("SELECT user_id, token, created + INTERVAL 5 DAY as expires FROM user_tokens ORDER BY created DESC")
-    info['tokens'] = {x['token']:{'id':x['user_id'],'expires':x['expires']} for x in db.get_rows()}
-   info['version'] = __version__
-   info['build'] = __build__
+    environment['tokens'] = {x['token']:{'id':x['user_id'],'expires':x['expires']} for x in db.get_rows()}
+   environment['version'] = __version__
+   environment['build'] = __build__
   else:
-   info = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
-   for k,v in info['tokens'].items():
+   environment = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
+   environment['nodes']['master']['url'] = self.config['master']
+   for k,v in environment['tokens'].items():
     v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S GMT")
-  return info
+  return environment
 
  #
  def load_system(self):
-  """ Load info from DB or retrieve from master node. Add tasks to queue, return true if system loaded successfully"""
+  """ Load environment from DB or retrieve from master node. Add tasks to queue, return true if system loaded successfully"""
   try:
-   system = self.system_info(self.node)
+   system = self.system_environment(self.node)
   except Exception as e:
    print("Load system error: %s"%str(e))
    return False
@@ -136,7 +133,7 @@ class Context(object):
     try:    freq = int(task.pop('frequency'))
     except: freq = 0
     self.log("Adding task: %(module)s/%(function)s"%task)
-    self.workers.add_task(task['module'],task['function'],freq,args = loads(task['args']), output = (task['output'] in ['true',True]))
+    self.workers.schedule_task(task['module'],task['function'],freq, args = loads(task['args']), output = (task['output'] in ['true',True]))
    if __build__ != system['build']:
     self.log("Build mismatch between master and node: %s != %s"%(__build__,system['build']))
    return True
@@ -276,31 +273,6 @@ class WorkerPool(object):
 
  ###################################### Workers ########################################
  #
-
- class ScheduleWorker(Thread):
-  # Class that provides a sleep-then-repeat function
-
-  def __init__(self, aFrequency, aFunc, aName, aOutput, aArgs, aQueue, aAbort):
-   Thread.__init__(self)
-   self._freq  = aFrequency
-   self._queue = aQueue
-   self._func  = aFunc
-   self.name   = aName
-   self._output= aOutput
-   self._args  = aArgs
-   self._abort = aAbort
-   self.daemon = True
-   self.start()
-
-  def run(self):
-   self._abort.wait(self._freq - int(time())%self._freq)
-   while not self._abort.is_set():
-    self._queue.put((self._func,'TASK',None,self._output,self._args,None))
-    self._abort.wait(self._freq)
-   return False
-
- #
- #
  class QueueWorker(Thread):
 
   def __init__(self, aNumber, aAbort, aQueue, aContext):
@@ -318,9 +290,9 @@ class WorkerPool(object):
    while not self._abort.is_set():
     try:
      self._idle.set()
-     (func, rest, sema, output, args, kwargs) = self._queue.get(True)
+     (func, api, sema, output, args, kwargs) = self._queue.get(True)
      self._idle.clear()
-     result = func(*args,**kwargs) if not rest else func(self._ctx, args)
+     result = func(*args,**kwargs) if not api else func(self._ctx, args)
      if output:
       self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
     except Exception as e:
@@ -360,22 +332,22 @@ class WorkerPool(object):
    self._httpd.shutdown()
 
  #
- #
  def __init__(self, aWorkers, aContext):
   from queue import Queue
-  self._queue     = Queue(0)
-  self._count     = aWorkers
-  self._ctx       = aContext
-  self._abort     = Event()
-  self._sock      = None
-  self._ssock     = None
-  self._idles     = []
-  self._workers   = []
-  self._servers   = []
-  self._scheduler = []
+  self._queue = Queue(0)
+  self._count = aWorkers
+  self._ctx   = aContext
+  self._abort = Event()
+  self._sock  = None
+  self._ssock = None
+  self._idles  = []
+  self._workers = []
+  self._servers = []
+  self._scheduler = Scheduler(self._abort,self._queue,5)
+  self._scheduler.start()
 
  def __str__(self):
-  return "WorkerPool(count = %s, queue = %s, schedulers = %s, alive = %s)"%(self._count,self._queue.qsize(),len(self._scheduler),self.alive())
+  return "WorkerPool(count = %s, queue = %s, schedulers = %s, alive = %s)"%(self._count,self._queue.qsize(),len(self._scheduler.events()),self.alive())
 
  def start(self):
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
@@ -386,8 +358,12 @@ class WorkerPool(object):
    sock.bind(addr)
    sock.listen(5)
    return (addr,sock)
-  servers = 0
+
+  self._workers = [self.QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
+  self._idles   = [w._idle for w in self._workers]
   self._abort.clear()
+
+  servers = 0
   if (self._ctx.config.get('port')):
    addr,sock = create_socket(int(self._ctx.config['port']))
    self._sock = sock
@@ -400,8 +376,7 @@ class WorkerPool(object):
    addr,ssock = create_socket(int(ssl_config['port']))
    self._ssock = context.wrap_socket(ssock, server_side=True)
    self._servers.extend(self.ServerWorker(n,addr,self._ssock,self._ctx) for n in range(servers,servers+4))
-  self._workers = [self.QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
-  self._idles   = [w._idle for w in self._workers]
+  return True
 
  def close(self):
   """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough """
@@ -434,11 +409,8 @@ class WorkerPool(object):
  def queue_size(self):
   return self._queue.qsize()
 
- def scheduler_size(self):
-  return len([x for x in self._scheduler if x.is_alive()])
-
  def scheduler_tasks(self):
-  return [(x.name,x._freq) for x in self._scheduler]
+  return [(e['name'],e['frequency']) for e in self._scheduler.events()]
 
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)
@@ -452,30 +424,39 @@ class WorkerPool(object):
   nworkers = max(20,int(self._ctx.config['workers']) - 5)
   sema = self.semaphore(nworkers)
   for elem in aList:
-   self.add_semaphore(aFunction, sema, elem)
+   self.queue_semaphore(aFunction, sema, elem)
   self.block(sema,nworkers)
 
  ##################### FUNCTIONs ########################
  #
- def add_function(self, aFunction, *args, **kwargs):
+ def queue_function(self, aFunction, *args, **kwargs):
   self._queue.put((aFunction,False,None,False,args,kwargs))
 
- def add_semaphore(self, aFunction, aSema, *args, **kwargs):
+ def queue_semaphore(self, aFunction, aSema, *args, **kwargs):
   aSema.acquire()
   self._queue.put((aFunction,False,aSema,False,args,kwargs))
 
  ####################### TASKs ###########################
  #
- def add_task(self, aModule, aFunction, aFrequency = 0, **kwargs):
+ def schedule_task(self, aModule, aFunction, aFrequency = 0, **kwargs):
   try:
    mod = import_module("rims.api.%s"%aModule)
    func = getattr(mod, aFunction, None)
-  except: self._ctx.log("WorkerPool ERROR: adding task failed (%s/%s)"%(aModule,aFunction))
+  except:
+   self._ctx.log("WorkerPool ERROR: adding task failed (%s/%s)"%(aModule,aFunction))
+   return False
   else:
    if aFrequency > 0:
-    self._scheduler.append(self.ScheduleWorker(aFrequency, func, "%s/%s"%(aModule,aFunction), kwargs.get('output',False), kwargs.get('args',{}), self._queue, self._abort))
+    self._scheduler.add_periodic((func, True, None, kwargs.get('output',False), kwargs.get('args',{}), None),"%s/%s"%(aModule,aFunction),aFrequency)
    else:
-    self._queue.put((func,True, None, kwargs.get('output',False), kwargs.get('args',{}), None))
+    self._queue.put((func, True, None, kwargs.get('output',False), kwargs.get('args',{}), None))
+   return True
+
+ def schedule_periodic_function(self, aFunction, aName, aFrequency, **kwargs):
+  self._scheduler.add_periodic((aFunction, True, None, kwargs.get('output',False), kwargs.get('args',{}), None), aName, aFrequency)
+
+ def schedule_function(self, aFunction, aName, aDelay, aFrequency = 0, **kwargs):
+  self._scheduler.add_delayed((aFunction, True, None, kwargs.get('output',False), kwargs.get('args',{}), None), aName, aDelay, aFrequency)
 
 ###################################### Session Handler ######################################
 #

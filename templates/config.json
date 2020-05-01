@@ -1,11 +1,4 @@
 {
- "mode": "debug",
- "database": {
-  "host": "127.0.0.1",
-  "name": "DATABASE",
-  "password": "PASSWORD",
-  "username": "USERNAME"
- },
  "id": "master",
  "master": "http://127.0.0.1:8080",
  "port": 8080,
@@ -15,17 +8,24 @@
   "keyfile": "",
   "password": ""
  },
+ "database": {
+  "host": "127.0.0.1",
+  "name": "DATABASE",
+  "password": "PASSWORD",
+  "username": "USERNAME"
+ },
+ "salt":"WBEUAHfO",
  "token": "INTERNALTOKEN",
- "template": "engine.init",
  "workers": 30,
+ "mode": "debug",
  "logging": {
   "rest": {
    "enabled":true,
-   "file": "/var/log/system/rest.log"
+   "file": "/var/log/rims_rest.log"
   },
   "system": {
    "enabled": true,
-   "file": "/var/log/system/system.log"
+   "file": "/var/log/rims_system.log"
   }
  },
  "influxdb": {
@@ -34,7 +34,6 @@
   "password":"PASSWORD",
   "url":"http://127.0.0.1:8086"
  },
- "salt":"WBEUAHfO",
  "esxi": {
   "password": "PASSWORD",
   "username": "USERNAME"

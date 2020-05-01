@@ -1,6 +1,14 @@
 """Common functions module """
 __author__ = "Zacharias El Banna"
 
+from time import time, sleep, strftime, localtime
+from threading import Thread, Lock, RLock
+from json import loads, dumps
+from urllib.request import urlopen, Request
+from urllib.parse import urlencode
+from urllib.error import HTTPError
+from ssl import create_default_context, CERT_NONE
+
 ########################################### REST ##########################################
 #
 # Rest with exception and variable args handling to make it more robust and streamlined in a "one-liner"
@@ -8,11 +16,6 @@ __author__ = "Zacharias El Banna"
 #
 class RestException(Exception):
  pass
-
-from json import loads, dumps
-from urllib.request import urlopen, Request
-from urllib.parse import urlencode
-from urllib.error import HTTPError
 
 def rest_call(aURL, **kwargs):
  """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
@@ -32,7 +35,6 @@ def rest_call(aURL, **kwargs):
   if kwargs.get('aVerify',True):
    sock = urlopen(req, timeout = kwargs.get('aTimeout',20))
   else:
-   from ssl import create_default_context, CERT_NONE
    ssl_ctx = create_default_context()
    ssl_ctx.check_hostname = False
    ssl_ctx.verify_mode = CERT_NONE
@@ -53,16 +55,162 @@ def rest_call(aURL, **kwargs):
   raise RestException(exception)
  return res
 
+############################################ Scheduler ######################################
+#
+# Single-thread scheduler for events happening withing X seconds or every X second. Uses RIMS QueueWorker for execution to get resource control
+#
+# Uses:
+# - Abort (Event) as a mean "stop the clock"
+# - Queue which exposes a put method to add event task to be executed (avoiding introducing delay deue to execution)
+# - Drift which optionally adjust clock every X:t minute. For smarter systems this should be self adjusting depending on accuracy of clock
+#
+class Scheduler(Thread):
+
+ def __init__(self, aAbort, aQueue, aDrift = None):
+  """
+  Init scheduler thread, clock is [MM:ss] as events scheduled to run after an hour are put in a regular list.
+  - Every minute events for that minute is distributed into the right seconds
+  - Every second events scheduled to be executed are executed
+  - Two lists for event execution this function ~O(1) with good memory efficiency
+  """
+  Thread.__init__(self)
+  self._abort = aAbort
+  self._queue = aQueue
+  self._drift = aDrift
+  self._clock = [0,0]
+  self._second = [None] * 60
+  self._minute = [None] * 60
+  for k in range(60):
+   self._second[k] = []
+   self._minute[k] = []
+  self._rest = []
+  # Change in RIMS
+  self.daemon = False
+
+ def __map_time(self, aEvent, aDelay):
+  """ Internal function to map an event with delay to a certain position int the event queue """
+  occur = self._clock[1] * 60 + self._clock[0] + aDelay
+  if occur < 3600:
+   s,m = occur%60, int(occur/60)
+   if m != self._clock[1]:
+    aEvent['seconds'] = s
+    self._minute[m].append(aEvent)
+   else:
+    self._second[s].append(aEvent)
+  else:
+   aEvent['seconds'] = occur - 3600
+   self._rest.append(aEvent)
+
+ def __tick(self):
+  """
+  Tick the clock one (1) second and every 60th second (possibly) reshuffle some events into the right queue.
+  Function returns the scheduled events for the 'ticked clock'
+  """
+  self._clock[0] = (self._clock[0] + 1) % 60
+
+  if self._clock[0] == 0:
+   self._clock[1] = (self._clock[1] + 1) % 60
+   if self._clock[1] == 0:
+    for e in self._rest:
+     if e['seconds'] < 3600:
+      s,m = e['seconds']%60, int(e['seconds']/60)
+      e['seconds'] = max(0,s-self._clock[0])
+      self._minute[m].append(e)
+     else:
+      e['seconds'] -= 3600
+   for e in self._minute[self._clock[1]]:
+    self._second[e['seconds']].append(e)
+
+  events = self._second[self._clock[0]]
+  if len(events) > 0:
+   self._second[self._clock[0]] = []
+   for e in events:
+    if e.get('frequency',0) > 0:
+     self.__map_time(e,e['frequency'])
+  return events
+
+ ########################### Exposed methods #########################
+ def events(self):
+  events = []
+  events.extend(e for sublist in self._second for e in sublist if e)
+  events.extend(e for sublist in self._minute for e in sublist if e)
+  events.extend(self._rest)
+  return events
+
+ def periodic_delay(self, aFrequency):
+  """ Function gives a basic estimate on when to start for periodic functions.. when they fit  """
+  return (60 - self._clock[0]) if aFrequency <= 60 else (aFrequency - int(time())%aFrequency)
+
+ def clock(self):
+  return {'minutes':self._clock[1],'seconds':self._clock[0]}
+
+ def adjust(self):
+  now = int(time())%3600
+  ticks = now - (self._clock[1]*60 + self._clock[0])
+  ret = ticks if ticks > 0 else (3600 + ticks)
+  self._clock = [now%60,int(now/60)]
+  return ret
+
+ def fast_forward(self, aTicks):
+  events = []
+  for i in range(aTicks):
+   events.extend(self.__tick())
+  for e in events:
+   self._queue.put(e['task'])
+
+ ################################ Scheduling #################################
+ #
+ # Add task, name, frequency, delay (for delayed start)
+ #
+ def add_delayed(self, aTask, aName, aDelay, aFrequency = 0):
+  """ Insert at 'aDelay' seconds from now with frequency 'aFrequency' """
+  self.__map_time({'task':aTask, 'name':aName, 'frequency':aFrequency,'seconds':0},aDelay if aDelay > 0 else aFrequency)
+
+ def add_periodic(self, aTask, aName, aFrequency):
+  self.__map_time({'task':aTask, 'name':aName, 'frequency':aFrequency,'seconds':0},self.periodic_delay(aFrequency))
+
+ ################################## Thread ################################
+ #
+ # - Tries to start as close as possible to a second, then sleep
+ # - start loop by ticking a second (because first sleep already happened)
+ # - every 1 seconds a tick is performed and events are retrieved for that time
+ # - sleeps roughly 1 second in each loop
+ # - adjust sleep every X minute to accommodate drift/execution time
+ #
+ def run(self):
+  abort = self._abort
+  fclock = time()
+  iclock = int(fclock)
+  now = iclock%3600
+  self._clock = [now%60,int(now/60)]
+  sleeptime = (iclock + 1 - fclock)
+  while not abort.is_set():
+   sleep(sleeptime)
+   sleeptime = 1
+   events = self.__tick()
+   if (self._clock[0] == 41 and self._drift and self._clock[1] % self._drift == 0):
+    """ Adjust sleep here every X:th minute to avoid drifting, assume positive drift and less than a minute drifting... """
+    fclock = time()
+    iclock = int(fclock)
+    sleeptime = (iclock + 1 - fclock)
+    """ Because we know the time we can adjust clock and extend events with those that passed while we drifted, there is a caveat around every HH:00:00 """
+    now = iclock%3600
+    while (now > (self._clock[1] * 60 + self._clock[0])):
+     events.extend(self.__tick())
+   for e in events:
+    self._queue.put(e['task'])
+   print("%s - %s - %s:%s (%s)"%(strftime("%H:%M:%S",localtime()),time(),self._clock[1],self._clock[0],len(events)))
+  return False
+
 ############################################ Database ######################################
 #
-# Threads safe Database Class
+# Thread safe Database Class
 # - Current Thread can reenter (RLook)
 # - Other Threads will wait for resource
 #
 class DB(object):
 
  def __init__(self, aDB, aHost, aUser, aPass):
-  from threading import Lock, RLock
   from pymysql import connect
   from pymysql.cursors import DictCursor
   self._mods = (connect,DictCursor)
