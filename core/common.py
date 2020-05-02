@@ -199,7 +199,6 @@ class Scheduler(Thread):
      events.extend(self.__tick())
    for e in events:
     self._queue.put(e['task'])
-   print("%s - %s - %s:%s (%s)"%(strftime("%H:%M:%S",localtime()),time(),self._clock[1],self._clock[0],len(events)))
   return False
 
 ############################################ Database ######################################
