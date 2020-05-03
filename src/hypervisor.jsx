@@ -21,7 +21,7 @@ export class Main extends Component {
 
  listItem = (row) => {
   const up =  (row.ip_state === 'up');
-  return [row.hostname,row.type_name,<StateLeds state={row.state} />,<Fragment key={'hyp_buttons_'+row.id}>
+  return [row.hostname,row.type_name,<StateLeds state={row.ip_state} />,<Fragment key={'hyp_buttons_'+row.id}>
    {up && row.type_functions === 'manage' && <InfoButton key={'hyp_btn_info_'+row.id} onClick={() => this.context.changeMain(<Manage key={'hypervisor_manage_'+row.id} device_id={row.id} type={row.type_name} />)} />}
    {up && row.url && row.url.length > 0 && <UiButton key={'hyp_ btn_ui_'+row.id} onClick={() => window.open(row.url,'_blank') } />}
    </Fragment>]
