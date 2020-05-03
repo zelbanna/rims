@@ -153,7 +153,7 @@ def check(aCTX, aArgs = None):
 #
 #
 def process(aCTX, aArgs = None):
- """ Function processes a list of devices with  datapoints and their interfaces
+ """ Function processes a list of devices with datapoints and their interfaces
 
  Args:
   - devices (required), each device object has a list of interface objects and optionally data points objects
