@@ -344,7 +344,6 @@ class WorkerPool(object):
   self._workers = []
   self._servers = []
   self._scheduler = Scheduler(self._abort,self._queue)
-  self._scheduler.start()
 
  def __str__(self):
   return "WorkerPool(count = %s, queue = %s, schedulers = %s, alive = %s)"%(self._count,self._queue.qsize(),len(self._scheduler.events()),self.alive())
@@ -362,6 +361,7 @@ class WorkerPool(object):
   self._workers = [self.QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
   self._idles   = [w._idle for w in self._workers]
   self._abort.clear()
+  self._scheduler.start()
 
   servers = 0
   if (self._ctx.config.get('port')):

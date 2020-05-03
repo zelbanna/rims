@@ -221,7 +221,7 @@ class Scheduler(Thread):
   return self._internal.queue[aKey]
 
  def __execute(self, aEvent):
-  print("Scheduler executing: %s"%aEvent['name'])
+  # print("Scheduler executing: %s"%aEvent['name'])
   self._queue.put(aEvent['task'])
   if aEvent.get('frequency',0) > 0:
    self._internal.enter(aEvent['frequency'], aEvent.get('prio',2), self.__execute, argument = (aEvent,))
@@ -231,12 +231,9 @@ class Scheduler(Thread):
   The thread run method most likely will not use the abort but be in a steady 'run' mode, by running it threaded we avoid blocking
   """
   while not self._abort.is_set():
-   print("Scheduler waiting")
    self._signal.wait()
-   print("Scheduler running")
    self._internal.run()
    self._signal.clear()
-  print("Scheduler done")
   return False
 
  ########################### Exposed methods #########################
@@ -257,7 +254,6 @@ class Scheduler(Thread):
   self._signal.set()
 
  def add_periodic(self, aTask, aName, aFrequency, aPrio = 2):
-  print("Adding periodic: %s/%s/%s"%(aName,aFrequency,self.periodic_delay(aFrequency)))
   self._internal.enter(self.periodic_delay(aFrequency), aPrio, self.__execute, argument = ({'task':aTask, 'name':aName, 'frequency':aFrequency,'prio':aPrio},))
   self._signal.set()
 

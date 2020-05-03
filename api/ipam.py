@@ -564,7 +564,7 @@ def check(aCTX, aArgs = None):
  with aCTX.db as db:
   db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   networks = db.get_rows()
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
+  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
   addresses = db.get_rows()
 
  if 'repeat' in aArgs:

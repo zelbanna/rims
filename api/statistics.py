@@ -163,12 +163,13 @@ def process(aCTX, aArgs = None):
  from rims.devices.generic import Device
  #TODO - find out where the service actually runs
  report = aCTX.node_function('master','statistics','report', aHeader= {'X-Log':'false'})
-
+ reported = 0
  def __check_sp(aDev):
   try:
    device = Device(aCTX, aDev['device_id'], aDev['ip'])
    if device.data_points(aDev.get('data_points',[]), aDev['interfaces'])['status'] == 'OK':
     report(aArgs = aDev)
+    reported += 1
   except Exception as e:
    aCTX.log("statistics_process_failed for device: %s =>%s"%(aDev['device_id'],str(e)))
    return False
@@ -176,7 +177,7 @@ def process(aCTX, aArgs = None):
    return True
 
  aCTX.workers.block_map(__check_sp,aArgs['devices'])
- return {'status':'OK','function':'statistics_process'}
+ return {'status':'OK','function':'statistics_process','reported_devices':reported}
 
 #
 #
