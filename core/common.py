@@ -2,7 +2,8 @@
 __author__ = "Zacharias El Banna"
 
 from time import time, sleep, strftime, localtime
-from threading import Thread, Lock, RLock
+from sched import scheduler
+from threading import Thread, Lock, RLock, Event
 from json import loads, dumps
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
@@ -55,7 +56,7 @@ def rest_call(aURL, **kwargs):
   raise RestException(exception)
  return res
 
-############################################ Scheduler ######################################
+############################################ Wheel of Time scheduler ######################################
 #
 # Single-thread scheduler for events happening withing X seconds or every X second. Uses RIMS QueueWorker for execution to get resource control
 #
@@ -64,7 +65,7 @@ def rest_call(aURL, **kwargs):
 # - Queue which exposes a put method to add event task to be executed (avoiding introducing delay deue to execution)
 # - Drift which optionally adjust clock every X:t minute. For smarter systems this should be self adjusting depending on accuracy of clock
 #
-class Scheduler(Thread):
+class WoT(Thread):
 
  def __init__(self, aAbort, aQueue, aDrift = None):
   """
@@ -84,8 +85,7 @@ class Scheduler(Thread):
    self._second[k] = []
    self._minute[k] = []
   self._rest = []
-  # Change in RIMS
-  self.daemon = False
+  self.daemon = True
 
  def __map_time(self, aEvent, aDelay):
   """ Internal function to map an event with delay to a certain position int the event queue """
@@ -158,10 +158,6 @@ class Scheduler(Thread):
   for e in events:
    self._queue.put(e['task'])
 
- ################################ Scheduling #################################
- #
- # Add task, name, frequency, delay (for delayed start)
- #
  def add_delayed(self, aTask, aName, aDelay, aFrequency = 0):
   """ Insert at 'aDelay' seconds from now with frequency 'aFrequency' """
   self.__map_time({'task':aTask, 'name':aName, 'frequency':aFrequency,'seconds':0},aDelay if aDelay > 0 else aFrequency)
@@ -169,7 +165,7 @@ class Scheduler(Thread):
  def add_periodic(self, aTask, aName, aFrequency):
   self.__map_time({'task':aTask, 'name':aName, 'frequency':aFrequency,'seconds':0},self.periodic_delay(aFrequency))
 
- ################################## Thread ################################
+ ################################## Thread run ################################
  #
  # - Tries to start as close as possible to a second, then sleep
  # - start loop by ticking a second (because first sleep already happened)
@@ -200,6 +196,66 @@ class Scheduler(Thread):
    for e in events:
     self._queue.put(e['task'])
   return False
+
+######################################## Scheduler ######################################
+#
+# Single-thread scheduler for events happening withing X seconds or every X second. Uses RIMS QueueWorker for execution to maintain resource control
+#
+# Uses:
+# - Abort (Event) as a mean to "stop the clock"
+# - Queue which exposes a put method to add event task to be executed (avoiding introducing delay deue to execution)
+# - Drift which optionally adjust clock every X:t minute. For smarter systems this should be self adjusting depending on accuracy of clock
+#
+
+class Scheduler(Thread):
+
+ def __init__(self, aAbort, aQueue):
+  Thread.__init__(self)
+  self._abort = aAbort
+  self._queue = aQueue
+  self._signal = Event()
+  self._internal = scheduler(time,sleep)
+  self.daemon = True
+
+ def __getitem__(self, aKey):
+  return self._internal.queue[aKey]
+
+ def __execute(self, aEvent):
+  self._queue.put(aEvent['task'])
+  # print("Scheduler executing: %s"%aEvent['name'])
+  if aEvent.get('frequency',0) > 0:
+   self._internal.enter(aEvent['frequency'], aEvent.get('prio',2), self.__execute, argument = (aEvent,))
+
+ def run(self):
+  """
+  The thread run method most likely will not use the abort but be in a steady 'run' mode, by running it threaded we avoid blocking
+  """
+  while not self._abort.is_set():
+   self._signal.wait()
+   self._internal.run()
+   self._signal.clear()
+  return False
+
+ ########################### Exposed methods #########################
+ def cancel(self, aKey):
+  s._internal.cancel(s._internal.queue[aKey])
+
+ def events(self):
+  """ Using internals of scheduler event model to retrieve 'task' """
+  return [(x[0],x[3][0]) for x in self._internal.queue]
+
+ def periodic_delay(self, aFrequency):
+  """ Function gives a basic estimate on when to start for periodic functions.. when they fit """
+  return (aFrequency - int(time())%aFrequency)
+
+ def add_delayed(self, aTask, aName, aDelay, aFrequency = 0, aPrio = 2):
+  """ Insert at 'aDelay' seconds from now with frequency 'aFrequency' """
+  self._internal.enter(aDelay,aPrio, self.__execute, argument = ({'task':aTask, 'name':aName, 'frequency':aFrequency,'prio':aPrio},))
+  self._signal.set()
+
+ def add_periodic(self, aTask, aName, aFrequency, aPrio = 2):
+  self._internal.enter(self.periodic_delay(aFrequency), aPrio, self.__execute, argument = ({'task':aTask, 'name':aName, 'frequency':aFrequency,'prio':aPrio},))
+  self._signal.set()
 
 ############################################ Database ######################################
 #

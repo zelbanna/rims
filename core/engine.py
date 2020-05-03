@@ -268,8 +268,8 @@ class Context(object):
 
 ########################################## WorkerPool ########################################
 #
-#
 class WorkerPool(object):
+ """ Provides queue processing, HTTP(s) call processing and a scheduler """
 
  ###################################### Workers ########################################
  #
@@ -343,7 +343,7 @@ class WorkerPool(object):
   self._idles  = []
   self._workers = []
   self._servers = []
-  self._scheduler = Scheduler(self._abort,self._queue,5)
+  self._scheduler = Scheduler(self._abort,self._queue)
   self._scheduler.start()
 
  def __str__(self):
@@ -410,7 +410,7 @@ class WorkerPool(object):
   return self._queue.qsize()
 
  def scheduler_tasks(self):
-  return [(e['name'],e['frequency']) for e in self._scheduler.events()]
+  return [(e[1]['name'],e[1]['frequency'],e[0]) for e in self._scheduler.events()]
 
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)
