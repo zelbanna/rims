@@ -28,6 +28,7 @@ def domain_list(aCTX, aArgs = None):
   ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   if 'dict' in aArgs and 'exclude' in aArgs:
    ret['data'].pop(aArgs['exclude'],None)
+  ret['endpoint'] = aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')
  return ret
 
 #
@@ -46,6 +47,7 @@ def domain_info(aCTX, aArgs = None):
  """
  ret = {'found':True, 'data':{'id':aArgs['id'],'name':aArgs.get('name','new_name'),'master':'127.0.0.1','type':'MASTER', 'notified_serial':0 }}
  op = aArgs.pop('op',None)
+ op = aArgs.pop('endpoint',None)
  with aCTX.db as db:
   if op == "update":
    if not aArgs['id'] == 'new':
@@ -58,6 +60,7 @@ def domain_info(aCTX, aArgs = None):
   elif aArgs['id'] != 'new':
    db.do("SELECT name FROM domains WHERE foreign_id = %s"%aArgs['id'])
    ret['data']['name'] = db.get_val('name')
+  ret['endpoint'] = aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')
  return ret
 
 #
@@ -177,7 +180,7 @@ def sync(aCTX, aArgs = None):
  ret = {'update':0,'insert':0,'removed':0,'status':'OK'}
  with aCTX.db as db:
   # A records
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, ia.a_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A'WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name OR ia.a_id <> dr.id))"%aArgs['id'])
+  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, ia.a_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A' WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name OR ia.a_id <> dr.id))"%aArgs['id'])
   for rec in db.get_rows():
    if rec['record_id'] is None:
     ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES (%s,'%s','%s','A') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['fqdn'],rec['ip']))
@@ -196,7 +199,15 @@ def sync(aCTX, aArgs = None):
     ret['update'] += db.do("UPDATE domain_records SET domain_id = %s, name = '%s', content = '%s' WHERE id = %s AND type = 'PTR'"%(rec['foreign_id'],rec['ptr'],rec['fqdn'],rec['record_id']))
     record = rec['record_id']
    db.do("UPDATE ipam_addresses SET ptr_id = %s WHERE id = %s"%(record,rec['id']))
-
+  # Write to local 'hosts' file or similar
+  if aCTX.config.get('nodns',{}).get('file'):
+   from os import linesep
+   try:
+    with open(aCTX.config['nodns']['file'],'w+') as ndfile:
+     db.do("SELECT name, content FROM domain_records WHERE type = 'A'")
+     ndfile.write(linesep.join("%s\t%s"%(rec['content'],rec['name']) for rec in db.get_rows() ))
+   except Exception as e:
+    aCTX.log("Error writing NoDNS file: %s"%str(e))
  return ret
 #
 #

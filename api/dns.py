@@ -21,24 +21,25 @@ def domain_list(aCTX, aArgs = None):
   if aArgs.get('sync',False):
    org = {}
    for server in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']:
-    org[server['id']] = aCTX.node_function(server['node'],server['service'],'domain_list')(aArgs = {})['data']
+    org[server['id']] = aCTX.node_function(server['node'],server['service'],'domain_list')(aArgs = {})
    ret.update({'result':{'added':[],'deleted':[],'type_fix':0}})
    db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
    cache = db.get_dict('srv_id')
-   for srv,domains in org.items():
-    for dom in domains:
+   for srv,info in org.items():
+    for dom in info['data']:
      tmp = cache.pop("%s_%s"%(srv,dom['id']),None)
      if not tmp:
       ret['result']['added'].append(dom)
       # Add forward here
-      db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward'},"ON DUPLICATE KEY UPDATE name = '%s'"%dom['name'])
+      db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward', 'endpoint':info['endpoint']},"ON DUPLICATE KEY UPDATE name = '%s', endpoint = '%s'"%(dom['name'],info['endpoint']))
      else:
-      ret['result']['type_fix'] += db.do("UPDATE domains SET type = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',tmp['id']))
+      ret['result']['type_fix'] += db.do("UPDATE domains SET type = '%s', endpoint = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',info['endpoint'],tmp['id']))
    for id,dom in cache.items():
     dom.pop('srv_id',None)
     ret['result']['deleted'].append(dom)
     db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
-
+   # Sync recursors as well
+   sync(aCTX, aArgs = {})
   filter = []
   if 'filter' in aArgs:
    filter.append("domains.type = '%s'"%aArgs['filter'])
@@ -81,7 +82,7 @@ def domain_info(aCTX, aArgs = None):
     aArgs['id']  = ret['infra']['foreign_id']
     ret.update(aCTX.node_function(ret['infra']['node'],ret['infra']['service'],'domain_info')(aArgs = aArgs))
     if ret.get('insert'):
-     ret['cache'] = db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward'})
+     ret['cache'] = db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']})
      ret['data']['id'] = db.get_last_id()
     else:
      ret['data']['id'] = id
@@ -210,12 +211,14 @@ def record_delete(aCTX, aArgs = None):
 #
 #
 def status(aCTX, aArgs = None):
- """Function docstring for top TBD
+ """Function docstring for status TBD
 
  Args:
   - count (optional)
 
  Output:
+  - top
+  - who
  """
  ret = {'top':{},'who':{}}
  args = {'count':aArgs.get('count',20)}
@@ -223,6 +226,27 @@ def status(aCTX, aArgs = None):
   res = aCTX.node_function(infra['node'],infra['service'],'status')(aArgs = args)
   ret['top']["%(node)s_%(service)s"%infra] = res['top']
   ret['who']["%(node)s_%(service)s"%infra] = res['who']
+ return ret
+
+#
+#
+def sync(aCTX, aArgs = None):
+ """ Function synchronizes recursors and with database/forwarders to point to the right DNS servers
+
+ Args:
+
+ Output:
+ """
+ ret = {'added':[],'removed':[],'errors':[]}
+ for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
+  res = aCTX.node_function(infra['node'],infra['service'],'sync')(aArgs = {})
+  if res['status'] == 'OK':
+   ret['added'].extend(res['added'])
+   ret['removed'].extend(res['removed'])
+  else:
+   ret['errors'].append(("%s@%s"%(infra['node'],infra['service']),res['info']))
+  ret['status'] = 'NOT_OK' if ret['errors'] else 'OK'
+ aCTX.log("DNS <=> Recursors synchronized: %s"%ret['status'])
  return ret
 
 #

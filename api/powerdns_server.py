@@ -5,6 +5,7 @@ Settings:
  - password
  - logfile
  - master (IP of master)
+ - endpoint (ip:port for DNS service, not REST API)
  - soa (e.g. 'xyz.domain hostmaster.domain 0 86400 3600 604800')
 
 """
@@ -37,6 +38,7 @@ def domain_list(aCTX, aArgs = None):
   ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   if 'dict' in aArgs and 'exclude' in aArgs:
    ret['data'].pop(aArgs['exclude'],None)
+  ret['endpoint'] = settings.get('endpoint','127.0.0.1:53')
  return ret
 
 #
@@ -64,8 +66,8 @@ def domain_info(aCTX, aArgs = None):
     if ret['insert']:
      id = db.get_last_id()
      # Find DNS for MASTER to be placed into SOA record
-     master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aArgs['master'])
-     soa    = db.get_row() if master > 0 else {'server':'server.local','domain':'local'}
+     master = (db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aArgs['master']) > 0)
+     soa = db.get_row() if master else {'server':'server.local','domain':'local'}
      sql = "INSERT INTO records(domain_id, name, content, type, ttl, prio) VALUES ('%s','%s','{}','{}' ,25200,0)"%(id,aArgs['name'])
      db.do(sql.format("%s hostmaster.%s 0 21600 300 3600"%(soa['server'],soa['domain']),'SOA'))
      db.do(sql.format(soa['server'],'NS'))
@@ -77,6 +79,7 @@ def domain_info(aCTX, aArgs = None):
 
   ret['found'] = (db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id) > 0)
   ret['data'] = db.get_row() if ret['found'] else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
+  ret['endpoint'] = settings.get('endpoint','127.0.0.1:53')
  return ret
 
 #
@@ -214,25 +217,31 @@ def status(aCTX, aArgs = None):
   try:    return gethostbyaddr(aIP)[0].partition('.')[0]
   except: return None
 
+ ret = {'top':[],'who':[]}
  count = int(aArgs.get('count',10))
  fqdn_top = {}
  fqdn_who = {}
  settings = aCTX.config['powerdns']
- with open(settings['logfile'],'r') as logfile:
-  for line in logfile:
-   parts = line.split()
-   if not parts[5] == 'Remote':
-    continue
-   fqdn  = parts[8].split('|')[0][1:]
-   fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
-   fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
- from collections import Counter
- top = [{'fqdn':x[0],'count':x[1]} for x in Counter(fqdn_top).most_common(count)]
- who = []
- for item in  Counter(fqdn_who).most_common(count):
-  parts = item[0].split('#')
-  who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL_get_host_name(parts[1]), 'count':item[1]})
- return {'top':top,'who':who,'status':'OK' }
+ try:
+  with open(settings['logfile'],'r') as logfile:
+   for line in logfile:
+    parts = line.split()
+    if not parts[5] == 'Remote':
+     continue
+    fqdn  = parts[8].split('|')[0][1:]
+    fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
+    fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['info'] = str(e)
+ else:
+  from collections import Counter
+  ret['status'] = 'OK'
+  ret['top'] = [{'fqdn':x[0],'count':x[1]} for x in Counter(fqdn_top).most_common(count)]
+  for item in  Counter(fqdn_who).most_common(count):
+   parts = item[0].split('#')
+   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL_get_host_name(parts[1]), 'count':item[1]})
+ return ret
 
 #
 #

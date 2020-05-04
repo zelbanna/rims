@@ -17,6 +17,11 @@ export class List extends Component {
   rest_call('api/master/server_list',{type:this.props.type}).then(result => this.setState(result))
  }
 
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   rest_call('api/master/server_list',{type:this.props.type}).then(result => this.setState(result))
+ }
+
  listItem = (row) => [row.node,row.service,row.type,<Fragment key='sl_buttons'>
    <InfoButton key={'sl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />)} title='Service information' />
    <DeleteButton key={'sl_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete service' />
