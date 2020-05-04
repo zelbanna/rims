@@ -9,7 +9,10 @@ alias rims_reload='/etc/init.d/rims restart'
 alias rims_clear='/etc/init.d/rims clear'
 alias rims_mysql='mysql -urims -prims rims'
 
-apt-get install sudo nano net-tools git python3 python3-pip mariadb-server mariadb-client libsnmp-dev graphviz graphviz-dev
+apt-get install sudo nano net-tools git python3 python3-pip mariadb-server mariadb-client libsnmp-dev libxslt-dev
+
+# Graphviz for ERD
+apt-get install -y graphviz graphviz-dev
 
 # Grafana & Influxdb
 apt-get install -y influxdb influxdb-client
@@ -25,14 +28,13 @@ systemctl status grafana-server
 
 pip3 install pymysql
 pip3 install dnspython
+pip3 install python3-netsnmp
 pip3 install paramiko
 pip3 install gitpython
 pip3 install pyVmomi
 pip3 install junos-eznc
-pip3 install python3-netsnmp
 pip3 install graphviz
 
-mkdir -p /var/log/system
 cd /usr/local/sbin
 git init
 git clone git@github.com:zelbanna/rims.git

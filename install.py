@@ -60,33 +60,30 @@ res['data']['engine']= {'startup':input.startup,'install':check_call([engine_run
 #
 # Modules
 #
-try:
- from pip import main as pipmain
-except:
- from pip._internal import main as pipmain
+from pip._internal import main as pipmain
 try: import pymysql
-except ImportError:
- res['info']['pymysql'] = 'installing'
+except ImportError as e:
+ res['info']['pymysql'] = 'installing (%s)'%str(e)
  pipmain(["install", "-q","pymysql"])
 try: import dns
-except ImportError:
- res['info']['dns'] = 'installing'
+except ImportError as e:
+ res['info']['dns'] = 'installing (%s)'%str(e)
  pipmain(["install", "-q","dnspython"])
 try: import paramiko
-except ImportError:
- res['info']['ssh'] = 'installing'
+except ImportError as e:
+ res['info']['ssh'] = 'installing (%s)'%str(e)
  pipmain(["install", "-q","paramiko"])
 try: import pyVmomi
-except ImportError:
- res['info']['pyVmomi'] = 'installing'
+except ImportError as e:
+ res['info']['pyVmomi'] = 'installing (%s)'%str(e)
  pipmain(["install","-q","pyVmomi"])
 try: import netsnmp
-except ImportError:
- res['info']['netsnmp'] = 'installing'
+except ImportError as e:
+ res['info']['netsnmp'] = 'installing (%s)'%str(e)
  pipmain(["install","-q","python3-netsnmp"])
-try: import jnpr.junos
-except ImportError:
- res['info']['junos-eznc'] = 'installing'
+try: from jnpr import junos
+except ImportError as e:
+ res['info']['junos-eznc'] = 'installing (%s)'%str(e)
  pipmain(["install","-q","junos-eznc"])
 
 ############################################ MASTER ###########################################
