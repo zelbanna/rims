@@ -13,7 +13,6 @@ __add_globals__ = lambda x: globals().update(x)
 __type__ = "DNS"
 
 from rims.core.common import DB
-from time import strftime
 
 #################################### Domains #######################################
 #
@@ -64,14 +63,13 @@ def domain_info(aCTX, aArgs = None):
     ret['insert'] = (db.insert_dict('domains',aArgs,'ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)') == 1)
     if ret['insert']:
      id = db.get_last_id()
-     serial = strftime("%Y%m%d%H")
      # Find DNS for MASTER to be placed into SOA record
      master = db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aArgs['master'])
      soa    = db.get_row() if master > 0 else {'server':'server.local','domain':'local'}
-     sql = "INSERT INTO records(domain_id, name, content, type, ttl, change_date, prio) VALUES ('%s','%s','{}','{}' ,25200,'%s',0)"%(id,aArgs['name'],serial)
+     sql = "INSERT INTO records(domain_id, name, content, type, ttl, prio) VALUES ('%s','%s','{}','{}' ,25200,0)"%(id,aArgs['name'])
      db.do(sql.format("%s hostmaster.%s 0 21600 300 3600"%(soa['server'],soa['domain']),'SOA'))
      db.do(sql.format(soa['server'],'NS'))
-     ret['extra'] = {'serial':serial,'master':master,'soa':soa}
+     ret['extra'] = {'master':master,'soa':soa}
     else:
      id = 'existing'
    else:
@@ -122,7 +120,7 @@ def record_list(aCTX, aArgs = None):
  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
  settings = aCTX.config['powerdns']
  with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
-  ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,change_date FROM records %s ORDER BY type, name ASC"%tune)
+  ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl FROM records %s ORDER BY type, name ASC"%tune)
   ret['data'] = db.get_rows()
  return ret
 
@@ -148,7 +146,7 @@ def record_info(aCTX, aArgs = None):
  with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
   if op:
    if str(id) in ['new','0'] and op == 'insert':
-    aArgs.update({'change_date':strftime("%Y%m%d%H"),'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'prio':'0','domain_id':str(aArgs['domain_id'])})
+    aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'prio':'0','domain_id':str(aArgs['domain_id'])})
     ret['insert'] = (db.insert_dict('records',aArgs,"ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") == 1)
     id = db.get_last_id() if ret['insert'] > 0 else "new"
    elif op == 'update':

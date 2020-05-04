@@ -105,7 +105,7 @@ def domain_delete(aCTX, aArgs = None):
   if infra['type'] == 'reverse':
    ret['local'] = db.do("UPDATE ipam_addresses SET ptr_id = 0 WHERE id IN (SELECT ia.id FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id  WHERE ine.reverse_zone_id = %s)"%id)
   else:
-   ret['local'] = db.do("UPDATE ipam_addresses SET a_id = 0, a_domain_id = 0 WHERE a_domain_id = %i"%id)
+   ret['local'] = db.do("UPDATE ipam_addresses SET a_id = 0, a_domain_id = NULL WHERE a_domain_id = %i"%id)
   ret['networks'] = db.do("UPDATE ipam_networks SET reverse_zone_id = NULL WHERE reverse_zone_id = %i"%id)
   ret['cache'] = (db.do("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id'])) > 0) if ret['deleted'] else False
  return ret
