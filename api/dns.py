@@ -1,4 +1,9 @@
-"""DNS API module. This module is a REST wrapper for interfaces to a particular DNS server type module."""
+"""
+DNS API module. This module is a REST wrapper for interfaces to a particular DNS server type module.
+
+This API will do all interaction with RIMS database and wrap actual service calls and data.
+
+"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -39,6 +44,7 @@ def domain_list(aCTX, aArgs = None):
     ret['result']['deleted'].append(dom)
     db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
    # Sync recursors as well
+   # INTERNAL from rims.api.dns import sync
    sync(aCTX, aArgs = {})
   filter = []
   if 'filter' in aArgs:
@@ -131,6 +137,22 @@ def domain_ptr_list(aCTX, aArgs = None):
   db.do("SELECT domains.id, name, CONCAT(st.service,'@',node) AS server FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.name = '%s'"%(GL_ip2arpa(aArgs['prefix'])))
   domains = db.get_rows()
  return domains
+
+#
+#
+def domain_forwarders(aCTX, aArgs = None):
+ """ Function returns information for forwarders / recursors
+
+ Args:
+
+ Output:
+  data - list of forwarding entries with the endpoint handling them
+ """
+ ret = {'status':'OK'}
+ with aCTX.db as db:
+  ret['count'] = db.do("SELECT domains.* FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.type = 'forward' AND st.service <> 'nodns'")
+  ret['data'] = db.get_rows()
+ return ret
 
 ######################################## Records ####################################
 #
@@ -238,8 +260,10 @@ def sync(aCTX, aArgs = None):
  Output:
  """
  ret = {'added':[],'removed':[],'errors':[]}
+ # INTERNAL from rims.api.dns import domain_forwarders
+ domains = domain_forwarders(aCTX,{})['data']
  for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
-  res = aCTX.node_function(infra['node'],infra['service'],'sync')(aArgs = {})
+  res = aCTX.node_function(infra['node'],infra['service'],'sync')({'domains':domains})
   if res['status'] == 'OK':
    ret['added'].extend(res['added'])
    ret['removed'].extend(res['removed'])

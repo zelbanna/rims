@@ -106,6 +106,7 @@ def diff(aCTX, aArgs = None):
   data = f.read()
  ret = {}
  aArgs.update({'mode':'schema'})
+ # INTERNAL from rims.api.mysql import dump
  db = dump(aCTX, aArgs)
  ret['source'] = db['status']
  """ somehow now there is a now an extra line break... => [:-1] """
@@ -136,12 +137,14 @@ def patch(aCTX, aArgs = None):
  args = dict(aArgs)
  args.update({'mode':'database','full':True})
 
+ # INTERNAL from rims.api.mysql import dump
  res = dump(aCTX, args)
  ret['database_backup_result'] = res['status']
  with open('mysql.backup','w', encoding='utf-8') as f:
   f.write(u'\n'.join(res['output']))
 
  args['full'] = False
+ # INTERNAL from rims.api.mysql import dump
  res = dump(aCTX, args)
  ret['data_backup_result'] = res['status']
  with open('mysql.values','w', encoding='utf-8') as f:
@@ -149,18 +152,21 @@ def patch(aCTX, aArgs = None):
 
  if ret['database_backup_result'] == 'OK' and ret['data_backup_result'] == 'OK':
   args['file'] = aArgs['schema_file']
+  # INTERNAL from rims.api.mysql import restore
   res = restore(aCTX, args)
   ret['struct_install_result']= res['status']
   if not res['status'] == 'OK':
    ret['struct_install_error']= res['output']
   else:
    args['file'] = 'mysql.values'
+   # INTERNAL from rims.api.mysql import restore
    res = restore(aCTX, args)
    ret['data_restore_result'] = res['status']
    if not res['status'] == 'OK':
     ret['data_restore_error'] = res['output']
     ret['data_restore_extra'] = "Warning - patch failed, trying to restore old data"
     args['file'] = 'mysql.backup'
+    # INTERNAL from rims.api.mysql import restore
     res = restore(aCTX, args)
     ret['database_restore_result'] = res['status']
     ret['database_restore_output'] = res['output']

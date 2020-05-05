@@ -83,6 +83,7 @@ def sync(aCTX, aArgs = None):
  """
  ret = {}
  db = aCTX.config['influxdb']
+ # INTERNAL rims.api.influxdb
  if not db['database'] in database_list(aCTX, aArgs)['databases']:
   try:
    for line in ["CREATE DATABASE %s"%db['database'], "CREATE RETENTION POLICY one_week ON %s DURATION 1w REPLICATION 1 default"%db['database']]:

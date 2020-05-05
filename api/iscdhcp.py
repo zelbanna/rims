@@ -72,7 +72,8 @@ def sync(aCTX, aArgs = None):
  Output:
  """
  entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'id':aArgs['id']})
- __write_file(aCTX.config['iscdhcp']['static'],entries['data']) 
+ __write_file(aCTX.config['iscdhcp']['static'],entries['data'])
+ # INTERNAL from rims.api.iscdhcp import restart
  return restart(aCTX, None)
 
 #
@@ -100,6 +101,7 @@ def update(aCTX, aArgs = None):
  if 'id' in aArgs:
   devices[aArgs['id']] = {'id':aArgs['id'],'mac':aArgs['mac'],'ip':aArgs['ip'],'network':aArgs['network']}
   __write_file(aCTX.config['iscdhcp']['static'],devices.values())
+  # INTERNAL from rims.api.iscdhcp import restart
   ret = restart(aCTX,None)
  else:
   ret = {'status':'OK','devices':devices}

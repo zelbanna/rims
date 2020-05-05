@@ -310,6 +310,7 @@ def lldp_mapping(aCTX, aArgs = None):
     # First find local interfaces
     sql_intf = "SELECT interface_id, snmp_index, name, connection_id FROM device_interfaces WHERE device_id = %(device_id)s AND snmp_index IS NOT NULL"
     if (db.do(sql_intf%aArgs) == 0):
+     # INTERNAL from rims.api.interface import snmp
      snmp(aCTX, aArgs)
      db.do(sql_intf%aArgs)
     interfaces = db.get_dict('snmp_index')
@@ -400,9 +401,11 @@ def check(aCTX, aArgs = None):
     devices.append(dev)
 
  if 'repeat' in aArgs:
+  # INTERNAL from rims.api.interface import process
   aCTX.workers.schedule_periodic_function(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
   return {'status':'OK','info':'INTERFACE_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
  else:
+  # INTERNAL from rims.api.interface import process
   return process(aCTX,{'devices':devices})
 
 #

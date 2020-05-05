@@ -96,6 +96,7 @@ def network_delete(aCTX, aArgs = None):
  with aCTX.db as db:
   db.do("SELECT id, ptr_id, a_id, a_domain_id FROM ipam_addresses WHERE network_id = %s AND (ptr_id > 0 OR a_id > 0)"%aArgs['id'])
   for address in db.get_rows():
+    # INTERNAL from rims.api.ipam import address_delete
    address_delete(aCTX, address)
   ret['deleted'] = db.do("DELETE FROM ipam_networks WHERE id = %s"%aArgs['id'])
  return ret
@@ -318,6 +319,7 @@ def address_info(aCTX, aArgs = None):
      ret['info'] = 'IP not in network range'
 
    if 'hostname' in aArgs:
+    # INTERNAL from rims.api.ipam import address_sanitize
     aArgs['hostname'] = address_sanitize(aCTX, aArgs)['sanitized']
 
    if (len(aArgs) > 0) and ret['status'] == 'OK':
@@ -568,9 +570,11 @@ def check(aCTX, aArgs = None):
   addresses = db.get_rows()
 
  if 'repeat' in aArgs:
+  # INTERNAL from rims.api.ipam import process
   aCTX.workers.schedule_periodic_function(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
   return {'status':'OK','function':'ipam_check','detach_frequency':aArgs['repeat']}
  else:
+  # INTERNAL from rims.api.ipam import process
   process(aCTX,{'addresses':addresses})
   return {'status':'OK','function':'ipam_check'}
 

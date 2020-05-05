@@ -268,7 +268,9 @@ def process(aCTX, aArgs = None):
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  data = {'prefix':filename[:-4],'suffix':filename[-3:],'rename':False}
  ret = {'status':'NOT_OK','info':None,'data':data,'seconds':int(time())}
+ # INTERNAL from rims.api.multimedia import check_srt
  srt  = check_srt(aCTX, {'filepath':filename})['data']
+ # INTERNAL from rims.api.multimedia import check_title
  info = aArgs if aArgs.get('name') and aArgs.get('info') else check_title(aCTX, {'filepath':filename})['data']
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
  data.update({'changes':{'subtitle':"",'audio':"",'srt':"",'aac':""},'dest':dest})

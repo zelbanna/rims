@@ -2,7 +2,6 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
-# Internal stuff
 def __is_ip(aIP):
  from ipaddress import ip_address
  try: ip_address(aIP)
@@ -158,6 +157,7 @@ def info(aCTX, aArgs = None):
    ret['classes'] = [parts[i] for i in range(1,len(parts),2)]
   if op == 'lookup':
    db.do("SELECT INET_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.management_id = di.interface_id WHERE devices.id = '%s'"%id)
+   # INTERNAL from rims.api.device import detect_hardware
    res = detect_hardware(aCTX,{'ip':db.get_val('ip')})
    ret['status'] = res['status']
    if res['status'] == 'OK':
@@ -461,9 +461,9 @@ def discover(aCTX, aArgs = None):
  Output:
  """
  from time import time
- from rims.api.ipam import network_discover, address_info, address_delete
  from struct import unpack
  from socket import inet_aton
+ from rims.api.ipam import network_discover, address_info, address_delete
 
  def ip2int(addr):
   return unpack("!I", inet_aton(addr))[0]
@@ -477,6 +477,7 @@ def discover(aCTX, aArgs = None):
  ip_addresses = {}
 
  def __detect_thread(aIP, aDB, aCTX):
+  # INTERNAL from rims.api.device import detect_hardware
   res = detect_hardware(aCTX,{'ip':aIP})
   aDB[aIP] = res['data'] if res['status'] == 'OK' else {}
   return (res['status'] == 'OK')
@@ -589,6 +590,7 @@ def network_info_discover(aCTX, aArgs = None):
  Output:
  """
  def __detect_thread(aCTX, aDev, aInfo):
+  # INTERNAL from rims.api.device import detect_hardware
   res = detect_hardware(aCTX,{'ip':aDev['ip'],'basic':aInfo})
   if res['status'] == 'OK':
    aDev.update(res['data'])

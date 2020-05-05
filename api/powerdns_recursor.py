@@ -16,6 +16,7 @@ def sync(aCTX, aArgs = None):
  """Function docstring for sync. Sync domain cache with recursor forwarder
 
  Args:
+  - domains (optional)
 
  Output:
  """
@@ -28,9 +29,7 @@ def sync(aCTX, aArgs = None):
  else:
   ret['status'] = 'OK'
   forwarders = [x for x in servers if x['servers']]
-  with aCTX.db as db:
-   db.do("SELECT domains.* FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.type = 'forward' AND st.service <> 'nodns'")
-   domains = db.get_rows()
+  domains = aCTX.node_function('master','dns','domain_forwarders')({})['data'] if not aArgs.get('domains') else aArgs['domains']
   for dom in domains:
    for f in forwarders:
     if f['name'] == (dom['name'] + '.'):

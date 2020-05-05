@@ -28,6 +28,7 @@ def menu(aCTX, aArgs = None):
  """
  data = {}
  data['start'] = aCTX.site['portal'].get('start')
+ # INTERNAL from rims.api.portal import resources
  data['menu'] = resources(aCTX,{'type':'menuitem'})['data']
  data['title'] = aCTX.site.get('portal',{}).get('title','Portal')
  return {'status':'OK','data':data}
