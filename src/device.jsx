@@ -154,7 +154,7 @@ class List extends Component {
     <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={device_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
-     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} id='new' />)} title='Add device' />
+     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} id='new' ip='0.0.0.0' />)} title='Add device' />
      <DevicesButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover devices' />
      <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
     </ContentList>
@@ -306,7 +306,7 @@ class ManagementInfo extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  updateInfo = () => rest_call('api/device/extended',{op:'update', ...this.state.data}).then(result => {
-  result.data.a_domain_id = this.mapDomain(result.data.management_id,this.state.interfaces)
+  result.data.a_domain_id = this.mapDomain(result.data.management_id,result.interfaces)
   this.setState(result)
  });
 

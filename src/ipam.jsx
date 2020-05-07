@@ -159,12 +159,12 @@ class AddressList extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/ipam/address_list',{network_id:this.props.network_id,extra:['a_id','ptr_id','hostname','a_domain_id','device_id']}).then(result => this.setState(result))
+  rest_call('api/ipam/address_list',{network_id:this.props.network_id,extra:['hostname','a_domain_id','device_id']}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- listItem = (row) => [row.id,row.ip,row.hostname,row.domain,row.a_id,row.ptr_id,<StateLeds state={row.state} />,<Fragment key={'ip_button_'+row.id}>
+ listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<StateLeds state={row.state} />,<Fragment key={'ip_button_'+row.id}>
    <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} title='Edit address entry' />
    <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
   </Fragment>]
@@ -172,7 +172,7 @@ class AddressList extends Component{
  deleteList = (id) => (window.confirm('Delete address?') && rest_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
  render(){
-  return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','A','PTR','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+  return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
    <AddButton key='al_btn_add' onClick={() => this.changeContent(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />)} title='Add address entry' />
   </ContentReport>
@@ -203,8 +203,6 @@ export class AddressInfo extends Component {
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
       <TextLine key='network' id='network' text={this.state.extra.network} />
       <TextInput key='ip' id='ip' label='IP'  value={this.state.data.ip} onChange={this.onChange} />
-      <TextInput key='a_id' id='a_id' label='A_id' value={this.state.data.a_id} onChange={this.onChange} />
-      <TextInput key='ptr_id' id='ptr_id' label='PTR_id' value={this.state.data.ptr_id} onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>

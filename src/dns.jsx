@@ -68,7 +68,7 @@ export class DomainList extends Component {
 class DomainInfo extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, found:true };
+  this.state = { data:null };
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
@@ -82,9 +82,7 @@ class DomainInfo extends Component {
  }
 
  render() {
-  if (!this.state.found)
-   return <InfoArticle key='dom_art'>Domain with id: {this.props.id} removed</InfoArticle>
-  else if (this.state.data) {
+  if (this.state.data) {
    const old = (this.state.data.id !== 'new');
    return <InfoArticle key='dom_art' header='Domain'>
      <InfoColumns key='domain_content'>
@@ -95,7 +93,7 @@ class DomainInfo extends Component {
       <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
       <TextInput key='master' id='master' value={this.state.data.master} onChange={this.onChange} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} />
-      <TextInput key='notified_serial' id='notified_serial' label='Notified Serial' value={this.state.data.notified_serial} onChange={this.onChange} />
+      <TextLine  key='serial' id='serial' text={this.state.data.serial} />
      </InfoColumns>
      <SaveButton key='domain_save' onClick={() => this.updateInfo()} title='Save domain information' />
     </InfoArticle>
@@ -150,17 +148,17 @@ class RecordList extends Component {
 
  changeContent = (elem) => this.props.changeSelf(elem);
 
- listItem = (row) => [row.id,row.name,row.content,row.type,row.ttl,<Fragment key={'rl_buttons_'+row.id}>
-   <ConfigureButton key={'record_info_btn_' + row.id} onClick={() => this.changeContent(<RecordInfo key={'record_info_'+row.id} domain_id={this.props.domain_id} id={row.id} />)} title='Configure record' />
-   {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + row.id} onClick={() => this.deleteList(row.id)} title='Delete record' />}
+ listItem = (row,idx) => [row.name,row.content,row.type,row.ttl,<Fragment key={'rl_buttons_'+idx}>
+   <ConfigureButton key={'record_info_btn_' + idx} onClick={() => this.changeContent(<RecordInfo key={'record_info_'+idx} domain_id={this.props.domain_id} op='info' {...row} />)} title='Configure record' />
+   {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + idx} onClick={() => this.deleteList(row.name,row.type)} title='Delete record' />}
   </Fragment>]
 
- deleteList = (id) => (window.confirm('Delete record?') && rest_call('api/dns/record_delete', {domain_id:this.props.domain_id,id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
+ deleteList = (name,type) => (window.confirm('Delete record?') && rest_call('api/dns/record_delete', {domain_id:this.props.domain_id,name:name,type:type}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => !(row.name === name && row.type === type))})))
 
  render(){
-  return <ContentReport key='rl_cr' header='Records' thead={['ID','Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+  return <ContentReport key='rl_cr' header='Records' thead={['Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount() } />
-   <AddButton key='rl_btn_add' onClick={() => this.changeContent(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} id='new' />)} title='Add DNS record' />
+   <AddButton key='rl_btn_add' onClick={() => this.changeContent(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} name='new' op='new' />)} title='Add DNS record' />
   </ContentReport>
  }
 }
@@ -170,26 +168,31 @@ class RecordList extends Component {
 class RecordInfo extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, found:true };
+  this.state = {data:null,info:undefined };
+  if (this.props.op === 'info'){
+   this.state.data = {domain_id:this.props.domain_id, name:this.props.name, type:this.props.type, ttl:this.props.ttl, content:this.props.content}
+   this.state.op = 'update'
+  } else {
+   this.state.data = {domain_id:this.props.domain_id, name:'', type:'A', ttl:3600, content:''}
+   this.state.op = 'insert'
+  }
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () => rest_call('api/dns/record_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
-
- componentDidMount(){
-  this.setState({info:undefined})
-  rest_call('api/dns/record_info',{id:this.props.id,domain_id:this.props.domain_id}).then(result => this.setState(result))
- }
+ updateInfo = () => rest_call('api/dns/record_info',{op:this.state.op, ...this.state.data}).then(result => {
+   this.setState({op:(result.status === 'OK') ? 'update' : this.state.op, ...result})
+ })
 
  render() {
   if (this.state.data)
    return <InfoArticle key='rec_art' header='Record'>
      <InfoColumns key='record_content'>
-      <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' onChange={this.onChange} />
-      <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' onChange={this.onChange} />
-      <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} onChange={this.onChange} />
+      <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' onChange={this.onChange} placeholder='name' />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder={'A, PTR or CNAME typically'} />
+      <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} onChange={this.onChange} />
+      <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' onChange={this.onChange} placeholder='content' />
+      {this.props.serial && <TextLine key='serial' id='serial' text={this.props.serial} />}
      </InfoColumns>
      <SaveButton key='record_save' onClick={() => this.updateInfo()} title='Save record information' />
      <Result key='record_result' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
