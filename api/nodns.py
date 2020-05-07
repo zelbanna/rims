@@ -173,7 +173,7 @@ def sync(aCTX, aArgs):
  ret = {'update':0,'insert':0,'removed':0,'status':'OK'}
  with aCTX.db as db:
   # A records
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A' WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name OR ia.a_id <> dr.id))"%aArgs['id'])
+  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A' WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name))"%aArgs['id'],True)
   for rec in db.get_rows():
    if rec['record_id'] is None:
     ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES ('%s','%s','%s','A') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['fqdn'],rec['ip']))

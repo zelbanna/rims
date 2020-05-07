@@ -184,7 +184,7 @@ class AddressList extends Component{
 export class AddressInfo extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, found:true};
+  this.state = {data:null};
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
@@ -207,7 +207,7 @@ export class AddressInfo extends Component {
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_save' onClick={() => this.updateInfo()} title='Save' />
-     <Result key='ip_operation' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
+     <Result key='ip_operation' result={(this.state.status) ? (this.state.status !== 'OK') ? this.state.info : 'OK' : ''} />
     </InfoArticle>
   else
    return <Spinner />

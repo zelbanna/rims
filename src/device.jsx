@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavReload } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
-import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 
@@ -155,7 +155,7 @@ class List extends Component {
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
      <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} id='new' ip='0.0.0.0' />)} title='Add device' />
-     <DevicesButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover devices' />
+     <SearchButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover new devices' />
      <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
     </ContentList>
     <ContentData key='dl_content'>{this.state.content}</ContentData>

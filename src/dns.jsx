@@ -191,11 +191,11 @@ class RecordInfo extends Component {
       <TextInput key='name' id='name' value={this.state.data.name} title='E.g. A:FQDN, PTR:x.y.z.in-addr.arpa' onChange={this.onChange} placeholder='name' />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder={'A, PTR or CNAME typically'} />
       <TextInput key='ttl' id='ttl' label='TTL' value={this.state.data.ttl} onChange={this.onChange} />
-      <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:FQDN' onChange={this.onChange} placeholder='content' />
+      <TextInput key='content' id='content' value={this.state.data.content} title='E.g. A:IP, PTR:x.y.x-inaddr.arpa, CNAME:A - remember dot on PTR/CNAME' onChange={this.onChange} placeholder='content' />
       {this.props.serial && <TextLine key='serial' id='serial' text={this.props.serial} />}
      </InfoColumns>
      <SaveButton key='record_save' onClick={() => this.updateInfo()} title='Save record information' />
-     <Result key='record_result' result={(this.state.status !== 'OK') ? this.state.info : 'OK'} />
+     <Result key='record_result' result={(this.state.status !== 'OK') ? JSON.stringify(this.state.info) : 'OK'} />
     </InfoArticle>
   else
    return <Spinner />

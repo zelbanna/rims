@@ -269,10 +269,10 @@ def address_info(aCTX, aArgs):
 
  Output:
   - same as above + ptr_domain_id
-  - dns as result from DNS operation if ip, hostname or a_domain_id has changed.
-
+  - A/PTR, from dns as result from DNS operation
+  - status, if there has been an operation
  """
- ret = {'status':'OK','info':None}
+ ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  aArgs.pop('ptr_domain_id',None)
@@ -285,7 +285,7 @@ def address_info(aCTX, aArgs):
      return {'status':'NOT_OK', 'info':'Illegal id'}
    else:
     old = {'ip':'0.0.0.0','network_id':None,'a_domain_id':None,'type':0,'hostname':'unknown','ptr_domain_id':None}
-
+   ret = {'status':'OK','info':None}
    # Save for DNS
    ip  = aArgs.get('ip',old['ip'])
 

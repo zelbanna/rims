@@ -244,6 +244,7 @@ def extended(aCTX, aArgs):
  ret = {'result':{}}
  with aCTX.db as db:
   if op == 'update':
+   # If a_domain_id and management_d pick fqdn from management and create CNAME
    if aArgs.get('a_domain_id') and not aArgs['management_id'] in ['NULL',None] and (db.do("SELECT ia.id, ia.hostname, ia.a_domain_id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %s"%aArgs['management_id']) > 0):
     ipam = db.get_row()
     if (ipam['hostname'] != aArgs['hostname']) or (int(aArgs['a_domain_id']) != ipam['a_domain_id']):
