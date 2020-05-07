@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ############################################### INTERFACES ################################################
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """List interfaces for a specific device
 
  Args:
@@ -30,7 +30,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """Show or update a specific interface for a device
 
  Args:
@@ -113,7 +113,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """Delete device interfaces using either id interface(s)
 
  Args:
@@ -141,7 +141,7 @@ def delete(aCTX, aArgs = None):
 
 #
 #
-def connect(aCTX, aArgs = None):
+def connect(aCTX, aArgs):
  """Function connects two device interfaces simultaneously to each other, removes old interfaces before
 
  Args:
@@ -165,7 +165,7 @@ def connect(aCTX, aArgs = None):
 
 #
 #
-def snmp(aCTX, aArgs = None):
+def snmp(aCTX, aArgs):
  """ SNMP Discovery function for interfaces. Either provide info for a single interface or trying to detect new interfaces.
 
  Args:
@@ -215,7 +215,7 @@ def snmp(aCTX, aArgs = None):
 
 #
 #
-def stats(aCTX, aArgs = None):
+def stats(aCTX, aArgs):
  """ Function fetches interface stats for a particular device interface(s)
 
  Args:
@@ -237,7 +237,7 @@ def stats(aCTX, aArgs = None):
 
 #
 #
-def connection_info(aCTX, aArgs = None):
+def connection_info(aCTX, aArgs):
  """Function to find out connection info
 
  Args:
@@ -263,7 +263,7 @@ def connection_info(aCTX, aArgs = None):
 
 #
 #
-def lldp(aCTX, aArgs = None):
+def lldp(aCTX, aArgs):
  """Function to find out lldp information
 
  Args:
@@ -279,7 +279,7 @@ def lldp(aCTX, aArgs = None):
 
 #
 #
-def lldp_mapping(aCTX, aArgs = None):
+def lldp_mapping(aCTX, aArgs):
  """Function discovers connections using lldp info
 
  Args:
@@ -367,7 +367,7 @@ def lldp_mapping(aCTX, aArgs = None):
 #################################### Monitor #################################
 #
 #
-def clear(aCTX, aArgs = None):
+def clear(aCTX, aArgs):
  """ Clear all interface statistics
 
  Args:
@@ -381,7 +381,7 @@ def clear(aCTX, aArgs = None):
 
 #
 #
-def check(aCTX, aArgs = None):
+def check(aCTX, aArgs):
  """ Initiate a status check for devices' interfaces.
 
  Args:
@@ -410,7 +410,7 @@ def check(aCTX, aArgs = None):
 
 #
 #
-def process(aCTX, aArgs = None):
+def process(aCTX, aArgs):
  """ Function processes a list of devices and their interfaces
 
  Args:
@@ -443,7 +443,7 @@ def process(aCTX, aArgs = None):
 
 #
 #
-def report(aCTX, aArgs = None):
+def report(aCTX, aArgs):
  """Function updates interface status
 
  Args:

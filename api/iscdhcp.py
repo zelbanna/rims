@@ -24,7 +24,7 @@ def __write_file(aFile,aEntries):
 #
 #
 #
-def status(aCTX, aArgs = None):
+def status(aCTX, aArgs):
  """Function docstring for leases TBD
 
  Args:
@@ -63,7 +63,7 @@ def status(aCTX, aArgs = None):
 
 #
 #
-def sync(aCTX, aArgs = None):
+def sync(aCTX, aArgs):
  """Function docstring for sync:  reload the DHCP server to use updated info
 
  Args:
@@ -78,7 +78,7 @@ def sync(aCTX, aArgs = None):
 
 #
 #
-def update(aCTX, aArgs = None):
+def update(aCTX, aArgs):
  """Function docstring for check: update specific entry
 
  Args:
@@ -109,7 +109,7 @@ def update(aCTX, aArgs = None):
 
 #
 #
-def restart(aCTX, aArgs = None):
+def restart(aCTX, aArgs):
  """Function provides restart capabilities of service
 
  Args:

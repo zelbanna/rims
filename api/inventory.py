@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ############################################### INVENTORY ################################################
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """ Function retrives the inventory
 
  Args:
@@ -37,7 +37,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def vendor_list(aCTX, aArgs = None):
+def vendor_list(aCTX, aArgs):
  """Function retrieves vendors in inventory
 
  Args:
@@ -52,7 +52,7 @@ def vendor_list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """ Function operates on inventory items
 
  Args:
@@ -106,7 +106,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """Function deleted an inventory item
 
  Args:

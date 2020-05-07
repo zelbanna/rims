@@ -7,7 +7,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def update(aCTX, aArgs = None):
+def update(aCTX, aArgs):
  """Function docstring for update TBD
 
  Args:
@@ -32,7 +32,7 @@ def update(aCTX, aArgs = None):
 
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -50,7 +50,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """ Function provides reservation info and operation
 
  Args:
@@ -76,7 +76,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def status(aCTX, aArgs = None):
+def status(aCTX, aArgs):
  """ Function provides reservation status for a device
 
  Args:
@@ -92,7 +92,7 @@ def status(aCTX, aArgs = None):
 
 #
 #
-def expiration_status(aCTX, aArgs = None):
+def expiration_status(aCTX, aArgs):
  """ Function runs shutdown and kills power when no time left.
 
  Args:

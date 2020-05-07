@@ -102,7 +102,7 @@ class Device(object):
 
 #
 #
-def inventory_list(aCTX, aArgs = None):
+def inventory_list(aCTX, aArgs):
  """Function main produces an inventory list for a node
 
  Args:
@@ -122,7 +122,7 @@ def inventory_list(aCTX, aArgs = None):
 
 #
 #
-def inventory_delete(aCTX, aArgs = None):
+def inventory_delete(aCTX, aArgs):
  """Function deletes inventory with id x
 
  Args:
@@ -139,7 +139,7 @@ def inventory_delete(aCTX, aArgs = None):
 
 #
 #
-def inventory_info(aCTX, aArgs = None):
+def inventory_info(aCTX, aArgs):
  """Function produces inventory info for a specific inventory id
 
  Args:
@@ -169,7 +169,7 @@ def inventory_info(aCTX, aArgs = None):
 
 #
 #
-def inventory_sync(aCTX, aArgs = None):
+def inventory_sync(aCTX, aArgs):
  """Function retrieves and matches AWX hosts with devices - and add/updates missing info and groups. Either a list of device_xy id are supplied
 
  Args:
@@ -261,7 +261,7 @@ def inventory_sync(aCTX, aArgs = None):
 
 #
 #
-def inventory_delete_hosts(aCTX, aArgs = None):
+def inventory_delete_hosts(aCTX, aArgs):
  """Deletes a list of hosts, represented as host_<xy>
 
  Args:
@@ -285,7 +285,7 @@ def inventory_delete_hosts(aCTX, aArgs = None):
 ########################################## Hosts ##########################################
 #
 #
-def host_list(aCTX, aArgs = None):
+def host_list(aCTX, aArgs):
  """Function retrieves all hosts from AWX node
 
  Args:

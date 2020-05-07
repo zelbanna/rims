@@ -12,7 +12,7 @@ __add_globals__ = lambda x: globals().update(x)
 from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -33,7 +33,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def cleanup(aCTX, aArgs = None):
+def cleanup(aCTX, aArgs):
  """Function docstring for cleanup TBD
 
  Args:
@@ -57,7 +57,7 @@ def cleanup(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """Function docstring for delete TBD
 
  Args:
@@ -75,7 +75,7 @@ def delete(aCTX, aArgs = None):
 
 #
 #
-def transfer(aCTX, aArgs = None):
+def transfer(aCTX, aArgs):
  """Function docstring TBD
 
  Args:
@@ -95,7 +95,7 @@ def transfer(aCTX, aArgs = None):
 ################################################# Media Functions ################################################
 #
 #
-def check_srt(aCTX, aArgs = None):
+def check_srt(aCTX, aArgs):
  """Function find the 'first' SRT file in a directory
 
  Args:
@@ -123,7 +123,7 @@ def check_srt(aCTX, aArgs = None):
 
 #
 #
-def check_title(aCTX, aArgs = None):
+def check_title(aCTX, aArgs):
  """Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
 
  Args:
@@ -185,7 +185,7 @@ def check_title(aCTX, aArgs = None):
 
 #
 #
-def check_content(aCTX, aArgs = None):
+def check_content(aCTX, aArgs):
  """Function docstring for check_content. Checks file using avprobe to determine content and how to optimize file
 
  Args:
@@ -249,7 +249,7 @@ def check_content(aCTX, aArgs = None):
 
 #
 #
-def process(aCTX, aArgs = None):
+def process(aCTX, aArgs):
  """Process a media file
 
  Args:
@@ -356,7 +356,7 @@ def process(aCTX, aArgs = None):
 ################################################ TBD ################################################
 #
 #
-def delay_set(aCTX, aArgs = None):
+def delay_set(aCTX, aArgs):
  """Sets offset in ms for file 'original' (MKV)
 
  Args:

@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def inventory(aCTX, aArgs = None):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -24,7 +24,7 @@ def inventory(aCTX, aArgs = None):
 
 #
 #
-def info (aCTX, aArgs = None):
+def info (aCTX, aArgs):
  """Function docstring for info TBD
 
  Args:

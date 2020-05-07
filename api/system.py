@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ############################### System #################################
 #
 #
-def memory_usage(aCTX, aArgs = None):
+def memory_usage(aCTX, aArgs):
  """Function memory usage retrieves currently used memory
 
  Args:
@@ -17,7 +17,7 @@ def memory_usage(aCTX, aArgs = None):
 
 #
 #
-def memory_objects(aCTX, aArgs = None):
+def memory_objects(aCTX, aArgs):
  """Function memory objects retrieves number of allocated memory objects
 
  Args:
@@ -30,7 +30,7 @@ def memory_objects(aCTX, aArgs = None):
 
 #
 #
-def garbage_collect(aCTX, aArgs = None):
+def garbage_collect(aCTX, aArgs):
  """Function garbage_collect performs a garbage collection
 
  Args:
@@ -42,7 +42,7 @@ def garbage_collect(aCTX, aArgs = None):
 
 #
 #
-def sleep(aCTX, aArgs = None):
+def sleep(aCTX, aArgs):
  """ Function sleeps for X seconds
 
  Args:
@@ -57,13 +57,13 @@ def sleep(aCTX, aArgs = None):
 
 #
 #
-def error(aCTX, aArgs = None):
+def error(aCTX, aArgs):
  """ Function throws an error """
  return (test == 'error')
 
 #
 #
-def external_ip(aCTX, aArgs = None):
+def external_ip(aCTX, aArgs):
  """Function docstring for external_ip. TBD
 
  Args:
@@ -82,7 +82,7 @@ def external_ip(aCTX, aArgs = None):
 
 #
 #
-def environment(aCTX, aArgs = None):
+def environment(aCTX, aArgs):
  """Function environment produces non-config environment for nodes
 
  Args:
@@ -100,7 +100,7 @@ def environment(aCTX, aArgs = None):
 
 #
 #
-def mode(aCTX, aArgs = None):
+def mode(aCTX, aArgs):
  """ Function sets run mode
 
  Args:
@@ -114,7 +114,7 @@ def mode(aCTX, aArgs = None):
 
 #
 #
-def report(aCTX, aArgs = None):
+def report(aCTX, aArgs):
  """ Function generates a system report
 
  Args:
@@ -126,7 +126,7 @@ def report(aCTX, aArgs = None):
 
 #
 #
-def reload(aCTX, aArgs = None):
+def reload(aCTX, aArgs):
  """ Function reloads all system modules
 
  Args:
@@ -145,7 +145,7 @@ def reload(aCTX, aArgs = None):
 
 #
 #
-def shutdown(aCTX, aArgs = None):
+def shutdown(aCTX, aArgs):
  """ Function shuts down system (!!!)
 
  Args:
@@ -164,7 +164,7 @@ def shutdown(aCTX, aArgs = None):
 ################################# REST #############################
 #
 #
-def rest_explore(aCTX, aArgs = None):
+def rest_explore(aCTX, aArgs):
  """Function docstring for rest_explore TBD
 
  Args:
@@ -195,7 +195,7 @@ def rest_explore(aCTX, aArgs = None):
 
 #
 #
-def rest_information(aCTX, aArgs = None):
+def rest_information(aCTX, aArgs):
  """ rest_information provides easy access to docstring for api/function
 
  Args:
@@ -215,7 +215,7 @@ def rest_information(aCTX, aArgs = None):
 ############################### Services ################################
 #
 #
-def service_list(aCTX, aArgs = None):
+def service_list(aCTX, aArgs):
  """Function service_list returns externally configured, non-RIMS services
 
  Args:
@@ -226,7 +226,7 @@ def service_list(aCTX, aArgs = None):
 
 #
 #
-def service_info(aCTX, aArgs = None):
+def service_info(aCTX, aArgs):
  """Function docstring for service_info. TBD
 
  Args:
@@ -271,7 +271,7 @@ def service_info(aCTX, aArgs = None):
 ####################################### Logs #######################################
 #
 #
-def logs_clear(aCTX, aArgs = None):
+def logs_clear(aCTX, aArgs):
  """Function docstring for logs_clear TBD
 
  Args:
@@ -292,7 +292,7 @@ def logs_clear(aCTX, aArgs = None):
 
 #
 #
-def logs_get(aCTX, aArgs = None):
+def logs_get(aCTX, aArgs):
  """Function docstring for logs_get TBD
 
  Args:
@@ -320,7 +320,7 @@ def logs_get(aCTX, aArgs = None):
 ################################# File ############################
 #
 #
-def file_list(aCTX, aArgs = None):
+def file_list(aCTX, aArgs):
  """Function list files in directory pinpointed by directory (in config at the node) or by fullpath
 
  Args:
@@ -356,7 +356,7 @@ def file_list(aCTX, aArgs = None):
 ############################## Database ######################
 #
 #
-def database_backup(aCTX, aArgs = None):
+def database_backup(aCTX, aArgs):
  """Function docstring for database_backup. Does Database Backup to file
 
  Args:
@@ -379,7 +379,7 @@ def database_backup(aCTX, aArgs = None):
 
 #
 #
-def node_to_api(aCTX, aArgs = None):
+def node_to_api(aCTX, aArgs):
  """ Function returns api for a specific node name
 
  Args:
@@ -393,7 +393,7 @@ def node_to_api(aCTX, aArgs = None):
 ############################## Tasks ###########################
 #
 #
-def worker(aCTX, aArgs = None):
+def worker(aCTX, aArgs):
  """Function instantiate a worker thread with arguments
 
  Args:

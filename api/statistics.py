@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """ Function provides stats for a device
 
  Args:
@@ -25,7 +25,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """ Function provides data point management for a device
 
  Args:
@@ -58,7 +58,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """ Function deletes a data point
 
  Args:
@@ -74,7 +74,7 @@ def delete(aCTX, aArgs = None):
 
 #
 #
-def lookup(aCTX, aArgs = None):
+def lookup(aCTX, aArgs):
  """ Function looks up device type based data points
 
  Args:
@@ -92,7 +92,7 @@ def lookup(aCTX, aArgs = None):
     module = import_module("rims.devices.%s"%info['type'])
     device = getattr(module,'Device',None)(aCTX, id, info['ip'])
     for ddp in device.get_data_points():
-     ret['inserts'] += db.do("INSERT INTO device_statistics (device_id,measurement,tags,name,oid) VALUES(%i,'%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = id"%(int(id),ddp[0],ddp[1],ddp[2],ddp[3]),True)
+     ret['inserts'] += db.do("INSERT INTO device_statistics (device_id,measurement,tags,name,oid) VALUES(%i,'%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = id"%(int(id),ddp[0],ddp[1],ddp[2],ddp[3]))
    except Exception as e:
     ret['status'] = 'NOT_OK'
     ret['info'] = str(e)
@@ -109,8 +109,8 @@ __add_globals__ = lambda x: globals().update(x)
 
 #################################### Monitor #################################
 #
-# TODO: find out where the service runs
-def check(aCTX, aArgs = None):
+#
+def check(aCTX, aArgs):
  """ Initiate a status check for all or a subset of devices' interfaces
 
  Args:
@@ -154,7 +154,7 @@ def check(aCTX, aArgs = None):
 
 #
 #
-def process(aCTX, aArgs = None):
+def process(aCTX, aArgs):
  """ Function processes a list of devices with datapoints and their interfaces
 
  Args:
@@ -163,8 +163,8 @@ def process(aCTX, aArgs = None):
  Output:
  """
  from rims.devices.generic import Device
- #TODO - find out where the service actually runs
- report = aCTX.node_function('master','statistics','report', aHeader= {'X-Log':'false'})
+ nodes = [x['node'] for x in aCTX.services.values() if x['service'] == 'influxdb']
+ report = aCTX.node_function(nodes[0],'statistics','report', aHeader= {'X-Log':'false'})
  reported = 0
  def __check_sp(aDev):
   try:
@@ -183,8 +183,8 @@ def process(aCTX, aArgs = None):
 
 #
 #
-def report(aCTX, aArgs = None):
- """Function updates statistics for a particular devices to influxdb
+def report(aCTX, aArgs):
+ """Function updates statistics for a particular devices to influxdb - service must be running on this node
 
  Args:
   - device_id (required). Device id
@@ -193,23 +193,20 @@ def report(aCTX, aArgs = None):
 
  Output:
  """
+ from datetime import datetime
  ret = {'status':'NOT_OK','function':'statistics_report'}
- if ('influxdb' in [x['service'] for x in aCTX.services.values() if x['node'] == aCTX.node]):
-  from datetime import datetime
-  args = []
-  db = aCTX.config['influxdb']
-  ts = int(datetime.now().timestamp())
-  if 'interfaces' in aArgs:
-   tmpl = ('interface,host_id={0},host_ip={1},if_id=%i,if_name=%b in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-   args.extend([tmpl%(x['interface_id'],x['name'].replace(' ','\ ').encode(),x['in8s'],x['inUPs'],x['out8s'],x['outUPs']) for x in aArgs['interfaces']])
-  if 'data_points' in aArgs:
-   tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-   args.extend([tmpl%(m['measurement'].encode(),m['tags'].replace(' ','\ ').encode(),(','.join(["%(name)s=%(value)s"%x for x in m['snmp']])).encode()) for m in aArgs['data_points']])
-  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
-  except Exception as e:
-   ret['info'] = str(e)
-   aCTX.log("statistics_report_error: %s"%str(e))
-  else:  ret['status'] = 'OK'
- else:
-  ret['info'] = 'No InfluxDB configured and initialized on local node'
+ args = []
+ db = aCTX.config['influxdb']
+ ts = int(datetime.now().timestamp())
+ if 'interfaces' in aArgs:
+  tmpl = ('interface,host_id={0},host_ip={1},if_id=%i,if_name=%b in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
+  args.extend([tmpl%(x['interface_id'],x['name'].replace(' ','\ ').encode(),x['in8s'],x['inUPs'],x['out8s'],x['outUPs']) for x in aArgs['interfaces']])
+ if 'data_points' in aArgs:
+  tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
+  args.extend([tmpl%(m['measurement'].encode(),m['tags'].replace(' ','\ ').encode(),(','.join(["%(name)s=%(value)s"%x for x in m['snmp']])).encode()) for m in aArgs['data_points']])
+ try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
+ except Exception as e:
+  ret['info'] = str(e)
+  aCTX.log("statistics_report_error: %s"%str(e))
+ else:  ret['status'] = 'OK'
  return ret

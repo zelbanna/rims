@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -21,7 +21,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """Function docstring for info TBD
 
  Args:
@@ -60,7 +60,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def inventory(aCTX, aArgs = None):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -90,7 +90,7 @@ def inventory(aCTX, aArgs = None):
 
 #
 #
-def devices(aCTX, aArgs = None):
+def devices(aCTX, aArgs):
  """Devices finds device information for rack such that we can build a rack "layout"
 
  Args:
@@ -112,7 +112,7 @@ def devices(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """Function docstring for delete TBD
 
  Args:

@@ -11,7 +11,7 @@ def __is_ip(aIP):
 ############################################ Device Basics ###########################################
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -86,7 +86,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def management(aCTX, aArgs = None):
+def management(aCTX, aArgs):
  """Retrieves basic management information (IP, URL, hostname and username). Used internally and by site and visualize JScript
 
  Args:
@@ -109,7 +109,7 @@ def management(aCTX, aArgs = None):
  return ret
 
 #
-def hostname(aCTX, aArgs = None):
+def hostname(aCTX, aArgs):
  """Retrieves hostname
 
  Args:
@@ -129,7 +129,7 @@ def hostname(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """Function docstring for info. Retrieves and updates device info (excluding rack info which is only fetched)
 
  Args:
@@ -225,7 +225,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def extended(aCTX, aArgs = None):
+def extended(aCTX, aArgs):
  """Function extended updates 'extended' device info (RACK info etc)
 
  Args:
@@ -266,7 +266,7 @@ def extended(aCTX, aArgs = None):
 
 #
 #
-def rack(aCTX, aArgs = None):
+def rack(aCTX, aArgs):
  """ Function provides rack information for a specific device
 
  Args:
@@ -301,7 +301,7 @@ def rack(aCTX, aArgs = None):
 
 #
 #
-def control(aCTX, aArgs = None):
+def control(aCTX, aArgs):
  """ Function provides an operational interface towards device, either using ID or IP
 
  Args:
@@ -359,7 +359,7 @@ def control(aCTX, aArgs = None):
 
 #
 #
-def search(aCTX, aArgs = None):
+def search(aCTX, aArgs):
  """ Functions returns device id for device matching name conditions
 
  Args:
@@ -387,7 +387,7 @@ def search(aCTX, aArgs = None):
 
 #
 #
-def new(aCTX, aArgs = None):
+def new(aCTX, aArgs):
  """Function docstring for new TBD
 
  Args:
@@ -429,7 +429,7 @@ def new(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """Function docstring for delete TBD
 
  Args:
@@ -450,7 +450,7 @@ def delete(aCTX, aArgs = None):
 
 #
 #
-def discover(aCTX, aArgs = None):
+def discover(aCTX, aArgs):
  """Function docstring for discover TBD
 
  Args:
@@ -509,7 +509,7 @@ def discover(aCTX, aArgs = None):
 
 #
 #
-def oids(aCTX, aArgs = None):
+def oids(aCTX, aArgs):
  """ Function returns unique oids found
 
   Args:
@@ -529,7 +529,7 @@ def oids(aCTX, aArgs = None):
 ############################################## Specials ###############################################
 #
 #
-def function(aCTX, aArgs = None):
+def function(aCTX, aArgs):
  """Function docstring for function TBD
 
  Args:
@@ -553,7 +553,7 @@ def function(aCTX, aArgs = None):
 
 #
 #
-def configuration_template(aCTX, aArgs = None):
+def configuration_template(aCTX, aArgs):
  """Function docstring for configuration_template TBD
 
  Args:
@@ -580,7 +580,7 @@ def configuration_template(aCTX, aArgs = None):
 
 #
 #
-def network_info_discover(aCTX, aArgs = None):
+def network_info_discover(aCTX, aArgs):
  """Function discovers system macs and enterprise oid for devices (on a network segment)
 
  Args:
@@ -630,7 +630,7 @@ def network_info_discover(aCTX, aArgs = None):
 ################################################## TYPES ##################################################
 #
 #
-def type_list(aCTX, aArgs = None):
+def type_list(aCTX, aArgs):
  """Function lists currenct device types
 
  Args:
@@ -651,7 +651,7 @@ def type_list(aCTX, aArgs = None):
 
 #
 #
-def model_list(aCTX, aArgs = None):
+def model_list(aCTX, aArgs):
  """ Function returns the current models inventory.
   Models are cumulative, whenever synced newly found ones are added to the system
 
@@ -674,7 +674,7 @@ def model_list(aCTX, aArgs = None):
 
 #
 #
-def model_sync(aCTX, aArgs = None):
+def model_sync(aCTX, aArgs):
  """ Function syncs device models table with devices tables' models.
 
  Args:
@@ -691,7 +691,7 @@ def model_sync(aCTX, aArgs = None):
 
 #
 #
-def model_info(aCTX, aArgs = None):
+def model_info(aCTX, aArgs):
  """ Function provides model info. Note that name and id can only be sync:ed to the system (there is no 'new' id as new models should be detected instead ATM)
 
  Args:
@@ -724,7 +724,7 @@ def model_info(aCTX, aArgs = None):
 
 #
 #
-def model_delete(aCTX, aArgs = None):
+def model_delete(aCTX, aArgs):
  """ Delete a specific model
 
  Args:
@@ -741,10 +741,10 @@ def model_delete(aCTX, aArgs = None):
 ################################################### VM ###################################################
 #
 #
-def vm_mapping(aCTX, aArgs = None):
+def vm_mapping(aCTX, aArgs):
  """ Function maps VMs on existing hypervisors using device management (!) interface MAC
 
- TODO:
+ TODO+:
  1) modify so if no hit on management interfaces for an inventory VM then run a (costly) check for each non-matched VM's other interfaces against the entire DB's mac table (where interface class = virtual)
  2) Save non-management interfaces and (maybe for a sync function or flag) verify that those are also in the database for each VM.
 
@@ -801,7 +801,7 @@ def vm_mapping(aCTX, aArgs = None):
 ################################################### Classes ###################################################
 #
 #
-def class_list(aCTX, aArgs = None):
+def class_list(aCTX, aArgs):
  """ Function list available device classes
 
  Args:
@@ -822,7 +822,7 @@ def class_list(aCTX, aArgs = None):
 ##################################################### Logs #####################################################
 #
 #
-def log_put(aCTX, aArgs = None):
+def log_put(aCTX, aArgs):
  """Function docstring for log_put. Insert device log
 
  Args:
@@ -839,7 +839,7 @@ def log_put(aCTX, aArgs = None):
 
 #
 #
-def log_get(aCTX, aArgs = None):
+def log_get(aCTX, aArgs):
  """Function retrieves device logs
 
  Args:
@@ -857,7 +857,7 @@ def log_get(aCTX, aArgs = None):
 
 #
 #
-def log_clear(aCTX, aArgs = None):
+def log_clear(aCTX, aArgs):
  """Function clear device logs.
 
  Args:
@@ -876,7 +876,7 @@ def log_clear(aCTX, aArgs = None):
 ################################################### Hardware ###################################################
 #
 #
-def detect_hardware(aCTX, aArgs = None):
+def detect_hardware(aCTX, aArgs):
  """ Function does device detection and mapping
 
  Args:

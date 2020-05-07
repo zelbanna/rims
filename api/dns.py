@@ -10,13 +10,12 @@ __add_globals__ = lambda x: globals().update(x)
 ################################ Domains ##################################
 #
 #
-def domain_list(aCTX, aArgs = None):
+def domain_list(aCTX, aArgs):
  """Function docstring for domain_list.
 
  Args:
   - filter (optional)
   - sync (optional)
-  - exclude (optional)
 
  Output:
   - filter:forward/reverse
@@ -46,21 +45,13 @@ def domain_list(aCTX, aArgs = None):
    # Sync recursors as well
    # INTERNAL from rims.api.dns import sync
    sync(aCTX, aArgs = {})
-  filter = []
-  if 'filter' in aArgs:
-   filter.append("domains.type = '%s'"%aArgs['filter'])
-  if 'exclude' in aArgs:
-   db.do("SELECT server_id FROM domains WHERE id = '%s'"%aArgs['exclude'])
-   filter.append('server_id = %s'%(db.get_val('server_id')))
-   filter.append("domains.id <> '%s'"%aArgs['exclude'])
-
-  ret['count']   = db.do("SELECT domains.*, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%('TRUE' if len(filter) == 0 else " AND ".join(filter)))
+  ret['count']   = db.do("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if not 'filter' in aArgs else "domains.type = '%s'"%aArgs['filter']))
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def domain_info(aCTX, aArgs = None):
+def domain_info(aCTX, aArgs):
  """Function docstring for domain_info TBD
 
  Args:
@@ -76,28 +67,32 @@ def domain_info(aCTX, aArgs = None):
  id = aArgs['id']
  if id  == 'new' and not (aArgs.get('op') == 'update'):
   ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']
-  ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
+  ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'Master', 'serial':0 }
  else:
   with aCTX.db as db:
    if id == 'new':
-    ret['found'] = (db.do("SELECT servers.id, 'new' AS foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE servers.id = %s"%aArgs.pop('server_id','0')) > 0)
+    infra = (db.do("SELECT servers.id, 'new' AS foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE servers.id = %s"%aArgs.pop('server_id','0')) > 0)
    else:
-    ret['found'] = (db.do("SELECT servers.id,  foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id) > 0)
-   if ret['found']:
+    infra = (db.do("SELECT servers.id,  foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id) > 0)
+   if infra:
     ret['infra'] = db.get_row()
     aArgs['id']  = ret['infra']['foreign_id']
     ret.update(aCTX.node_function(ret['infra']['node'],ret['infra']['service'],'domain_info')(aArgs = aArgs))
     if ret.get('insert'):
-     ret['cache'] = db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']})
+     ret['cache'] = (db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']}) > 0)
+     ret['infra']['foreign_id'] = ret['data']['id']
      ret['data']['id'] = db.get_last_id()
-    else:
+    elif ret.get('data'):
+     ret['infra']['foreign_id'] = ret['data']['id']
      ret['data']['id'] = id
+    else:
+     ret['status'] = 'NOT_OK'
  return ret
 
 #
 #
-def domain_delete(aCTX, aArgs = None):
- """Function domain_delete deletes a domain from local cache and remote DNS server. All records will be transferred to default (0) domain.
+def domain_delete(aCTX, aArgs):
+ """Function domain_delete deletes a domain from local cache and remote DNS server. All records will be transferred to no domain.
 
  Args:
   - id (required)
@@ -109,17 +104,14 @@ def domain_delete(aCTX, aArgs = None):
   db.do("SELECT servers.id, foreign_id, domains.type, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
   ret = aCTX.node_function(infra['node'],infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
-  if infra['type'] == 'reverse':
-   ret['local'] = db.do("UPDATE ipam_addresses SET ptr_id = 0 WHERE id IN (SELECT ia.id FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id  WHERE ine.reverse_zone_id = %s)"%id)
-  else:
-   ret['local'] = db.do("UPDATE ipam_addresses SET a_id = 0, a_domain_id = NULL WHERE a_domain_id = %i"%id)
+  ret['local'] = db.do("UPDATE ipam_addresses SET a_domain_id = NULL WHERE a_domain_id = %i"%id)
   ret['networks'] = db.do("UPDATE ipam_networks SET reverse_zone_id = NULL WHERE reverse_zone_id = %i"%id)
   ret['cache'] = (db.do("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id'])) > 0) if ret['deleted'] else False
  return ret
 
 #
 #
-def domain_ptr_list(aCTX, aArgs = None):
+def domain_ptr_list(aCTX, aArgs):
  """ Function returns matching PTR domain id's and extra server info for a prefix
 
  Args:
@@ -140,7 +132,7 @@ def domain_ptr_list(aCTX, aArgs = None):
 
 #
 #
-def domain_forwarders(aCTX, aArgs = None):
+def domain_forwarders(aCTX, aArgs):
  """ Function returns information for forwarders / recursors
 
  Args:
@@ -157,12 +149,12 @@ def domain_forwarders(aCTX, aArgs = None):
 ######################################## Records ####################################
 #
 #
-def record_list(aCTX, aArgs = None):
+def record_list(aCTX, aArgs):
  """Function docstring for record_list TBD
 
  Args:
   - type (optional)
-  - domain_id (required), <B>use cached one</B>
+  - domain_id (required), <B>use internal/cached one</B>
 
  Output:
   - data
@@ -182,42 +174,42 @@ def record_list(aCTX, aArgs = None):
 
 #
 #
-def record_info(aCTX, aArgs = None):
+def record_info(aCTX, aArgs):
  """Function docstring for record_info TBD
 
  Args:
-  - id (required)
+  - name (required)
   - domain_id (required)
-  - op (optinal) 'update'
-  - name (optional)
+  - type (required)
+  - op (required) 'new'/'info'/'insert'/'update'
   - content (optional)
-  - type (optional)
 
  Output:
  """
  ret = {}
- domain_id = aArgs['domain_id']
- if domain_id is None:
-  ret = {'status':'NOT_OK', 'data':None}
- elif aArgs['id'] == 'new' and not 'op' in aArgs:
-  ret = {'status':'OK', 'data':{'id':'new','domain_id':domain_id,'name':'key','content':'value','type':'type-of-record','ttl':'3600','foreign_id':'NA'}}
+ if aArgs['domain_id'] is None or len(aArgs['name']) == 0 or len(aArgs['type']) == 0:
+  ret = {'status':'NOT_OK', 'data':None, 'info':'Not enough correct parameters (domain,name,type)'}
+ elif aArgs['op'] == 'new':
+  ret = {'status':'OK', 'data':{'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600'}}
  else:
+  domain_id = aArgs['domain_id']
   with aCTX.db as db:
    db.do("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
-   ret = aCTX.node_function(infra['node'],infra['service'],'record_info')(aArgs = aArgs)
-   ret['data']['domain_id']  = domain_id
+  ret = aCTX.node_function(infra['node'],infra['service'],'record_info')(aArgs = aArgs)
+  if ret.get('data'):
+   ret['data']['domain_id'] = domain_id
   ret['status'] = ret.get('status','OK')
  return ret
 
 #
 #
-def record_delete(aCTX, aArgs = None):
+def record_delete(aCTX, aArgs):
  """Function docstring for record_delete TBD
 
  Args:
-  - id (required)
+  - name (required)
   - domain_id (required)
   - type (optional)
 
@@ -232,7 +224,7 @@ def record_delete(aCTX, aArgs = None):
 ###################################### Tools ####################################
 #
 #
-def status(aCTX, aArgs = None):
+def status(aCTX, aArgs):
  """Function docstring for status TBD
 
  Args:
@@ -252,7 +244,7 @@ def status(aCTX, aArgs = None):
 
 #
 #
-def sync(aCTX, aArgs = None):
+def sync(aCTX, aArgs):
  """ Function synchronizes recursors and with database/forwarders to point to the right DNS servers
 
  Args:
@@ -263,7 +255,7 @@ def sync(aCTX, aArgs = None):
  # INTERNAL from rims.api.dns import domain_forwarders
  domains = domain_forwarders(aCTX,{})['data']
  for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
-  res = aCTX.node_function(infra['node'],infra['service'],'sync')({'domains':domains})
+  res = aCTX.node_function(infra['node'],infra['service'],'sync')(aArgs = {'domains':domains})
   if res['status'] == 'OK':
    ret['added'].extend(res['added'])
    ret['removed'].extend(res['removed'])
@@ -271,21 +263,4 @@ def sync(aCTX, aArgs = None):
    ret['errors'].append(("%s@%s"%(infra['node'],infra['service']),res['info']))
   ret['status'] = 'NOT_OK' if ret['errors'] else 'OK'
  aCTX.log("DNS <=> Recursors synchronized: %s"%ret['status'])
- return ret
-
-#
-#
-def reset_server(aCTX, aArgs = None):
- """ Function resets all A and PTR records for forward and reverse zones hosted by server X
-
- Args:
-  - id (required) id of server
-
- Output:
-  - status
- """
- ret = {'STATUS':'OK'}
- with aCTX.db as db:
-  ret['A']   = db.do("UPDATE ipam_addresses SET   a_id = 0 WHERE a_domain_id IN (SELECT id FROM domains WHERE type = 'forward' AND server_id = %s)"%aArgs['id'])
-  ret['PTR'] = db.do("UPDATE ipam_addresses SET ptr_id = 0 WHERE network_id  IN (SELECT ine.id FROM ipam_networks AS ine RIGHT JOIN domains ON ine.reverse_zone_id = domains.id WHERE domains.type = 'reverse' AND domains.server_id = %s)"%aArgs['id'])
  return ret

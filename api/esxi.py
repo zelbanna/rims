@@ -12,7 +12,7 @@ __add_globals__ = lambda x: globals().update(x)
 from rims.devices.esxi import Device
 
 #
-def inventory(aCTX, aArgs = None):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -35,7 +35,7 @@ def inventory(aCTX, aArgs = None):
 
 #
 #
-def vm_info(aCTX, aArgs = None):
+def vm_info(aCTX, aArgs):
  """Function info returns state information for VM
 
  Args:
@@ -79,7 +79,7 @@ def vm_info(aCTX, aArgs = None):
 
 #
 #
-def vm_map(aCTX, aArgs = None):
+def vm_map(aCTX, aArgs):
  """ Function maps or retrieves VM to device ID mapping
 
  Args:
@@ -104,7 +104,7 @@ def vm_map(aCTX, aArgs = None):
 
 #
 #
-def vm_op(aCTX, aArgs = None):
+def vm_op(aCTX, aArgs):
  """Function op provides VM operation control
 
  Args:
@@ -121,7 +121,7 @@ def vm_op(aCTX, aArgs = None):
 
 #
 #
-def vm_snapshot(aCTX, aArgs = None):
+def vm_snapshot(aCTX, aArgs):
  """Function snapshot provides VM snapshot control
 
  Args:

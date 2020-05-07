@@ -173,6 +173,7 @@ class Context(object):
   elif sig == SIGUSR2:
    data = self.report()
    data.update(self.config)
+   data['services'] = self.services
    data['tokens'] = {k:{'id':v['id'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")} for k,v in self.tokens.items()}
    data['site'] = self.site
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
@@ -184,7 +185,10 @@ class Context(object):
  ################################## Service Functions #################################
  #
  def node_function(self, aNode, aModule, aFunction, **kwargs):
-  """ Node function freezes a REST call or a function with enough info so that they can be used multiple times AND interchangably """
+  """
+  Node function freezes a REST call or a function with enough info so that they can be used multiple times AND interchangably.
+  For this to work smoothly the argument to the function will have to be **kwargs because rest_call picks everything from kwargs
+  """
   if self.node != aNode:
    kwargs['aDataOnly'] = True
    kwargs['aHeader'] = kwargs.get('aHeader',{})

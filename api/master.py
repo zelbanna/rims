@@ -6,7 +6,7 @@ __node__ = 'master'
 ####################################### SITE ######################################
 #
 #
-def inventory(aCTX, aArgs = None):
+def inventory(aCTX, aArgs):
  """Function docstring for inventory. Provides inventory info for particular nodes
 
  Args:
@@ -27,7 +27,7 @@ def inventory(aCTX, aArgs = None):
 ########################################## OUI ##########################################
 #
 #
-def oui_fetch(aCTX, aArgs = None):
+def oui_fetch(aCTX, aArgs):
  """ Function fetch and populate OUI table
 
  Args:
@@ -64,7 +64,7 @@ def oui_fetch(aCTX, aArgs = None):
 
 #
 #
-def oui_info(aCTX, aArgs = None):
+def oui_info(aCTX, aArgs):
  """ Function retrieves OUI info from database
 
  Args:
@@ -85,7 +85,7 @@ def oui_info(aCTX, aArgs = None):
 
 #
 #
-def oui_list(aCTX, aArgs = None):
+def oui_list(aCTX, aArgs):
  """ Function retrieves OUI list
 
  Args:
@@ -101,7 +101,7 @@ def oui_list(aCTX, aArgs = None):
 ####################################### NODE ######################################
 #
 #
-def node_list(aCTX, aArgs = None):
+def node_list(aCTX, aArgs):
  """Function docstring for node_list TBD
 
  Args:
@@ -116,7 +116,7 @@ def node_list(aCTX, aArgs = None):
 
 #
 #
-def node_info(aCTX, aArgs = None):
+def node_info(aCTX, aArgs):
  """Function docstring for node_info TBD
 
  Args:
@@ -156,7 +156,7 @@ def node_info(aCTX, aArgs = None):
 
 #
 #
-def node_delete(aCTX, aArgs = None):
+def node_delete(aCTX, aArgs):
  """Function docstring for node_delete TBD
 
  Args:
@@ -176,7 +176,7 @@ def node_delete(aCTX, aArgs = None):
 
 #
 #
-def node_to_api(aCTX, aArgs = None):
+def node_to_api(aCTX, aArgs):
  """ Function returns api for a specific node name
 
  Args:
@@ -190,7 +190,7 @@ def node_to_api(aCTX, aArgs = None):
 ####################################### USERS ######################################
 #
 #
-def user_list(aCTX, aArgs = None):
+def user_list(aCTX, aArgs):
  """Function docstring for user_list TBD
 
  Args:
@@ -205,7 +205,7 @@ def user_list(aCTX, aArgs = None):
 
 #
 #
-def user_encrypt(aCTX, aArgs = None):
+def user_encrypt(aCTX, aArgs):
  """Function encrypts 'data' with password encryption techniques, providing entire encryption string (method,salt,code)
 
  Args:
@@ -221,7 +221,7 @@ def user_encrypt(aCTX, aArgs = None):
 
 #
 #
-def user_info(aCTX, aArgs = None):
+def user_info(aCTX, aArgs):
  """Function docstring for user_info TBD
 
  Args:
@@ -264,7 +264,7 @@ def user_info(aCTX, aArgs = None):
 
 #
 #
-def user_delete(aCTX, aArgs = None):
+def user_delete(aCTX, aArgs):
  """Function docstring for user_delete TBD
 
  Args:
@@ -278,7 +278,7 @@ def user_delete(aCTX, aArgs = None):
 
 #
 #
-def token_maintenance(aCTX, aArgs = None):
+def token_maintenance(aCTX, aArgs):
  """Function manage tokens
 
  Args:
@@ -294,7 +294,7 @@ def token_maintenance(aCTX, aArgs = None):
 ################################ SERVERS ##################################
 #
 #
-def server_list(aCTX, aArgs = None):
+def server_list(aCTX, aArgs):
  """Function docstring for server_list TBD
 
  Args:
@@ -310,7 +310,7 @@ def server_list(aCTX, aArgs = None):
 
 #
 #
-def server_info(aCTX, aArgs = None):
+def server_info(aCTX, aArgs):
  """Function docstring for server_info TBD
 
  Args:
@@ -350,7 +350,7 @@ def server_info(aCTX, aArgs = None):
 
 #
 #
-def server_delete(aCTX, aArgs = None):
+def server_delete(aCTX, aArgs):
  """Function docstring for server_delete TBD
 
  Args:
@@ -366,7 +366,7 @@ def server_delete(aCTX, aArgs = None):
 
 #
 #
-def server_sync(aCTX, aArgs = None):
+def server_sync(aCTX, aArgs):
  """Server sync sends sync message to server @ node and convey result. What sync means is server dependent
 
  Args:
@@ -384,7 +384,7 @@ def server_sync(aCTX, aArgs = None):
 
 #
 #
-def server_status(aCTX, aArgs = None):
+def server_status(aCTX, aArgs):
  """Server status sends status message to server @ node and convey result. What status means is server dependent
 
  Args:
@@ -402,7 +402,7 @@ def server_status(aCTX, aArgs = None):
 
 #
 #
-def server_restart(aCTX, aArgs = None):
+def server_restart(aCTX, aArgs):
  """Server restart attempt to restart a server @ node.
 
  Args:
@@ -422,7 +422,7 @@ def server_restart(aCTX, aArgs = None):
 ####################################### ACTIVITIES #######################################
 #
 #
-def activity_list(aCTX, aArgs = None):
+def activity_list(aCTX, aArgs):
  """ Function docstring for activity_list. TBD
 
  Args:
@@ -445,7 +445,7 @@ def activity_list(aCTX, aArgs = None):
 
 #
 #
-def activity_info(aCTX, aArgs = None):
+def activity_info(aCTX, aArgs):
  """ Function docstring for activity_info. TBD
 
  Args:
@@ -486,7 +486,7 @@ def activity_info(aCTX, aArgs = None):
 
 #
 #
-def activity_delete(aCTX, aArgs = None):
+def activity_delete(aCTX, aArgs):
  """ Function docstring for activity_delete. TBD
 
  Args:
@@ -501,7 +501,7 @@ def activity_delete(aCTX, aArgs = None):
 
 #
 #
-def activity_type_list(aCTX, aArgs = None):
+def activity_type_list(aCTX, aArgs):
  """ Function docstring for activity_type_list. TBD
 
  Args:
@@ -516,7 +516,7 @@ def activity_type_list(aCTX, aArgs = None):
 
 #
 #
-def activity_type_info(aCTX, aArgs = None):
+def activity_type_info(aCTX, aArgs):
  """ Function docstring for activity_type_info. TBD
 
  Args:
@@ -543,7 +543,7 @@ def activity_type_info(aCTX, aArgs = None):
 
 #
 #
-def activity_type_delete(aCTX, aArgs = None):
+def activity_type_delete(aCTX, aArgs):
  """ Function docstring for activity_type_delete. TBD
 
  Args:
@@ -559,7 +559,7 @@ def activity_type_delete(aCTX, aArgs = None):
 ###################################### TASKs ######################################
 #
 #
-def task_add(aCTX, aArgs = None):
+def task_add(aCTX, aArgs):
  """ Adds a task
 
  Args:
@@ -594,7 +594,7 @@ def task_add(aCTX, aArgs = None):
 
 #
 #
-def task_list(aCTX, aArgs = None):
+def task_list(aCTX, aArgs):
  """ List tasks
 
  Args:
@@ -612,7 +612,7 @@ def task_list(aCTX, aArgs = None):
 
 #
 #
-def task_delete(aCTX, aArgs = None):
+def task_delete(aCTX, aArgs):
  """ Delete a task
 
  Args:

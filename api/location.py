@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ############################################### INVENTORY ################################################
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """ Function retrives locations
 
  Args:
@@ -21,7 +21,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """ Function operates on location items
 
  Args:
@@ -47,7 +47,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """ Function deletes a location
 
  Args:

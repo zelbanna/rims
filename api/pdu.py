@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """List PDUs
 
  Args:

@@ -34,7 +34,7 @@ def set_ip(aCTX, aArgs):
 #
 # Get Loopia info for subdomain
 #
-def get_ip(aCTX, aArgs = None):
+def get_ip(aCTX, aArgs):
  from xmlrpc import client
  ret = {}
  try:
@@ -50,5 +50,5 @@ def get_ip(aCTX, aArgs = None):
 
 #
 #
-def get_loopia_suffix(aCTX, aArgs = None):
+def get_loopia_suffix(aCTX, aArgs):
  return {'suffix':".%s"%aCTX.config['loopia']['domain']}

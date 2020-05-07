@@ -1,12 +1,11 @@
 """PowerDNS API module. Provides powerdns specific REST interface. Essentially to create a GUI management for PowerDNS.
+
 Settings:
- - database
- - username
- - password
- - logfile
- - master (IP of master)
- - endpoint (ip:port for DNS service, not REST API)
- - soa (e.g. 'xyz.domain hostmaster.domain 0 86400 3600 604800')
+- url - API url
+- key - API key
+- nameserver - For SOA records, add trailing . (dot) to be 'canonical'
+- reload - command line command to reload service
+- endpoint (ip:port for DNS service, not REST API)
 
 """
 __author__ = "Zacharias El Banna"
@@ -18,33 +17,30 @@ from rims.core.common import DB
 #################################### Domains #######################################
 #
 #
-def domain_list(aCTX, aArgs = None):
- """Function docstring TBD
+def domain_list(aCTX, aArgs):
+ """Function provides a list of all domains from PowerDNS server
 
  Args:
-  - filter (optional)
-  - dict (optional)
-  - exclude (optional)
 
  Output:
  """
  ret = {}
- settings = aCTX.config['powerdns']
- with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
-  if aArgs.get('filter'):
-   ret['count'] = db.do("SELECT domains.* FROM domains WHERE name %s LIKE '%%arpa' ORDER BY name"%('' if aArgs.get('filter') == 'reverse' else "NOT"))
-  else:
-   ret['count'] = db.do("SELECT domains.* FROM domains")
-  ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
-  if 'dict' in aArgs and 'exclude' in aArgs:
-   ret['data'].pop(aArgs['exclude'],None)
-  ret['endpoint'] = settings.get('endpoint','127.0.0.1:53')
+ settings = aCTX.config['powerdns']['server']
+ try: ret['data'] = aCTX.rest_call('%s/servers/localhost/zones?dnssec=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['info'] = e.args[0]['data'] if e.args[0]['data'] else str(e)
+ else:
+  ret['status'] = 'OK'
+  # Remove trailing dot, automaticall add below
+  for dom in ret['data']:
+   dom['name'] = dom['name'][:-1]
+ ret['endpoint'] = settings.get('endpoint','127.0.0.1:53')
  return ret
 
 #
-#
-def domain_info(aCTX, aArgs = None):
- """Function docstring TBD
+def domain_info(aCTX, aArgs):
+ """Function create/update domain info
 
  Args:
   - type (required)
@@ -57,55 +53,62 @@ def domain_info(aCTX, aArgs = None):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- settings = aCTX.config['powerdns']
- with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
+ output = {}
+ settings = aCTX.config['powerdns']['server']
+ if op == 'update' and id == 'new':
+  args = {'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','kind':aArgs.get('type','Master').lower().capitalize(),'dnssec':False,'soa-edit':'INCEPTION-INCREMENT','masters':aArgs.get('master','127.0.0.1').split(','),'nameservers':settings.get('nameservers','server.local.').split(',')}
+  # Fix name so that it ends with .
+  try: output = aCTX.rest_call('%s/servers/localhost/zones?rrsets=false'%(settings['url']), aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+  except Exception as e:
+   ret = {'status':'NOT_OK','insert':False,'found':False,'info':e.args[0]['data']['error'] if e.args[0]['data'] else str(e)}
+  else:
+   ret = {'status':'OK','insert':True,'found':True}
+ else:
   if op == 'update':
-   if id == 'new':
-    # Create and insert a lot of records
-    ret['insert'] = (db.insert_dict('domains',aArgs,'ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)') == 1)
-    if ret['insert']:
-     id = db.get_last_id()
-     # Find DNS for MASTER to be placed into SOA record
-     master = (db.do("SELECT records.name AS server, domains.name AS domain FROM records LEFT JOIN domains ON domains.id = records.domain_id WHERE content = '%s' AND records.type ='A'"%aArgs['master']) > 0)
-     soa = db.get_row() if master else {'server':'server.local','domain':'local'}
-     sql = "INSERT INTO records(domain_id, name, content, type, ttl, prio) VALUES ('%s','%s','{}','{}' ,25200,0)"%(id,aArgs['name'])
-     db.do(sql.format("%s hostmaster.%s 0 21600 300 3600"%(soa['server'],soa['domain']),'SOA'))
-     db.do(sql.format(soa['server'],'NS'))
-     ret['extra'] = {'master':master,'soa':soa}
-    else:
-     id = 'existing'
+   args = {}
+   if 'type' in aArgs:
+    args['kind'] = aArgs['type'].lower().capitalize()
+   if 'master' in aArgs:
+    args['masters'] = aArgs['master'].split(',')
+   try: res = aCTX.rest_call('%s/servers/localhost/zones/%s'%(settings['url'],id), aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDataOnly = False)
+   except Exception as e:
+    ret = {'status':'NOT_OK','update':False,'info':e.args[0]['data']['error'] if e.args[0]['data'] else str(e)}
    else:
-    ret['update'] = (db.update_dict('domains',aArgs,"id=%s"%id) == 1)
-
-  ret['found'] = (db.do("SELECT id,name,master,type,notified_serial FROM domains WHERE id = '%s'"%id) > 0)
-  ret['data'] = db.get_row() if ret['found'] else {'id':'new','name':'new-name','master':'ip-of-master','type':'MASTER', 'notified_serial':0 }
-  ret['endpoint'] = settings.get('endpoint','127.0.0.1:53')
+    ret = {'status':'OK','update':True}
+  try: output = aCTX.rest_call('%s/servers/localhost/zones/%s'%(settings['url'],id), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+  except Exception as e: ret['found'] = False
+  else: ret['found'] = True
+ # Convert to suitable data format
+ ret['data'] = {'id':output.get('id','new'),'name':output.get('name','.')[:-1], 'type':output.get('kind',""),'master':','.join(output.get('masters',[])),'serial':output.get('serial',0)}
+ ret['endpoint'] = settings.get('endpoint','127.0.0.1:53')
  return ret
 
 #
 #
-def domain_delete(aCTX, aArgs = None):
- """Function docstring for domain_delete TBD
+def domain_delete(aCTX, aArgs):
+ """Function deletes a zone - assumes PowerDNS removes all metadata and RRs
 
  Args:
   - id (required)
 
  Output:
-  - records. number
-  - domain. boolean
  """
  ret = {}
- settings = aCTX.config['powerdns']
- with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
-  id = int(aArgs['id'])
-  ret['records'] = db.do("DELETE FROM records WHERE domain_id = %i"%id)
-  ret['deleted']  = (db.do("DELETE FROM domains WHERE id = %i"%(id)) == 1)
+ settings = aCTX.config['powerdns']['server']
+ try: res = aCTX.rest_call('%s/servers/localhost/zones/%s'%(settings['url'],aArgs['id']), aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']}, aDataOnly=False)
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['code'] = e.args[0]['code']
+  ret['info'] = e.args[0]['data']
+ else:
+  ret['status'] = 'OK' if res['code'] == 204 else 'NOT_OK'
+ ret['deleted'] = (ret['status'] == 'OK')
  return ret
 
 #################################### Records #######################################
 #
 #
-def record_list(aCTX, aArgs = None):
+def record_list(aCTX, aArgs):
  """Function docstring for records TBD
 
  Args:
@@ -114,98 +117,94 @@ def record_list(aCTX, aArgs = None):
 
  Output:
  """
- ret = {}
- select = []
- if 'domain_id' in aArgs:
-  select.append("domain_id = %s"%aArgs['domain_id'])
- if 'type' in aArgs:
-  select.append("type = '%s'"%aArgs['type'].upper())
- tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
- settings = aCTX.config['powerdns']
- with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
-  ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl FROM records %s ORDER BY type, name ASC"%tune)
-  ret['data'] = db.get_rows()
+ settings = aCTX.config['powerdns']['server']
+ try: output = aCTX.rest_call('%s/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+ except Exception as e:
+  ret = {'status':'NOT_OK','info':e.args[0]['data']}
+ else:
+  data = []
+  for rrset in output['rrsets']:
+   # Remove trailing dot, add below
+   data.extend({'name':rrset['name'][:-1],'type':rrset['type'],'ttl':rrset['ttl'],'change_data':output['edited_serial'],'content':rec['content']} for rec in rrset['records'])
+  ret = {'status':'OK','data':data,'count':len(data)}
  return ret
 
 #
 #
-def record_info(aCTX, aArgs = None):
+def record_info(aCTX, aArgs):
  """Function docstring for record_info TBD
 
  Args:
-  - id (optional required)
   - domain_id (required)
-  - op (optional) 'update'/'insert'
-  - name (optional)
+  - name (required)
+  - type (required)
+  - op (optional) 'new'/'info'/'insert'/'update'
   - content (optional)
-  - type (optional)
+  - ttl (optional)
 
  Output:
  """
- ret = {}
- id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- settings = aCTX.config['powerdns']
- with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
-  if op:
-   if str(id) in ['new','0'] and op == 'insert':
-    aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'prio':'0','domain_id':str(aArgs['domain_id'])})
-    ret['insert'] = (db.insert_dict('records',aArgs,"ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") == 1)
-    id = db.get_last_id() if ret['insert'] > 0 else "new"
-   elif op == 'update':
-    ret['update'] = (db.update_dict('records',aArgs,"id='%s'"%id) == 1)
-
-  ret['status'] = 'OK' if (op is None) or ret.get('insert') or ret.get('update') else 'NOT_OK'
-  ret['found'] = (db.do("SELECT records.* FROM records WHERE id = '%s' AND domain_id = '%s'"%(id,aArgs['domain_id'])) > 0)
-  ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
+ settings = aCTX.config['powerdns']['server']
+ if op == 'new':
+  ret = { 'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
+ elif op == 'info':
+  try: output = aCTX.rest_call('%s/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+  except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data']}
+  else:
+   for rrset in output['rrsets']:
+    if rrset['name'] == aArgs['name'] and rrset['type'] == aArgs['type']:
+     ret = {'status':'OK', 'data':{ 'domain_id':aArgs['domain_id'],'name':aArgs['name'],'content':rrset['records'][0],'type':aArgs['type'],'ttl':rrset['ttl']}}
+     break
+    else:
+     ret = {'status':'NOT_OK','data':None}
+ else:
+  # update and insert is the same :-)
+  aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper()})
+  args = {'rrsets':[{'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','type':aArgs['type'],'ttl':aArgs['ttl'],'changetype':'REPLACE','records':[{'content':aArgs['content'],'disabled':False}],'comments':[]}]}
+  try: aCTX.rest_call('%s/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+  except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data']}
+  else: ret = {'status':'OK'}
+  ret['data'] = aArgs
  return ret
 
 #
 #
-def record_delete(aCTX, aArgs = None):
- """Function docstring for record_delete TBD
+def record_delete(aCTX, aArgs):
+ """ Function deletes records info per type
 
  Args:
-  - id (required)
+  - domain_id (required)
+  - namne (required)
+  - type (required)
 
  Output:
+  - deleted
+  - status
  """
- ret = {}
- settings = aCTX.config['powerdns']
- with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
-  ret['deleted'] = (db.do("DELETE FROM records WHERE id = '%s'"%(aArgs['id'])) > 0)
-  ret['status'] = 'OK'
+ settings = aCTX.config['powerdns']['server']
+ args = {'rrsets':[{'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','type':aArgs['type'],'changetype':'DELETE','records':[],'comments':[]}]}
+ try: aCTX.rest_call('%s/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+ except Exception as e: ret = {'deleted':False,'status':'NOT_OK','info':e.args[0]['data']}
+ else: ret = {'deleted':True,'status':'OK'}
  return ret
 
 ############################### Tools #################################
 #
 #
-def sync(aCTX, aArgs = None):
- """Function docstring for sync. Removes name duplicates.. (assume order by name => duplicate names :-))
+def sync(aCTX, aArgs):
+ """Function docstring for sync.
 
  Args:
 
  Output:
  """
- settings = aCTX.config['powerdns']
- with DB(settings['database'],settings['host'],settings['username'],settings['password']) as db:
-  db.do("SELECT id,name,content FROM records WHERE type = 'A' OR type = 'PTR' ORDER BY name")
-  rows = db.get_rows();
-  remove = []
-  previous = {'content':None,'name':None}
-  for row in rows:
-   if previous['content'] == row['content'] and previous['name'] == row['name']:
-    db.do("DELETE FROM records WHERE id = '{}'".format(row['id'] if row['id'] > previous['id'] else previous['id']))
-    row.pop('id',None)
-    remove.append(row)
-   else:
-    previous = row
- return {'removed':remove,'status':'OK'}
+ return {'status':'OK'}
 
 #
-#
-def status(aCTX, aArgs = None):
- """Function docstring for top TBD
+# TODO: statistics
+def status(aCTX, aArgs):
+ """Function docstring for return various status elements
 
  Args:
   - count (optional)
@@ -218,34 +217,11 @@ def status(aCTX, aArgs = None):
   except: return None
 
  ret = {'top':[],'who':[]}
- count = int(aArgs.get('count',10))
- fqdn_top = {}
- fqdn_who = {}
- settings = aCTX.config['powerdns']
- try:
-  with open(settings['logfile'],'r') as logfile:
-   for line in logfile:
-    parts = line.split()
-    if not parts[5] == 'Remote':
-     continue
-    fqdn  = parts[8].split('|')[0][1:]
-    fqdn_top[fqdn] = fqdn_top.get(fqdn,0)+1
-    fqdn_who[fqdn+"#"+parts[6]] = fqdn_who.get(fqdn+"#"+parts[6],0)+1
- except Exception as e:
-  ret['status'] = 'NOT_OK'
-  ret['info'] = str(e)
- else:
-  from collections import Counter
-  ret['status'] = 'OK'
-  ret['top'] = [{'fqdn':x[0],'count':x[1]} for x in Counter(fqdn_top).most_common(count)]
-  for item in  Counter(fqdn_who).most_common(count):
-   parts = item[0].split('#')
-   who.append({'fqdn':parts[0], 'who':parts[1], 'hostname': GL_get_host_name(parts[1]), 'count':item[1]})
  return ret
 
 #
 #
-def restart(aCTX, aArgs = None):
+def restart(aCTX, aArgs):
  """Function provides restart capabilities of service
 
  Args:

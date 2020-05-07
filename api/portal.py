@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ####################################### SITE ######################################
 #
 #
-def application(aCTX, aArgs = None):
+def application(aCTX, aArgs):
  """Function docstring for application. Using 'portal' config ('title', 'message' and title of start page...)
 
  Args:
@@ -19,7 +19,7 @@ def application(aCTX, aArgs = None):
 
 #
 #
-def menu(aCTX, aArgs = None):
+def menu(aCTX, aArgs):
  """Function docstring for menu
 
  Args:
@@ -35,7 +35,7 @@ def menu(aCTX, aArgs = None):
 
 #
 #
-def resources(aCTX, aArgs = None):
+def resources(aCTX, aArgs):
  """Function returns site information
 
  Args:
@@ -49,7 +49,7 @@ def resources(aCTX, aArgs = None):
 
 #
 #
-def resource(aCTX, aArgs = None):
+def resource(aCTX, aArgs):
  """Function returns resource href
 
  Args:
@@ -68,7 +68,7 @@ def resource(aCTX, aArgs = None):
 ############################### Site ###########################
 #
 #
-def theme_list(aCTX, aArgs = None):
+def theme_list(aCTX, aArgs):
  """ Function returns a list of available themes
 
  Args:
@@ -80,7 +80,7 @@ def theme_list(aCTX, aArgs = None):
 
 #
 #
-def theme_info(aCTX, aArgs = None):
+def theme_info(aCTX, aArgs):
  """ Function returns theme parameters
 
  Args:

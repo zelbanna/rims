@@ -1,8 +1,6 @@
 """
 NoDNS API module. Backend in case no DNS is available, only on master node, records can be exported :-)
 
-TODO: Add notified_serial to domain_cache and enable domain update
-
 """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
@@ -11,61 +9,65 @@ __type__ = "DNS"
 #################################### Domains #######################################
 #
 #
-def domain_list(aCTX, aArgs = None):
+def domain_list(aCTX, aArgs):
  """Function returns all domains by this DNS server
 
  Args:
-  - filter (optional)
-  - dict (optional)
-  - exclude (optional)
 
  Output:
+  - count
+  - data. List of domains
+  - endpoint
  """
  ret = {}
  with aCTX.db as db:
-  filter = "name %s LIKE '%%arpa' ORDER BY name"%('' if aArgs['filter'] == 'reverse' else "NOT") if 'filter' in aArgs else "TRUE"
-  ret['count']   = db.do("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns' WHERE %s"%(aCTX.node,filter))
-  ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
-  if 'dict' in aArgs and 'exclude' in aArgs:
-   ret['data'].pop(aArgs['exclude'],None)
+  ret['count']   = db.do("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns'"%aCTX.node)
+  ret['data'] = db.get_rows()
   ret['endpoint'] = aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')
  return ret
 
 #
 #
-def domain_info(aCTX, aArgs = None):
+def domain_info(aCTX, aArgs):
  """ Function provide domain info and modification
 
+ TODO: Bypass DNS API here and do the insert locally, return 'found' == true instead :-), do proper DB exchange for the domain cache then
+
  Args:
-  - type (required)
-  - master (required)
   - id (required)
   - name (required)
+  - type (required)
+  - master (required)
   - op (optional)
 
  Output:
  """
- ret = {'found':True, 'data':{'id':aArgs['id'],'name':aArgs.get('name','new_name'),'master':'127.0.0.1','type':'MASTER', 'notified_serial':0 }}
+ ret = {'data':{'id':aArgs['id'],'name':aArgs.get('name','new_name'),'master':'127.0.0.1','type':'MASTER', 'serial':0 }}
  op = aArgs.pop('op',None)
- op = aArgs.pop('endpoint',None)
+ aArgs.pop('endpoint',None)
  with aCTX.db as db:
   if op == "update":
    if not aArgs['id'] == 'new':
-    ret['update'] = True
+    args = {}
+    if 'type' in aArgs:
+     args['kind'] = aArgs['type'].lower().capitalize()
+    if 'master' in aArgs:
+     args['master'] = aArgs['master'].upper()
+    ret['update'] = (db.update_dict('domains',aArgs,'id=%s'%id) == 1)
    else:
     ret['insert'] = True
     db.do("SELECT max(id) + 1 AS next FROM domains")
     foreign_id = db.get_val('next')
     ret['data']['id'] = foreign_id if foreign_id else 1
   elif aArgs['id'] != 'new':
-   db.do("SELECT name FROM domains WHERE foreign_id = %s"%aArgs['id'])
+   db.do("SELECT name FROM domains WHERE foreign_id = '%s'"%aArgs['id'])
    ret['data']['name'] = db.get_val('name')
   ret['endpoint'] = aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')
  return ret
 
 #
 #
-def domain_delete(aCTX, aArgs = None):
+def domain_delete(aCTX, aArgs):
  """ Let cache management handle this, NO OP
 
  Args:
@@ -80,7 +82,7 @@ def domain_delete(aCTX, aArgs = None):
 #################################### Records #######################################
 #
 #
-def record_list(aCTX, aArgs = None):
+def record_list(aCTX, aArgs):
  """ List device information where we have something -> i.e. on .local devices
 
  Args:
@@ -97,79 +99,70 @@ def record_list(aCTX, aArgs = None):
   if 'type' in aArgs:
    select.append("type = '%s'"%aArgs['type'].upper())
   tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
-  ret['count'] = db.do("SELECT id, domain_id, name, type, content,ttl,DATE_FORMAT(change_date,'%%Y%%m%%d%%H%%i') AS change_date FROM domain_records %s ORDER BY type, name ASC"%tune)
+  ret['count'] = db.do("SELECT domain_id, name, content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM domain_records %s ORDER BY type, name ASC"%tune)
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def record_info(aCTX, aArgs = None):
+def record_info(aCTX, aArgs):
  """if new, do a mapping of either arpa or ip, else show ip info
 
  Args:
-  - id (required)
+  - name (required)
   - domain_id (required)
-  - op (optional) 'update'/'insert'
-  - name (optional)
+  - type (required)
+  - op (optional) 'new'/'info'/'insert'/'update'
   - content (optional)
-  - type (optional)
+  - ttl (optional)
 
  Output:
  """
- id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- aArgs.pop('change_date',None)
- aArgs.pop('foreign_id',None)
- ret = {'status':'OK'}
+ aArgs.pop('serial',None)
+ ret = {}
  with aCTX.db as db:
-  if op:
-   try:
-    if str(id) in ['new','0']:
-     aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper(),'domain_id':str(aArgs['domain_id'])})
-     ret['update'] = (db.insert_dict('domain_records',aArgs,"ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
-     id = db.get_last_id()
-    elif op == 'update':
-     ret['update'] = (db.update_dict('domain_records',aArgs,"id='%s'"%id) == 1)
-   except Exception as e:
-    ret['info'] = str(e)
-    ret['status'] = 'NOT_OK'
-  ret['found'] = (db.do("SELECT id,domain_id,name,content,type,ttl FROM domain_records WHERE id = '%s' AND domain_id = %s"%(id,aArgs['domain_id'])) > 0)
-  ret['data']  = db.get_row() if ret['found'] else {'id':'new','domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }
+  if op == 'new':
+   ret = {'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
+  elif op == 'info':
+   if (db.do("SELECT domain_id,name,content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM domain_records WHERE name = '%s' AND domain_id = %s AND type = '%s'"%(aArgs['name'],aArgs['domain_id'],aArgs['type'])) > 0):
+    ret = {'status':'OK','data':db.get_row()}
+   else:
+    ret = {'status':'NOT_OK','data':None}
+  else:
+   aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper()})
+   ret['data'] = aArgs
+   if op == 'insert':
+    ret['status'] = 'OK' if (db.do("INSERT INTO domain_records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0) else 'NOT_OK'
+   elif op == 'update':
+    ret['status'] = 'OK' if (db.do("UPDATE domain_records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0) else 'NOT_OK'
  return ret
 
 #
 #
-def record_delete(aCTX, aArgs = None):
+def record_delete(aCTX, aArgs):
  """ Function deletes records info per type
+
  Args:
-  - id (required)
   - domain_id (required)
-  - type (optional)
+  - namne (required)
+  - type (required)
 
  Output:
+  - deleted
+  - status
  """
  ret = {}
  with aCTX.db as db:
-  if (db.do("SELECT type FROM domain_records WHERE id = %(id)s AND domain_id = %(domain_id)s"%aArgs) > 0):
-   ret['status'] = 'OK'
-   type = db.get_val('type').lower()
-   ret['deleted'] = (db.do("DELETE FROM domain_records WHERE id = %(id)s"%aArgs) > 0)
-   if   type == 'a':
-    ret['ipam'] = 'OK' if (db.do("UPDATE ipam_addresses SET a_id = 0 WHERE a_id = %s AND a_domain_id IN (SELECT id FROM domains WHERE foreign_id = %s)"%(aArgs['id'],aArgs['domain_id'])) > 0) else 'NOT_OK'
-   elif type == 'ptr':
-    ret['ipam'] = 'OK' if (db.do("UPDATE ipam_addresses SET ptr_id = 0 WHERE ptr_id = %s AND network_id IN (SELECT ine.id FROM ipam_networks AS ine LEFT JOIN domains ON ine.reverse_zone_id = domains.foreign_id WHERE domains.foreign_id = %s)"%(aArgs['id'],aArgs['domain_id'])) > 0) else 'NOT_OK'
-   else:
-    ret['ipam'] = 'NOT_OK'
-  else:
-   ret['status'] = 'NOT_OK'
-   ret['info'] = 'record not found'
-   ret['deleted'] = False
+  ret['deleted'] = (db.do("DELETE FROM domain_records WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
+  ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK';
  return ret
 
 ############################### Tools #################################
 #
+# TODO: do loads of inserts, one for every device
 #
-def sync(aCTX, aArgs = None):
+def sync(aCTX, aArgs):
  """ Synchronize device table and recreate records
 
  Args:
@@ -180,25 +173,24 @@ def sync(aCTX, aArgs = None):
  ret = {'update':0,'insert':0,'removed':0,'status':'OK'}
  with aCTX.db as db:
   # A records
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, ia.a_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A' WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name OR ia.a_id <> dr.id))"%aArgs['id'])
+  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A' WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name OR ia.a_id <> dr.id))"%aArgs['id'])
   for rec in db.get_rows():
    if rec['record_id'] is None:
-    ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES (%s,'%s','%s','A') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['fqdn'],rec['ip']))
+    ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES ('%s','%s','%s','A') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['fqdn'],rec['ip']))
     record = db.get_last_id()
    else:
-    ret['update'] += db.do("UPDATE domain_records SET domain_id = %s, name = '%s', content = '%s' WHERE id = %s AND type = 'A'"%(rec['foreign_id'],rec['fqdn'],rec['ip'],rec['record_id']))
+    ret['update'] += db.do("UPDATE domain_records SET domain_id = '%s', name = '%s', content = '%s' WHERE id = %s AND type = 'A'"%(rec['foreign_id'],rec['fqdn'],rec['ip'],rec['record_id']))
     record = rec['record_id']
-   db.do("UPDATE ipam_addresses SET a_id = %s WHERE id = %s"%(record,rec['id']))
   # PTR records
   db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.' ,a_domain.name) AS fqdn, ptr_domain.foreign_id, ia.ptr_id, dr.id AS record_id, dr.name AS name, dr.content, CONCAT(ip-network,'.',ptr_domain.name) AS ptr FROM ipam_addresses AS ia LEFT JOIN domains AS a_domain ON a_domain.id = ia.a_domain_id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id RIGHT JOIN domains AS ptr_domain ON ptr_domain.id = ine.reverse_zone_id LEFT JOIN domain_records AS dr ON ia.ptr_id = dr.id AND dr.type = 'PTR' WHERE ptr_domain.server_id = %s AND ptr_domain.type = 'reverse' AND (ip-network) <= 256 AND ia.id IS NOT NULL AND (dr.id IS NULL OR (CONCAT(ip-network,'.',ptr_domain.name) <> dr.name OR CONCAT(ia.hostname,'.' ,a_domain.name) <> dr.content OR ia.ptr_id <> dr.id))"%aArgs['id'])
   for rec in db.get_rows():
    if rec['record_id'] is None:
-    ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES (%s,'%s','%s','PTR') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['ptr'],rec['fqdn']))
+    ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES ('%s','%s','%s','PTR') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['ptr'],rec['fqdn']))
     record = db.get_last_id()
    else:
-    ret['update'] += db.do("UPDATE domain_records SET domain_id = %s, name = '%s', content = '%s' WHERE id = %s AND type = 'PTR'"%(rec['foreign_id'],rec['ptr'],rec['fqdn'],rec['record_id']))
+    ret['update'] += db.do("UPDATE domain_records SET domain_id = '%s', name = '%s', content = '%s' WHERE id = %s AND type = 'PTR'"%(rec['foreign_id'],rec['ptr'],rec['fqdn'],rec['record_id']))
     record = rec['record_id']
-   db.do("UPDATE ipam_addresses SET ptr_id = %s WHERE id = %s"%(record,rec['id']))
+
   # Write to local 'hosts' file or similar
   if aCTX.config.get('nodns',{}).get('file'):
    from os import linesep
@@ -211,7 +203,7 @@ def sync(aCTX, aArgs = None):
  return ret
 #
 #
-def status(aCTX, aArgs = None):
+def status(aCTX, aArgs):
  """ NO OP
 
  Args:
@@ -223,7 +215,7 @@ def status(aCTX, aArgs = None):
 
 #
 #
-def restart(aCTX, aArgs = None):
+def restart(aCTX, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -234,4 +226,3 @@ def restart(aCTX, aArgs = None):
   - status 'OK'/'NOT_OK'
  """
  return {'status':'OK','code':0,'output':""}
-

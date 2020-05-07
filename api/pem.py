@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs = None):
+def list(aCTX, aArgs):
  """ Function provides PEM management for a device
 
  Args:
@@ -28,7 +28,7 @@ def list(aCTX, aArgs = None):
 
 #
 #
-def info(aCTX, aArgs = None):
+def info(aCTX, aArgs):
  """ Function provides pem management for a PEM
 
  Args:
@@ -79,7 +79,7 @@ def info(aCTX, aArgs = None):
 
 #
 #
-def delete(aCTX, aArgs = None):
+def delete(aCTX, aArgs):
  """ Function deletes a PEM
 
  Args:

@@ -6,7 +6,7 @@ __type__ = "TSDB"
 ############################### Databases #############################
 #
 #
-def database_list(aCTX, aArgs = None):
+def database_list(aCTX, aArgs):
  """Function list databases
 
  Args:
@@ -26,7 +26,7 @@ def database_list(aCTX, aArgs = None):
 ################################# Points ##############################
 #
 #
-def write_points(aCTX, aArgs = None):
+def write_points(aCTX, aArgs):
  """ Function writes data points to configured influxdb
 
  Args:
@@ -53,7 +53,7 @@ def write_points(aCTX, aArgs = None):
 ################################# Tools ###############################
 #
 #
-def stats(aCTX, aArgs = None):
+def stats(aCTX, aArgs):
  """Function shows live stats from node influxdb
 
  Args:
@@ -73,7 +73,7 @@ def stats(aCTX, aArgs = None):
 
 #
 #
-def sync(aCTX, aArgs = None):
+def sync(aCTX, aArgs):
  """ Function creates database in case it does not exist
 
  Args:
@@ -100,10 +100,10 @@ def sync(aCTX, aArgs = None):
 
 #
 #
-def status(aCTX, aArgs = None):
+def status(aCTX, aArgs):
  """Function shows stats form node influxdb...
 
- TODO: Format nicer
+ TODO+: Format nicer
 
  Args:
   - count (optional)
@@ -123,5 +123,5 @@ def status(aCTX, aArgs = None):
 
 #
 #
-def restart(aCTX,aArgs = None):
+def restart(aCTX, aArgs):
  return {'status':'OK','output':"",'code':0}
