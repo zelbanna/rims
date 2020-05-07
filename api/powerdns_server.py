@@ -216,7 +216,7 @@ def status(aCTX, aArgs):
   try:    return gethostbyaddr(aIP)[0].partition('.')[0]
   except: return None
 
- ret = {'top':[],'who':[]}
+ ret = {'top':[],'who':[],'status':'OK'}
  return ret
 
 #
