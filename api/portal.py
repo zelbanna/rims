@@ -14,7 +14,7 @@ def application(aCTX, aArgs):
  """
  """ Default login information """
  ret = {'message':"Welcome to the Management Portal",'title':'Portal'}
- ret.update(aCTX.site.get('portal'))
+ ret.update(aCTX.config['site'].get('portal'))
  return ret
 
 #
@@ -27,10 +27,10 @@ def menu(aCTX, aArgs):
  Output:
  """
  data = {}
- data['start'] = aCTX.site['portal'].get('start')
+ data['start'] = aCTX.config['site']['portal'].get('start')
  # INTERNAL from rims.api.portal import resources
  data['menu'] = resources(aCTX,{'type':'menuitem'})['data']
- data['title'] = aCTX.site.get('portal',{}).get('title','Portal')
+ data['title'] = aCTX.config['site'].get('portal',{}).get('title','Portal')
  return {'status':'OK','data':data}
 
 #
@@ -44,7 +44,7 @@ def resources(aCTX, aArgs):
  Output:
  """
  ret = {'data':[]}
- ret['data'] = aCTX.site.get(aArgs['type'],{})
+ ret['data'] = aCTX.config['site'].get(aArgs['type'],{})
  return ret
 
 #
@@ -58,10 +58,10 @@ def resource(aCTX, aArgs):
 
  Output:
  """
- data = aCTX.site[aArgs['type']][aArgs['title']]
+ data = aCTX.config['site'][aArgs['type']][aArgs['title']]
  for tp in ['module','frame','tab']:
   if tp in data:
-   ret = {tp:aCTX.site[aArgs['type']][aArgs['title']][tp]}
+   ret = {tp:aCTX.config['site'][aArgs['type']][aArgs['title']][tp]}
    break
  return ret
 

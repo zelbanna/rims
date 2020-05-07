@@ -60,18 +60,16 @@ class Context(object):
   self.config['logging']['rest']   = self.config['logging'].get('rest',{'enabled':False,'file':None})
   self.config['logging']['system'] = self.config['logging'].get('system',{'enabled':False,'file':None})
   self.build = ospath.join(self.path,'build')
-  try:
-   with open(self.config['site_file'],'r') as sfile:
-    self.site = load(sfile)
-  except:
-   self.log("Site file could not be loaded/found: %s"%self.config.get('site_file','N/A'))
+  if self.config.get('site'):
+   for type in ['menuitem','tool']:
+    for k,item in self.config['site'].get(type,{}).items():
+     for tp in ['module','frame','tab']:
+      if tp in item:
+       item['type'] = tp
+       break
+  else:
+   self.log("No site defined")
    self.site = {}
-  for type in ['menuitem','tool']:
-   for k,item in self.site.get(type,{}).items():
-    for tp in ['module','frame','tab']:
-     if tp in item:
-      item['type'] = tp
-      break
   self._kill = Event()
   self._analytics = {'files':{},'modules':{}}
   self.rest_call = rest_call
@@ -92,7 +90,7 @@ class Context(object):
  def system_environment(self,aNode):
   """ Function retrieves all central environment for a certain node, or itself if node is given"""
   if len(aNode) == 0 or aNode is None:
-   environment = {'nodes':self.nodes,'services':self.services,'config':self.config,'tasks':self.workers.scheduler_tasks(),'site':(len(self.site) > 0),'version':__version__,'build':__build__}
+   environment = {'nodes':self.nodes,'services':self.services,'config':self.config,'tasks':self.workers.scheduler_tasks(),'site':(len(self.config['site']) > 0),'version':__version__,'build':__build__}
   elif self.config.get('database'):
    environment = {'tokens':{}}
    with self.db as db:
@@ -175,7 +173,6 @@ class Context(object):
    data.update(self.config)
    data['services'] = self.services
    data['tokens'] = {k:{'id':v['id'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")} for k,v in self.tokens.items()}
-   data['site'] = self.site
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
 
  #
@@ -566,7 +563,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif path == 'front':
    self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
    output = {'message':"Welcome to the Management Portal",'title':'Portal'}
-   output.update(self._ctx.site.get('portal'))
+   output.update(self._ctx.config['site'].get('portal'))
    self._body = dumps(output).encode('utf-8')
   elif path == 'auth':
    self.auth()

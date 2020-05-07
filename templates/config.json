@@ -28,6 +28,23 @@
    "file": "/var/log/rims_system.log"
   }
  },
+ "powerdns": {
+  "recursor": {
+   "url":"http://172.18.0.4:8082/api/v1",
+   "key":"CHANGEME",
+   "reload": "/usr/bin/docker restart pdns-recursor"
+  },
+  "server": {
+   "url":"http://172.18.0.5:8081/api/v1",
+   "key":"CHANGEME",
+   "nameserver": "server.local.",
+   "endpoint": "172.18.0.5:53",
+   "reload": "/usr/bin/docker restart pdns-server"
+  }
+ },
+ "nodns": {
+  "file":"/var/tmp/nodns.conf"
+ },
  "influxdb": {
   "database":"DATABASE",
   "username":"USERNAME",
@@ -55,5 +72,52 @@
   "write": "private",
   "timeout": "500000"
  },
- "site_file": "<full-path-to-site>/<file name>.json"
+ "site":{
+  "portal": {
+   "message": "Management portal",
+   "title":"Management",
+   "start": "device",
+   "theme": "light"
+  },
+  "menuitem": {
+   "activity": {
+    "module":  "activity",
+    "function": "Main"
+   },
+   "device": {
+    "module": "device",
+    "function": "Main"
+   },
+   "hypervisor": {
+    "module": "hypervisor",
+    "function": "Main"
+   },
+   "inventory": {
+    "module": "inventory",
+    "function": "Main"
+   },
+   "rack": {
+    "module": "rack",
+    "function": "Main"
+   },
+   "resource": {
+    "module": "resource",
+    "function": "Main"
+   },
+   "visualize": {
+    "module": "visualize",
+    "function": "Main"
+   }
+  },
+  "tool": {
+   "images": {
+    "module": "system",
+    "function": "FileList"
+   },
+   "gitHub": {
+    "tab": "https://github.com"
+   }
+  }
+ }
 }
+
