@@ -15,7 +15,6 @@ export const BackButton = (props) => info_template('fas fa-arrow-left',props);
 export const CheckButton = (props) => info_template('fas fa-tasks',props);
 export const CloseButton = (props) => <button id={props.id} className={styles.info} style={{float:'right'}} onClick={props.onClick} title={props.title}><i className='fas fa-times-circle' /></button>
 export const ConfigureButton = (props) => info_template('fas fa-cog',props);
-export const ConnectionButton = (props) => info_template('fas fa-arrows-alt',props);
 export const DeleteButton = (props) => info_template('fas fa-trash-alt',props);
 export const DevicesButton = (props) => info_template('fas fa-network-wired',props);
 export const DocButton = (props) => info_template('fas fa-clipboard-list',props);

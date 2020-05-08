@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavReload } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
-import { AddButton, CheckButton, ConfigureButton, ConnectionButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 
@@ -34,6 +34,7 @@ export class Main extends Component {
   this.context.loadNavigation(<NavBar key='device_navbar'>
    <NavDropDown key='dev_nav_devs' title='Devices'>
     <NavDropButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' rack_id={this.state.rack_id} />)} />
+    <NavDropButton key='dev_nav_new' title='New' onClick={() => this.changeContent(<New key='device_new' ip='0.0.0.0' />)} />
     <NavDropButton key='dev_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
@@ -154,7 +155,7 @@ class List extends Component {
     <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={device_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
-     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} id='new' ip='0.0.0.0' />)} title='Add device' />
+     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} ip='0.0.0.0' />)} title='Add device' />
      <SearchButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover new devices' />
      <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
     </ContentList>
@@ -242,10 +243,9 @@ export class Info extends Component {
      </InfoColumns>
      <ReloadButton key='di_btn_reload' onClick={() => this.reload()} />
      <SaveButton key='di_btn_save' onClick={() => this.updateInfo()} title='Save' />
-     <ConnectionButton key='di_btn_conn' onClick={() => this.changeInterfaces()} title='Interfaces' />
+     <ConfigureButton key='di_btn_edit' onClick={() => this.setState({navconf:!this.state.navconf})} title='Toggle config mode' />
      <StartButton key='di_btn_cont' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} title='Device control' />
      <CheckButton key='di_btn_conf' onClick={() => this.changeContent(<Template key='device_configure' id={this.props.id} />)} title='Configuration template' />
-     <ConfigureButton key='di_btn_edit' onClick={() => this.setState({navconf:!this.state.navconf})} title='Toggle config mode' />
      {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} title='Connectivity map' />}
      {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} title='Information lookup' />}
      {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title='Logs' />}
@@ -257,6 +257,7 @@ export class Info extends Component {
     </InfoArticle>
     <NavBar key='di_navigation' id='di_navigation'>
      {this.state.navconf && <NavButton key='di_nav_management' title='Management' onClick={() => this.changeContent(<ManagementInfo key='device_configure' id={this.props.id} />)} />}
+     {this.state.navconf && <NavButton key='di_nav_interfaces' title='Interfaces' onClick={() => this.changeInterfaces()} />}
      {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
      {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && <NavButton key='di_nav_stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='device_statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
@@ -279,48 +280,27 @@ class ManagementInfo extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/extended',{id:this.props.id}).then(result => {
-   result.data.a_domain_id = this.mapDomain(result.data.management_id, result.interfaces);
-   this.setState(result)
-  });
-  rest_call('api/dns/domain_list',{filter:'forward'}).then(result => {
-   const args = {data:this.state.data, domains:result.data}
-   if (args.data)
-    args.data.a_domain_id = this.mapDomain(this.state.data.management_id,this.state.interfaces);
-   this.setState({domains:result.data})
-  });
+  rest_call('api/device/extended',{id:this.props.id, extra:['domains']}).then(result => this.setState(result))
  }
 
- onChange = (e) => {
-  const data = {...this.state.data, [e.target.name]:e.target.value}
-  if(e.target.name === 'management_id')
-   data.a_domain_id =  this.mapDomain(e.target.value,this.state.interfaces);
-  this.setState({data:data})
- }
-
- mapDomain(id,interfaces){
-  const if_obj = interfaces.find(intf => parseInt(intf.interface_id) === parseInt(id));
-  return (if_obj) ? if_obj.a_domain_id : null;
- }
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}})
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () => rest_call('api/device/extended',{op:'update', ...this.state.data}).then(result => {
-  result.data.a_domain_id = this.mapDomain(result.data.management_id,result.interfaces)
-  this.setState(result)
- });
+ updateInfo = () => rest_call('api/device/extended',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (this.state.data && this.state.domains)
    return <InfoArticle key='d_conf_art' header='Management Configuration'>
     <InfoColumns key='d_conf_ic'>
      <TextInput key='d_conf_hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
-     <SelectInput key='d_conf_management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={'de_intf_'+idx} value={row.interface_id}>{`${row.name} (${row.ip} - ${row.fqdn})`}</option>)}</SelectInput>
-     <SelectInput key='d_conf_a_domain_id' id='a_domain_id' label='Mgmt Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'de_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='d_conf_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'de_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='d_conf_management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={'de_intf_'+idx} value={row.interface_id}>{`${row.name} (${row.ip})`}</option>)}</SelectInput>
      <TextLine key='d_conf_oid' id='oid' label='Priv OID' text={this.state.extra.oid} />
      <TextLine key='d_conf_oui' id='oui' label='System OUI' text={this.state.extra.oui} />
     </InfoColumns>
     <SaveButton key='d_conf_btn_save' onClick={() => this.updateInfo()} title='Save' />
+    <Result key='d_conf_result' result={this.state.status} />
    </InfoArticle>
   else
    return <Spinner />
@@ -610,9 +590,10 @@ export class New extends Component {
     <InfoArticle key='dn_art' header='Device Add'>
      <InfoColumns key='dn_content'>
       <TextInput key='dn_hostname' id='hostname' value={this.state.data.hostname} placeholder='Device hostname' onChange={this.onChange} />
-      <SelectInput key='dn_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'dn_class_'+row} value={row}>{row}</option>)}</SelectInput>
-      <SelectInput key='dn_ipam_network_id' id='ipam_network_id' label='Network' value={this.state.data.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={'dn_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
-      <SelectInput key='dn_a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dn_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='dn_class' id='class' label='Device Class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'dn_class_'+row} value={row}>{row}</option>)}</SelectInput>
+      <SelectInput key='dn_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dn_a_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='dn_if_domain_id' id='if_domain_id' label='Interface Domain' value={this.state.data.if_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dn_if_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='dn_ipam_network_id' id='ipam_network_id' label='Interface Network' value={this.state.data.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={'dn_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
       <TextInput key='dn_ip' id='ip' label='IP' value={this.state.data.ip} onChange={this.onChange} />
       <TextInput key='dn_mac' id='mac' label='MAC' value={this.state.data.mac} onChange={this.onChange} />
      </InfoColumns>
@@ -643,7 +624,7 @@ class Discover extends Component {
 
  runDiscovery(){
   this.setState({content:<Spinner />})
-  rest_call('api/device/discover',{network_id:this.state.ipam_network_id, a_domain_id:this.state.a_domain_id}).then(result => this.setState({content:<CodeArticle key='dd_result'>{JSON.stringify(result,null,2)}</CodeArticle>}))
+  rest_call('api/device/discover',{network_id:this.state.ipam_network_id, a_domain_id:this.state.a_domain_id,if_domain_id:this.state.if_domain_id}).then(result => this.setState({content:<CodeArticle key='dd_result'>{JSON.stringify(result,null,2)}</CodeArticle>}))
  }
 
  render() {
@@ -653,7 +634,8 @@ class Discover extends Component {
      <InfoArticle key='dd_art' header='Device Discovery'>
       <InfoColumns key='dd_content'>
        <SelectInput key='dd_ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={'dd_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
-       <SelectInput key='dd_a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dd_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+       <SelectInput key='dd_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dd_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+       <SelectInput key='dd_if_domain_id' id='if_domain_id' label='Interface Domain' value={this.state.if_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dd_if_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
       </InfoColumns>
       <StartButton key='dd_btn_start' onClick={() => this.runDiscovery()} title='Start discovery' />
      </InfoArticle>

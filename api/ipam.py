@@ -340,24 +340,24 @@ def address_info(aCTX, aArgs):
 
      # Remove
      if old['a_domain_id']:
-      ret['A']['delete']   = record_delete(aCTX, {'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]['name']), 'domain_id':old['a_domain_id'], 'type':'A'})['status']
+      ret['A']['delete']   = record_delete(aCTX, {'domain_id':old['a_domain_id'],'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]['name']), 'type':'A'})['status']
      if old['ptr_domain_id']:
       ptr = old['ip'].split('.')
       ptr.reverse()
       ptr.append('in-addr.arpa')
-      ret['PTR']['delete'] = record_delete(aCTX, {'name':'.'.join(ptr), 'domain_id':old['ptr_domain_id'],'type':'PTR'})['status']
+      ret['PTR']['delete'] = record_delete(aCTX, {'domain_id':old['ptr_domain_id'], 'name':'.'.join(ptr), 'type':'PTR'})['status']
 
      # Create - let record_info handle errors, if we have a domain we can create both A and PTR otherwise none (!)
-     if 'a_domain_id' in aArgs and aArgs['a_domain_id'] not in [None,'NULL']:
+     if aArgs.get('a_domain_id','NULL') != 'NULL':
       fqdn = '%s.%s'%(aArgs.get('hostname',old['hostname']),domains[int(aArgs['a_domain_id'])]['name'])
-      ret['A']['create'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'],'name':fqdn,'content':ip,'type':'A','op':'insert'})['status']
+      ret['A']['create'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':fqdn, 'type':'A', 'content':ip, 'op':'insert'})['status']
       ptr = ip.split('.')
       ptr.reverse()
       ptr.append('in-addr.arpa')
       if 'network_id' in aArgs and (db.do("SELECT reverse_zone_id FROM ipam_networks WHERE id = %s"%aArgs['network_id']) > 0):
-       ret['PTR']['create'] = record_info(aCTX, {'domain_id':db.get_val('reverse_zone_id'),'name':'.'.join(ptr),'content':fqdn,'type':'PTR','op':'insert'})['status']
+       ret['PTR']['create'] = record_info(aCTX, {'domain_id':db.get_val('reverse_zone_id'), 'name':'.'.join(ptr), 'type':'PTR', 'content':fqdn, 'op':'insert'})['status']
       elif old['ip'] == ip:
-       ret['PTR']['create'] = record_info(aCTX, {'domain_id':old['ptr_domain_id'],'name':'.'.join(ptr),'content':fqdn,'type':'PTR','op':'insert'})['status']
+       ret['PTR']['create'] = record_info(aCTX, {'domain_id':old['ptr_domain_id'], 'name':'.'.join(ptr), 'type':'PTR', 'content':fqdn, 'op':'insert'})['status']
 
   if op and op == 'update_only':
    pass
