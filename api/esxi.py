@@ -1,11 +1,4 @@
-"""ESXi API module. PRovides interworking with ESXi device module to provide esxi VM interaction
-
-Config section: snmp
-- read  (read community)
-- write (write community)
-- timeout
-
-"""
+"""ESXi API module. Provides interworking with ESXi device module to provide esxi VM interaction"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -137,3 +130,25 @@ def vm_snapshot(aCTX, aArgs):
  with Device(aCTX, aArgs['device_id']) as esxi:
   ret = esxi.snapshot(aArgs['op'],aArgs['vm_id'], aArgs.get('snapshot'))
  return ret
+
+#
+#
+def parameters(aCTX, aArgs):
+ """ Function provides parameter mapping of anticipated config vs actual
+
+ Settings:
+ - username
+ - password
+ Extra:
+ snmp settings
+
+ Args:
+
+ Output:
+  - status
+  - parameters
+ """
+ settings = aCTX.config.get('esxi',{})
+ settings.update(aCTX.config.get('snmp',{}))
+ params = ['username','password','read','write','timeout']
+ return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

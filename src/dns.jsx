@@ -56,7 +56,7 @@ export class DomainList extends Component {
     <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount() } />
     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } title='Add domain' />
     <SyncButton key='dl_btn_sync' onClick={() => this.syncDomains()} title='Sync external DNS servers with cache' />
-    <LogButton key='dl_btn_document' onClick={() => this.changeContent(<Status key='domain_status' />)} title='View DNS statistics' />
+    <LogButton key='dl_btn_document' onClick={() => this.changeContent(<Statistics key='recursor_statistics' />)} title='View DNS statistics' />
    </ContentList>
    <ContentData key='dl_cd'>{this.state.content}</ContentData>
   </Fragment>
@@ -104,32 +104,32 @@ class DomainInfo extends Component {
 
 // *************** Status ***************
 //
-class Status extends Component {
+class Statistics extends Component {
  constructor(props){
   super(props)
   this.state = {}
  }
 
  componentDidMount(){
-  rest_call('api/dns/status').then(result => {
-   const top = []
-   for (let [node,rows] of Object.entries(result.top)){
+  rest_call('api/dns/statistics').then(result => {
+   const queries = []
+   for (let [node,rows] of Object.entries(result.queries)){
     const ns = node.split('_');
-    rows.forEach(row => top.push([ns[0],ns[1],row.count,row.fqdn]))
+    rows.forEach(row => queries.push([ns[0],ns[1],row[0],row[1],row[2]]))
    }
-   const who = []
-   for (let [node,rows] of Object.entries(result.who)){
+   const remotes = []
+   for (let [node,rows] of Object.entries(result.remotes)){
     const ns = node.split('_');
-    rows.forEach(row => who.push([ns[0],ns[1],row.count,row.who,row.fqdn]))
+    rows.forEach(row => remotes.push([ns[0],ns[1],row[0],row[1]]))
    }
-   this.setState({top:top,who:who})
+   this.setState({queries:queries,remotes:remotes})
   })
  }
 
  render(){
-  return (this.state.top && this.state.who) ? <Flex key='status_flex'>
-    <ContentReport key='top_cr' header='Top looked up FQDN' thead={['Node','Service','Hit','FQDN']} trows={this.state.top} listItem={(row) => row} />
-    <ContentReport key='who_cr' header='Top looked up who' thead={['Node','Service','Hit','Who','FQDN']} trows={this.state.who} listItem={(row) => row} />
+  return (this.state.queries && this.state.remotes) ? <Flex key='statistics_flex'>
+    <ContentReport key='queries_cr' header='Looked up FQDN' thead={['Node','Service','Hits','FQDN','Type']} trows={this.state.queries} listItem={(row) => row} />
+    <ContentReport key='remotes_cr' header='Queriers' thead={['Node','Service','Hits','Who']} trows={this.state.remotes} listItem={(row) => row} />
    </Flex> : <Spinner />
  }
 }

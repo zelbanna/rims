@@ -1,10 +1,4 @@
-"""AWX REST module.
-
-Config section: awx
-- username
-- password
-
-"""
+"""AWX REST module."""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = 'PROVISIONING'
@@ -297,3 +291,18 @@ def host_list(aCTX, aArgs):
  controller.auth({'username':aCTX.config['awx']['username'],'password':aCTX.config['awx']['password'],'mode':'basic'})
  ret = {'hosts':controller.fetch_list("hosts/",('id','name','url','inventory','description','enabled','instance_id'))}
  return ret
+
+#
+#
+def parameters(aCTX, aArgs):
+ """ Function provides parameter mapping of anticipated config vs actual
+
+ Args:
+
+ Output:
+  - status
+  - parameters
+ """
+ settings = aCTX.config.get('awx',{})
+ params = ['username','password']
+ return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

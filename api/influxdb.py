@@ -125,3 +125,18 @@ def status(aCTX, aArgs):
 #
 def restart(aCTX, aArgs):
  return {'status':'OK','output':"",'code':0}
+
+#
+#
+def parameters(aCTX, aArgs):
+ """ Function provides parameter mapping of anticipated config vs actual
+
+ Args:
+
+ Output:
+  - status
+  - parameters
+ """
+ settings = aCTX.config.get('influxdb',{})
+ params = ['url','database']
+ return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

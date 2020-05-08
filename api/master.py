@@ -366,57 +366,19 @@ def server_delete(aCTX, aArgs):
 
 #
 #
-def server_sync(aCTX, aArgs):
- """Server sync sends sync message to server @ node and convey result. What sync means is server dependent
+def server_operation(aCTX, aArgs):
+ """Server status sends 'op' message to server @ node and convey result. What 'op' means is server dependend
 
  Args:
-  - id (required):
+  - id (required)
+  - op (required)
 
  Output:
  """
  server = aCTX.services[int(aArgs['id'])]
- try:
-  ret = aCTX.node_function(server['node'],server['service'],'sync')(aArgs = {'id':aArgs['id']})
-  ret['status'] = ret.get('status','NOT_OK')
- except Exception as e:
-  ret = {'status':'NOT_OK','info':str(e)}
- return ret
-
-#
-#
-def server_status(aCTX, aArgs):
- """Server status sends status message to server @ node and convey result. What status means is server dependent
-
- Args:
-  - id (required):
-
- Output:
- """
- server = aCTX.services[int(aArgs['id'])]
- try:
-  ret = aCTX.node_function(server['node'],server['service'],'status')(aArgs = {'id':aArgs['id']})
-  ret['status'] = ret.get('status','NOT_OK')
- except Exception as e:
-  ret = {'status':'NOT_OK','info':str(e)}
- return ret
-
-#
-#
-def server_restart(aCTX, aArgs):
- """Server restart attempt to restart a server @ node.
-
- Args:
-  - id (required))
-
- Output:
-  - result.
- """
- server = aCTX.services[int(aArgs['id'])]
- try:
-  ret = aCTX.node_function(server['node'],server['service'],'restart')(aArgs = {'id':aArgs['id']})
-  ret['status'] = ret.get('status','NOT_OK')
- except Exception as e:
-  ret = {'status':'NOT_OK','info':str(e)}
+ try:  ret = aCTX.node_function(server['node'],server['service'],aArgs['op'])(aArgs = {'id':aArgs['id']})
+ except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
+ else: ret['status'] = ret.get('status','NOT_OK')
  return ret
 
 ####################################### ACTIVITIES #######################################

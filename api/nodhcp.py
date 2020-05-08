@@ -45,7 +45,17 @@ def restart(aCTX, aArgs):
  """
  return {'status':'OK','code':0,'output':""}
 
+#
+#
+def parameters(aCTX, aArgs):
+ """ Function provides parameter mapping of anticipated config vs actual
 
+ Args:
 
-
-
+ Output:
+  - status
+  - parameters
+ """
+ settings = aCTX.config.get('nodhcp',{})
+ params = []
+ return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

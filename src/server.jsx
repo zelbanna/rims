@@ -3,7 +3,7 @@ import { rest_call, rnd } from './infra/Functions.js';
 import { Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, InfoButton, ItemsButton, ReloadButton, SaveButton, SyncButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, CheckButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SyncButton, SearchButton, UiButton } from './infra/Buttons.jsx';
 
 // ************** List **************
 //
@@ -83,7 +83,8 @@ class Info extends Component {
      <SaveButton key='si_btn_save' onClick={() => this.updateInfo()} title='Save' />
      {old && <SyncButton key='si_sync' onClick={() => this.changeContent(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />)} title='Sync service' />}
      {old && <ReloadButton key='si_restart' onClick={() => this.changeContent(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />)} title='Restart service' />}
-     {old && <ItemsButton key='si_status' onClick={() => this.changeContent(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />)} title='Service status' />}
+     {old && <SearchButton key='si_status' onClick={() => this.changeContent(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />)} title='Service status' />}
+     {old && <CheckButton key='si_params' onClick={() => this.changeContent(<Operation key={'srv_op_params'} id={this.props.id} operation='parameters' />)} title='Service parameters' />}
     </InfoArticle>
     <NavBar key='server_navigation' id='server_navigation' />
     {this.state.content}
@@ -98,7 +99,7 @@ class Info extends Component {
 //
 class Operation extends Component {
  componentDidMount(){
-  rest_call('api/master/server_' + this.props.operation,{id:this.props.id}).then(result => this.setState(result))
+  rest_call('api/master/server_operation',{op:this.props.operation,id:this.props.id}).then(result => this.setState(result))
  }
 
  render(){

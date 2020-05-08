@@ -1,11 +1,4 @@
-"""ISCDHCP API module. The specific ISCDHCP REST interface to reload and fetch info from ISCDHCP server.
-
-Config section 'iscdhcp':
- - reload (argument from CLI)
- - active (file storing current leases)
- - static (file storing configuration for ISCDHCP
-
-"""
+"""ISCDHCP API module. The specific ISCDHCP REST interface to reload and fetch info from ISCDHCP server."""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "DHCP"
@@ -128,3 +121,18 @@ def restart(aCTX, aArgs):
   ret['output'] = c.output
  ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
  return ret
+
+#
+#
+def parameters(aCTX, aArgs):
+ """ Function provides parameter mapping of anticipated config vs actual
+
+ Args:
+
+ Output:
+  - status
+  - parameters
+ """
+ settings = aCTX.config.get('iscdhcp',{})
+ params = ['reload','active','static']
+ return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

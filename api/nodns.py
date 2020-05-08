@@ -163,7 +163,7 @@ def record_delete(aCTX, aArgs):
 # TODO: do loads of inserts, one for every device
 #
 def sync(aCTX, aArgs):
- """ Synchronize device table and recreate records
+ """ Synchronize device table and recreate records, write resolv info to NoDNS file
 
  Args:
   - id (required), server_id
@@ -172,25 +172,6 @@ def sync(aCTX, aArgs):
  """
  ret = {'update':0,'insert':0,'removed':0,'status':'OK'}
  with aCTX.db as db:
-  # A records
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.',domains.name) AS fqdn, domains.foreign_id, dr.id AS record_id, dr.name AS name, dr.content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN domain_records AS dr ON ia.a_id = dr.id AND dr.type = 'A' WHERE domains.server_id = %s AND domains.type = 'forward' and ia.id IS NOT NULL AND (dr.id IS NULL OR (INET_NTOA(ia.ip) <> dr.content OR CONCAT(ia.hostname,'.',domains.name) <> dr.name))"%aArgs['id'],True)
-  for rec in db.get_rows():
-   if rec['record_id'] is None:
-    ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES ('%s','%s','%s','A') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['fqdn'],rec['ip']))
-    record = db.get_last_id()
-   else:
-    ret['update'] += db.do("UPDATE domain_records SET domain_id = '%s', name = '%s', content = '%s' WHERE id = %s AND type = 'A'"%(rec['foreign_id'],rec['fqdn'],rec['ip'],rec['record_id']))
-    record = rec['record_id']
-  # PTR records
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, CONCAT(ia.hostname,'.' ,a_domain.name) AS fqdn, ptr_domain.foreign_id, ia.ptr_id, dr.id AS record_id, dr.name AS name, dr.content, CONCAT(ip-network,'.',ptr_domain.name) AS ptr FROM ipam_addresses AS ia LEFT JOIN domains AS a_domain ON a_domain.id = ia.a_domain_id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id RIGHT JOIN domains AS ptr_domain ON ptr_domain.id = ine.reverse_zone_id LEFT JOIN domain_records AS dr ON ia.ptr_id = dr.id AND dr.type = 'PTR' WHERE ptr_domain.server_id = %s AND ptr_domain.type = 'reverse' AND (ip-network) <= 256 AND ia.id IS NOT NULL AND (dr.id IS NULL OR (CONCAT(ip-network,'.',ptr_domain.name) <> dr.name OR CONCAT(ia.hostname,'.' ,a_domain.name) <> dr.content OR ia.ptr_id <> dr.id))"%aArgs['id'])
-  for rec in db.get_rows():
-   if rec['record_id'] is None:
-    ret['insert'] += db.do("INSERT INTO domain_records (domain_id,name,content,type) VALUES ('%s','%s','%s','PTR') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"%(rec['foreign_id'],rec['ptr'],rec['fqdn']))
-    record = db.get_last_id()
-   else:
-    ret['update'] += db.do("UPDATE domain_records SET domain_id = '%s', name = '%s', content = '%s' WHERE id = %s AND type = 'PTR'"%(rec['foreign_id'],rec['ptr'],rec['fqdn'],rec['record_id']))
-    record = rec['record_id']
-
   # Write to local 'hosts' file or similar
   if aCTX.config.get('nodns',{}).get('file'):
    from os import linesep
@@ -201,17 +182,28 @@ def sync(aCTX, aArgs):
    except Exception as e:
     aCTX.log("Error writing NoDNS file: %s"%str(e))
  return ret
+
 #
 #
 def status(aCTX, aArgs):
- """ NO OP
+ """ Function returns server status
 
  Args:
-  - count (optional)
 
  Output:
  """
- return {'status':'OK','top':[],'who':[]}
+ return {'status':'OK'}
+
+#
+#
+def statistics(aCTX, aArgs):
+ """ Function returns server statistics
+
+ Args:
+
+ Output:
+ """
+ return {'status':'OK','statistics':{}}
 
 #
 #
@@ -226,3 +218,18 @@ def restart(aCTX, aArgs):
   - status 'OK'/'NOT_OK'
  """
  return {'status':'OK','code':0,'output':""}
+
+#
+#
+def parameters(aCTX, aArgs):
+ """ Function provides parameter mappings of anticipated config vs actual
+
+ Args:
+
+ Output:
+  - status
+  - parameters
+ """
+ settings = aCTX.config.get('nodns',{})
+ params = ['file']
+ return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

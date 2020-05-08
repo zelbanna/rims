@@ -224,22 +224,22 @@ def record_delete(aCTX, aArgs):
 ###################################### Tools ####################################
 #
 #
-def status(aCTX, aArgs):
- """Function docstring for status TBD
+def statistics(aCTX, aArgs):
+ """Function returns statistics from all recursors
 
  Args:
   - count (optional)
 
  Output:
-  - top
-  - who
+  - queries
+  - remotes
  """
- ret = {'top':{},'who':{}}
+ ret = {'queries':{},'remotes':{}}
  args = {'count':aArgs.get('count',20)}
- for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'DNS']:
-  res = aCTX.node_function(infra['node'],infra['service'],'status')(aArgs = args)
-  ret['top']["%(node)s_%(service)s"%infra] = res['top']
-  ret['who']["%(node)s_%(service)s"%infra] = res['who']
+ for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
+  res = aCTX.node_function(infra['node'],infra['service'],'statistics')(aArgs = args)
+  ret['queries']["%(node)s_%(service)s"%infra] = res['queries']
+  ret['remotes']["%(node)s_%(service)s"%infra] = res['remotes']
  return ret
 
 #
