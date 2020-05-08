@@ -185,6 +185,7 @@ CREATE TABLE `devices` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `management_interface` (`management_id`),
   KEY `type_id` (`type_id`),
+  KEY `a_domain_id` (`a_domain_id`),
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_domain_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`management_id`) REFERENCES `device_interfaces` (`interface_id`) ON DELETE SET NULL ON UPDATE CASCADE

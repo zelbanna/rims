@@ -59,7 +59,7 @@ class Context(object):
   self.config['logging'] = self.config.get('logging',{})
   self.config['logging']['rest']   = self.config['logging'].get('rest',{'enabled':False,'file':None})
   self.config['logging']['system'] = self.config['logging'].get('system',{'enabled':False,'file':None})
-  self.build = ospath.join(self.path,'build')
+  self.site = ospath.join(self.path,'site')
   if self.config.get('site'):
    for type in ['menuitem','tool']:
     for k,item in self.config['site'].get(type,{}).items():
@@ -69,7 +69,6 @@ class Context(object):
        break
   else:
    self.log("No site defined")
-   self.site = {}
   self._kill = Event()
   self._analytics = {'files':{},'modules':{}}
   self.rest_call = rest_call
@@ -498,7 +497,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    file,_,_ = query.partition('?')
    # split query in file and params
    if not path[:5] == 'files':
-    fullpath = ospath.join(self._ctx.build,path,file)
+    fullpath = ospath.join(self._ctx.site,path,file)
    elif path == 'files':
     fullpath = ospath.join(self._ctx.config['files'][file])
     file = ''

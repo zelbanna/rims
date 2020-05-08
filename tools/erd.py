@@ -25,7 +25,7 @@ else:
   pipmain(["install","-q","eralchemy"])
  else:
   erd_input = "mysql+pymysql://%s:%s@%s/%s"%(username,password,host,database)
-  erd_output= ospath.join(basedir,'rims','public','erd.pdf')
+  erd_output= ospath.join(basedir,'rims','static','erd.pdf')
   try:
    from eralchemy import render_er
    render_er(erd_input,erd_output)

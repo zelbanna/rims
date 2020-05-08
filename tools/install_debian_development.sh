@@ -69,18 +69,12 @@ git clone git@github.com:zelbanna/rims.git
 git clone http://github.com/azlux/log2ram.git
 
 yarn create react-app rims-frontend
-cd /usr/local/sbin/rims-frontend
-rm -fR build
-rm -fR public
-rm -fR src
-rm -fR package.json
-rm -fR yarn.lock
-ln -s /usr/local/sbin/rims/build
-ln -s /usr/local/sbin/rims/public
-ln -s /usr/local/sbin/rims/src
-ln /usr/local/sbin/rims/package.json
-yarn
+cd /usr/local/sbin/rims-frontend/
 yarn add @fortawesome/fontawesome-free
+rm -fR src;    mkdir src;    mount -B /usr/local/sbin/rims/react /usr/local/sbin/rims-frontend/src
+rm -fR build;  mkdir build;  mount -B /usr/local/sbin/rims/site /usr/local/sbin/rims-frontend/build
+rm -fR public; mkdir public; mount -B /usr/local/sbin/rims/static /usr/local/sbin/rims-frontend/public
+ln /usr/local/sbin/rims/package.json
 
 cd
 ln -s /usr/local/sbin/rims
