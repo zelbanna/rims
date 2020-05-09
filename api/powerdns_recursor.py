@@ -25,6 +25,8 @@ def sync(aCTX, aArgs):
   forwarders = [x for x in servers if x['servers']]
   domains = aCTX.node_function('master','dns','domain_forwarders')(aArgs = {})['data'] if not aArgs.get('domains') else aArgs['domains']
   for dom in domains:
+   # Remove serial (date)
+   dom.pop('serial',None)
    for f in forwarders:
     if f['name'] == (dom['name'] + '.'):
      f['sync'] = dom['sync'] = True

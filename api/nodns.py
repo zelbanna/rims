@@ -131,6 +131,9 @@ def record_info(aCTX, aArgs):
     ret = {'status':'NOT_OK','data':None}
   else:
    aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper()})
+   # Remove trailing dot in database, just like PowerDNS
+   if aArgs['name'][-1] == '.':
+    aArgs['name'] = aArgs['name'][:-1]
    ret['data'] = aArgs
    if op == 'insert':
     ret['status'] = 'OK' if (db.do("INSERT INTO domain_records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0) else 'NOT_OK'
