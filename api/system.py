@@ -411,3 +411,21 @@ def worker(aCTX, aArgs):
   return {'status':'OK'}
  else:
   return {'status':'NOT_OK'}
+
+############################## Site ###########################
+#
+#
+def inventory(aCTX, aArgs):
+ """Function takes a user_id and produce an inventory for the node, for now until user id is checked outside using token
+
+ Args:
+  - user_id (optional)
+
+ Output:
+ """
+ ret = {'services':[{'name':x,'service':aCTX.config['services'][x]} for x in list(aCTX.config.get('services',{}).keys())]}
+ ret.update(aCTX.node_function('master','master','inventory')(aArgs = {'node':aCTX.node,'user_id':aArgs.get('user_id',-1)}))
+ # INTERNAL from rims.api.system import external_ip
+ ext = external_ip(aCTX,None)
+ ret['navinfo'].append(ext['ip'] if ext['status'] == 'OK' else '0.0.0.0')
+ return ret

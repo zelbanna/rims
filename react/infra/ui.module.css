@@ -7,15 +7,25 @@
 
  */
 
-@media only screen and (min-width: 600px) {
-  /* For tablets: */
+@media only screen and (max-width: 922px) {
+  /* For phones and tablets: */
+ .main {}
+ .contentLeft { width:100%;}
+ .contentRight { width:100%; }
+ .info {width:calc(100% - 6px); overflow-x:scroll }
+ .code {width:calc(100% - 6px); overflow-x:scroll }
+
 }
-@media only screen and (min-width: 768px) {
-  /* For desktop: */
+
+@media only screen and (min-width: 922px) {
+  /* For wide stuff: */
+ .main { display:flex; height:calc(100vh - 7rem - 2px);}
+ .contentLeft { min-width:max-content; width:25%; position:relative; top:0; bottom:0; }
+ .contentRight { width:auto; }
 }
 
 /******* Portal ******/
-.main { background-color:var(--main-color); height:calc(100vh - 7rem - 2px); width:100vw; display:flex }
+.main { background-color:var(--main-color); width:100vw; }
 
 .frame { border:none; height:100%; width:100%; }
 
@@ -26,19 +36,19 @@
 .button { background-color:transparent; border:none; color:var(--std-txt-color); cursor:pointer; font-size:3rem; padding:0; float:left; }
 
 /****** Sections *****/
-.contentLeft { min-width:max-content; overflow:hidden; width:25%; background-color:transparent; position:relative; top:0; bottom:0; scrollbar-width:none;}
+.contentLeft { background-color:transparent; overflow:hidden; scrollbar-width:none;}
 .contentLeft::-webkit-scrollbar { display: none; }
 
-.contentRight { overflow:scroll; background-color:transparent; width:auto; scrollbar-width:none; }
+.contentRight { background-color:transparent; overflow:scroll; scrollbar-width:none; }
 .contentRight::-webkit-scrollbar { display: none; }
 
 /****** Articles *****/
 
-.article { background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; float:left; white-space:pre; font-size:1rem; }
-.info {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; float:left; resize:horizontal; width:max-content; height:max-content; max-width:100%;}
-.line {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; height:max-content; color:var(--std-txt-color); }
-.code {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; float:left; width:calc(100% - 6px); resize:horizontal; white-space:pre; font-family:monospace; font-size:1rem; color:var(--std-txt-color);}
-.error {   background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; border:solid 1px var(--high-color); }
+.article { background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; float:left; white-space:pre; font-size:1rem;}
+.info {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; float:left; resize:horizontal; height:max-content;}
+.line {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; height:max-content; color:var(--std-txt-color); }
+.code {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; float:left; width:calc(100% - 6px); resize:horizontal; white-space:pre; font-family:monospace; font-size:1rem; color:var(--std-txt-color);}
+.error {   background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; border:solid 1px var(--high-color); }
 .info:hover, .line:hover, .article:hover, .code:hover, .error:hover { box-shadow:0 0 3px 3px rgba(0,0,0,0.2); }
 
 /******* State *******/

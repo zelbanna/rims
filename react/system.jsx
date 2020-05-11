@@ -16,11 +16,7 @@ export class Main extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/system/service_list').then(result => {
-   Object.assign(this.state,result)
-   this.compileNavItems()
-  })
-  rest_call('api/master/inventory',{node:this.context.settings.node, user_id:this.context.settings.id}).then(result => {
+  rest_call('api/system/inventory',{user_id:this.context.settings.id}).then(result => {
    Object.assign(this.state,result)
    this.compileNavItems()
   })

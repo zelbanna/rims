@@ -7,7 +7,7 @@ export const NavBar = (props) => <nav className={styles.main} id={props.id}><ul 
 
 export const NavButton = (props) => <li className={styles.item} style={props.style}><button className={styles.button} onClick={props.onClick}>{props.title}</button></li>
 
-export const NavDropButton = (props) => <li className={styles.dropDownItem} style={props.style}><button className={styles.button} onClick={props.onClick}>{props.title}</button></li>
+export const NavDropButton = (props) => <li className={styles.dropDownItem} style={props.style}><button className={styles.dropbutton} onClick={props.onClick}>{props.title}</button></li>
 
 export class NavDropDown extends Component{
  constructor(props){

@@ -27,12 +27,12 @@ export class Main extends Component {
  }
 
  compileNavItems = () => this.context.loadNavigation(<NavBar key='rack_navbar'>
-   <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)} style={{float:'right'}} />
-   <NavDropDown key='dev_nav_racks' title='Rack' style={{float:'right'}}>
+   <NavDropDown key='dev_nav_racks' title='Rack'>
     <NavDropButton key='dev_nav_all_rack' title='Racks' onClick={() => this.changeContent(<List key='rack_list' />)} />
     <NavDropButton key='dev_nav_all_pdu' title='PDUs' onClick={() => this.changeContent(<Infra key='pdu_list' type='pdu' />)} />
     <NavDropButton key='dev_nav_all_con' title='Consoles' onClick={() => this.changeContent(<Infra key='console_list' type='console' />)} />
    </NavDropDown>
+   <NavButton key='dev_nav_loc' title='Locations' onClick={() => this.changeContent(<LocationList key='location_list' />)}/>
   </NavBar>)
 
  changeContent = (elem) => this.setState(elem)

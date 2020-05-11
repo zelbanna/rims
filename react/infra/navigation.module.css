@@ -7,7 +7,20 @@
 
 */
 
-.main { background-color: var(--ui-color); height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
+@media only screen and (max-width: 600px) {
+  /* For phones: */
+ .button {     font-size:1.2rem }
+ .infobutton { font-size:1.2rem }
+ .dropbutton { font-size:1.2rem }  
+}
+@media only screen and (min-width: 600px) {
+  /* For tablets: */
+ .button {     font-size:1.3rem }
+ .infobutton { font-size:1.3rem }
+ .dropbutton { font-size:1.3rem }
+}
+
+.main { background-color: var(--ui-color); min-height:3rem; width:100%; box-shadow: 0 5px 2px -2px rgba(0,0,0,0.3); overflow:hidden; margin-bottom:2px; clear:both; }
 .list { margin:0; padding:0; overflow:hidden; background-color:transparent; list-style:none; }
 .item { float:left; background-color: transparent; }
 .item:hover{ background-color: var(--head-color); }
@@ -16,8 +29,8 @@
 .info {  background-color:#00CC66; font-weight:bold; float:right }
 .info:hover, .info:focus { background-color:#00CC66; }
 
-.infobutton { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; }
-
-.button { color:var(--ui-txt-color); font-size:1.3rem; padding:0 8px 0 8px; border:none; cursor:pointer; background-color:transparent; height:3rem; text-transform:capitalize; }
-.button:hover, .button:focus { color:var(--high-color); transition-duration:0.15s}
-.button:active{ opacity:0.8; }
+.button {     color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; cursor:pointer; text-transform:capitalize; }
+.dropbutton { color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; cursor:pointer; text-transform:capitalize; width:100%; text-align:left; }
+.infobutton { color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; }
+.button:hover, .dropbutton:hover, .button:focus, .dropbutton:focus{ color:var(--high-color); transition-duration:0.15s}
+.button:active, dropbutton:active { opacity:0.8; }

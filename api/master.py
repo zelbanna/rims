@@ -19,8 +19,7 @@ def inventory(aCTX, aArgs):
  if aArgs['node'] == 'master':
   ret.update({'node':True,'users':True})
  with aCTX.db as db:
-  if 'user_id' in aArgs:
-   db.do("SELECT alias FROM users WHERE id = %s"%aArgs['user_id'])
+  if 'user_id' in aArgs and (db.do("SELECT alias FROM users WHERE id = %s"%aArgs['user_id']) > 0):
    ret['navinfo'].append(db.get_val('alias'))
  return ret
 
