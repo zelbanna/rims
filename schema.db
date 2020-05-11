@@ -40,7 +40,7 @@ CREATE TABLE `console_info` (
 DROP TABLE IF EXISTS `device_connections`;
 CREATE TABLE `device_connections` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `map` tinyint(1) DEFAULT 1,
+  `map` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
