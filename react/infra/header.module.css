@@ -3,6 +3,7 @@
 - head-color
 - head-txt-color
 - high-color
+- head-focus-color
 
 */
 
@@ -19,15 +20,15 @@
 
 .header {  background-color: var(--head-color); width:100vw; padding-left:4px; padding-right:4px; overflow:hidden; display:flex; height:4rem; }
 
-.button { color:var(--head-txt-color); font-size:1.6rem; padding:0; border:none; cursor:pointer; background-color:transparent; height:4rem; width:3rem }
-.button:hover, .head-button:focus { color:var(--high-color); transition-duration:0.15s}
+.button { color:var(--head-txt-color); font-size:1.6rem; padding:0; border:none; cursor:pointer; background-color:transparent; height:4rem; width:4rem }
+.button:hover, .head-button:focus { color:var(--high-color); transition-duration:0.15s; background-color:var(--head-focus-color); }
 .button:active{ opacity:0.8; }
 
-.title { color:var(--head-txt-color); margin:auto; font-weight:normal; width:100%; text-align:center; }
+.title { color:var(--head-txt-color); margin:auto; font-weight:normal; }
 
 .menu { margin-left:0; z-index:1100;}
 .menuList { list-style:none; margin:0; padding:0; overflow:hidden; position: absolute; right:0; background-color:var(--head-color); max-height:0; -webkit-transition:0.15s; transition:0.15s; z-index:1100; }
-.menuItem:hover{ background-color: var(--head-color); }
+.menuItem:hover{ background-color: var(--head-focus-color); }
 .menuButton { background-color:transparent; border:none; cursor:pointer; color:var(--head-txt-color); font-size:1.4rem; padding:0 1rem; height:2.8rem; text-transform:capitalize; white-space:nowrap; text-align:left; width:100% }
 .menuButton:hover, .menu-button:focus { color:var(--high-color); transition-duration:0.15s}
 .menuButton:active{ opacity:0.8; }

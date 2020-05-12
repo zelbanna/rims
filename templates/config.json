@@ -109,7 +109,7 @@
     "function": "Main"
    }
   },
-  "tool": {
+  "resource": {
    "images": {
     "module": "system",
     "function": "FileList"

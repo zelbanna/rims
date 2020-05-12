@@ -13,7 +13,7 @@ export class Main extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/portal/resources',{type:'tool'}).then(result => {
+  rest_call('api/portal/resources',{type:'resource'}).then(result => {
    Object.assign(this.state,result);
    this.compileNavItems();
   })
@@ -34,6 +34,8 @@ export class Main extends Component {
     buttons.push(<NavDropButton key={'mb_'+key} title={key} onClick={() => window.open(panel.tab,'_blank')} />)
    else if (panel.type === 'frame')
     buttons.push(<NavDropButton key={'mb_'+key} title={key} onClick={() => this.context.changeMain(<iframe className={styles.frame} title={key} src={panel.frame} />)} />)
+   else
+    console.log("Unknown panel type:"+JSON.stringify(panel))
   }
   this.context.loadNavigation(<NavBar key='resource_navbar'><NavDropDown key='resources' title='Resources'>{buttons}</NavDropDown></NavBar>)
  }

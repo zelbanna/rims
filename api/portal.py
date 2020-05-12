@@ -76,7 +76,9 @@ def theme_list(aCTX, aArgs):
  Output:
   - list of theme names
  """
- return {'data':['light','dark']}
+ themes = ['light','dark']
+ themes.extend(aCTX.config.get('site',{}).get('theme',{}).keys())
+ return {'data':themes}
 
 #
 #
@@ -90,9 +92,8 @@ def theme_info(aCTX, aArgs):
   - data - dictionary of values
  """
  themes = {
-  "light":{ "main":"#F1F1F1", "head":"#1A1A1A", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#FFFFFF", "std-txt":"#000000", "ui":"#000000", "ui-txt":"#FFFFFF" },
-  "dark":{  "main":"#0A0A0A", "head":"#1A1A1A", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#1A1A1A", "std-txt":"#9CA6B0", "ui":"#000000", "ui-txt":"#FFFFFF" }
+  "light":{ "main":"#F1F1F1", "head":"#1A1A1A", "head-focus":"#666666", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#FFFFFF", "std-txt":"#000000", "ui":"#000000", "ui-txt":"#FFFFFF" },
+  "dark":{  "main":"#0A0A0A", "head":"#1A1A1A", "head-focus":"#666666", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#1A1A1A", "std-txt":"#9CA6B0", "ui":"#000000", "ui-txt":"#FFFFFF" }
  }
-
- theme = {"--%s-color"%k:v for k,v in themes.get(aArgs['theme'],{}).items()}
+ theme = {"--%s-color"%k:v for k,v in themes.get(aArgs['theme'],aCTX.config.get('site',{}).get('theme',{}).get(aArgs['theme'],{})).items()}
  return {'status':"OK" if len(theme) > 0 else "NOT_OK", 'data':theme}

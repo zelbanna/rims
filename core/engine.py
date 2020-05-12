@@ -61,7 +61,7 @@ class Context(object):
   self.config['logging']['system'] = self.config['logging'].get('system',{'enabled':False,'file':None})
   self.site = ospath.join(self.path,'site')
   if self.config.get('site'):
-   for type in ['menuitem','tool']:
+   for type in ['menuitem','resource']:
     for k,item in self.config['site'].get(type,{}).items():
      for tp in ['module','frame','tab']:
       if tp in item:
