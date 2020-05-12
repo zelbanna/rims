@@ -27,7 +27,7 @@ def list(aCTX, aArgs):
  ret = {}
  sort = 'ORDER BY ia.ip' if aArgs.get('sort','ip') == 'ip' else 'ORDER BY devices.hostname'
  fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip','ia.state AS ip_state','di.state AS if_state']
- tables = ['device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id']
+ tables = ['interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id']
  filter = ['TRUE']
  if aArgs.get('rack_id'):
   tables.append("rack_info AS ri ON ri.device_id = devices.id")
@@ -100,7 +100,7 @@ def management(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  if (db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, devices.url FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %s"%aArgs['id']) == 1):
+  if (db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, devices.url FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %s"%aArgs['id']) == 1):
    ret['data'] = db.get_row()
    ret['data']['username'] = aCTX.config['netconf']['username']
    ret['status'] = 'OK'
@@ -156,7 +156,7 @@ def info(aCTX, aArgs):
    parts = (db.get_val('Type')).split("'")
    ret['classes'] = [parts[i] for i in range(1,len(parts),2)]
   if op == 'lookup':
-   db.do("SELECT INET_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.management_id = di.interface_id WHERE devices.id = '%s'"%id)
+   db.do("SELECT INET_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.management_id = di.interface_id WHERE devices.id = '%s'"%id)
    # INTERNAL from rims.api.device import detect_hardware
    res = detect_hardware(aCTX,{'ip':db.get_val('ip')})
    ret['status'] = res['status']
@@ -178,13 +178,13 @@ def info(aCTX, aArgs):
     try:   aArgs['mac'] = int(aArgs.get('mac','0').replace(':',""),16)
     except:aArgs['mac'] = 0
    if aArgs.get('class') == 'vm':
-    db.do("UPDATE device_interfaces SET class = 'virtual' WHERE device_id = %i"%id)
+    db.do("UPDATE interfaces SET class = 'virtual' WHERE device_id = %i"%id)
    ret['update'] = (db.update_dict('devices',aArgs,"id=%s"%id) == 1)
 
   ret['found'] = (db.do("SELECT * FROM devices WHERE id = %s"%id) == 1)
   if ret['found']:
    ret['data'] = db.get_row()
-   db.do("SELECT ia.state AS ip_state, di.state AS if_state, di.interface_id, dt.base AS type_base, dt.name as type_name, dt.functions, LPAD(hex(di.mac),12,0) AS interface_mac, INET_NTOA(ia.ip) as interface_ip FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%id)
+   db.do("SELECT ia.state AS ip_state, di.state AS if_state, di.interface_id, dt.base AS type_base, dt.name as type_name, dt.functions, LPAD(hex(di.mac),12,0) AS interface_mac, INET_NTOA(ia.ip) as interface_ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%id)
    ret['extra'] = db.get_row()
    # Pick login name from netconf
    ret['extra']['username'] = aCTX.config['netconf']['username']
@@ -204,7 +204,7 @@ def info(aCTX, aArgs):
     pdu_ids = [str(x['pdu_id']) for x in ret['pems'] if x['pdu_id']]
     infra_ids.extend(pdu_ids)
     if infra_ids:
-     db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id IN (%s)"%','.join(infra_ids))
+     db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id IN (%s)"%','.join(infra_ids))
      devices = db.get_dict('id')
     else:
      devices = {}
@@ -259,7 +259,7 @@ def extended(aCTX, aArgs):
 
    ret['update'] = db.update_dict('devices',aArgs,"id = %s"%aArgs['id']) == 1
 
-   if not aArgs.get('a_domain_id') in [None,'NULL'] and not aArgs['management_id'] in [None,'NULL'] and db.do("SELECT ia.hostname, ia.a_domain_id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %(management_id)s"%aArgs) > 0:
+   if not aArgs.get('a_domain_id') in [None,'NULL'] and not aArgs['management_id'] in [None,'NULL'] and db.do("SELECT ia.hostname, ia.a_domain_id FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %(management_id)s"%aArgs) > 0:
     entry = db.get_row()
     if entry['a_domain_id']:
      ret['dns']['create'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(aArgs['hostname'],domains[int(aArgs['a_domain_id'])]), 'type':'CNAME', 'content':'%s.%s.'%(entry['hostname'],domains[entry['a_domain_id']]) ,'op':'insert'})['status']
@@ -271,7 +271,7 @@ def extended(aCTX, aArgs):
   if ret['found']:
    ret['data'] = db.get_row()
    ret['extra'] = {'oid':ret['data'].pop('oid',None),'oui':ret['data'].pop('oui',None)}
-   db.do("SELECT di.interface_id, di.name, INET_NTOA(ia.ip) AS ip FROM device_interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE di.device_id = %(id)s"%aArgs)
+   db.do("SELECT di.interface_id, di.name, INET_NTOA(ia.ip) AS ip FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE di.device_id = %(id)s"%aArgs)
    ret['interfaces'] = db.get_rows()
    ret['interfaces'].append({'interface_id':'NULL', 'name':'N/A','ip':None})
 
@@ -331,11 +331,11 @@ def control(aCTX, aArgs):
  ret = {}
  id = aArgs['id']
  with aCTX.db as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.class, dt.name AS type FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %s"%id)
+  db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.class, dt.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = %s"%id)
   info = db.get_row()
-  if info['class'] != 'vm' and (db.do("SELECT dp.id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE dp.device_id = %s AND dp.pdu_id IS NOT NULL"%id) > 0):
+  if info['class'] != 'vm' and (db.do("SELECT dp.id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type,INET_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE dp.device_id = %s AND dp.pdu_id IS NOT NULL"%id) > 0):
    ret['pems'] = db.get_rows()
-  elif info['class'] == 'vm' and (db.do("SELECT dvu.host_id, snmp_id AS device_snmp_id, device_uuid, INET_NTOA(ia.ip) AS host_ip, dt.name AS host_type FROM device_vm_uuid AS dvu LEFT JOIN devices ON dvu.host_id = devices.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dvu.device_id = %s"%id) == 1):
+  elif info['class'] == 'vm' and (db.do("SELECT dvu.host_id, snmp_id AS device_snmp_id, device_uuid, INET_NTOA(ia.ip) AS host_ip, dt.name AS host_type FROM device_vm_uuid AS dvu LEFT JOIN devices ON dvu.host_id = devices.id LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dvu.device_id = %s"%id) == 1):
    ret['mapping'] = db.get_row()
 
  if aArgs.get('device_op'):
@@ -394,7 +394,7 @@ def search(aCTX, aArgs):
     search = "ia.hostname LIKE '%{0}%' OR CONCAT(ia.hostname,'.',domains.name) LIKE '%{0}%'".format(arg)
   else:
    search = "ia.hostname LIKE '%{0}%' OR CONCAT(ia.hostname,'.',domains.name) LIKE '%{0}%'".format(aArgs['hostname'])
-  ret['found'] = (db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN device_interfaces AS di ON di.device_id = devices.id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE %s"%search) > 0)
+  ret['found'] = (db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN interfaces AS di ON di.device_id = devices.id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE %s"%search) > 0)
   ret['device']= db.get_row()
  return ret
 
@@ -436,7 +436,7 @@ def new(aCTX, aArgs):
   data['id']= db.get_last_id()
   if data['mac'] > 0 or data['ipam']:
    from rims.api.dns import record_info
-   data['interface'] = (db.do("INSERT INTO device_interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me-%(id)s','auto_created')"%data) > 0)
+   data['interface'] = (db.do("INSERT INTO interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me-%(id)s','auto_created')"%data) > 0)
    data['management_id'] = db.get_last_id()
    db.do("UPDATE devices SET management_id = %(management_id)s WHERE id = %(id)s"%data)
    if data['ipam'] and not aArgs.get('a_domain_id','NULL') == 'NULL' and not aArgs.get('if_domain_id','NULL') == 'NULL':
@@ -461,7 +461,7 @@ def delete(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  if (db.do("SELECT interface_id FROM device_interfaces WHERE device_id = %s"%aArgs['id']) > 0):
+  if (db.do("SELECT interface_id FROM interfaces WHERE device_id = %s"%aArgs['id']) > 0):
    from rims.api.interface import delete as interface_delete
    ret['interfaces'] = interface_delete(aCTX, {'interfaces':[x['interface_id'] for x in db.get_rows()]})
   if (db.do("SELECT dt.base FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = %s"%aArgs['id']) > 0) and (db.get_val('base') == 'pdu'):
@@ -534,7 +534,7 @@ def discover(aCTX, aArgs):
      entry['a_domain_id'] = aArgs['a_domain_id']
      if (db.insert_dict('devices',entry) == 1):
       dev_id = db.get_last_id()
-      if (db.do("INSERT INTO device_interfaces (device_id,ipam_id,name,description) VALUES(%s,%s,'me-%s','auto_created')"%(dev_id, ipam['data']['id'], ip_int)) > 0):
+      if (db.do("INSERT INTO interfaces (device_id,ipam_id,name,description) VALUES(%s,%s,'me-%s','auto_created')"%(dev_id, ipam['data']['id'], ip_int)) > 0):
        db.do("UPDATE devices SET management_id = %s WHERE id = %s"%(db.get_last_id(), dev_id))
        if aArgs['if_domain_id'] and aArgs['a_domain_id']:
         record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(entry['hostname'],domains[int(aArgs['a_domain_id'])]), 'type':'CNAME', 'content':'%s.%s.'%('me-%s'%ip_int,domains[int(aArgs['if_domain_id'])]) ,'op':'insert'})
@@ -601,7 +601,7 @@ def configuration_template(aCTX, aArgs):
  from importlib import import_module
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, devices.hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = ia.a_domain_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aArgs['id'])
+  db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, devices.hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = ia.a_domain_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aArgs['id'])
   data = db.get_row()
  ip = data['ip']
  try:
@@ -643,7 +643,7 @@ def network_info_discover(aCTX, aArgs):
   else:
    lookup = "(devices.mac = 0 OR devices.oid = 0)"
 
-  if db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.state = 'up' AND %s AND %s"%(network,lookup)) > 0:
+  if db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.state = 'up' AND %s AND %s"%(network,lookup)) > 0:
    devices = db.get_rows()
    sema = aCTX.workers.semaphore(20)
    for dev in devices:
@@ -800,9 +800,9 @@ def vm_mapping(aCTX, aArgs):
   else:
    db.do("SELECT device_id, vm, device_uuid FROM device_vm_uuid")
    existing = {row.pop('device_uuid',None):row for row in db.get_rows()}
-  db.do("SELECT di.device_id, di.interface_id, LPAD(hex(di.mac),12,0) AS mac FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.class = 'vm' and di.mac > 0")
+  db.do("SELECT di.device_id, di.interface_id, LPAD(hex(di.mac),12,0) AS mac FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.class = 'vm' and di.mac > 0")
   vms = {row.pop('mac',None):row for row in db.get_rows()}
-  db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.base = 'hypervisor' AND ia.state = 'up'")
+  db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.base = 'hypervisor' AND ia.state = 'up'")
   for row in db.get_rows():
    try:
     module    = import_module("rims.devices.%s"%row['type'])
@@ -851,7 +851,7 @@ def class_list(aCTX, aArgs):
   if aArgs.get('type','device') == 'device':
    db.do("SHOW COLUMNS FROM devices LIKE 'class'")
   else:
-   db.do("SHOW COLUMNS FROM device_interfaces LIKE 'class'")
+   db.do("SHOW COLUMNS FROM interfaces LIKE 'class'")
   parts = (db.get_val('Type')).split("'")
   ret['data'] = [parts[i] for i in range(1,len(parts),2)]
  return ret

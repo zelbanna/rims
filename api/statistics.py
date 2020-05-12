@@ -86,7 +86,7 @@ def lookup(aCTX, aArgs):
  ret = {'inserts':0}
  from importlib import import_module
  with aCTX.db as db:
-  if (db.do("SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON di.interface_id = devices.management_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id = %s"%id) > 0):
+  if (db.do("SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON di.interface_id = devices.management_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id = %s"%id) > 0):
    info = db.get_row()
    try:
     module = import_module("rims.devices.%s"%info['type'])
@@ -124,7 +124,7 @@ def check(aCTX, aArgs):
 
  with aCTX.db as db:
   db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
-  db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
+  db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
    if (db.do("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']) > 0):
     dev['data_points'] = []
@@ -139,7 +139,7 @@ def check(aCTX, aArgs):
      vobj.append({'name':ddp['name'],'oid':ddp['oid'],'value':None})
     for m,tags in measurements.items():
      dev['data_points'].extend([{'measurement':m,'tags':t,'snmp':values} for t,values in tags.items()])
-   if (db.do("SELECT snmp_index,interface_id,name FROM device_interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
+   if (db.do("SELECT snmp_index,interface_id,name FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
     dev['interfaces'] = db.get_rows()
    if any(i in dev for i in ['data_points','interfaces']):
     devices.append(dev)

@@ -206,7 +206,7 @@ def server_macs(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM device_interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['id'])
+  ret['count'] = db.do("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['id'])
   ret['data']  = db.get_rows()
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
@@ -241,7 +241,7 @@ def address_list(aCTX, aArgs):
    for field in aArgs.get('extra',[]):
     if   field == 'device_id':
      fields.append('di.device_id')
-     tables.append('device_interfaces AS di ON ia.id = di.ipam_id')
+     tables.append('interfaces AS di ON ia.id = di.ipam_id')
     elif field == 'a_domain_id':
      fields.extend(['a_domain_id','domains.name AS domain'])
      tables.append('domains ON a_domain_id = domains.id')
@@ -536,7 +536,7 @@ def clear(aCTX, aArgs):
  ret = {'status':'OK'}
  with aCTX.db as db:
   if aArgs.get('device_id'):
-   filter = "id IN (SELECT ia.id FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.id = di.device_id WHERE devices.id = %s)"%aArgs['device_id']
+   filter = "id IN (SELECT ia.id FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.id = di.device_id WHERE devices.id = %s)"%aArgs['device_id']
   elif aArgs.get('network_id'):
    filter = "network_id = %s"%aArgs['network_id']
   else:
@@ -557,7 +557,7 @@ def check(aCTX, aArgs):
  with aCTX.db as db:
   db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   networks = db.get_rows()
-  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN device_interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
+  db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
   addresses = db.get_rows()
 
  if 'repeat' in aArgs:

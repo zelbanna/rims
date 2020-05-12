@@ -53,7 +53,7 @@ def vm_info(aCTX, aArgs):
     ret['data'].update(db.get_row())
     vm = ret['data'].pop('vm',None)
     if(ret['data']['device_id']):
-     db.do("SELECT interface_id, LPAD(hex(mac),12,0) AS mac, name FROM device_interfaces WHERE device_id = %s"%ret['data']['device_id'])
+     db.do("SELECT interface_id, LPAD(hex(mac),12,0) AS mac, name FROM interfaces WHERE device_id = %s"%ret['data']['device_id'])
      ret['device'] = db.get_rows()
      for intf in ret['device']:
        intf['mac'] = ':'.join(intf['mac'][i:i+2] for i in [0,2,4,6,8,10]) if intf.get('mac') else '00:00:00:00:00:00'

@@ -104,7 +104,7 @@ def expiration_status(aCTX, aArgs):
  from rims.api.device import control as device_control
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT devices.id, res.shutdown, devices.hostname, res.user_id, users.alias, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id LEFT JOIN users ON res.user_id = users.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
+  db.do("SELECT devices.id, res.shutdown, devices.hostname, res.user_id, users.alias, INET_NTOA(ia.ip) AS ip, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN reservations AS res ON res.device_id = devices.id LEFT JOIN users ON res.user_id = users.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
   ret['hosts'] = db.get_rows()
   for host in ret['hosts']:
    if host['remaining'] < 0:

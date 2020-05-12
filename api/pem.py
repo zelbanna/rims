@@ -63,7 +63,7 @@ def info(aCTX, aArgs):
    db.do("SELECT hostname FROM devices WHERE id = %s"%ret['data']['device_id'])
    hostname = db.get_val('hostname')
    # Slot id is RIMS slot ID, so we need to look up pdu_slot => pdu_info.X_slot_id
-   db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, dt.name AS type, pi.%(pdu_slot)s_slot_id AS pdu_slot FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN device_interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN pdu_info AS pi ON devices.id = pi.device_id WHERE devices.id = %(pdu_id)s"%ret['data'])
+   db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, dt.name AS type, pi.%(pdu_slot)s_slot_id AS pdu_slot FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN pdu_info AS pi ON devices.id = pi.device_id WHERE devices.id = %(pdu_id)s"%ret['data'])
    pdu_info = db.get_row()
    try:
     module = import_module("rims.devices.%s"%pdu_info['type'])

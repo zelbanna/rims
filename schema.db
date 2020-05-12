@@ -27,6 +27,14 @@ CREATE TABLE `activity_types` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `connections`;
+CREATE TABLE `connections` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `map` enum('true','false') NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `console_info`;
 CREATE TABLE `console_info` (
   `device_id` int(10) unsigned NOT NULL,
@@ -34,37 +42,6 @@ CREATE TABLE `console_info` (
   `port` int(10) unsigned NOT NULL DEFAULT 6000,
   UNIQUE KEY `device_id` (`device_id`),
   CONSTRAINT `console_info_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `device_connections`;
-CREATE TABLE `device_connections` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `map` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `device_interfaces`;
-CREATE TABLE `device_interfaces` (
-  `interface_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device_id` int(10) unsigned NOT NULL,
-  `ipam_id` int(10) unsigned DEFAULT NULL,
-  `manual` tinyint(1) unsigned DEFAULT 0,
-  `mac` bigint(20) DEFAULT 0,
-  `snmp_index` int(10) unsigned DEFAULT NULL,
-  `name` varchar(25) NOT NULL,
-  `description` varchar(25) DEFAULT '',
-  `state` enum('unknown','up','down') NOT NULL,
-  `class` enum('wired','optical','virtual','logical','wifi','bluetooth') NOT NULL,
-  `connection_id` int(10) unsigned DEFAULT NULL,
-  PRIMARY KEY (`interface_id`),
-  UNIQUE KEY `device_index` (`device_id`,`snmp_index`),
-  UNIQUE KEY `ipam_id` (`ipam_id`),
-  KEY `connection_id` (`connection_id`),
-  CONSTRAINT `device_interfaces_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `device_interfaces_ibfk_2` FOREIGN KEY (`connection_id`) REFERENCES `device_connections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `device_interfaces_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -188,7 +165,7 @@ CREATE TABLE `devices` (
   KEY `a_domain_id` (`a_domain_id`),
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_domain_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`management_id`) REFERENCES `device_interfaces` (`interface_id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`management_id`) REFERENCES `interfaces` (`interface_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -224,6 +201,29 @@ CREATE TABLE `domains` (
   KEY `server_id` (`server_id`),
   KEY `foreign_id` (`foreign_id`),
   CONSTRAINT `domains_ibfk_1` FOREIGN KEY (`server_id`) REFERENCES `servers` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `interfaces`;
+CREATE TABLE `interfaces` (
+  `interface_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned NOT NULL,
+  `ipam_id` int(10) unsigned DEFAULT NULL,
+  `manual` tinyint(1) unsigned DEFAULT 0,
+  `mac` bigint(20) DEFAULT 0,
+  `snmp_index` int(10) unsigned DEFAULT NULL,
+  `name` varchar(25) NOT NULL,
+  `description` varchar(25) DEFAULT '',
+  `state` enum('unknown','up','down') NOT NULL,
+  `class` enum('wired','optical','virtual','logical','wifi','bluetooth') NOT NULL,
+  `connection_id` int(10) unsigned DEFAULT NULL,
+  PRIMARY KEY (`interface_id`),
+  UNIQUE KEY `device_index` (`device_id`,`snmp_index`),
+  UNIQUE KEY `ipam_id` (`ipam_id`),
+  KEY `connection_id` (`connection_id`),
+  CONSTRAINT `interfaces_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `interfaces_ibfk_2` FOREIGN KEY (`connection_id`) REFERENCES `connections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `interfaces_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
