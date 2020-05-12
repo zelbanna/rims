@@ -1,7 +1,7 @@
 {
  "node":"master",
  "module":"device",
- "function":"network_info_discover",
+ "function":"system_info_discover",
  "args":{"lookup":true},
  "output":true,
  "frequency":7200

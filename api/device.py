@@ -617,7 +617,7 @@ def configuration_template(aCTX, aArgs):
 
 #
 #
-def network_info_discover(aCTX, aArgs):
+def system_info_discover(aCTX, aArgs):
  """Function discovers system macs and enterprise oid for devices (on a network segment)
 
  Args:

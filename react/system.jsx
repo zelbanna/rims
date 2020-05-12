@@ -183,7 +183,7 @@ class Controls extends Component {
    {api:'device/log_clear',text:'Device clear all status logs'},
    {api:'ipam/check',text:'IPAM status check'},
    {api:'interface/check',text:'Interface status check'},
-   {api:'device/network_info_discover',text:'Discover device system information (sysmac etc)'},
+   {api:'device/system_info_discover',text:'Discover device system information (sysmac etc)'},
    {api:'device/model_sync',text:'Sync device model mapping'},
    {api:'device/vm_mapping',text:'VM UUID mapping'},
    {api:'master/oui_fetch',text:'Sync OUI database'},
