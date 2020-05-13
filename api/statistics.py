@@ -165,13 +165,13 @@ def process(aCTX, aArgs):
  from rims.devices.generic import Device
  nodes = [x['node'] for x in aCTX.services.values() if x['service'] == 'influxdb']
  report = aCTX.node_function(nodes[0],'statistics','report', aHeader= {'X-Log':'false'})
- reported = 0
+ ret = {'status':'OK','function':'statistics_process','reported':0}
  def __check_sp(aDev):
   try:
    device = Device(aCTX, aDev['device_id'], aDev['ip'])
    if device.data_points(aDev.get('data_points',[]), aDev['interfaces'])['status'] == 'OK':
     report(aArgs = aDev)
-    reported += 1
+    ret['reported'] += 1
   except Exception as e:
    aCTX.log("statistics_process_failed for device: %s =>%s"%(aDev['device_id'],str(e)))
    return False
@@ -179,7 +179,7 @@ def process(aCTX, aArgs):
    return True
 
  aCTX.workers.block_map(__check_sp,aArgs['devices'])
- return {'status':'OK','function':'statistics_process','reported_devices':reported}
+ return ret
 
 #
 #
