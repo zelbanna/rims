@@ -7,31 +7,6 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def update(aCTX, aArgs):
- """Function docstring for update TBD
-
- Args:
-  - device_id (required)
-  - user_id (required)
-  - days (required)
-  - op (required)
-
- Output:
-  - alias
- """
- ret = {}
- op = aArgs['op']
- with aCTX.db as db:
-  if op == 'reserve':
-   ret['insert'] = (db.do("INSERT INTO reservations (device_id,user_id,time_end) VALUES('%(device_id)s','%(user_id)s',NOW() + INTERVAL %(days)s DAY)"%aArgs) == 1)
-  elif op == 'delete':
-   ret['deleted'] = (db.do("DELETE FROM reservations WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"%aArgs) > 0)
-  elif op == 'extend':
-   ret['extended'] = (db.do("UPDATE reservations SET time_end = NOW() + INTERVAL %(days)s DAY WHERE device_id = '%(device_id)s' AND user_id = '%(user_id)s'"%aArgs) == 1)
- return ret
-
-#
-#
 def list(aCTX, aArgs):
  """Function docstring for list TBD
 
@@ -46,6 +21,46 @@ def list(aCTX, aArgs):
   ret['data'] = db.get_rows()
   for res in ret['data']:
    res['valid'] = (res['valid'] == 1)
+ return ret
+
+#
+#
+def new(aCTX, aArgs):
+ """ Function creates a new reservation
+
+ Args:
+ - device_id (required)
+ - info (optional)
+ - shutdown (optional)
+ - days (optional)
+
+ Output:
+ - status
+ """
+ ret = {}
+ with aCTX.db as db:
+  aArgs['shutdown'] = aArgs.get('shutdown','no')
+  try: db.insert_dict('reservations',aArgs)
+  except: ret = 'NOT_OK'
+  else:
+   ret['status'] = 'OK' if (db.do("UPDATE reservations SET time_end = NOW() + INTERVAL %i DAY WHERE device_id = %i"%(aArgs.get('days',14),aArgs['device_id'])) > 0) else 'NOT_OK'
+ return ret
+
+#
+#
+def delete(aCTX, aArgs):
+ """ Function creates a new reservation
+
+ Args:
+ - device_id (required)
+ - user_id (required)
+
+ Output:
+ - status
+ """
+ ret = {}
+ with aCTX.db as db:
+  ret['deleted'] = (db.do("DELETE FROM reservations WHERE device_id = %s"%aArgs['device_id']) > 0)
  return ret
 
 #
@@ -68,7 +83,7 @@ def info(aCTX, aArgs):
  with aCTX.db as db:
   if op == 'update':
    aArgs.pop('alias',None)
-   aArgs['shutdown'] = aArgs.get('shutdown',1)
+   aArgs['shutdown'] = aArgs.get('shutdown','no')
    db.update_dict('reservations',aArgs,"device_id=%s"%id)
   ret['found'] = (db.do("SELECT device_id, user_id, shutdown, info, alias, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS time_end, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS time_start FROM reservations LEFT JOIN users ON users.id = reservations.user_id WHERE device_id = {0}".format(id)) == 1)
   ret['data'] = db.get_row()
@@ -76,20 +91,20 @@ def info(aCTX, aArgs):
 
 #
 #
-def status(aCTX, aArgs):
- """ Function provides reservation status for a device
+def extend(aCTX, aArgs):
+ """ Function extends reservation for device
 
  Args:
-  - device_id (required)
-
+ - device_id (required)
+ - days (optional)
  Output:
-
+ - status
  """
  ret = {}
+ aArgs['days'] = aArgs.get('days',5)
  with aCTX.db as db:
-  ret['reservation'] = db.get_row() if (db.do("SELECT users.alias, reservations.user_id, NOW() < time_end AS valid FROM reservations LEFT JOIN users ON reservations.user_id = users.id WHERE device_id = %s"%aArgs['device_id']) > 0) else None
+  ret['status'] = 'OK' if (db.do("UPDATE reservations SET time_end = NOW() + INTERVAL %(days)s DAY WHERE device_id = %(device_id)s"%aArgs) == 1) else 'NOT_OK'
  return ret
-
 #
 #
 def expiration_status(aCTX, aArgs):

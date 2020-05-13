@@ -48,7 +48,7 @@ class Info extends Component {
   rest_call('api/master/node_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
- searchInfo = () => rest_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.device.hostname, device_id:result.device.id}}))
+ searchInfo = () => rest_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.data.hostname, device_id:result.data.id}}))
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 

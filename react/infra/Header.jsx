@@ -9,6 +9,8 @@ export const MenuButton = (props) => <li className={styles.menuItem}><button cla
 
 export const MenuSeparator = (props) => <li className={styles.menuSeparator}></li>
 
+export const HeaderButton = (props) => <button className={styles.button} onClick={props.onClick} title={props.title}><i className={props.type} style={props.style} /></button>
+
 export class Header extends Component {
  constructor(props){
   super(props)
@@ -38,14 +40,14 @@ export class Header extends Component {
  render(){
   return (<header className={styles.header}>
    <h1 className={styles.title}>{this.props.title}</h1>
-   <button className={styles.button} onClick={() => this.zoomTxt()} title='Zoom'><i className={(this.state.zoom) ? 'fas fa-search-minus' : 'fas fa-search-plus'} /></button>
+   <HeaderButton key={'zoom_'+ this.state.zoom} onClick={() => this.zoomTxt()} title='Zoom' type={(this.state.zoom) ? 'fas fa-search-minus' : 'fas fa-search-plus'} />
    <div className={styles.menu} onMouseLeave={() => this.implodeMenu()}>
-    <button className={styles.button} onClick={() => this.toggleMenu()}><i className='fas fa-bars' style={{transform:(this.state.height === 0)?'rotate(0deg)':'rotate(90deg)'}}/></button>
+    <HeaderButton key={'menu_' + this.state.height} onClick={() => this.toggleMenu()} title='Menu' type='fas fa-bars' style={{transform:(this.state.height === 0)?'rotate(0deg)':'rotate(90deg)'}} />
     <ul className={styles.menuList} style={{maxHeight:`${this.state.height}rem`}} >
      {this.props.children}
     </ul>
    </div>
-   <button className={styles.button} onClick={this.props.logOut} title='Log out'><i className='fas fa-sign-out-alt' /></button>
+   <HeaderButton key='logout' onClick={this.props.logOut} title='Log out' type='fas fa-sign-out-alt' />
   </header>);
  }
 }

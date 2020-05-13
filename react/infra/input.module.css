@@ -9,7 +9,7 @@ TODO: input-color: transparent
 .label { color:var(--std-txt-color); font-weight:bold; padding:2px; text-transform:capitalize; }
 .label[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
 
-.input { -webkit-appearance:none; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:2px; font-size:1rem; overflow:visible }
+.input { -webkit-appearance:none; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; border-radius:2px; font-size:1rem; overflow:visible }
 .input:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0 0 6px -2px var(--high-color), 0 0 3px -1px var(--high-color) inset;}
 .input::-webkit-input-placeholder { color: #9CA6B0; }
 .input::-moz-placeholder { opacity:1; color: #9CA6B0; }
@@ -22,7 +22,7 @@ TODO: input-color: transparent
 
 .textarea { background-color:transparent; height:7rem; width:300px; display:block; font-size:1rem; color:var(--std-txt-color); border:1px solid var(--std-txt-color); }
 
-.searchfield { display:block; width: 99%; height:2rem; margin: 3px 0 3px 0; -webkit-appearance:none; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; z-index:700; border-radius:2px; font-size:1rem; overflow:visible }
+.searchfield { display:block; width: 99%; height:2rem; margin: 3px 0 3px 0; -webkit-appearance:none; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; border-radius:2px; font-size:1rem; overflow:visible }
 .searchfield:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0 0 6px -2px var(--high-color), 0 0 3px -1px var(--high-color) inset;}
 .searchfield::-webkit-input-placeholder { color: #9CA6B0; }
 .searchfield::-moz-placeholder { opacity:1; color: #9CA6B0; }

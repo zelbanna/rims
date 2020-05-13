@@ -364,6 +364,22 @@ def lldp_mapping(aCTX, aArgs):
 
  return {'status':'OK','data':info}
 
+#
+#
+def mac_addresses(aCTX, aArgs):
+ """ Function retrieves mac addresses on interfaces for a device
+
+ Args:
+  - device_id
+
+ Output:
+ """
+ ret = {}
+ from rims.devices.generic import Device
+ device = Device(aCTX, aArgs['device_id'], aArgs.get('ip'))
+ return ret
+
+
 #################################### Monitor #################################
 #
 #

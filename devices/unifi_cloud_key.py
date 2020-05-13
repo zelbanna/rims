@@ -1,6 +1,6 @@
 """Ubiquiti Unifi Device"""
 __author__  = "Zacharias El Banna"
-__type__    = "network"
+__type__    = "wifi_controller"
 __icon__    = "viz-generic.png"
 __oid__     = 8072
 

@@ -389,13 +389,13 @@ def search(aCTX, aArgs):
    url = aCTX.nodes[aArgs['node']]['url']
    arg = url.split(':')[1][2:].split('/')[0]
    if __is_ip(arg):
-    search = "ia.ip = INET_ATON('%s')"%arg
+    search = "LEFT JOIN interfaces AS di ON di.device_id = devices.id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.ip = INET_ATON('%s')"%arg
    else:
-    search = "ia.hostname LIKE '%{0}%' OR CONCAT(ia.hostname,'.',domains.name) LIKE '%{0}%'".format(arg)
+    search = "WHERE devices.hostname LIKE '%{0}%' OR CONCAT(devices.hostname,'.',domains.name) LIKE '%{0}%'".format(arg)
   else:
-   search = "ia.hostname LIKE '%{0}%' OR CONCAT(ia.hostname,'.',domains.name) LIKE '%{0}%'".format(aArgs['hostname'])
-  ret['found'] = (db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN interfaces AS di ON di.device_id = devices.id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE %s"%search) > 0)
-  ret['device']= db.get_row()
+   search = "WHERE devices.hostname LIKE '%{0}%' OR CONCAT(devices.hostname,'.',domains.name) LIKE '%{0}%'".format(aArgs['hostname'])
+  ret['found'] = (db.do("SELECT devices.id, devices.hostname, domains.name AS domain FROM devices LEFT JOIN domains ON domains.id = devices.a_domain_id %s"%search) > 0)
+  ret['data']= db.get_row()
  return ret
 
 #
@@ -601,7 +601,7 @@ def configuration_template(aCTX, aArgs):
  from importlib import import_module
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, devices.hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = ia.a_domain_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aArgs['id'])
+  db.do("SELECT ine.mask,INET_NTOA(ine.gateway) AS gateway,INET_NTOA(ine.network) AS network, INET_NTOA(ia.ip) AS ip, devices.hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_domain_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aArgs['id'])
   data = db.get_row()
  ip = data['ip']
  try:
