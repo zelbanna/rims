@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Result, Spinner, StateLeds, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 import { StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
@@ -16,7 +16,7 @@ export class Main extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/list',{field:'base',search:'hypervisor',extra:['type','functions','url'],sort:'hostname'}).then(result => this.setState(result))
+  post_call('api/device/list',{field:'base',search:'hypervisor',extra:['type','functions','url'],sort:'hostname'}).then(result => this.setState(result))
  }
 
  listItem = (row) => {
@@ -49,7 +49,7 @@ class Sync extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/device/vm_mapping').then(result => {
+  post_call('api/device/vm_mapping').then(result => {
     let entries = [];
     ['existing','inventory','discovered','database'].forEach(type => {
      if (result.hasOwnProperty(type))
@@ -75,7 +75,7 @@ export class Manage extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/management',{id:this.props.device_id}).then(result => {
+  post_call('api/device/management',{id:this.props.device_id}).then(result => {
    this.context.loadNavigation(<NavBar key='hypervisor_navbar'>
     <NavButton key='hyp_nav_inv' title='Inventory' onClick={() => this.changeContent(<Inventory key='hypervisor_inventory' device_id={this.props.device_id} type={this.props.type} />)} />
     <NavButton key='hyp_nav_logs' title='Logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} />
@@ -103,7 +103,7 @@ export class Inventory extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id, sort: this.state.sort}).then(result => this.setState(result))
+  post_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id, sort: this.state.sort}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -143,12 +143,12 @@ class Operation extends Component{
 
  operation = (op) => {
   this.setState({wait:<Spinner />})
-  rest_call('api/'+this.props.type+'/vm_op',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
+  post_call('api/'+this.props.type+'/vm_op',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
  }
 
  snapshot = (op) => {
   this.setState({wait:<Spinner />})
-  rest_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
+  post_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
  }
 
  render(){
@@ -185,15 +185,15 @@ class Info extends Component{
  changeImport = (intf) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key={'interface_info_'+intf[0]} device_id={this.state.data.device_id} class='virtual' mac={intf[1].mac} name={intf[1].name} interface_id={intf[1].interface_id} changeSelf={this.changeContent} />}))
 
  componentDidMount(){
-  rest_call('api/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => this.setState(result))
+  post_call('api/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => this.setState(result))
  }
 
  syncDatabase(){
-  rest_call('api/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'update'}).then(result => this.setState(result))
+  post_call('api/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'update'}).then(result => this.setState(result))
  }
 
  updateInfo(){
-  rest_call('api/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
+  post_call('api/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
  }
 
  interfaceButton(intf){
@@ -248,13 +248,13 @@ class Snapshots extends Component{
 
  snapshot = (op,id) => {
   this.setState({wait:<Spinner />});
-  rest_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op, snapshot:id}).then(result => this.setState({...result, wait:null}));
+  post_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op, snapshot:id}).then(result => this.setState({...result, wait:null}));
  }
 
  deleteList = (id) => {
   if (window.confirm('Really delete snapshot?')){
    this.setState({wait:<Spinner />})
-   rest_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'remove', snapshot:id}).then(result => {
+   post_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'remove', snapshot:id}).then(result => {
     if(result.deleted){
      let highest = 0;
      const data = this.state.data.filter(row => (row.id !== id));

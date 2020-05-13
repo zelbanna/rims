@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput, TextLine, PasswordInput, SelectInput } from './infra/Inputs.jsx';
@@ -13,7 +13,7 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/user_list').then(result => this.setState(result))
+  post_call('api/master/user_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'ul_buttons_'+row.id}>
@@ -22,7 +22,7 @@ export class List extends Component {
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete user?') && rest_call('api/master/user_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete user?') && post_call('api/master/user_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='ul_fragment'>
@@ -46,14 +46,14 @@ export class Info extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  componentDidMount(){
-  rest_call('api/portal/theme_list').then(result => this.setState({themes:result.data}))
-  rest_call('api/master/user_info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/portal/theme_list').then(result => this.setState({themes:result.data}))
+  post_call('api/master/user_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  updateInfo = () => {
   if(this.context.settings.id === this.state.data.id)
    this.context.changeTheme(this.state.data.theme);
-  rest_call('api/master/user_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+  post_call('api/master/user_info',{op:'update', ...this.state.data},{'X-Log':'false'}).then(result => this.setState(result))
  }
 
  render() {

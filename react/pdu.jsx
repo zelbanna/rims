@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, Result } from './infra/UI.jsx';
 import { TextInput, TextLine } from './infra/Inputs.jsx';
 import { HrefButton, ReloadButton, SaveButton, SearchButton, StartButton, StopButton } from './infra/Buttons.jsx';
@@ -9,7 +9,7 @@ import { NavBar, NavButton, NavInfo } from './infra/Navigation.jsx';
 //
 export class Manage extends Component {
  componentDidMount(){
-  rest_call('api/device/hostname',{id:this.props.device_id}).then(result => {
+  post_call('api/device/hostname',{id:this.props.device_id}).then(result => {
    this.context.loadNavigation(<NavBar key='pdu_navbar'>
     <NavInfo key='pdu_nav_name' title={result.data} />
     <NavButton key='pdu_nav_inv' title='Inventory' onClick={() => this.changeContent(<Inventory key='pdu_inventory' device_id={this.props.device_id} type={this.props.type} />)} />
@@ -36,10 +36,10 @@ class Info extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
- lookupSlots = () => rest_call('api/'+this.props.type+'/info',{device_id:this.props.device_id,op:'lookup'}).then(result => this.setState(result))
+ lookupSlots = () => post_call('api/'+this.props.type+'/info',{device_id:this.props.device_id,op:'lookup'}).then(result => this.setState(result))
 
  render(){
   if (this.state.data){
@@ -72,7 +72,7 @@ export class Inventory extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -102,7 +102,7 @@ class Operation extends Component{
 
  operation = (state) => {
   this.setState({wait:<Spinner />})
-  rest_call('api/'+this.props.type+'/op',{device_id:this.props.device_id, slot:this.props.slot, unit:this.props.unit, state:state}).then(result => this.setState({...result, wait:null}));
+  post_call('api/'+this.props.type+'/op',{device_id:this.props.device_id, slot:this.props.slot, unit:this.props.unit, state:state}).then(result => this.setState({...result, wait:null}));
  }
 
  render(){
@@ -128,7 +128,7 @@ class Unit extends Component {
 
  updatePDU = () => {
   this.setState({wait:<Spinner />, info:undefined});
-  rest_call('api/'+this.props.type+'/update',{op:'update',device_id:this.props.device_id,slot:this.props.slot,unit:this.props.unit,text:this.state.text}).then(result => this.setState({...result,wait:null}));
+  post_call('api/'+this.props.type+'/update',{op:'update',device_id:this.props.device_id,slot:this.props.slot,unit:this.props.unit,text:this.state.text}).then(result => this.setState({...result,wait:null}));
  }
 
  render(){

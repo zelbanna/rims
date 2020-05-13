@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, GoButton, InfoButton, ItemsButton, ReloadButton, SaveButton, HrefButton } from './infra/Buttons.jsx';
@@ -52,7 +52,7 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/rack/list',{sort:'name'}).then(result => this.setState(result))
+  post_call('api/rack/list',{sort:'name'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>
@@ -63,7 +63,7 @@ export class List extends Component {
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete rack?') && rest_call('api/rack/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete rack?') && post_call('api/rack/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='rack_fragment'>
@@ -87,10 +87,10 @@ class Info extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () =>  rest_call('api/rack/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  post_call('api/rack/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
-  rest_call('api/rack/info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/rack/info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  render() {
@@ -120,7 +120,7 @@ export class Layout extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/rack/devices',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/rack/devices',{id:this.props.id}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => {
@@ -160,7 +160,7 @@ export class Infra extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/list',{field:'base',search:this.props.type,extra:['type']}).then(result => this.setState(result))
+  post_call('api/device/list',{field:'base',search:this.props.type,extra:['type']}).then(result => this.setState(result))
  }
 
  listItem = (row) => [<HrefButton key={'rinfra_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,

@@ -1,5 +1,5 @@
-export async function rest_call(url = '', args = {}) {
- const response = await fetch(url, { method:'POST', headers: {'Content-Type': 'application/json'}, credentials:'include', body: JSON.stringify(args) })
+export async function post_call(url = '', args = {}, headers = {}) {
+ const response = await fetch(url, { method:'POST', headers: {'Content-Type': 'application/json', ...headers}, credentials:'include', body: JSON.stringify(args) })
  return await response.json();
 }
 

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
@@ -14,12 +14,12 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/server_list',{type:this.props.type}).then(result => this.setState(result))
+  post_call('api/master/server_list',{type:this.props.type}).then(result => this.setState(result))
  }
 
  componentDidUpdate(prevProps){
   if(prevProps !== this.props)
-   rest_call('api/master/server_list',{type:this.props.type}).then(result => this.setState(result))
+   post_call('api/master/server_list',{type:this.props.type}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.node,row.service,row.type,<Fragment key='sl_buttons'>
@@ -29,7 +29,7 @@ export class List extends Component {
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete service?') && rest_call('api/master/server_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete service?') && post_call('api/master/server_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='sl_fragment'>
@@ -51,7 +51,7 @@ class Info extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/server_info',{id:this.props.id}).then(result => {
+  post_call('api/master/server_info',{id:this.props.id}).then(result => {
    if (!result.data.node)
     result.data.node = result.nodes[0];
    if (!result.data.type_id)
@@ -64,7 +64,7 @@ class Info extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () => rest_call('api/master/server_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/master/server_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (!this.state.found)
@@ -99,7 +99,7 @@ class Info extends Component {
 //
 class Operation extends Component {
  componentDidMount(){
-  rest_call('api/master/server_operation',{op:this.props.operation,id:this.props.id}).then(result => this.setState(result))
+  post_call('api/master/server_operation',{op:this.props.operation,id:this.props.id}).then(result => this.setState(result))
  }
 
  render(){

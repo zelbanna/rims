@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { Article, ContentData, ContentList, Result } from './infra/UI.jsx';
 import { BackButton, DeleteButton, EditButton, FixButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton, NetworkButton } from './infra/Buttons.jsx';
 import { TextInput } from './infra/Inputs.jsx';
@@ -31,7 +31,7 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/visualize/list')
+  post_call('api/visualize/list')
    .then((result) => { this.setState(result); })
  }
 
@@ -42,7 +42,7 @@ export class List extends Component {
  </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Delete map?') && rest_call('api/visualize/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Delete map?') && post_call('api/visualize/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='vl_fragment'>
@@ -60,7 +60,7 @@ export class Show extends Component {
 
  componentDidMount(){
   var args = (this.props.hasOwnProperty('id')) ? {id:this.props.id}:{name:this.props.name};
-  rest_call('api/visualize/show',args)
+  post_call('api/visualize/show',args)
    .then(result => {
     var nodes = new window.vis.DataSet(result.data.nodes);
     var edges = new window.vis.DataSet(result.data.edges);
@@ -73,7 +73,7 @@ export class Show extends Component {
  doubleClick = (params) => {
   console.log('DoubleClick',params.nodes);
   if (params.nodes[0]){
-   rest_call('api/device/management',{id:params.nodes[0]}).then(result => {
+   post_call('api/device/management',{id:params.nodes[0]}).then(result => {
     if (result && result.status === 'OK'){
      if(result.data.url && result.data.url.length > 0)
       window.open(result.data.url);
@@ -102,7 +102,7 @@ export class Edit extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/visualize/network',{id:this.props.id,type:this.props.type})
+  post_call('api/visualize/network',{id:this.props.id,type:this.props.type})
    .then((result) => {
     this.viz.nodes = new window.vis.DataSet(result.data.nodes);
     this.viz.edges = new window.vis.DataSet(result.data.edges);
@@ -130,7 +130,7 @@ export class Edit extends Component {
   }
  }
 
- updateInfo = () => rest_call('api/visualize/network',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/visualize/network',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  doubleClick = (params) => {
   console.log('DoubleClick',params.nodes[0]);

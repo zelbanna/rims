@@ -130,18 +130,10 @@ def reload(aCTX, aArgs):
  """ Function reloads all system modules
 
  Args:
-  node (optional)
 
  Output:
  """
- if aArgs.get('node',aCTX.node) != aCTX.node:
-  try:
-   ret = aCTX.node_function(aArgs['node'],'system','reload')(aArgs = aArgs)
-  except Exception as e:
-   ret = {'node':aArgs['node'],'modules':[],'status':'NOT_OK','info':'Remote reload error: %s'%str(e)}
- else:
-  ret = {'node':aCTX.node, 'modules':aCTX.module_reload(),'status':'OK'}
- return ret
+ return {'node':aCTX.node, 'modules':aCTX.module_reload(),'status':'OK'}
 
 #
 #

@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { NavBar, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 import { RimsContext } from './infra/UI.jsx';
 import styles from './infra/ui.module.css';
@@ -13,7 +13,7 @@ export class Main extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/portal/resources',{type:'resource'}).then(result => {
+  post_call('api/portal/resources',{type:'resource'}).then(result => {
    Object.assign(this.state,result);
    this.compileNavItems();
   })

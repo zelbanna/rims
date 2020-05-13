@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HrefButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
@@ -50,7 +50,7 @@ class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/activity_list').then(result => this.setState(result))
+  post_call('api/master/activity_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'act_hinfo_'+row.id} onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />)} text={row.type} />,<Fragment key={'activity_buttons_'+row.id}>
@@ -63,7 +63,7 @@ class List extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- deleteList = (id) => (window.confirm('Delete activity') && rest_call('api/master/activity_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Delete activity') && post_call('api/master/activity_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   if (this.state.data) {
@@ -91,10 +91,10 @@ class Info extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () =>  rest_call('api/master/activity_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  post_call('api/master/activity_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
-  rest_call('api/master/activity_info',{id:this.props.id}).then(result => {
+  post_call('api/master/activity_info',{id:this.props.id}).then(result => {
    if (result.data.user_id === null)
     result.data.user_id = this.context.settings.id;
    this.setState(result);
@@ -128,7 +128,7 @@ export class Report extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/activity_list',{group:'month',mode:'full'}).then(result => this.setState(result))
+  post_call('api/master/activity_list',{group:'month',mode:'full'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.date + ' - ' + row.time,row.user,row.type,row.event]
@@ -147,7 +147,7 @@ class TypeList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/activity_type_list').then(result => this.setState(result))
+  post_call('api/master/activity_type_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.type,<Fragment key='activity_buttons'>
@@ -157,7 +157,7 @@ class TypeList extends Component {
  ]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete type?') && rest_call('api/master/activity_type_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete type?') && post_call('api/master/activity_type_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='act_tp_fragment'>
@@ -183,10 +183,10 @@ class TypeInfo extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () =>  rest_call('api/master/activity_type_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  post_call('api/master/activity_type_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
-  rest_call('api/master/activity_type_info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/master/activity_type_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  render() {

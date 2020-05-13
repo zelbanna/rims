@@ -1,5 +1,5 @@
 import React, { createContext, Component, Fragment } from 'react';
-import { auth_call, rest_call } from './Functions.js';
+import { auth_call, post_call } from './Functions.js';
 import { CloseButton } from './Buttons.jsx';
 import { TextInput, TextLine, TextAreaInput, PasswordInput } from './Inputs.jsx';
 import { Header, MenuButton, MenuSeparator } from './Header.jsx';
@@ -120,7 +120,7 @@ class Theme extends Component {
  }
 
  loadTheme = (theme) => {
-  rest_call('api/portal/theme_info',{theme:theme}).then(result => {
+  post_call('api/portal/theme_info',{theme:theme}).then(result => {
    if(result && result.status === 'OK')
     for (var [param,val] of Object.entries(result.data))
      document.documentElement.style.setProperty(param, val);
@@ -142,7 +142,7 @@ export class Portal extends Component {
 
  componentDidMount() {
   this.props.providerMounting({changeMain:this.changeContent,loadNavigation:this.loadNavigation});
-  rest_call('api/portal/menu',{id:this.context.settings.id}).then(result => {
+  post_call('api/portal/menu',{id:this.context.settings.id}).then(result => {
    if(result && result.status === 'OK'){
     const data = result.data
     this.setState(data);
@@ -208,7 +208,7 @@ export class Login extends Component {
  }
 
  componentDidMount() {
-  rest_call('front').then(result => {
+  post_call('front').then(result => {
    this.setState(result)
    document.title = result.title
   })

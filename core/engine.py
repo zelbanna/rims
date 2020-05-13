@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.3"
-__build__ = 318
+__build__ = 319
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk, stat as osstat
@@ -644,7 +644,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module("rims.api.%s"%mod)
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call("%s/internal/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],query), aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
+    self._body = self._ctx.rest_call("%s/internal/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],api), aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
   except Exception as e:
    if not (isinstance(e.args[0],dict) and e.args[0].get('code')):
     error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))}

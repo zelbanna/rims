@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavReload } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
@@ -17,7 +17,7 @@ export class Main extends Component {
 
  componentDidMount(){
   if (this.props.rack_id)
-   rest_call('api/rack/inventory',{id:this.props.rack_id}).then(result => {
+   post_call('api/rack/inventory',{id:this.props.rack_id}).then(result => {
     Object.assign(this.state,{rack_id:this.props.rack_id, ...result})
     this.compileNavItems();
    })
@@ -116,7 +116,7 @@ class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState(result))
+  post_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -145,7 +145,7 @@ class List extends Component {
   <DeleteButton key={'dl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete device' />
  </Fragment>]
 
- deleteList = (id) => (window.confirm('Really delete device '+id+'?') && rest_call('api/device/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete device '+id+'?') && post_call('api/device/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   if (this.state.data){
@@ -175,7 +175,7 @@ export class Info extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/info',{id:this.props.id, extra:['types','classes']}).then(result => this.setState(result))
+  post_call('api/device/info',{id:this.props.id, extra:['types','classes']}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
@@ -184,16 +184,16 @@ export class Info extends Component {
 
  changeSelf = (elem) => this.props.changeSelf(elem);
 
- updateInfo = () => rest_call('api/device/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/device/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  reload = () => {
   this.setState({rack:undefined,vm:undefined});
-  rest_call('api/device/info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/device/info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  lookupInfo = () => {
   this.setState({content:<Spinner />,result:''})
-  rest_call('api/device/info',{id:this.props.id, op:'lookup'}).then(result => this.setState({...result,content:null}))
+  post_call('api/device/info',{id:this.props.id, op:'lookup'}).then(result => this.setState({...result,content:null}))
  }
 
  changeInterfaces = () => import('./interface.jsx').then(lib => this.changeContent(<lib.List key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />))
@@ -280,14 +280,14 @@ class ManagementInfo extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/extended',{id:this.props.id, extra:['domains']}).then(result => this.setState(result))
+  post_call('api/device/extended',{id:this.props.id, extra:['domains']}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}})
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () => rest_call('api/device/extended',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/device/extended',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (this.state.data && this.state.domains)
@@ -316,12 +316,12 @@ class RackInfo extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/rack',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/device/rack',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}})
 
- updateInfo = () => rest_call('api/device/rack',{op:'update', ...this.state.data}).then(result => this.setState(result));
+ updateInfo = () => post_call('api/device/rack',{op:'update', ...this.state.data}).then(result => this.setState(result));
 
  render() {
   if (this.state.data){
@@ -350,12 +350,12 @@ class PemList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/pem/list',{device_id:this.props.device_id,lookup:true}).then(result => this.setState(result))
+  post_call('api/pem/list',{device_id:this.props.device_id,lookup:true}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- deleteList = (id) => (window.confirm('Really delete PEM?') && rest_call('api/pem/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete PEM?') && post_call('api/pem/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  listItem = (row) => [row.id,row.name,row.pdu_id,row.pdu_name,row.pdu_slot,row.pdu_unit,<Fragment key={'dev_pems_frag_' + row.id}>
   <InfoButton key={'dev_pem_btn_info_' + row.id} onClick={() => this.changeContent(<PemInfo key={'pem_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit PEM information' />
@@ -380,13 +380,13 @@ class PemInfo extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/pem/info',{id:this.props.id, device_id:this.props.device_id}).then(result => this.setState(result))
-  rest_call('api/pdu/list',{device_id:this.props.device_id, empty:true}).then(result => this.setState({pdus:result.data}))
+  post_call('api/pem/info',{id:this.props.id, device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/pdu/list',{device_id:this.props.device_id, empty:true}).then(result => this.setState({pdus:result.data}))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}})
 
- updateInfo = () => rest_call('api/pem/info',{op:'update', ...this.state.data}).then(result => this.setState(result));
+ updateInfo = () => post_call('api/pem/info',{op:'update', ...this.state.data}).then(result => this.setState(result));
 
  render() {
   if (this.state.data && this.state.pdus){
@@ -423,13 +423,13 @@ class StatisticsList extends Component {
   this.loadList()
  }
 
- loadList = (clear) => rest_call('api/statistics/list',{device_id:this.props.device_id}).then(result => this.setState((clear)? {...result,result:'',inserts:''} : result));
+ loadList = (clear) => post_call('api/statistics/list',{device_id:this.props.device_id}).then(result => this.setState((clear)? {...result,result:'',inserts:''} : result));
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- deleteList = (id) => (window.confirm('Really delete statistics point?') && rest_call('api/statistics/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete statistics point?') && post_call('api/statistics/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
- lookupStats = () => rest_call('api/statistics/lookup',{device_id:this.props.device_id}).then(result => { this.setState(result); this.loadList()} )
+ lookupStats = () => post_call('api/statistics/lookup',{device_id:this.props.device_id}).then(result => { this.setState(result); this.loadList()} )
 
  listItem = (row) => [row.id,row.measurement,row.tags,row.name,row.oid,<Fragment key={'dev_stats_frag_' + row.id}>
   <InfoButton key={'dev_stats_btn_info_' + row.id} onClick={() => this.changeContent(<StatisticsInfo key={'statistics_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit data point' />
@@ -455,12 +455,12 @@ class StatisticsInfo extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/statistics/info',{id:this.props.id, device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/statistics/info',{id:this.props.id, device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}})
 
- updateInfo = () => rest_call('api/statistics/info',{op:'update', ...this.state.data}).then(result => this.setState(result));
+ updateInfo = () => post_call('api/statistics/info',{op:'update', ...this.state.data}).then(result => this.setState(result));
 
  render() {
   if (this.state.data){
@@ -488,20 +488,20 @@ class Control extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/control',{id:this.props.id}).then(result => this.setState(result));
+  post_call('api/device/control',{id:this.props.id}).then(result => this.setState(result));
  }
 
  operationDev = (op,msg) => {
   if (window.confirm(msg)){
    this.setState({wait:<Spinner />});
-   rest_call('api/device/control',{id:this.props.id, device_op:op}).then(result => this.setState({...result,wait:null}))
+   post_call('api/device/control',{id:this.props.id, device_op:op}).then(result => this.setState({...result,wait:null}))
   }
  }
 
  operationPem = (id,op,msg) => {
   if (window.confirm(msg)){
    this.setState({wait:<Spinner />});
-   rest_call('api/device/control',{id:this.props.id, pem_op:op, pem_id:id}).then(result => this.setState({...result,wait:null}))
+   post_call('api/device/control',{id:this.props.id, pem_op:op, pem_id:id}).then(result => this.setState({...result,wait:null}))
   }
  }
 
@@ -532,10 +532,10 @@ class Control extends Component {
 //
 export class Logs extends Component {
  componentDidMount(){
-  rest_call('api/device/log_get',{id:this.props.id}).then(result => this.setState(result));
+  post_call('api/device/log_get',{id:this.props.id}).then(result => this.setState(result));
  }
 
- clearLog = () => rest_call('api/device/log_clear',{id:this.props.id}).then(result => (result.deleted && this.setState({data:[]})));
+ clearLog = () => post_call('api/device/log_clear',{id:this.props.id}).then(result => (result.deleted && this.setState({data:[]})));
 
  render() {
   return (!this.state) ? <Spinner /> : <ContentReport key='dev_log_cr' header='Devices' thead={['Time','Message']} trows={this.state.data} listItem={(row) => [row.time,row.message]}>
@@ -548,7 +548,7 @@ export class Logs extends Component {
 //
 class Template extends Component {
  componentDidMount(){
-  rest_call('api/device/configuration_template',{id:this.props.id}).then(result => this.setState(result));
+  post_call('api/device/configuration_template',{id:this.props.id}).then(result => this.setState(result));
  }
 
  render() {
@@ -567,19 +567,19 @@ export class New extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  componentDidMount(){
-  rest_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}))
-  rest_call('api/ipam/network_list').then(result => this.setState({networks:result.data}))
-  rest_call('api/device/class_list').then(result => this.setState({classes:result.data}))
+  post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}))
+  post_call('api/ipam/network_list').then(result => this.setState({networks:result.data}))
+  post_call('api/device/class_list').then(result => this.setState({classes:result.data}))
  }
 
  addDevice = () => {
   if (this.state.data.hostname)
-   rest_call('api/device/new',this.state.data).then(result => this.setState({result:JSON.stringify(result)}))
+   post_call('api/device/new',this.state.data).then(result => this.setState({result:JSON.stringify(result)}))
  }
 
  searchIP = () => {
   if (this.state.data.ipam_network_id)
-   rest_call('api/ipam/address_find',{network_id:this.state.data.ipam_network_id}).then(result => this.setState({data:{...this.state.data, ip:result.ip}}))
+   post_call('api/ipam/address_find',{network_id:this.state.data.ipam_network_id}).then(result => this.setState({data:{...this.state.data, ip:result.ip}}))
  }
 
  render() {
@@ -614,8 +614,8 @@ class Discover extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/ipam/network_list').then(result => this.setState({networks:result.data}))
-  rest_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}))
+  post_call('api/ipam/network_list').then(result => this.setState({networks:result.data}))
+  post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}))
  }
 
  onChange = (e) => this.setState({[e.target.name]:e.target.value});
@@ -624,7 +624,7 @@ class Discover extends Component {
 
  runDiscovery(){
   this.setState({content:<Spinner />})
-  rest_call('api/device/discover',{network_id:this.state.ipam_network_id, a_domain_id:this.state.a_domain_id,if_domain_id:this.state.if_domain_id}).then(result => this.setState({content:<CodeArticle key='dd_result'>{JSON.stringify(result,null,2)}</CodeArticle>}))
+  post_call('api/device/discover',{network_id:this.state.ipam_network_id, a_domain_id:this.state.a_domain_id,if_domain_id:this.state.if_domain_id}).then(result => this.setState({content:<CodeArticle key='dd_result'>{JSON.stringify(result,null,2)}</CodeArticle>}))
  }
 
  render() {
@@ -652,7 +652,7 @@ class Discover extends Component {
 //
 export class Report extends Component {
  componentDidMount(){
-  rest_call('api/device/list', { extra:['system','type','mac','oui','class']}).then(result => this.setState(result))
+  post_call('api/device/list', { extra:['system','type','mac','oui','class']}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,<StateLeds key={'dr_'+row.id} state={row.state} />]
@@ -671,7 +671,7 @@ class TypeList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/type_list').then(result => this.setState(result))
+  post_call('api/device/type_list').then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem});
@@ -697,10 +697,10 @@ class ModelList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/device/model_list').then(result => this.setState({...result,result:'OK'}))
+  post_call('api/device/model_list').then(result => this.setState({...result,result:'OK'}))
  }
 
- syncModels = () => rest_call('api/device/model_list',{op:'sync'}).then(result => this.setState(result))
+ syncModels = () => post_call('api/device/model_list',{op:'sync'}).then(result => this.setState(result))
 
  listItem = (row) => [row.id,row.name,row.type,<Fragment key={'ml_' + row.id}>
   <ConfigureButton key={'ml_btn_info_' + row.id} onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} title='Edit model information' />
@@ -708,7 +708,7 @@ class ModelList extends Component {
  </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete model?') && rest_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete model?') && post_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return (this.state.data) ? <Fragment key='dev_ml_fragment'>
@@ -731,10 +731,10 @@ export class ModelInfo extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () =>  rest_call('api/device/model_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  post_call('api/device/model_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
-  rest_call('api/device/model_info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/device/model_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  render() {
@@ -765,7 +765,7 @@ class OUISearch extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  ouiSearch = () => {
-  rest_call('api/master/oui_info',{oui:this.state.data.oui}).then(result => this.setState({content:<InfoArticle key='oui_art'><InfoColumns key='oui_cont'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.data.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.data.company}</span></InfoColumns></InfoArticle>}))
+  post_call('api/master/oui_info',{oui:this.state.data.oui}).then(result => this.setState({content:<InfoArticle key='oui_art'><InfoColumns key='oui_cont'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.data.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.data.company}</span></InfoColumns></InfoArticle>}))
  }
 
  render() {
@@ -788,7 +788,7 @@ class OUIList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/oui_list').then(result => this.setState(result))
+  post_call('api/master/oui_list').then(result => this.setState(result))
  }
 
  render(){
@@ -800,7 +800,7 @@ class OUIList extends Component {
 //
 class Function extends Component {
  componentDidMount(){
-  rest_call('api/device/function',{op:this.props.op, id:this.props.id, type:this.props.type}).then(result => this.setState(result))
+  post_call('api/device/function',{op:this.props.op, id:this.props.id, type:this.props.type}).then(result => this.setState(result))
  }
 
  render() {

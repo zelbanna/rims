@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import {Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { TextInput, UrlInput } from './infra/Inputs.jsx';
@@ -14,7 +14,7 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/node_list').then(result => this.setState(result))
+  post_call('api/master/node_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
@@ -23,7 +23,7 @@ export class List extends Component {
   </Fragment>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete node?') && rest_call('api/master/node_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete node?') && post_call('api/master/node_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='node_fragment'>
@@ -45,16 +45,16 @@ class Info extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/node_info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/master/node_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
- searchInfo = () => rest_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.data.hostname, device_id:result.data.id}}))
+ searchInfo = () => post_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.data.hostname, device_id:result.data.id}}))
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () =>  rest_call('api/master/node_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  post_call('api/master/node_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (!this.state.found)
@@ -87,7 +87,7 @@ class Info extends Component {
 class Reload extends Component {
 
  componentDidMount(){
-  rest_call('api/system/reload',{node:this.props.node}).then(result => this.setState(result))
+  post_call('api/system/reload?node=' + this.props.node).then(result => this.setState(result))
  }
 
  render(){
@@ -100,7 +100,7 @@ class Reload extends Component {
 class LogClear extends Component {
 
  componentDidMount(){
-  rest_call('api/system/logs_clear?node=' + this.props.node).then(result => this.setState({logs:result.file}))
+  post_call('api/system/logs_clear?node=' + this.props.node).then(result => this.setState({logs:result.file}))
  }
 
  render(){
@@ -113,7 +113,7 @@ class LogClear extends Component {
 export class LogShow extends Component {
 
  componentDidMount(){
-  rest_call('api/system/logs_get?node=' + this.props.node).then(result => this.setState({logs:result}))
+  post_call('api/system/logs_get?node=' + this.props.node).then(result => this.setState({logs:result}))
  }
 
  render(){

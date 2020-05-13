@@ -1,6 +1,5 @@
-
 import React, { Fragment, Component } from 'react'
-import { rest_call, rnd, int2ip } from './infra/Functions.js';
+import { post_call, rnd, int2ip } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton, IpamGreenButton, IpamRedButton } from './infra/Buttons.jsx';
@@ -29,7 +28,7 @@ export class NetworkList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/ipam/network_list').then(result => this.setState(result))
+  post_call('api/ipam/network_list').then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.netasc,row.description,row.service,<Fragment key={'network_buttons_'+row.id}>
@@ -42,9 +41,9 @@ export class NetworkList extends Component {
  ]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete network') && rest_call('api/ipam/network_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete network') && post_call('api/ipam/network_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
- resetStatus = (id) => rest_call('api/ipam/clear',{network_id:id}).then(result => this.setState({result:result.count}))
+ resetStatus = (id) => post_call('api/ipam/clear',{network_id:id}).then(result => this.setState({result:result.count}))
 
  render(){
   return <Fragment key='nl_fragment'>
@@ -70,10 +69,10 @@ class NetworkInfo extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () => rest_call('api/ipam/network_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/ipam/network_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
-  rest_call('api/ipam/network_info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/ipam/network_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  render() {
@@ -104,7 +103,7 @@ class NetworkInfo extends Component {
 class Layout extends Component {
 
  componentDidMount(){
-  rest_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']}).then(result => this.setState({...result, start_address:parseInt(result.network.split('.')[3])}))
+  post_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id']}).then(result => this.setState({...result, start_address:parseInt(result.network.split('.')[3])}))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem)
@@ -140,7 +139,7 @@ class Leases extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/ipam/server_leases',{type:'active'}).then(result => this.setState(result))
+  post_call('api/ipam/server_leases',{type:'active'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.ip,row.mac,row.hostname,row.oui,row.starts,row.ends]
@@ -159,7 +158,7 @@ class AddressList extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/ipam/address_list',{network_id:this.props.network_id,extra:['hostname','a_domain_id','device_id']}).then(result => this.setState(result))
+  post_call('api/ipam/address_list',{network_id:this.props.network_id,extra:['hostname','a_domain_id','device_id']}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem)
@@ -169,7 +168,7 @@ class AddressList extends Component{
    <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
   </Fragment>]
 
- deleteList = (id) => (window.confirm('Delete address?') && rest_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
+ deleteList = (id) => (window.confirm('Delete address?') && post_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
  render(){
   return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
@@ -189,11 +188,11 @@ export class AddressInfo extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () => rest_call('api/ipam/address_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/ipam/address_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
-  rest_call('api/ipam/address_info',{id:this.props.id,network_id:this.props.network_id}).then(result => this.setState(result))
-  rest_call('api/dns/domain_list',{'filter':'forward'}).then(result => this.setState({domains:result.data}))
+  post_call('api/ipam/address_info',{id:this.props.id,network_id:this.props.network_id}).then(result => this.setState(result))
+  post_call('api/dns/domain_list',{'filter':'forward'}).then(result => this.setState({domains:result.data}))
  }
 
  render() {

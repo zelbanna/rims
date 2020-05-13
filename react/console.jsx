@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, InfoArticle, InfoColumns, Spinner, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput } from './infra/Inputs.jsx';
 import { ReloadButton, SaveButton, TermButton } from './infra/Buttons.jsx';
@@ -9,7 +9,7 @@ import { NavBar, NavButton, NavInfo } from './infra/Navigation.jsx';
 //
 export class Manage extends Component {
  componentDidMount(){
-  rest_call('api/device/hostname',{id:this.props.device_id}).then(result => {
+  post_call('api/device/hostname',{id:this.props.device_id}).then(result => {
    this.context.loadNavigation(<NavBar key='cons_navbar'>
     <NavInfo key='cons_nav_name' title={result.data} />
     <NavButton key='cons_nav_inv' title='Inventory' onClick={() => this.changeContent(<Inventory key='cons_inventory' device_id={this.props.device_id} type={this.props.type} />)} />
@@ -36,12 +36,12 @@ class Info extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () => rest_call('api/'+this.props.type+'/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/'+this.props.type+'/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render(){
   if (this.state.data){
@@ -68,7 +68,7 @@ export class Inventory extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})

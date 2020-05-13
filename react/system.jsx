@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Title, Spinner, Article, CodeArticle, LineArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.jsx';
@@ -16,7 +16,7 @@ export class Main extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/system/inventory',{user_id:this.context.settings.id}).then(result => {
+  post_call('api/system/inventory',{user_id:this.context.settings.id}).then(result => {
    Object.assign(this.state,result)
    this.compileNavItems()
   })
@@ -75,7 +75,7 @@ export class Report extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/system/report').then(result => this.setState({data:Object.keys(result).sort((a,b) => a.localeCompare(b)).map(key => ({info:key,value:result[key]})) }))
+  post_call('api/system/report').then(result => this.setState({data:Object.keys(result).sort((a,b) => a.localeCompare(b)).map(key => ({info:key,value:result[key]})) }))
  }
 
  listItem = (row) => [row.info,row.value]
@@ -94,7 +94,7 @@ export class TaskReport extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/master/task_list',{node:this.context.settings.node}).then(result => this.setState(result))
+  post_call('api/master/task_list',{node:this.context.settings.node}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.node,row.frequency,row.module,row.function,row.args]
@@ -114,7 +114,7 @@ class RestList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/system/rest_explore')
+  post_call('api/system/rest_explore')
    .then((result) => {
     var apilist = [];
     result.data.forEach(item => item.functions.forEach(row => apilist.push({api:item.api, function:row})  ) );
@@ -143,7 +143,7 @@ class RestInfo extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/system/rest_information',{api:this.props.api, function:this.props.function}).then(result => this.setState(result))
+  post_call('api/system/rest_information',{api:this.props.api, function:this.props.function}).then(result => this.setState(result))
  }
 
  render() {
@@ -164,7 +164,7 @@ class RestInfo extends Component {
 //
 class RestExecute extends Component {
  componentDidMount(){
-  rest_call('api/' + this.props.api,this.props.args).then(result => this.setState(result))
+  post_call('api/' + this.props.api,this.props.args).then(result => this.setState(result))
  }
 
  render(){
@@ -229,7 +229,7 @@ export class FileList extends Component {
    state = {mode:'fullpath',args:{fullpath:this.props.fullpath},files:undefined}
   else
    state = {mode:'images',args:{},files:undefined}
-  rest_call('api/system/file_list',state.args).then(result => {
+  post_call('api/system/file_list',state.args).then(result => {
    if (result.status === 'OK')
     this.setState({mode:state.mode,...result})
    else {
@@ -266,7 +266,7 @@ class ServiceInfo extends Component {
  updateService(args){
   // Always do a reset (so do a spinner)
   this.setState({spinner:<Spinner />})
-  rest_call('api/system/service_info',{service:this.props.service,...args}).then(result => {
+  post_call('api/system/service_info',{service:this.props.service,...args}).then(result => {
    if (result.status === 'OK')
     this.setState({...result,spinner:null})
    else

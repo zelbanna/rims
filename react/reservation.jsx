@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react';
-import { rest_call } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Spinner, InfoArticle, InfoColumns, LineArticle, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
 import { RadioInput, TextInput, TextLine }  from './infra/Inputs.jsx';
@@ -13,16 +13,16 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/reservation/list').then(result => this.setState({content:null, ...result}))
+  post_call('api/reservation/list').then(result => this.setState({content:null, ...result}))
  }
 
  extendItem = (device_id,user_id,days) => {
-  rest_call('api/reservation/extend',{device_id:device_id, user_id:user_id, days:days}).then(result => this.componentDidMount())
+  post_call('api/reservation/extend',{device_id:device_id, user_id:user_id, days:days}).then(result => this.componentDidMount())
  }
 
  changeContent = (elem) => this.setState({content:elem})
 
- deleteItem = (dev,user) => (window.confirm('Remove reservation?') && rest_call('api/reservation/delete',{device_id:dev, user_id:user}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
+ deleteItem = (dev,user) => (window.confirm('Remove reservation?') && post_call('api/reservation/delete',{device_id:dev, user_id:user}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
 
  listItem = (row) => {
   const buttons = (this.context.settings.id === row.user_id || !row.valid);
@@ -54,15 +54,15 @@ class Info extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/reservation/info',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/reservation/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () =>  rest_call('api/reservation/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  post_call('api/reservation/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  extendItem = (days) => {
-  rest_call('api/reservation/extend',{device_id:this.state.data.device_id, user_id:this.state.data.user_id, days:days}).then(result => result.status === 'OK' && this.componentDidMount())
+  post_call('api/reservation/extend',{device_id:this.state.data.device_id, user_id:this.state.data.user_id, days:days}).then(result => result.status === 'OK' && this.componentDidMount())
  }
 
  render() {
@@ -96,9 +96,9 @@ class New extends Component {
   this.setState({device:e.target.value});
  }
 
- findDevice = () => rest_call('api/device/search',{hostname:this.state.device}).then(result => result.found && this.setState({device_id:result.data.id,matching:result.data.hostname}));
+ findDevice = () => post_call('api/device/search',{hostname:this.state.device}).then(result => result.found && this.setState({device_id:result.data.id,matching:result.data.hostname}));
 
- reserveDevice = () => rest_call('api/reservation/new',{device_id:this.state.device_id,user_id:this.context.settings.id}).then(result => result.status === 'OK' && this.setState({device:'',device_id:undefined,matching:''}));
+ reserveDevice = () => post_call('api/reservation/new',{device_id:this.state.device_id,user_id:this.context.settings.id}).then(result => result.status === 'OK' && this.setState({device:'',device_id:undefined,matching:''}));
 
  render(){
   return <LineArticle key='rsv_art' header='New reservation'>
@@ -119,7 +119,7 @@ export class Report extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/reservation/list',{extended:true}).then(result => this.setState(result))
+  post_call('api/reservation/list',{extended:true}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.alias,row.hostname,row.start,row.end,row.info]

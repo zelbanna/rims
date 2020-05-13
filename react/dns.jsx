@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rnd,  } from './infra/Functions.js';
+import { post_call, rnd,  } from './infra/Functions.js';
 import { Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
@@ -27,14 +27,14 @@ export class DomainList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/dns/domain_list').then(result => {
+  post_call('api/dns/domain_list').then(result => {
    result.result = 'OK';
    this.setState(result);
   })
  }
 
  syncDomains(){
-  rest_call('api/dns/domain_list',{sync:true}).then(result => {
+  post_call('api/dns/domain_list',{sync:true}).then(result => {
    result.result = JSON.stringify(result.result);
    this.setState(result);
   })
@@ -48,7 +48,7 @@ export class DomainList extends Component {
   ]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete domain') && rest_call('api/dns/domain_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete domain') && post_call('api/dns/domain_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   return <Fragment key='dl_fragment'>
@@ -75,10 +75,10 @@ class DomainInfo extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () =>  rest_call('api/dns/domain_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () =>  post_call('api/dns/domain_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  componentDidMount(){
-  rest_call('api/dns/domain_info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/dns/domain_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  render() {
@@ -111,7 +111,7 @@ class Statistics extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/dns/statistics').then(result => {
+  post_call('api/dns/statistics').then(result => {
    const queries = []
    for (let [node,rows] of Object.entries(result.queries)){
     const ns = node.split('_');
@@ -143,7 +143,7 @@ class RecordList extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/dns/record_list',{domain_id:this.props.domain_id}).then(result => this.setState(result))
+  post_call('api/dns/record_list',{domain_id:this.props.domain_id}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem);
@@ -153,7 +153,7 @@ class RecordList extends Component {
    {['A','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + idx} onClick={() => this.deleteList(row.name,row.type)} title='Delete record' />}
   </Fragment>]
 
- deleteList = (name,type) => (window.confirm('Delete record?') && rest_call('api/dns/record_delete', {domain_id:this.props.domain_id,name:name,type:type}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => !(row.name === name && row.type === type))})))
+ deleteList = (name,type) => (window.confirm('Delete record?') && post_call('api/dns/record_delete', {domain_id:this.props.domain_id,name:name,type:type}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => !(row.name === name && row.type === type))})))
 
  render(){
   return <ContentReport key='rl_cr' header='Records' thead={['Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
@@ -180,7 +180,7 @@ class RecordInfo extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () => rest_call('api/dns/record_info',{op:this.state.op, ...this.state.data}).then(result => {
+ updateInfo = () => post_call('api/dns/record_info',{op:this.state.op, ...this.state.data}).then(result => {
    this.setState({op:(result.status === 'OK') ? 'update' : this.state.op, ...result})
  })
 

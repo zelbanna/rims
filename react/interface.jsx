@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { Spinner, StateLeds, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, NetworkButton, DeleteButton,ForwardButton, GoButton, InfoButton, LinkButton, ReloadButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
@@ -13,18 +13,18 @@ export class List extends Component{
  }
 
  componentDidMount(){
-  rest_call('api/interface/list',{device_id:this.props.device_id}).then(result => this.setState(result));
+  post_call('api/interface/list',{device_id:this.props.device_id}).then(result => this.setState(result));
  }
 
  changeContent = (elem) => this.props.changeSelf(elem);
 
- deleteList = (interface_id,name) => (window.confirm('Really delete interface ' + name) && rest_call('api/interface/delete', {interfaces:[interface_id]}).then(result => (result.deleted > 0) && this.setState({data:this.state.data.filter(row => (row.interface_id !== interface_id)),result:JSON.stringify(result.interfaces)})))
+ deleteList = (interface_id,name) => (window.confirm('Really delete interface ' + name) && post_call('api/interface/delete', {interfaces:[interface_id]}).then(result => (result.deleted > 0) && this.setState({data:this.state.data.filter(row => (row.interface_id !== interface_id)),result:JSON.stringify(result.interfaces)})))
 
- cleanUp = () => (window.confirm('Clean up empty interfaces?') && rest_call('api/interface/delete',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
+ cleanUp = () => (window.confirm('Clean up empty interfaces?') && post_call('api/interface/delete',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
- resetStatus = () => rest_call('api/interface/clear',{device_id:this.props.device_id}).then(result => this.componentDidMount())
+ resetStatus = () => post_call('api/interface/clear',{device_id:this.props.device_id}).then(result => this.componentDidMount())
 
- discoverInterfaces = () => (window.confirm('Rediscover interfaces?') && rest_call('api/interface/snmp',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
+ discoverInterfaces = () => (window.confirm('Rediscover interfaces?') && post_call('api/interface/snmp',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
  listItem = (row) => [row.mac,(row.ip) ? row.ip : '-',row.snmp_index,row.name,row.description,row.class,
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
@@ -61,32 +61,32 @@ export class Info extends Component {
  changeContent = (elem) => this.props.changeSelf(elem);
 
  componentDidMount(){
-  rest_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, device_id:this.props.device_id, class:this.props.class, extra:['classes']}).then(result => this.setState(result));
+  post_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, device_id:this.props.device_id, class:this.props.class, extra:['classes']}).then(result => this.setState(result));
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  changeIpam = (id) => import('./ipam.jsx').then(lib => this.changeContent(<lib.AddressInfo key={'address_info_'+id} id={id} />))
 
- deleteIpam = () => (window.confirm('Delete IP mapping?') && rest_call('api/ipam/address_delete',{id:this.state.data.ipam_id}).then(result => ((result.status === 'OK') && this.setState({data:{...this.state.data, ipam_id:null}}))))
+ deleteIpam = () => (window.confirm('Delete IP mapping?') && post_call('api/ipam/address_delete',{id:this.state.data.ipam_id}).then(result => ((result.status === 'OK') && this.setState({data:{...this.state.data, ipam_id:null}}))))
 
- updateInfo = () => rest_call('api/interface/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/interface/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
- updateDNS = () => (window.confirm('Update DNS with device-interface-name') && rest_call('api/ipam/address_info',{op:'update',hostname:this.state.data.name,id:this.state.data.ipam_id}).then(result => this.setState({result:JSON.stringify(result)})))
+ updateDNS = () => (window.confirm('Update DNS with device-interface-name') && post_call('api/ipam/address_info',{op:'update',hostname:this.state.data.name,id:this.state.data.ipam_id}).then(result => this.setState({result:JSON.stringify(result)})))
 
  deviceChange = (e) => {
   this.setState({connect:{...this.state.connect, [e.target.name]:e.target.value}});
   if(e.target.name === 'id' && e.target.value.length > 0)
-   rest_call('api/device/hostname',{id:e.target.value}).then(result => (result && this.setState({connect:{...this.state.connect, found:(result.status === 'OK'), name:(result.status === 'OK') ? result.data : '<N/A>'}})))
+   post_call('api/device/hostname',{id:e.target.value}).then(result => (result && this.setState({connect:{...this.state.connect, found:(result.status === 'OK'), name:(result.status === 'OK') ? result.data : '<N/A>'}})))
  }
 
- stateInterface = () => (this.state.connect.found && rest_call('api/interface/list',{device_id:this.state.connect.id,sort:'name',filter:['connected']}).then(result => this.setState({interfaces:result.data, op:'interface'})))
+ stateInterface = () => (this.state.connect.found && post_call('api/interface/list',{device_id:this.state.connect.id,sort:'name',filter:['connected']}).then(result => this.setState({interfaces:result.data, op:'interface'})))
 
  interfaceChange = (e) => this.setState({connect:{...this.state.connect, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
- connectInterface = () => (this.state.connect.interface_id && rest_call('api/interface/connect',{a_id:this.state.data.interface_id,b_id:this.state.connect.interface_id,map:this.state.connect.map}).then(result => this.setState({connect:{},op:null})))
+ connectInterface = () => (this.state.connect.interface_id && post_call('api/interface/connect',{a_id:this.state.data.interface_id,b_id:this.state.connect.interface_id,map:this.state.connect.map}).then(result => this.setState({connect:{},op:null})))
 
- disconnectInterface = () => (this.state.peer && rest_call('api/interface/connect',{a_id:this.state.data.interface_id,b_id:this.state.peer.interface_id,disconnect:true}).then(result => this.setState({peer:null})))
+ disconnectInterface = () => (this.state.peer && post_call('api/interface/connect',{a_id:this.state.data.interface_id,b_id:this.state.peer.interface_id,disconnect:true}).then(result => this.setState({peer:null})))
 
  stateIpam = () => {
   if (this.state.domains && this.state.networks)
@@ -94,20 +94,20 @@ export class Info extends Component {
   else
    this.setState({op:'wait',ipam:{ip:''}})
   if (!this.state.domains)
-   rest_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}));
+   post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}));
   if (!this.state.networks)
-   rest_call('api/ipam/network_list').then(result => this.setState({networks:result.data,op:'ipam'}));
+   post_call('api/ipam/network_list').then(result => this.setState({networks:result.data,op:'ipam'}));
  }
 
  ipamChange = (e) => this.setState({ipam:{...this.state.ipam, [e.target.name]:e.target.value}});
 
  searchIP = () => {
   if (this.state.ipam.network_id)
-   rest_call('api/ipam/address_find',{network_id:this.state.ipam.network_id}).then(result => this.setState({ipam:{...this.state.ipam, ip:result.ip}}))
+   post_call('api/ipam/address_find',{network_id:this.state.ipam.network_id}).then(result => this.setState({ipam:{...this.state.ipam, ip:result.ip}}))
  }
 
  createIpam = () => {
-  rest_call('api/interface/info',{interface_id:this.props.interface_id, op:'update', ipam_record:this.state.ipam}).then(result => this.setState({...result,op:null}))
+  post_call('api/interface/info',{interface_id:this.props.interface_id, op:'update', ipam_record:this.state.ipam}).then(result => this.setState({...result,op:null}))
  }
 
  render(){
@@ -183,12 +183,12 @@ class ConnectionInfo extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/interface/connection_info',{connection_id:this.props.id}).then(result => this.setState(result));
+  post_call('api/interface/connection_info',{connection_id:this.props.id}).then(result => this.setState(result));
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
- updateInfo = () => rest_call('api/interface/connection_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/interface/connection_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render(){
   if(this.state.interfaces){
@@ -214,7 +214,7 @@ class LLDP extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/interface/lldp_mapping',{device_id:this.props.device_id}).then(result => this.setState({data:Object.values(result.data)}))
+  post_call('api/interface/lldp_mapping',{device_id:this.props.device_id}).then(result => this.setState({data:Object.values(result.data)}))
  }
 
  listItem = (row) => [row.chassis_id,row.chassis_type,row.sys_name,row.port_id,row.port_type,row.port_desc,row.snmp_index,row.snmp_name,row.connection_id,row.status]

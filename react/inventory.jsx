@@ -1,5 +1,5 @@
 import React, { Fragment, Component } from 'react'
-import { rest_call, rnd } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Spinner, LineArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SearchInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, HrefButton } from './infra/Buttons.jsx';
@@ -46,7 +46,7 @@ class List extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/inventory/list',this.props.args).then(result => this.setState(result))
+  post_call('api/inventory/list',this.props.args).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.serial,row.model,<Fragment key={'inventory_buttons_'+row.id}>
@@ -56,7 +56,7 @@ class List extends Component {
 
  searchHandler = (e) => this.setState({searchfield:e.target.value})
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete item') && rest_call('api/inventory/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete item') && post_call('api/inventory/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
   if (!this.state.data)
@@ -105,14 +105,14 @@ export class Info extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/inventory/info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/inventory/info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
  changeContent = (elem) => this.setState({content:elem})
 
- updateInfo = () => rest_call('api/inventory/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/inventory/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render() {
   if (this.state.data){
@@ -150,7 +150,7 @@ class Vendor extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/inventory/vendor_list').then(result => this.setState(result))
+  post_call('api/inventory/vendor_list').then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem);
@@ -174,7 +174,7 @@ export class Report extends Component {
  }
 
  componentDidMount(){
-  rest_call('api/inventory/list', { extra:['vendor','product','description'], sort:'vendor'}).then(result => this.setState(result))
+  post_call('api/inventory/list', { extra:['vendor','product','description'], sort:'vendor'}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.serial,row.vendor,row.model,row.product,row.description]
