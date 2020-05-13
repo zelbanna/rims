@@ -387,7 +387,7 @@ CREATE TABLE `reservations` (
   `time_start` timestamp NOT NULL DEFAULT current_timestamp(),
   `time_end` timestamp NOT NULL DEFAULT current_timestamp(),
   `info` varchar(150) NOT NULL DEFAULT '',
-  `shutdown` tinyint(1) NOT NULL DEFAULT 0,
+  `shutdown` enum('no','yes','reset') DEFAULT NULL,
   PRIMARY KEY (`device_id`,`user_id`),
   KEY `fk_user` (`user_id`),
   CONSTRAINT `reservations_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
