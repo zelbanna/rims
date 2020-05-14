@@ -610,18 +610,10 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  #
- def api(self,query,id):
-  """ API serves the REST functions x.y.z.a:<port>/api/module/function
-   - extra arguments can be sent as GET or using headers (using X-prefix in the latter case): node
-  """
-  extras = {}
-  (api,_,get) = query.partition('?')
-  (mod,_,fun) = api.partition('/')
-  self._ctx.analytics('modules',mod,fun)
-  for part in get.split("&"):
-   (k,_,v) = part.partition('=')
-   extras[k] = v
-  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',extras.get('node',self._ctx.node if not mod == 'master' else 'master'))})
+ def api(self,api,id):
+  """ API serves the REST functions x.y.z.a:<port>/api/module/function """
+  (mod,_,fun) = api.rpartition('/')
+  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if not mod == 'master' else 'master')})
   try:
    length = int(self.headers.get('Content-Length',0))
    if length > 0:
@@ -633,15 +625,17 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:  args = {}
   except: args = {}
   if self._ctx.config['logging']['rest']['enabled'] and self.headers.get('X-Log','true') == 'true':
-   logstring = str("%s: %s '%s' %s@%s(%s)\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", id, self._ctx.node, get.strip()))
+   logstring = str("%s: %s '%s' %s@%s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", id, self._headers['X-Route']))
    if self._ctx.config['logging']['rest']['enabled'] == 'debug':
     stdout.write(logstring)
    else:
     with open(self._ctx.config['logging']['rest']['file'], 'a') as f:
      f.write(logstring)
   try:
+   self._ctx.analytics('modules',mod,fun)
    if self._headers['X-Route'] == self._ctx.node:
-    module = import_module("rims.api.%s"%mod)
+    mod = '.'.join(['rims.api',mod.replace('/','.')])
+    module = import_module(mod)
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
     self._body = self._ctx.rest_call("%s/internal/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],api), aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')

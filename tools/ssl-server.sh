@@ -11,6 +11,6 @@ read
 openssl req -new -key ../ssl/$1-key.pem -out ../ssl/$1.csr
 
 echo "********************* CA signing ************************"
-#openssl x509 -req -days 365 -in ../ssl/$1.csr -CA ../CA-cert.pem -CAkey ../CA-key.pem -CAcreateserial -out ../ssl/$1-cert.pem
-openssl x509 -req -days 365 -in ../ssl/$1.csr -CA ../CA-cert.pem -CAkey ../CA.key -CAcreateserial -out ../ssl/$1-cert.pem
+#openssl x509 -req -days 365 -in ../ssl/$1.csr -CA ../ca/CA-cert.pem -CAkey ../ca/CA-key.pem -CAcreateserial -out ../ssl/$1-cert.pem
+openssl x509 -req -days 365 -in ../ssl/$1.csr -CA ../ca/CA-cert.pem -CAkey ../ca/CA.key -CAcreateserial -out ../ssl/$1-cert.pem
 rm ../ssl/$1.csr

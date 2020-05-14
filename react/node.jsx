@@ -87,7 +87,7 @@ class Info extends Component {
 class Reload extends Component {
 
  componentDidMount(){
-  post_call('api/system/reload?node=' + this.props.node).then(result => this.setState(result))
+  post_call('api/system/reload',{},{'X-Route':this.props.node}).then(result => this.setState(result))
  }
 
  render(){
@@ -100,7 +100,7 @@ class Reload extends Component {
 class LogClear extends Component {
 
  componentDidMount(){
-  post_call('api/system/logs_clear?node=' + this.props.node).then(result => this.setState({logs:result.file}))
+  post_call('api/system/logs_clear',{},{'X-Route':this.props.node}).then(result => this.setState({logs:result.file}))
  }
 
  render(){
@@ -113,7 +113,7 @@ class LogClear extends Component {
 export class LogShow extends Component {
 
  componentDidMount(){
-  post_call('api/system/logs_get?node=' + this.props.node).then(result => this.setState({logs:result}))
+  post_call('api/system/logs_get',{},{'X-Route':this.props.node}).then(result => this.setState({logs:result}))
  }
 
  render(){

@@ -27,6 +27,8 @@ def rest_call(aURL, **kwargs):
    args = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
   elif head['Content-Type'] == 'application/octet-stream':
    args = kwargs['aArgs'] if kwargs.get('aArgs') else None
+  elif head['Content-Type'] == 'application/xml':
+   args = kwargs['aArgs'].encode('utf-8') if kwargs.get('aArgs') else None
   elif head['Content-Type'] == 'application/x-www-form-urlencoded':
    args = urlencode(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
   else:
