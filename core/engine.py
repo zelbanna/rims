@@ -182,14 +182,14 @@ class Context(object):
  #
  def node_function(self, aNode, aModule, aFunction, **kwargs):
   """
-  Node function freezes a REST call or a function with enough info so that they can be used multiple times AND interchangably.
-  For this to work smoothly the argument to the function will have to be **kwargs because rest_call picks everything from kwargs
+  Node function freezes a function (or convert to a REST call at node) with enough info so that the returned lambda can be used multiple times AND interchangably.
+  For this to work the argument to the function will have to be keyworded/**kwargs because if using REST then rest_call function picks everything from kwargs
   """
   if self.node != aNode:
    kwargs['aDataOnly'] = True
    kwargs['aHeader'] = kwargs.get('aHeader',{})
    kwargs['aHeader']['X-Token'] = self.token
-   try: ret = partial(self.rest_call,"%s/internal/%s/%s"%(self.nodes[aNode]['url'],aModule,aFunction), **kwargs)
+   try: ret = partial(self.rest_call,"%s/internal/%s/%s"%(self.nodes[aNode]['url'],aModule.replace('.','/'),aFunction), **kwargs)
    except Exception as e:
     self.log("Node Function REST failure: %s/%s@%s (%s) => %s"%(aModule,aFunction,aNode,dumps(kwargs),str(e)))
     ret = {'status':'NOT_OK','info':'NODE_FUNCTION_FAILURE: %s'%str(e)}
@@ -634,8 +634,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   try:
    self._ctx.analytics('modules',mod,fun)
    if self._headers['X-Route'] == self._ctx.node:
-    mod = '.'.join(['rims.api',mod.replace('/','.')])
-    module = import_module(mod)
+    module = import_module('rims.api.%s'%mod.replace('/','.'))
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
     self._body = self._ctx.rest_call("%s/internal/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],api), aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')

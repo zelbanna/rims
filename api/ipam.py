@@ -179,10 +179,8 @@ def server_leases(aCTX, aArgs):
  Output:
  """
  ret = {'data':[],'type':aArgs.get('type','active')}
- servers = [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'DHCP']
- ret['servers'] = len(servers)
- for srv in servers:
-  data = aCTX.node_function(srv['node'],srv['service'],'status')(aArgs = {'binding':ret['type']})['data']
+ for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'DHCP']:
+  data = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'status')(aArgs = {'binding':ret['type']})['data']
   if data:
    ret['data'].extend(data)
  oui_s = ",".join(set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']]))

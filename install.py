@@ -116,13 +116,13 @@ if config['id'] == 'master':
  #
  # Service types
  #
- srvdir = ospath.abspath(ospath.join(pkgdir,'api'))
+ srvdir = ospath.abspath(ospath.join(pkgdir,'api','services'))
  service_types = []
  for file in listdir(srvdir):
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("rims.api.%s"%(pyfile))
+    mod = import_module("rims.api.services.%s"%(pyfile))
     type = getattr(mod,'__type__',None)
    except: pass
    else:

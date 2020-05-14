@@ -24,8 +24,8 @@ def domain_list(aCTX, aArgs):
  with aCTX.db as db:
   if aArgs.get('sync',False):
    org = {}
-   for server in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']:
-    org[server['id']] = aCTX.node_function(server['node'],server['service'],'domain_list')(aArgs = {})
+   for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']:
+    org[infra['id']] = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
    ret.update({'result':{'added':[],'deleted':[],'type_fix':0}})
    db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
    cache = db.get_dict('srv_id')
@@ -77,7 +77,7 @@ def domain_info(aCTX, aArgs):
    if infra:
     ret['infra'] = db.get_row()
     aArgs['id']  = ret['infra']['foreign_id']
-    ret.update(aCTX.node_function(ret['infra']['node'],ret['infra']['service'],'domain_info')(aArgs = aArgs))
+    ret.update(aCTX.node_function(ret['infra']['node'],"services.%s"%ret['infra']['service'],'domain_info')(aArgs = aArgs))
     if ret.get('insert'):
      ret['cache'] = (db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']}) > 0)
      ret['infra']['foreign_id'] = ret['data']['id']
@@ -103,7 +103,7 @@ def domain_delete(aCTX, aArgs):
  with aCTX.db as db:
   db.do("SELECT servers.id, foreign_id, domains.type, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
-  ret = aCTX.node_function(infra['node'],infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
+  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
   ret['local'] = db.do("UPDATE ipam_addresses SET a_domain_id = NULL WHERE a_domain_id = %i"%id)
   ret['networks'] = db.do("UPDATE ipam_networks SET reverse_zone_id = NULL WHERE reverse_zone_id = %i"%id)
   ret['cache'] = (db.do("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id'])) > 0) if ret['deleted'] else False
@@ -168,7 +168,7 @@ def record_list(aCTX, aArgs):
   # Strictly internal use - this one fetch all records for consistency check
   infra = aCTX.services.get(aArgs['server_id'])
   aArgs.pop('server_id',None)
- ret = aCTX.node_function(infra['node'],infra['service'],'record_list')(aArgs = aArgs)
+ ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_list')(aArgs = aArgs)
  ret['domain_id'] = aArgs.get('domain_id',0)
  return ret
 
@@ -197,7 +197,7 @@ def record_info(aCTX, aArgs):
    db.do("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
-  ret = aCTX.node_function(infra['node'],infra['service'],'record_info')(aArgs = aArgs)
+  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_info')(aArgs = aArgs)
   if ret.get('data'):
    ret['data']['domain_id'] = domain_id
   ret['status'] = ret.get('status','OK')
@@ -219,7 +219,7 @@ def record_delete(aCTX, aArgs):
   db.do("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
   infra = db.get_row()
  aArgs['domain_id'] = infra['foreign_id']
- return aCTX.node_function(infra['node'],infra['service'],'record_delete')(aArgs = aArgs)
+ return aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_delete')(aArgs = aArgs)
 
 ###################################### Tools ####################################
 #
@@ -237,7 +237,7 @@ def statistics(aCTX, aArgs):
  ret = {'queries':{},'remotes':{}}
  args = {'count':aArgs.get('count',20)}
  for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
-  res = aCTX.node_function(infra['node'],infra['service'],'statistics')(aArgs = args)
+  res = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'statistics')(aArgs = args)
   ret['queries']["%(node)s_%(service)s"%infra] = res['queries']
   ret['remotes']["%(node)s_%(service)s"%infra] = res['remotes']
  return ret
@@ -255,7 +255,7 @@ def sync(aCTX, aArgs):
  # INTERNAL from rims.api.dns import domain_forwarders
  domains = domain_forwarders(aCTX,{})['data']
  for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
-  res = aCTX.node_function(infra['node'],infra['service'],'sync')(aArgs = {'domains':domains})
+  res = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'sync')(aArgs = {'domains':domains})
   if res['status'] == 'OK':
    ret['added'].extend(res['added'])
    ret['removed'].extend(res['removed'])

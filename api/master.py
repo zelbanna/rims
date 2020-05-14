@@ -374,8 +374,8 @@ def server_operation(aCTX, aArgs):
 
  Output:
  """
- server = aCTX.services[int(aArgs['id'])]
- try:  ret = aCTX.node_function(server['node'],server['service'],aArgs['op'])(aArgs = {'id':aArgs['id']})
+ infra = aCTX.services[int(aArgs['id'])]
+ try:  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],aArgs['op'])(aArgs = {'id':aArgs['id']})
  except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else: ret['status'] = ret.get('status','NOT_OK')
  return ret

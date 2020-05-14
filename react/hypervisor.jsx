@@ -103,7 +103,7 @@ export class Inventory extends Component{
  }
 
  componentDidMount(){
-  post_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id, sort: this.state.sort}).then(result => this.setState(result))
+  post_call('api/devices/' + this.props.type + '/inventory',{device_id:this.props.device_id, sort: this.state.sort}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -143,12 +143,12 @@ class Operation extends Component{
 
  operation = (op) => {
   this.setState({wait:<Spinner />})
-  post_call('api/'+this.props.type+'/vm_op',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
+  post_call('api/devices/'+this.props.type+'/vm_op',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
  }
 
  snapshot = (op) => {
   this.setState({wait:<Spinner />})
-  post_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
+  post_call('api/devices/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op}).then(result => this.setState({...result, wait:null}));
  }
 
  render(){
@@ -185,15 +185,15 @@ class Info extends Component{
  changeImport = (intf) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key={'interface_info_'+intf[0]} device_id={this.state.data.device_id} class='virtual' mac={intf[1].mac} name={intf[1].name} interface_id={intf[1].interface_id} changeSelf={this.changeContent} />}))
 
  componentDidMount(){
-  post_call('api/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => this.setState(result))
+  post_call('api/devices/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => this.setState(result))
  }
 
  syncDatabase(){
-  post_call('api/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'update'}).then(result => this.setState(result))
+  post_call('api/devices/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'update'}).then(result => this.setState(result))
  }
 
  updateInfo(){
-  post_call('api/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
+  post_call('api/devices/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
  }
 
  interfaceButton(intf){
@@ -248,13 +248,13 @@ class Snapshots extends Component{
 
  snapshot = (op,id) => {
   this.setState({wait:<Spinner />});
-  post_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op, snapshot:id}).then(result => this.setState({...result, wait:null}));
+  post_call('api/devices/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:op, snapshot:id}).then(result => this.setState({...result, wait:null}));
  }
 
  deleteList = (id) => {
   if (window.confirm('Really delete snapshot?')){
    this.setState({wait:<Spinner />})
-   post_call('api/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'remove', snapshot:id}).then(result => {
+   post_call('api/devices/'+this.props.type+'/vm_snapshot',{device_id:this.props.device_id, vm_id:this.props.vm_id, op:'remove', snapshot:id}).then(result => {
     if(result.deleted){
      let highest = 0;
      const data = this.state.data.filter(row => (row.id !== id));

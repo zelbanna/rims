@@ -36,12 +36,12 @@ class Info extends Component{
  }
 
  componentDidMount(){
-  post_call('api/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/devices/'+this.props.type+'/info',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () => post_call('api/'+this.props.type+'/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/devices/'+this.props.type+'/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
  render(){
   if (this.state.data){
@@ -68,7 +68,7 @@ export class Inventory extends Component{
  }
 
  componentDidMount(){
-  post_call('api/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
+  post_call('api/devices/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.setState({content:elem})
