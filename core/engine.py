@@ -102,15 +102,15 @@ class Context(object):
     for task in environment['tasks']:
      task['output'] = (task['output']== 'true')
     db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
-    db.do("SELECT user_id, token, created + INTERVAL 5 DAY as expires FROM user_tokens ORDER BY created DESC")
-    environment['tokens'] = {x['token']:{'id':x['user_id'],'expires':x['expires']} for x in db.get_rows()}
+    db.do("SELECT user_id, token, created + INTERVAL 5 DAY as expires, INET_NTOA(source_ip) AS ip FROM user_tokens ORDER BY created DESC")
+    environment['tokens'] = {x['token']:{'id':x['user_id'],'expires':x['expires'].replace(tzinfo=timezone.utc),'ip':x['ip']} for x in db.get_rows()}
    environment['version'] = __version__
    environment['build'] = __build__
   else:
    environment = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
    environment['nodes']['master']['url'] = self.config['master']
    for k,v in environment['tokens'].items():
-    v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S GMT")
+    v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S %Z")
   return environment
 
  #
@@ -171,7 +171,7 @@ class Context(object):
    data = self.report()
    data.update(self.config)
    data['services'] = self.services
-   data['tokens'] = {k:{'id':v['id'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")} for k,v in self.tokens.items()}
+   data['tokens'] = {k:{'id':v['id'],'ip':v['ip'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")} for k,v in self.tokens.items()}
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
 
  #
@@ -265,6 +265,10 @@ class Context(object):
     for i,c in item.items():
      output['Access: %s/%s'%(group,i)] = c
   return output
+
+ #
+ def house_keeping(self):
+  print("House Keeping")
 
 ########################################## WorkerPool ########################################
 #
@@ -652,7 +656,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def auth(self):
-  """ Authenticate using node function """
+  """ Authenticate using node function. """
   self._headers.update({'Content-type':'application/json; charset=utf-8','X-Code':401,'Access-Control-Allow-Origin':"*"})
   output = {'status':'NOT_OK'}
   try:
@@ -671,9 +675,13 @@ class SessionHandler(BaseHTTPRequestHandler):
     if 'verify' in args:
      if (self._ctx.tokens.get(token)):
       entry = self._ctx.tokens[token]
+      # Check if client moved, update local table then...
+      if entry['ip'] != args.get('ip',self.client_address[0]):
+       entry['ip'] = args.get('ip',self.client_address[0])
       output['id'] = entry['id']
       output['token'] = token
-      output['expires'] = entry['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
+      output['expires'] = entry['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")
+      output['ip'] = entry['ip']
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     elif 'destroy' in args:
@@ -685,21 +693,29 @@ class SessionHandler(BaseHTTPRequestHandler):
      passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
      with self._ctx.db as db:
       if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
-       output.update(db.get_row())
-       output['token'] = random_string(16)
-       db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%s,'%s',INET_ATON('%s'))"%(output['id'],output['token'],self.client_address[0]))
        expires = datetime.now(timezone.utc) + timedelta(days=5)
-       self._ctx.tokens[output['token']] = {'id':output['id'],'expires':expires}
-       output['expires'] = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
+       output.update(db.get_row())
+       output.update({'ip':args.get('ip',self.client_address[0]),'expires':expires.strftime("%a, %d %b %Y %H:%M:%S %Z")})
+       for k,v in self._ctx.tokens.items():
+        if v['id'] == output['id'] and v['ip'] == output['ip']:
+         output['token'] = k
+         v['expires'] = expires
+         db.do("UPDATE user_tokens SET created = NOW() WHERE token = '%s'"%k)
+         break
+       else:
+        output['token'] = random_string(16)
+        db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET_ATON('%(ip)s'))"%output)
+        self._ctx.tokens[output['token']] = {'id':output['id'],'expires':expires,'ip':output['ip']}
        output['status'] = 'OK'
        self._headers['X-Code'] = 200
       else:
        output['info'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
    else:
     try:
+     args['ip'] = self.client_address[0]
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
      if not 'destroy' in args:
-      self._ctx.tokens[output['token']] = {'id':output['id'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S GMT")}
+      self._ctx.tokens[output['token']] = {'id':output['id'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S %Z"),'ip':output['ip']}
       self._headers['X-Code'] = 200
      elif output['status'] == 'OK':
       self._ctx.tokens.pop(args['destroy'],None)
