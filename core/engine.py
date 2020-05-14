@@ -10,6 +10,7 @@ from json import loads, load, dumps
 from importlib import import_module, reload as reload_module
 from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
 from time import localtime, time, sleep, strftime
+from gc import collect as garbage_collect
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
 from ssl import SSLContext, SSLError, PROTOCOL_TLS_SERVER, PROTOCOL_SSLv23
@@ -130,7 +131,8 @@ class Context(object):
     try:    freq = int(task.pop('frequency'))
     except: freq = 0
     self.log("Adding task: %(module)s/%(function)s"%task)
-    self.workers.schedule_task(task['module'],task['function'],freq, args = loads(task['args']), output = (task['output'] in ['true',True]))
+    self.workers.schedule_api_task(task['module'],task['function'],freq, args = loads(task['args']), output = (task['output'] in ['true',True]))
+   self.workers.schedule_function(self.house_keeping, 'ctx_house_keeping', 10, 3600)
    if __build__ != system['build']:
     self.log("Build mismatch between master and node: %s != %s"%(__build__,system['build']))
    return True
@@ -147,7 +149,7 @@ class Context(object):
    print("Starting error - check IP and SSL settings: %s"%str(e))
    return False
   else:
-   self.log("______ REST server workers started ______")
+   self.log("Server workers started")
    return True
 
  #
@@ -249,7 +251,6 @@ class Context(object):
   'Workers queue':self.workers.queue_size(),
   'Servers':self.workers.servers(),
   'Database':', '.join("%s:%s"%(k.lower(),v) for k,v in db_counter.items()),
-  # 'OS path':', ' .join(syspath),
   'OS pid':getpid()}
   if self.config.get('database'):
    with self.db as db:
@@ -267,8 +268,20 @@ class Context(object):
   return output
 
  #
+ #
  def house_keeping(self):
-  print("House Keeping")
+  """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
+  ret = {}
+  now = datetime.now(timezone.utc)
+  expired = []
+  for k,v in self.tokens.items():
+   if now > v['expires']:
+    expired.append(k)
+  ret['expired'] = len(expired)
+  for t in expired:
+   self.tokens.pop(t,None)
+  ret['collected'] = garbage_collect()
+  return ret
 
 ########################################## WorkerPool ########################################
 #
@@ -369,12 +382,14 @@ class WorkerPool(object):
 
   servers = 0
   if (self._ctx.config.get('port')):
+   self._ctx.log("Starting HTTP server at: %s"%self._ctx.config['port'])
    addr,sock = create_socket(int(self._ctx.config['port']))
    self._sock = sock
    self._servers.extend(self.ServerWorker(n,addr,sock,self._ctx) for n in range(servers,servers+4))
    servers = 4
   if (self._ctx.config.get('ssl')):
    ssl_config = self._ctx.config['ssl']
+   self._ctx.log("Starting HTTPS server at: %s"%ssl_config['port'])
    context = SSLContext(PROTOCOL_SSLv23)
    context.load_cert_chain(ssl_config['certfile'], keyfile=ssl_config['keyfile'], password=ssl_config.get('password'))
    addr,ssock = create_socket(int(ssl_config['port']))
@@ -442,7 +457,10 @@ class WorkerPool(object):
 
  ####################### TASKs ###########################
  #
- def schedule_task(self, aModule, aFunction, aFrequency = 0, **kwargs):
+ def schedule_api(self, aFunction, aName, aDelay, aFrequency = 0, **kwargs):
+  self._scheduler.add_delayed((aFunction, True, None, kwargs.get('output',False), kwargs.get('args',{}), None), aName, aDelay, aFrequency)
+
+ def schedule_api_task(self, aModule, aFunction, aFrequency = 0, **kwargs):
   try:
    mod = import_module("rims.api.%s"%aModule)
    func = getattr(mod, aFunction, None)
@@ -456,11 +474,12 @@ class WorkerPool(object):
     self._queue.put((func, True, None, kwargs.get('output',False), kwargs.get('args',{}), None))
    return True
 
- def schedule_periodic_function(self, aFunction, aName, aFrequency, **kwargs):
+ def schedule_api_periodic(self, aFunction, aName, aFrequency, **kwargs):
   self._scheduler.add_periodic((aFunction, True, None, kwargs.get('output',False), kwargs.get('args',{}), None), aName, aFrequency)
 
  def schedule_function(self, aFunction, aName, aDelay, aFrequency = 0, **kwargs):
-  self._scheduler.add_delayed((aFunction, True, None, kwargs.get('output',False), kwargs.get('args',{}), None), aName, aDelay, aFrequency)
+  self._scheduler.add_delayed((aFunction, False, None, kwargs.pop('output',False), kwargs.pop('args',{}), kwargs), aName, aDelay, aFrequency)
+
 
 ###################################### Session Handler ######################################
 #
@@ -527,8 +546,8 @@ class SessionHandler(BaseHTTPRequestHandler):
     elif ftype == 'css':
      self._headers.update({'Content-type':'text/css; charset=utf-8','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
     elif ftype == 'html':
-     self._headers['Content-type']='text/html; charset=utf-8'
-     #self._headers.update({'Content-type':'text/html; charset=utf-8','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
+     # self._headers['Content-type']='text/html; charset=utf-8'
+     self._headers.update({'Content-type':'text/html; charset=utf-8','Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
     else:
      self._headers.update({'Cache-Control':'public, max-age=0','ETag':'W/"%s"'%__build__})
     try:

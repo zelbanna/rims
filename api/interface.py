@@ -418,7 +418,7 @@ def check(aCTX, aArgs):
 
  if 'repeat' in aArgs:
   # INTERNAL from rims.api.interface import process
-  aCTX.workers.schedule_periodic_function(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
+  aCTX.workers.schedule_api_periodic(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
   return {'status':'OK','info':'INTERFACE_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
  else:
   # INTERNAL from rims.api.interface import process

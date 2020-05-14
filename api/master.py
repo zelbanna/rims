@@ -544,7 +544,7 @@ def task_add(aCTX, aArgs):
    db.do("INSERT INTO tasks (node_id, module, function, args, frequency, output) VALUES(%s,'%s','%s','%s',%i,'%s')"%(aCTX.nodes[node]['id'],aArgs['module'],aArgs['function'],dumps(aArgs.get('args',{})),freq,'true' if aArgs.get('output',False) else 'false'))
  # activate
  if node == 'master':
-  ret['status'] = 'OK' if aCTX.workers.schedule_task(aArgs['module'],aArgs['function'],freq, output = aArgs.get('output',False), args = aArgs.get('args',{})) else 'NOT_OK'
+  ret['status'] = 'OK' if aCTX.workers.schedule_api_task(aArgs['module'],aArgs['function'],freq, output = aArgs.get('output',False), args = aArgs.get('args',{})) else 'NOT_OK'
  else:
   try: ret.update(aCTX.node_function(node,'system','worker')(aArgs = aArgs))
   except Exception as e:

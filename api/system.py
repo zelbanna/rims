@@ -27,19 +27,6 @@ def memory_objects(aCTX, aArgs):
  """
  from gc import get_objects
  return {'objects':len(get_objects())}
-
-#
-#
-def garbage_collect(aCTX, aArgs):
- """Function garbage_collect performs a garbage collection
-
- Args:
-
- Output:
- """
- from gc import collect
- return {'collected':collect()}
-
 #
 #
 def sleep(aCTX, aArgs):
@@ -399,7 +386,7 @@ def worker(aCTX, aArgs):
   - result
  """
  if all(i in aArgs for i in ['module','function']):
-  aCTX.workers.schedule_task(aArgs['module'],aArgs['function'],int(aArgs.get('frequency',0)), output = aArgs.get('output',False), args = aArgs.get('args',{}))
+  aCTX.workers.schedule_api_task(aArgs['module'],aArgs['function'],int(aArgs.get('frequency',0)), output = aArgs.get('output',False), args = aArgs.get('args',{}))
   return {'status':'OK'}
  else:
   return {'status':'NOT_OK'}

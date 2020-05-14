@@ -81,10 +81,10 @@ class Info extends Component {
       <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} onChange={this.onChange} />
      </InfoColumns>
      <SaveButton key='si_btn_save' onClick={() => this.updateInfo()} title='Save' />
-     {old && <SyncButton key='si_sync' onClick={() => this.changeContent(<Operation key={'srv_op_sync'} id={this.props.id} operation='sync' />)} title='Sync service' />}
-     {old && <ReloadButton key='si_restart' onClick={() => this.changeContent(<Operation key={'srv_op_rst'}  id={this.props.id} operation='restart' />)} title='Restart service' />}
-     {old && <SearchButton key='si_status' onClick={() => this.changeContent(<Operation key={'srv_op_stat'} id={this.props.id} operation='status' />)} title='Service status' />}
-     {old && <CheckButton key='si_params' onClick={() => this.changeContent(<Operation key={'srv_op_params'} id={this.props.id} operation='parameters' />)} title='Service parameters' />}
+     {old && <SyncButton key='si_sync' onClick={() => this.changeContent(<Operation key={'srv_op_sync'} id={this.state.data.id} operation='sync' />)} title='Sync service' />}
+     {old && <ReloadButton key='si_restart' onClick={() => this.changeContent(<Operation key={'srv_op_rst'}  id={this.state.data.id} operation='restart' />)} title='Restart service' />}
+     {old && <SearchButton key='si_status' onClick={() => this.changeContent(<Operation key={'srv_op_stat'} id={this.state.data.id} operation='status' />)} title='Service status' />}
+     {old && <CheckButton key='si_params' onClick={() => this.changeContent(<Operation key={'srv_op_params'} id={this.state.data.id} operation='parameters' />)} title='Service parameters' />}
     </InfoArticle>
     <NavBar key='server_navigation' id='server_navigation' />
     {this.state.content}
