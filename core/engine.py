@@ -13,7 +13,7 @@ from time import localtime, time, sleep, strftime
 from gc import collect as garbage_collect
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import unquote, parse_qs
-from ssl import SSLContext, SSLError, PROTOCOL_TLS_SERVER, PROTOCOL_SSLv23
+from ssl import SSLContext, SSLError, PROTOCOL_SSLv23
 from functools import partial
 from datetime import datetime, timedelta, timezone
 from crypt import crypt

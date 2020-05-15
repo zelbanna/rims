@@ -14,7 +14,8 @@ alias rims_mysql='mysql -urims -prims rims'
 
 apt-get update
 apt-get upgrade
-apt-get install -y sudo nano net-tools git python3 python3-pip mariadb-server mariadb-client libsnmp-dev libxslt-dev apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+apt-get install -y sudo nano net-tools git mariadb-client libsnmp-dev libxslt-dev apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+apt-get install python3 python3-pip python3-dnspython python3-pymysql python3-paramiko
 
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian  $(lsb_release -cs) stable"
@@ -49,10 +50,10 @@ echo ""
 echo " - press enter to continue - "
 read
 
-pip3 install pymysql
-pip3 install dnspython
+# pip3 install dnspython
+# pip3 install pymysql
+# pip3 install paramiko
 pip3 install python3-netsnmp
-pip3 install paramiko
 pip3 install junos-eznc
 
 cd /usr/local/sbin

@@ -1,6 +1,7 @@
 """Common functions module """
 __author__ = "Zacharias El Banna"
 
+from base64 import b64encode
 from time import time, sleep, strftime, localtime
 from sched import scheduler
 from threading import Thread, Lock, RLock, Event
@@ -16,7 +17,6 @@ from ssl import create_default_context, CERT_NONE
 #
 #
 def basic_auth(aUsername,aPassword):
- from base64 import b64encode
  return {'Authorization':'Basic %s'%(b64encode(("%s:%s"%(aUsername,aPassword)).encode('utf-8')).decode('utf-8')) }
 
 class RestException(Exception):
@@ -443,6 +443,7 @@ class Session(object):
  def __init__(self, **args):
   # client_intf is compiled from https://github.com/bluecmd/python3-netsnmp
   # or downloaded using pip3 python3-netsnmp...
+  # TODO: find PyPy3 compatible package or solution
   from netsnmp import client_intf
   self._libmod = client_intf
   self.sess_ptr = None
