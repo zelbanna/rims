@@ -16,13 +16,6 @@ def debug_decorator(func_name):
   return decorated
  return decorator
 
-#
-# Basic Auth header generator for base64 authentication
-#
-def basic_auth(aUsername,aPassword):
- from base64 import b64encode
- return {'Authorization':'Basic %s'%(b64encode(("%s:%s"%(aUsername,aPassword)).encode('utf-8')).decode('utf-8')) }
-
 ############################## Dummy context ##################################
 
 class DummyContext(object):

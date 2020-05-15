@@ -228,6 +228,7 @@ def user_info(aCTX, aArgs):
   - op (optional)
   - name (optional)
   - alias (optional)
+  - class (optional)
   - email (optional)
   - password (optional)
   - theme (optional)
@@ -258,7 +259,8 @@ def user_info(aCTX, aArgs):
    ret['data'] = db.get_row()
    ret['data'].pop('password',None)
   else:
-   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','email':'Unknown','external_id':None,'theme':'blue'}
+   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','class':'user','email':'Unknown','external_id':None,'theme':'blue'}
+  ret['classes'] = ['user','operator','admin']
  return ret
 
 #
@@ -274,21 +276,6 @@ def user_delete(aCTX, aArgs):
  with aCTX.db as db:
   res = (db.do("DELETE FROM users WHERE id = '%s'"%aArgs['id']) == 1)
  return { 'deleted':res }
-
-#
-#
-def token_maintenance(aCTX, aArgs):
- """Function manage tokens
-
- Args:
-
- Output:
- """
- ret = {}
- with aCTX.db as db:
-  ret['count'] = db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
-  ret['deleted'] = (ret['count'] > 0)
- return ret
 
 ################################ SERVERS ##################################
 #

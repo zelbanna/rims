@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.3"
-__build__ = 320
+__build__ = 321
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk, stat as osstat
@@ -23,13 +23,6 @@ from rims.core.common import DB, rest_call, Scheduler
 #
 # Main state object, contains config, workers, modules and calls etc..
 #
-# TODO EXTRA: make multiprocessing - preforking - and multithreaded
-#
-# - http://stupidpythonideas.blogspot.com/2014/09/sockets-and-multiprocessing.html
-# - https://stackoverflow.com/questions/1293652/accept-with-sockets-shared-between-multiple-processes-based-on-apache-prefork
-# - CTX data is unique/non-mutable and could be parallelized
-#
-
 class Context(object):
 
  def __init__(self,aConfig):
@@ -103,8 +96,8 @@ class Context(object):
     for task in environment['tasks']:
      task['output'] = (task['output']== 'true')
     db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
-    db.do("SELECT user_id, token, created + INTERVAL 5 DAY as expires, INET_NTOA(source_ip) AS ip FROM user_tokens ORDER BY created DESC")
-    environment['tokens'] = {x['token']:{'id':x['user_id'],'expires':x['expires'].replace(tzinfo=timezone.utc),'ip':x['ip']} for x in db.get_rows()}
+    db.do("SELECT users.id, ut.token, ut.created + INTERVAL 5 DAY as expires, INET_NTOA(ut.source_ip) AS ip, users.class FROM user_tokens AS ut LEFT JOIN users ON users.id = ut.user_id ORDER BY created DESC")
+    environment['tokens'] = {x['token']:{'id':x['id'], 'expires':x['expires'].replace(tzinfo=timezone.utc), 'ip':x['ip'], 'class':x['class']} for x in db.get_rows()}
    environment['version'] = __version__
    environment['build'] = __build__
   else:
@@ -173,7 +166,7 @@ class Context(object):
    data = self.report()
    data.update(self.config)
    data['services'] = self.services
-   data['tokens'] = {k:{'id':v['id'],'ip':v['ip'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")} for k,v in self.tokens.items()}
+   data['tokens'] = {k:{'id':v['id'],'ip':v['ip'],'class':v['class'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")} for k,v in self.tokens.items()}
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
 
  #
@@ -250,6 +243,7 @@ class Context(object):
   'Workers idle':self.workers.idles(),
   'Workers queue':self.workers.queue_size(),
   'Servers':self.workers.servers(),
+  'Active Tokens':len(self.tokens),
   'Database':', '.join("%s:%s"%(k.lower(),v) for k,v in db_counter.items()),
   'OS pid':getpid()}
   if self.config.get('database'):
@@ -610,7 +604,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   elif path == 'register':
    # Register uses internal tokens
    if self.headers.get('X-Token') == self._ctx.token:
-    self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':'*'})
+    self._headers.update({'Content-type':'application/json; charset=utf-8'})
     try:
      length = int(self.headers.get('Content-Length',0))
      args = loads(self.rfile.read(length).decode()) if length > 0 else {}
@@ -634,7 +628,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  #
  def api(self,api,id):
-  """ API serves the REST functions x.y.z.a:<port>/api/module/function """
+  """ API serves the REST functions x.y.z.a:<port>/api/module-path/function """
   (mod,_,fun) = api.rpartition('/')
   self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if not mod == 'master' else 'master')})
   try:
@@ -672,7 +666,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     for n,v in enumerate(format_exc().split('\n')):
      self._headers["X-Debug-%02d"%n] = v
 
- #
+ ####################################### AUTHENTICATION ######################################
  #
  def auth(self):
   """ Authenticate using node function. """
@@ -699,19 +693,23 @@ class SessionHandler(BaseHTTPRequestHandler):
        entry['ip'] = args.get('ip',self.client_address[0])
       output['id'] = entry['id']
       output['token'] = token
+      output['class'] = entry['class']
       output['expires'] = entry['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")
       output['ip'] = entry['ip']
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     elif 'destroy' in args:
      if self._ctx.tokens.pop(token,None):
+      with self._ctx.db as db:
+       if (db.do("DELETE FROM user_tokens WHERE token = '%s'"%token) == 0):
+        self._ctx.log("Authentication: destroying non-existent token requested from %s"%self.client_address[0])
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     else:
      from rims.core.genlib import random_string
      passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
      with self._ctx.db as db:
-      if (db.do("SELECT id, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+      if (db.do("SELECT id, class, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
        expires = datetime.now(timezone.utc) + timedelta(days=5)
        output.update(db.get_row())
        output.update({'ip':args.get('ip',self.client_address[0]),'expires':expires.strftime("%a, %d %b %Y %H:%M:%S %Z")})
@@ -724,7 +722,7 @@ class SessionHandler(BaseHTTPRequestHandler):
        else:
         output['token'] = random_string(16)
         db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET_ATON('%(ip)s'))"%output)
-        self._ctx.tokens[output['token']] = {'id':output['id'],'expires':expires,'ip':output['ip']}
+        self._ctx.tokens[output['token']] = {'id':output['id'],'expires':expires,'ip':output['ip'],'class':output['class']}
        output['status'] = 'OK'
        self._headers['X-Code'] = 200
       else:

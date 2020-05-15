@@ -15,6 +15,10 @@ from ssl import create_default_context, CERT_NONE
 # Rest with exception and variable args handling to make it more robust and streamlined in a "one-liner"
 #
 #
+def basic_auth(aUsername,aPassword):
+ from base64 import b64encode
+ return {'Authorization':'Basic %s'%(b64encode(("%s:%s"%(aUsername,aPassword)).encode('utf-8')).decode('utf-8')) }
+
 class RestException(Exception):
  pass
 

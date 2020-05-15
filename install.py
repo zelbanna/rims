@@ -159,7 +159,7 @@ if config['id'] == 'master':
   db = DB(database,host,username,password)
   db.connect()
   passcode = crypt('changeme', '$1$%s$'%config.get('salt','WBEUAHfO')).split('$')[3]
-  res['data']['create_admin_user'] = (db.do("INSERT users (id,name,alias,password) VALUES(1,'Administrator','admin','%s') ON DUPLICATE KEY UPDATE id = id, password = '%s'"%(passcode,passcode)) > 0)
+  res['data']['create_admin_user'] = (db.do("INSERT users (id,name,alias,password,class) VALUES(1,'Administrator','admin','%s','admin') ON DUPLICATE KEY UPDATE id = id, class='admin', password = '%s'"%(passcode,passcode)) > 0)
   res['data']['create_master_node'] = (db.do("INSERT nodes (node,url) VALUES('{0}','{1}') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)".format(config['id'],config['master'])) > 0)
   res['data']['master_node_id']  = db.get_last_id()
   res['data']['create_generic_device'] = (db.do("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)

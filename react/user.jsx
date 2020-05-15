@@ -64,6 +64,7 @@ export class Info extends Component {
      <InfoColumns key='ui_content'>
       {(this.context.settings.id === this.props.id) ?  <TextLine key='alias' id='alias' text={this.state.data.alias} /> : <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />}
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
+      {this.context.settings.class === 'admin' && <SelectInput key='class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'class_'+row} value={row}>{row}</option>)}</SelectInput>}
       <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
       <SelectInput key='theme' id='theme' value={this.state.data.theme} onChange={this.onChange}>{this.state.themes.map(row => <option key={'ui_theme_'+row} value={row}>{row}</option>)}</SelectInput>

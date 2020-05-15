@@ -3,6 +3,8 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "AUTHENTICATION"
 
+from rims.core.common import basic_auth
+
 #
 #
 def status(aCTX, aArgs):
@@ -13,6 +15,9 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
+ settings = aCTX.config['srx']
+ header = basic_auth(settings['username'],settings['password'])
+ print(aCTX.rest_call("%s/get-system-information"%settings['url'],aHeader = header,aApplication = 'xml', aDataOnly = False))
  return {'data':None, 'status':'OK' }
 
 #
@@ -82,5 +87,5 @@ def parameters(aCTX, aArgs):
   - parameters
  """
  settings = aCTX.config.get('srx',{})
- params = []
+ params = ['url','username','password']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

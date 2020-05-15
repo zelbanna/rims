@@ -36,7 +36,7 @@ class RIMS extends Component {
   if(this.state.token){
    auth_call({verify:this.state.token}).then(result => {
     if(result.status === 'OK')
-     this.setState({node:result.node,token:result.token,id:result.id,expires:result.expires});
+     this.setState({node:result.node,token:result.token,id:result.id,expires:result.expires,class:result.class});
     else
      this.setState({token:null})
    })

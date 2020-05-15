@@ -60,7 +60,7 @@ case "$1" in
  reload)
   reload
   ;;
- restart_engine)
+ restart)
   clear
   stop
   start
@@ -80,7 +80,7 @@ case "$1" in
   mv $0 /etc/init.d/$SERVICE
   ;;
  *)
-  echo "Usage: $0 <start|stop|reload|restart_engine|clear|install>"
+  echo "Usage: $0 <start|stop|reload|restart|clear|install>"
   exit 1
   ;;
 esac

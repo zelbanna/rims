@@ -28,24 +28,26 @@ export class Main extends Component {
  }
 
  compileNavItems = () => {
-  const master = (this.context.settings.node === 'master')
+  const master = (this.context.settings.node === 'master');
+  const admin = (this.context.settings.class === 'admin');
+  const master_admin = (master && admin);
   this.context.loadNavigation(<NavBar key='system_navbar'>
-   {master && <NavButton key='sys_nav_node' title='Nodes' onClick={() => this.changeImport('node','List')} />}
-   {master && <NavButton key='sys_nav_srv' title='Servers' onClick={() => this.changeImport('server','List')} />}
+   {master_admin && <NavButton key='sys_nav_node' title='Nodes' onClick={() => this.changeImport('node','List')} />}
+   {master_admin && <NavButton key='sys_nav_srv' title='Servers' onClick={() => this.changeImport('server','List')} />}
    {master && <NavButton key='sys_nav_erd' title='ERD'     onClick={() => window.open('erd.pdf','_blank')} />}
-   {master && <NavButton key='sys_nav_user' title='Users'  onClick={() => this.changeImport('user','List')} />}
+   {master_admin && <NavButton key='sys_nav_user' title='Users'  onClick={() => this.changeImport('user','List')} />}
    {master && <NavButton key='sys_nav_ctrl' title='Controls' onClick={() => this.changeContent(<Controls key='system_controls' />)} />}
    <NavDropDown key='sys_nav_reports' title='Reports'>
     <NavDropButton key='sys_nav_sys' title='System' onClick={() => this.changeContent(<Report key='system_report' />)} />
     <NavDropButton key='sys_nav_task' title='Tasks' onClick={() => this.changeContent(<TaskReport key='task_report' />)} />
-    {master && <NavDropButton key='sys_nav_act' title='Activities' onClick={() => this.changeImport('activity','Report')} />}
+    {admin && <NavDropButton key='sys_nav_act' title='Activities' onClick={() => this.changeImport('activity','Report')} />}
     {master && <NavDropButton key='sys_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','Report')} />}
     {master && <NavDropButton key='sys_nav_dev' title='Devices' onClick={() => this.changeImport('device','Report')} />}
     {master && <NavDropButton key='sys_nav_inv' title='Inventory' onClick={() => this.changeImport('inventory','Report')} />}
    </NavDropDown>
    <NavButton key='sys_nav_logs' title='Logs' onClick={() => this.changeImport('node','LogShow',{node:this.context.settings.node})} />
-   <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />
-   {this.state.services.length > 0 &&  <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavDropButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
+   {admin && <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />}
+   {admin && this.state.services.length > 0 && <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavDropButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
    <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
    {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} />)}
   </NavBar>)

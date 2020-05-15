@@ -221,7 +221,7 @@ export class Login extends Component {
   auth_call({username:this.state.username,password:this.state.password})
    .then((result) => {
     if (result.status === 'OK')
-     this.context.logIn({node:result.node,token:result.token,id:result.id,theme:result.theme,expires:result.expires});
+     this.context.logIn({node:result.node,token:result.token,id:result.id,theme:result.theme,expires:result.expires,class:result.class});
     else {
      document.getElementById("password").value = "";
      this.setState(prevState => ({ ...prevState,   password : '' }))

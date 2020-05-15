@@ -25,7 +25,7 @@ class Device(Junos):
 
  def load_dhcp(self):
   try:
-   result = self._router.rpc.get_dhcp_client_information() 
+   result = self._router.rpc.get_dhcp_client_information()
    addresslist = result.xpath(".//address-obtained")
    if len(addresslist) > 0:
     self.dnslist = result.xpath(".//dhcp-option[dhcp-option-name='name-server']/dhcp-option-value")[0].text.strip('[] ').replace(", "," ").split()
@@ -41,7 +41,7 @@ class Device(Junos):
   except Exception as err:
    self.log("System Error - cannot renew DHCP lease: " +str(err))
   return False
-   
+
  def get_ipsec(self,gwname):
   from lxml import etree
   try:
