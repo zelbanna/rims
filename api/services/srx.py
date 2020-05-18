@@ -3,6 +3,9 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "AUTHENTICATION"
 
+#
+# Make use of SRX device instead
+#
 from rims.core.common import basic_auth
 
 #
@@ -15,10 +18,17 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
+ ret = {}
  settings = aCTX.config['srx']
  header = basic_auth(settings['username'],settings['password'])
- print(aCTX.rest_call("%s/get-system-information"%settings['url'],aHeader = header,aApplication = 'xml', aDataOnly = False))
- return {'data':None, 'status':'OK' }
+ try: res = aCTX.rest_call("%s/get-userfw-local-auth-table-all"%settings['url'],aHeader = header,aApplication = 'xml', aDataOnly = False)
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['info'] = e.args[0]['data']
+ else:
+  ret['status'] = 'OK'
+  ret['data'] = res['data']
+ return ret
 
 #
 #
@@ -30,7 +40,29 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- return {'status':'OK','output':'No OP'}
+ ret = {}
+ settings = aCTX.config['srx']
+ header = basic_auth(settings['username'],settings['password'])
+ try: res = aCTX.rest_call("%s/get-userfw-local-auth-table-all"%settings['url'], aHeader = header, aApplication = 'xml', aDataOnly = False)
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  print(str(e))
+  ret['info'] = e.args[0]['data']
+ else:
+  ret['status'] = 'OK'
+  add = []
+  rem = []
+  users = aCTX.node_function('master','authentication','active')(aArgs = {})['data']
+  active = [{'ip':entry['ip-address'][0]['data'], 'alias':entry['user-name'][0]['data']} for entry in res['data']['user-identification'][0]['local-authentication-table'][0]['local-authentication-info']]
+  for u in users:
+   for a in active:
+    if a['ip'] == u['ip'] and a['alias'] == u['alias']:
+     # keep
+     pass
+    else:
+     pass
+     # continue
+ return ret
 
 #
 #

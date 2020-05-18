@@ -5,8 +5,6 @@ import { BackButton, DeleteButton, EditButton, FixButton, ReloadButton, SaveButt
 import { TextInput } from './infra/Inputs.jsx';
 import styles from './infra/ui.module.css';
 
-import { Info as DeviceInfo } from './device.jsx';
-
 // ************** Main **************
 //
 export class Main extends Component {
@@ -60,14 +58,15 @@ export class Show extends Component {
 
  componentDidMount(){
   var args = (this.props.hasOwnProperty('id')) ? {id:this.props.id}:{name:this.props.name};
-  post_call('api/visualize/show',args)
-   .then(result => {
-    var nodes = new window.vis.DataSet(result.data.nodes);
-    var edges = new window.vis.DataSet(result.data.edges);
-    var network = new window.vis.Network(this.refs.show_canvas, {nodes:nodes, edges:edges}, result.data.options);
+  import('vis-network/standalone/esm/vis-network').then(vis => {
+   post_call('api/visualize/show',args).then(result => {
+    var nodes = new vis.DataSet(result.data.nodes);
+    var edges = new vis.DataSet(result.data.edges);
+    var network = new vis.Network(this.refs.show_canvas, {nodes:nodes, edges:edges}, result.data.options);
     network.on('stabilizationIterationsDone', () => network.setOptions({ physics: false }))
     network.on('doubleClick', (params) => this.doubleClick(params))
    })
+  })
  }
 
  doubleClick = (params) => {
@@ -102,21 +101,22 @@ export class Edit extends Component {
  }
 
  componentDidMount(){
-  post_call('api/visualize/network',{id:this.props.id,type:this.props.type})
-   .then((result) => {
-    this.viz.nodes = new window.vis.DataSet(result.data.nodes);
-    this.viz.edges = new window.vis.DataSet(result.data.edges);
+  import('vis-network/standalone/esm/vis-network').then(vis => {
+   post_call('api/visualize/network',{id:this.props.id,type:this.props.type}).then((result) => {
+    this.viz.nodes = new vis.DataSet(result.data.nodes);
+    this.viz.edges = new vis.DataSet(result.data.edges);
     result.data.options.physics.enabled = true;
-    this.viz.network = new window.vis.Network(this.refs.edit_canvas, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
+    this.viz.network = new vis.Network(this.refs.edit_canvas, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
     this.viz.network.on('stabilizationIterationsDone', () => this.viz.network.setOptions({ physics: false }))
     this.viz.network.on('doubleClick', (params) => this.doubleClick(params))
     this.viz.network.on('dragEnd', (params) => this.networkSync(params))
     result.data.options.physics.enabled = false;
     this.setState(result)
+   })
   })
  }
 
- changeContent = (elem) => this.props.changeSelf(elem);
+ changeImport = (dev) => import('./device.jsx').then(lib => this.props.changeSelf(<lib.Info key={'di_'+dev} id={dev} />));
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
@@ -134,8 +134,7 @@ export class Edit extends Component {
 
  doubleClick = (params) => {
   console.log('DoubleClick',params.nodes[0]);
-  if(this.props.changeSelf)
-   this.changeContent(<DeviceInfo key={'di_' + params.nodes[0]} id={params.nodes[0]} />)
+  this.props.changeSelf && this.changeImport(params.nodes[0]);
  }
 
  toggleEdit = () => {
@@ -167,7 +166,7 @@ export class Edit extends Component {
   const PhysicsButton = this.state.physics_button;
   return(
    <Article key='viz_art' header='Network Map'>
-    {(this.props.type === 'device') && (this.props.changeSelf) && <BackButton key='viz_back' onClick={() => this.changeContent(<DeviceInfo key={'di_'+this.props.id} id={this.props.id} />)} />}
+    {(this.props.type === 'device') && (this.props.changeSelf) && <BackButton key='viz_back' onClick={() => this.changeImport(this.props.id)} />}
     <ReloadButton key='viz_reload' onClick={() => this.componentDidMount()} />
     <EditButton key='viz_edit' onClick={() => this.toggleEdit()} />
     <PhysicsButton key='viz_physics' onClick={() => this.togglePhysics()} />
