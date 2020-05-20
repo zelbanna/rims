@@ -142,7 +142,7 @@ def domain_forwarders(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT domains.* FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.type = 'forward' AND st.service <> 'nodns'")
+  ret['count'] = db.do("SELECT domains.name, domains.foreign_id, domains.endpoint FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.type = 'forward' AND st.service <> 'nodns'")
   ret['data'] = db.get_rows()
  return ret
 

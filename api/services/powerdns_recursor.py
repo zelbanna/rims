@@ -33,12 +33,12 @@ def sync(aCTX, aArgs):
      break
    else:
     try: aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = {'id':dom['foreign_id'], 'name':dom['name'] + '.', 'type':'Zone', 'servers':[dom['endpoint']], 'kind':'Forwarded', 'url':dom['name'], 'recursion_desired':False })
-    except: pass
+    except Exception as e: aCTX.log("PowerDNS Recursor sync (add): Error => %s"%e.args[0]['data'])
     else: ret['added'].append(dom)
   for f in forwarders:
    if not f.get('sync'):
     try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],f['id']), aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']})
-    except: pass
+    except Exception as e: aCTX.log("PowerDNS Recursor sync (rem): Error => %s"%e.args[0]['data'])
     else: ret['removed'].append(f)
  return ret
 
