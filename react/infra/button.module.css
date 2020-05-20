@@ -8,7 +8,7 @@
 
 */
 
-.href { font-weight:bold; border:none; cursor:pointer; background-color:transparent; font-size:1rem; color:var(--std-txt-color);}
+.href { font-weight:bold; border:none; cursor:pointer; background-color:transparent; font-size:1rem; color:var(--std-txt-color); padding:0; }
 .href:hover,button.text:focus { color:var(--high-color)!important; }
 .href::-moz-focus-inner { border-style: dotted; }
 

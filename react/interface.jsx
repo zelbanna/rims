@@ -37,7 +37,7 @@ export class List extends Component{
 
  render(){
   if (this.state.data) {
-   return <ContentReport key='il_cl' header='Interfaces' thead={['SNMP','Name','MAC','IP Address','Description','Class','Link','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+   return <ContentReport key='il_cl' header='Interfaces' thead={['ID','Name','MAC','IP Address','Description','Type','Link','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='il_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='il_btn_add' onClick={() => this.changeContent(<Info key={'interface_info_' + rnd()} device_id={this.props.device_id} interface_id='new' changeSelf={this.props.changeSelf} />) } title='Add interface' />
     <TextButton key='il_btn_rset' onClick={() => this.resetStatus()} title='Reset interface state manually' text='Reset' />
@@ -153,9 +153,9 @@ export class Info extends Component {
       <TextInput key='ii_name' id='name' value={this.state.data.name} onChange={this.onChange} /><div>{ipam && <SyncButton key='ii_btn_dns' onClick={() => this.updateDNS()} title='Sync DNS information using name' />}</div>
       <SelectInput key='ii_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'ii_class_'+row} value={row}>{row}</option>)}</SelectInput><div />
       <TextInput key='ii_description' id='description' value={this.state.data.description} onChange={this.onChange} /><div />
-      <TextInput key='ii_snmp_index' id='snmp_index' value={this.state.data.snmp_index} onChange={this.onChange} /><div />
+      <TextInput key='ii_snmp_index' id='snmp_index' label='SNMP index' value={this.state.data.snmp_index} onChange={this.onChange} /><div />
       <TextInput key='ii_mac' id='mac' value={this.state.data.mac} onChange={this.onChange} /><div />
-      <TextInput key='ii_ipam_id' id='ipam_id' value={this.state.data.ipam_id} onChange={this.onChange} /><div>
+      <TextInput key='ii_ipam_id' id='ipam_id' label='IPAM id' value={this.state.data.ipam_id} onChange={this.onChange} /><div>
        {ipam && <GoButton key='ii_ipam' onClick={() => this.changeIpam(this.state.data.ipam_id)} title='View IPAM information' />}
        {ipam && <DeleteButton key='ii_delete' onClick={() => this.deleteIpam()} title='Delete IPAM entry' />}
        {!ipam && this.state.data.interface_id !== 'new' && <AddButton key='ii_btn_ipam' onClick={() => this.stateIpam()} title='Create IPAM entry' />}

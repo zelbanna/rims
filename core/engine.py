@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.4"
-__build__ = 324
+__build__ = 325
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk, stat as osstat
@@ -305,7 +305,7 @@ class WorkerPool(object):
      self._idle.clear()
      result = func(*args,**kwargs) if not api else func(self._ctx, args)
      if output:
-      self._ctx.log("%s - %s => %s"%(self.name,repr(func),dumps(result)))
+      self._ctx.log("%s - %s => %s"%(self.name,repr(func).split()[1],dumps(result)))
     except Exception as e:
      self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
      if self._ctx.config['mode'] == 'debug':
