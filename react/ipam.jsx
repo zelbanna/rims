@@ -163,7 +163,8 @@ class AddressList extends Component{
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<StateLeds state={row.state} />,<Fragment key={'ip_button_'+row.id}>
+ listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<Fragment key={'ip_button_'+row.id}>
+   <StateLeds state={row.state} />
    <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} title='Edit address entry' />
    <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
   </Fragment>]
@@ -171,7 +172,7 @@ class AddressList extends Component{
  deleteList = (id) => (window.confirm('Delete address?') && post_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 
  render(){
-  return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+  return <ContentReport key='al_cr' header='Allocated IP Addresses' thead={['ID','IP','Hostname','Domain','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
    <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
    <AddButton key='al_btn_add' onClick={() => this.changeContent(<AddressInfo key={'address_new_' + rnd()} network_id={this.props.network_id} id='new' />)} title='Add address entry' />
   </ContentReport>

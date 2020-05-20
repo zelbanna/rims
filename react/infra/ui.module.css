@@ -53,10 +53,11 @@
 
 /******* State *******/
 
-.stateRed {    border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin-left:2px; margin-right:2px; background-color:#CB2026!important; }
-.stateGreen {  border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin-left:2px; margin-right:2px; background-color:#26CB20!important; }
-.stateGrey {   border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin-left:2px; margin-right:2px; background-color:#9CA6B0!important; }
-.stateOrange { border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin-left:2px; margin-right:2px; background-color:orange!important;  }
+.stateLeds {   display:inline-block; vertical-align:bottom; }
+.stateRed {    border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; background-color:#CB2026!important; }
+.stateGreen {  border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; background-color:#26CB20!important; }
+.stateGrey {   border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; background-color:#9CA6B0!important; }
+.stateOrange { border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; background-color:orange!important;  }
 
 /******* Extra *******/
 .flex { display:flex; flex-wrap:wrap; width:100%; }

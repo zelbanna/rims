@@ -25,12 +25,6 @@ class Junos(GenericDevice):
   GenericDevice.__init__(self, aCTX, aID, aIP)
   self._interfacesname = {}
   self._router  = None
-  self._config  = None
-  self._model   = None
-  self._version = None
-
- def __str__(self):
-  return "Junos(router=%s, model=%s, version=%s)"%(str(self._router), self._model, self._version)
 
  def __enter__(self):
   if self.connect():
@@ -43,15 +37,10 @@ class Junos(GenericDevice):
 
  def connect(self):
   from jnpr.junos import Device as JunosDevice
-  from jnpr.junos.utils.config import Config
   if not self._router:
    self._router = JunosDevice(self._ip, user=self._ctx.config['netconf']['username'], password=self._ctx.config['netconf']['password'], normalize=True)
-  if not self._config and self._router:
-   self._config = Config(self._router)
   try:
    self._router.open()
-   self._model = self._router.facts['model']
-   self._version = self._router.facts['version']
   except Exception as err:
    self.log("Unable to connect:" + str(err)[:72])
    return False
@@ -104,7 +93,7 @@ class Junos(GenericDevice):
   return ret
 
  def info(self):
-  return [{'Version':self._version,'Model':self._model}]
+  return [{'Version':self._router.facts['version'],'Model':self._router.facts['model']}]
 
  def configuration(self,argdict):
   base  = "set groups default_system"

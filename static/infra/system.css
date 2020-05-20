@@ -14,4 +14,4 @@
 }
 
 * { box-sizing:border-box; }
-body { margin:0; font-family:Verdana,sans-serif; background-color:var(--main-color); }
+body { margin:0; font-family:Verdana,sans-serif; background-color:var(--main-color); -webkit-text-size-adjust: 100%; }

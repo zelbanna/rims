@@ -26,9 +26,10 @@ export class List extends Component{
 
  discoverInterfaces = () => (window.confirm('Rediscover interfaces?') && post_call('api/interface/snmp',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
- listItem = (row) => [row.mac,(row.ip) ? row.ip : '-',row.snmp_index,row.name,row.description,row.class,
+ listItem = (row) => [row.snmp_index,row.name,row.mac,(row.ip) ? row.ip : '-',row.description,row.class,
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
-   <StateLeds key={'il_if_state_' + row.interface_id} state={[row.if_state,row.ip_state]} />,<Fragment key={'il_btns_'+row.interface_id}>
+   <Fragment key={'il_btns_'+row.interface_id}>
+    <StateLeds key={'il_if_state_' + row.interface_id} state={[row.if_state,row.ip_state]} />
     <InfoButton key={'il_btn_info_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
     <DeleteButton key={'il_btn_del_' + row.interface_id} onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
     {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key={'il_btn_sync_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
@@ -36,7 +37,7 @@ export class List extends Component{
 
  render(){
   if (this.state.data) {
-   return <ContentReport key='il_cl' header='Interfaces' thead={['MAC','IP','SNMP','Name','Description','Class','Link','','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+   return <ContentReport key='il_cl' header='Interfaces' thead={['SNMP','Name','MAC','IP Address','Description','Class','Link','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='il_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='il_btn_add' onClick={() => this.changeContent(<Info key={'interface_info_' + rnd()} device_id={this.props.device_id} interface_id='new' changeSelf={this.props.changeSelf} />) } title='Add interface' />
     <TextButton key='il_btn_rset' onClick={() => this.resetStatus()} title='Reset interface state manually' text='Reset' />

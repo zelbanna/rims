@@ -6,18 +6,20 @@
 
 */
 
-.report { border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; background-color:var(--std-color); height:auto; overflow-y:scroll; overflow-x:hidden; max-width:calc(100% - 6px); }
+.report { border-radius: 4px; margin: 3px; overflow-x:hidden; overflow-y:scroll; padding:4px; background-color:var(--std-color); scrollbar-width:none; resize:horizontal; height:auto; max-width:calc(100% - 6px);}
 .report::-webkit-scrollbar { display: none; }
-.list { border-radius: 4px; margin: 3px; overflow-x:hidden; padding:4px; background-color:var(--std-color); height:calc(100% - 6px); width:calc(100% - 6px); overflow-y:scroll; scrollbar-width:none; resize:horizontal; }
+.list {   border-radius: 4px; margin: 3px; overflow-x:hidden; overflow-y:scroll; padding:4px; background-color:var(--std-color); scrollbar-width:none; resize:horizontal; height:calc(100% - 6px); width:calc(100% - 6px);}
 .list::-webkit-scrollbar { display: none; }
 .report:hover, .list:hover { box-shadow:0 0 3px 3px rgba(0,0,0,0.2); }
 .title { color:var(--std-txt-color); font-size:1.3rem; font-weight: bold; text-align:center; margin:0.5rem; text-transform:capitalize; }
 .table { display: table; width:100%; }
 .thead { display: table-header-group; }
-.th { display: table-cell; text-align: center; padding: 3px 2px 6px 4px; font-size:1.2rem; font-weight:bold; text-transform:capitalize; color:var(--std-txt-color); } 
-.th * { font-size:1.2rem; font-weight: bold; }
 .tbody { display: table-row-group; }
 .trow { display: table-row; }
 .trow:nth-child(even) { background-color:var(--std-color); }
 .trow:nth-child(odd) { background-color:var(--main-color); }
-.td { font-size:1rem; background-color:transparent; display:table-cell; vertical-align: middle; overflow:hidden; text-overflow:ellipsis; padding:1px 4px 0 4px; white-space:nowrap; color:var(--std-txt-color); }
+
+.th { color:var(--std-txt-color); display:table-cell; padding: 3px 2px 6px 2px; vertical-align:middle; font-size:1.2rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:bold; text-align: center; text-transform:capitalize; }
+.th * { font-size:1.2rem; font-weight: bold; }
+.td { color:var(--std-txt-color); display:table-cell; padding: 2px 2px 2px 2px; vertical-align:middle; font-size:1rem;   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.td:last-child{ min-width:max-content; white-space:nowrap; }

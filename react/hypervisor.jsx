@@ -21,7 +21,8 @@ export class Main extends Component {
 
  listItem = (row) => {
   const up =  (row.ip_state === 'up');
-  return [row.hostname,row.type_name,<StateLeds state={row.ip_state} />,<Fragment key={'hyp_buttons_'+row.id}>
+  return [row.hostname,row.type_name,<Fragment key={'hyp_buttons_'+row.id}>
+   <StateLeds state={row.ip_state} />
    {up && row.type_functions === 'manage' && <InfoButton key={'hyp_btn_info_'+row.id} onClick={() => this.context.changeMain(<Manage key={'hypervisor_manage_'+row.id} device_id={row.id} type={row.type_name} />)} />}
    {up && row.url && row.url.length > 0 && <UiButton key={'hyp_ btn_ui_'+row.id} onClick={() => window.open(row.url,'_blank') } />}
    </Fragment>]
@@ -31,7 +32,7 @@ export class Main extends Component {
 
  render(){
   return <Fragment key='hyp_fragment'>
-   <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','']} trows={this.state.data} listItem={this.listItem}>
     <SyncButton key='hyp_btn_sync' onClick={() => this.changeContent(<Sync />) } />
    </ContentList>
    <ContentData key='hyp_cd'>{this.state.content}</ContentData>
