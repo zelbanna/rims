@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.4"
-__build__ = 325
+__build__ = 326
 __all__ = ['Context','WorkerPool']
 
 from os import path as ospath, getpid, walk, stat as osstat
@@ -104,7 +104,7 @@ class Context(object):
    environment = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
    environment['nodes']['master']['url'] = self.config['master']
    for k,v in environment['tokens'].items():
-    v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S %Z")
+    v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=timezone.utc)
   return environment
 
  #
