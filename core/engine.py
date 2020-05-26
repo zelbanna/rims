@@ -2,7 +2,7 @@
 __author__ = "Zacharias El Banna"
 __version__ = "6.4"
 __build__ = 326
-__all__ = ['Context','WorkerPool']
+__all__ = ['Context']
 
 from crypt import crypt
 from datetime import datetime, timedelta, timezone
@@ -48,7 +48,6 @@ class Context(object):
   self.node     = self.config['id']
   self.token    = self.config.get('token')
   self.db       = DB(self.config['database']['name'],self.config['database']['host'],self.config['database']['username'],self.config['database']['password']) if self.config.get('database') else None
-  self.workers  = WorkerPool(self.config['workers'],self)
   self.path     = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.tokens   = {}
   self.nodes    = {}
@@ -69,6 +68,7 @@ class Context(object):
   self._kill = Event()
   self._analytics = {'files':{},'modules':{}}
   self.rest_call = rest_call
+  self.workers  = WorkerPool(self.config['workers'],self)
 
  #
  def clone(self):
@@ -87,7 +87,7 @@ class Context(object):
  def system_environment(self,aNode):
   """ Function retrieves all central environment for a certain node, or itself if node is given"""
   if len(aNode) == 0 or aNode is None:
-   environment = {'nodes':self.nodes,'services':self.services,'config':self.config,'tasks':self.workers.scheduler_tasks(),'site':(len(self.config['site']) > 0),'version':__version__,'build':__build__}
+   environment = {'nodes':self.nodes,'services':self.services,'config':self.config,'tasks':self.workers.scheduler_status(),'site':(len(self.config['site']) > 0),'version':__version__,'build':__build__}
   elif self.config.get('database'):
    environment = {'tokens':{}}
    with self.db as db:
@@ -177,6 +177,29 @@ class Context(object):
  def debugging(self):
   return (self.config['mode'] == 'debug')
 
+ #
+ def log(self,aMsg):
+  syslog = self.config['logging']['system']
+  if syslog['enabled']:
+   with open(syslog['file'], 'a') as f:
+    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg)))
+
+ #
+ def house_keeping(self):
+  """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
+  ret = {}
+  now = datetime.now(timezone.utc)
+  expired = []
+  for k,v in self.tokens.items():
+   if now > v['expires']:
+    expired.append(k)
+  ret['expired'] = len(expired)
+  for t in expired:
+   self.tokens.pop(t,None)
+  ret['auth'] = self.sync_auth()
+  ret['collected'] = garbage_collect()
+  return ret
+
  ################################## Service Functions #################################
  #
  def node_function(self, aNode, aModule, aFunction, **kwargs):
@@ -221,13 +244,6 @@ class Context(object):
   self._analytics[aType][aGroup] = tmp
 
  #
- def log(self,aMsg):
-  syslog = self.config['logging']['system']
-  if syslog['enabled']:
-   with open(syslog['file'], 'a') as f:
-    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg)))
-
- #
  def report(self):
   from sys import version, modules as sys_modules, path as syspath
   from types import ModuleType
@@ -264,27 +280,7 @@ class Context(object):
      output['Access: %s/%s'%(group,i)] = c
   return output
 
- #
- def house_keeping(self):
-  """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
-  ret = {}
-  now = datetime.now(timezone.utc)
-  expired = []
-  for k,v in self.tokens.items():
-   if now > v['expires']:
-    expired.append(k)
-  ret['expired'] = len(expired)
-  for t in expired:
-   self.tokens.pop(t,None)
-  ret['auth'] = self.sync_auth()
-  ret['collected'] = garbage_collect()
-  return ret
-
- #
- def randomizer(self, aLength):
-  return ''.join(choice(ascii_uppercase + digits) for _ in range(aLength))
-
- ############################# Authentication Functions ###########################
+ ############################# AUTHENTICATION ###########################
  #
  def sync_auth(self):
   with self.db as db:
@@ -372,20 +368,14 @@ class WorkerPool(object):
     self._workers = [x for x in self._workers if x.is_alive()]
    active = self.alive()
 
- def alive(self):
-  return len([x for x in self._workers if x.is_alive()])
+ ##################### QUEUE ########################
+ #
+ def queue_function(self, aFunction, *args, **kwargs):
+  self._queue.put((aFunction,False,None,False,args,kwargs))
 
- def idles(self):
-  return len([x for x in self._idles if x.is_set()])
-
- def servers(self):
-  return len([x for x in self._servers if x.is_alive()])
-
- def queue_size(self):
-  return self._queue.qsize()
-
- def scheduler_tasks(self):
-  return [(e[1]['name'],e[1]['frequency'],e[0]) for e in self._scheduler.events()]
+ def queue_semaphore(self, aFunction, aSema, *args, **kwargs):
+  aSema.acquire()
+  self._queue.put((aFunction,False,aSema,False,args,kwargs))
 
  def semaphore(self,aSize):
   return BoundedSemaphore(aSize)
@@ -402,16 +392,21 @@ class WorkerPool(object):
    self.queue_semaphore(aFunction, sema, elem)
   self.block(sema,nworkers)
 
- ##################### FUNCTIONs ########################
+ def queue_size(self):
+  return self._queue.qsize()
+
+ ################## TOOLS ################
  #
- def queue_function(self, aFunction, *args, **kwargs):
-  self._queue.put((aFunction,False,None,False,args,kwargs))
+ def alive(self):
+  return len([x for x in self._workers if x.is_alive()])
 
- def queue_semaphore(self, aFunction, aSema, *args, **kwargs):
-  aSema.acquire()
-  self._queue.put((aFunction,False,aSema,False,args,kwargs))
+ def idles(self):
+  return len([x for x in self._idles if x.is_set()])
 
- ####################### TASKs ###########################
+ def servers(self):
+  return len([x for x in self._servers if x.is_alive()])
+
+ ####################### SCHEDULING ###########################
  #
  def schedule_api(self, aFunction, aName, aDelay, aFrequency = 0, **kwargs):
   self._scheduler.add_delayed((aFunction, True, None, kwargs.get('output',False), kwargs.get('args',{}), None), aName, aDelay, aFrequency)
@@ -436,8 +431,15 @@ class WorkerPool(object):
  def schedule_function(self, aFunction, aName, aDelay, aFrequency = 0, **kwargs):
   self._scheduler.add_delayed((aFunction, False, None, kwargs.pop('output',False), kwargs.pop('args',{}), kwargs), aName, aDelay, aFrequency)
 
+ def scheduler_status(self):
+  return [(e[1]['name'],e[1]['frequency'],e[0]) for e in self._scheduler.events()]
 
+
+#
+#
+#
 ###################################### Session Handler ######################################
+#
 #
 class SessionHandler(BaseHTTPRequestHandler):
 
@@ -454,6 +456,10 @@ class SessionHandler(BaseHTTPRequestHandler):
    if not chunk:
     break
    yield chunk
+
+ #
+ def __randomizer(self, aLength):
+  return ''.join(choice(ascii_uppercase + digits) for _ in range(aLength))
 
  #
  def header(self,code,text,size):
@@ -680,7 +686,7 @@ class SessionHandler(BaseHTTPRequestHandler):
          break
        else:
         # New token generated, update all tables (token, database and auth servers)
-        output['token'] = self._ctx.randomizer(16)
+        output['token'] = self.__randomizer(16)
         db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET_ATON('%(ip)s'))"%output)
         self._ctx.tokens[output['token']] = {'id':output['id'],'alias':username,'expires':expires,'ip':output['ip'],'class':output['class']}
         self._ctx.workers.queue_function(self._ctx.authenticate, username, output['ip'], 'authenticate')
