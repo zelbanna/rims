@@ -6,6 +6,7 @@ __author__ = "Zacharias El Banna"
 #
 from sys import path as syspath, argv, exit, stdout
 from os import path as ospath, getcwd
+from json import load
 from argparse import ArgumentParser
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 from rims.api import mysql
@@ -20,7 +21,9 @@ parser.add_argument('-v','--values',  help = 'Dumps database values', required =
 parser.add_argument('-r','--restore', help = 'Restore with schema and/or values from restore_file', required = False, nargs = 1)
 parser.add_argument('-p','--patch',   help = 'Patch database schema with new schema file', required = False, nargs = 1)
 input = parser.parse_args()
-ctx = Context(aConfig = input.config)
+with open(input.config,'r') as file:
+ config = load(file)
+ctx = Context(config)
 
 if   input.diff:
  res= mysql.diff(ctx, {"schema_file":ospath.abspath(ospath.join(getcwd(),input.diff[0]))})
