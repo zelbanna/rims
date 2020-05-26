@@ -4,6 +4,7 @@
 __author__ = "Zacharias El Banna"
 from os import path as ospath, getpid
 from sys import path as syspath, argv, exit
+from json import load
 from argparse import ArgumentParser
 
 parser = ArgumentParser(prog='rims',description='RIMS engine bootstrap')
@@ -17,10 +18,13 @@ if not input.config:
 from time import sleep
 basepath = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
 syspath.insert(1, basepath)
-from core.engine import Context
 
-ctx = Context(input.config)
-while not ctx.load_system():
+with open(input.config,'r') as file:
+ config = load(file)
+
+from core.engine import Context
+ctx = Context(config)
+while not ctx.load():
  sleep(30)
 
 if ctx.start():

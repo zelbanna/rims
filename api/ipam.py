@@ -139,11 +139,13 @@ def network_discover(aCTX, aArgs):
   ip_list = db.get_dict('ip')
 
  try:
-  sema = aCTX.workers.semaphore(simultaneous)
+  sema = aCTX.semaphore(simultaneous)
   for ip in range(ip_start,ip_end):
    if not ip_list.get(ip):
-    aCTX.workers.queue_semaphore(__detect_thread,sema,ip,addresses)
-  aCTX.workers.block(sema,simultaneous)
+    aCTX.queue_semaphore(__detect_thread,sema,ip,addresses)
+  for i in range(simultaneous):
+   sema.acquire()
+
  except Exception as err:
   ret['status'] = 'NOT_OK'
   ret['info']   = repr(err)
@@ -560,7 +562,7 @@ def check(aCTX, aArgs):
 
  if 'repeat' in aArgs:
   # INTERNAL from rims.api.ipam import process
-  aCTX.workers.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
+  aCTX.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
   return {'status':'OK','function':'ipam_check','detach_frequency':aArgs['repeat']}
  else:
   # INTERNAL from rims.api.ipam import process
@@ -587,7 +589,7 @@ def process(aCTX, aArgs):
   except: aDev['state'] = 'unknown'
   return True
 
- aCTX.workers.block_map(__check_ip,aArgs['addresses'])
+ aCTX.queue_block(__check_ip,aArgs['addresses'])
 
  changed = [dev for dev in aArgs['addresses'] if (dev['state'] != dev['old'])]
  if changed:

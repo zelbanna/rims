@@ -513,10 +513,11 @@ def discover(aCTX, aArgs):
   aDB[aIP] = res['data'] if res['status'] == 'OK' else {}
   return (res['status'] == 'OK')
 
- sema = aCTX.workers.semaphore(20)
+ sema = aCTX.semaphore(20)
  for ip in ipam['addresses']:
-  aCTX.workers.queue_semaphore(__detect_thread, sema, ip, ip_addresses, aCTX)
- aCTX.workers.block(sema,20)
+  aCTX.queue_semaphore(__detect_thread, sema, ip, ip_addresses, aCTX)
+ for i in range(20):
+  sema.acquire()
 
  # We can now do inserts only (no update) as we skip existing :-)
  if len(ip_addresses) > 0:
@@ -645,10 +646,11 @@ def system_info_discover(aCTX, aArgs):
 
   if db.do("SELECT devices.id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.state = 'up' AND %s AND %s"%(network,lookup)) > 0:
    devices = db.get_rows()
-   sema = aCTX.workers.semaphore(20)
+   sema = aCTX.semaphore(20)
    for dev in devices:
-    aCTX.workers.queue_semaphore(__detect_thread, sema, aCTX, dev, lookup != 'TRUE')
-   aCTX.workers.block(sema,20)
+    aCTX.queue_semaphore(__detect_thread, sema, aCTX, dev, lookup != 'TRUE')
+   for i in range(20):
+    sema.acquire()
    for dev in devices:
     id = dev.pop('id',None)
     ip = dev.pop('ip',None)

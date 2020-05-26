@@ -80,7 +80,7 @@ def environment(aCTX, aArgs):
  """
  if all(i in aArgs for i in ['node','build']):
   aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
- ret = aCTX.system_environment(aArgs.get('node',aCTX.node))
+ ret = aCTX.environment(aArgs.get('node',aCTX.node))
  for k,v in ret['tokens'].items():
   v['expires'] = v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
@@ -166,7 +166,7 @@ def active_sync(aCTX, aArgs):
 
  Output:
  """
- return {'function':'system_active_sync','users':aCTX.sync_auth()}
+ return {'function':'system_active_sync','users':aCTX.auth_sync()}
 
 ################################# REST #############################
 #
@@ -414,7 +414,7 @@ def worker(aCTX, aArgs):
   - result
  """
  if all(i in aArgs for i in ['module','function']):
-  aCTX.workers.schedule_api_task(aArgs['module'],aArgs['function'],int(aArgs.get('frequency',0)), output = aArgs.get('output',False), args = aArgs.get('args',{}))
+  aCTX.schedule_api_task(aArgs['module'],aArgs['function'],int(aArgs.get('frequency',0)), output = aArgs.get('output',False), args = aArgs.get('args',{}))
   return {'status':'OK'}
  else:
   return {'status':'NOT_OK'}
