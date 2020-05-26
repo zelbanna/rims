@@ -18,7 +18,7 @@ def status(aCTX, aArgs):
  ret = {}
  settings = aCTX.config['srx']
  try:
-  with Device(aCTX,settings['device_id'],settings['ip']) as dev:
+  with Device(aCTX,settings.get('device_id',0),settings['ip']) as dev:
    ret = dev.auth_table()
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
@@ -39,7 +39,7 @@ def sync(aCTX, aArgs):
  settings = aCTX.config['srx']
  users = [{'ip':v['ip'],'alias':v['alias'],'roles':settings['roles']} for v in (aArgs['users'] if aArgs.get('users') else aCTX.tokens.values())]
  try:
-  with Device(aCTX,settings['device_id'],settings['ip']) as dev:
+  with Device(aCTX,settings.get('device_id',0),settings['ip']) as dev:
    table = dev.auth_table()['data']
    for entry in table:
     try: users.remove(entry)
@@ -89,7 +89,7 @@ def authenticate(aCTX, aArgs):
  """
  settings = aCTX.config['srx']
  try:
-  with Device(aCTX,settings['device_id'],settings['ip']) as dev:
+  with Device(aCTX,settings.get('device_id',0),settings['ip']) as dev:
    ret = dev.auth_add(aArgs['alias'],aArgs['ip'],settings['roles'])
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
@@ -108,7 +108,7 @@ def invalidate(aCTX, aArgs):
  """
  settings = aCTX.config['srx']
  try:
-  with Device(aCTX,settings['device_id'],settings['ip']) as dev:
+  with Device(aCTX,settings.get('device_id',0),settings['ip']) as dev:
    ret = dev.auth_delete(aArgs['alias'],aArgs['ip'])
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}

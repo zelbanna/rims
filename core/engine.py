@@ -176,7 +176,6 @@ class Context(object):
    print("Starting error - check IP and SSL settings: %s"%str(e))
    return False
   else:
-   self.log("Server workers started")
    return True
 
  #

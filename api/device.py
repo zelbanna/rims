@@ -872,8 +872,12 @@ def log_put(aCTX, aArgs):
   - status
  """
  ret = {}
- with aCTX.db as db:
-  ret['status'] = "OK" if (db.do("INSERT INTO device_logs (device_id,message) VALUES (%(id)s,'%(message)s')"%aArgs) == 1) else "NOT_OK"
+ if aArgs['id'] > 0:
+  with aCTX.db as db:
+   ret['status'] = 'OK' if (db.do("INSERT INTO device_logs (device_id,message) VALUES (%(id)s,'%(message)s')"%aArgs) == 1) else 'NOT_OK'
+ else:
+  aCTX.log("Device logging: %s"%aArgs['message'])
+  ret['status'] = 'OK'
  return ret
 
 #
