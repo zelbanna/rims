@@ -36,6 +36,10 @@ docker create --name=mariadb -e PUID=1000 -e PGID=1000 -e MYSQL_ROOT_PASSWORD=$m
 docker create --name=influxdb -v influxdb:/var/lib/influxdb --net services --ip 172.18.0.3 --restart unless-stopped influxdb:1.8
 docker create --name=grafana -p 3000:3000 -v grafana:/var/lib/grafana --net services --ip 172.18.0.6 --restart unless-stopped grafana/grafana
 docker create --name=pdns-recursor -p 53:53 -p 53:53/udp -v pdns-recursor:/etc/powerdns  --net services --ip 172.18.0.4 --restart unless-stopped xddxdd/powerdns-recursor
+echo "PDNS recursor installed as container, if using regular install make sure that recursor user can write api-config-dir AND that the systemd service file doesn't sandbox the service (!!)"
+echo ""
+echo " - press enter to continue - "
+read
 docker create --name=pdns-server -v pdns-server:/etc/powerdns  --net services --ip 172.18.0.5 --restart unless-stopped xddxdd/powerdns
 echo "Create the following backend connection for PowerDNS volume (pdns-server):"
 echo " >> pdns.d/pdns.local.gmysql.conf"

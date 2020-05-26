@@ -4,19 +4,22 @@ __version__ = "6.4"
 __build__ = 326
 __all__ = ['Context','WorkerPool']
 
-from os import path as ospath, getpid, walk, stat as osstat
-from sys import stdout
-from json import loads, load, dumps
-from importlib import import_module, reload as reload_module
-from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
-from time import localtime, time, sleep, strftime
+from crypt import crypt
+from datetime import datetime, timedelta, timezone
+from functools import partial
 from gc import collect as garbage_collect
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import unquote, parse_qs
+from importlib import import_module, reload as reload_module
+from json import loads, load, dumps
+from os import path as ospath, getpid, walk, stat as osstat
+from random import choice
 from ssl import SSLContext, SSLError, PROTOCOL_SSLv23
-from functools import partial
-from datetime import datetime, timedelta, timezone
-from crypt import crypt
+from string import ascii_uppercase, digits
+from sys import stdout
+from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
+from time import localtime, time, sleep, strftime
+from traceback import format_exc
+from urllib.parse import unquote, parse_qs
 from rims.core.common import DB, rest_call, Scheduler
 
 ########################################### Context ########################################
@@ -72,7 +75,8 @@ class Context(object):
   """ Clone itself and non thread-safe components, avoid using copy and having to copy everything manually... """
   from copy import copy
   ctx_new = copy(self)
-  ctx_new.db = DB(self.config['database']['name'],self.config['database']['host'],self.config['database']['username'],self.config['database']['password']) if self.config.get('database') else None
+  settings = self.config.get('database')
+  ctx_new.db = DB(settings['name'],settings['host'],settings['username'],settings['password']) if settings else None
   return ctx_new
 
  #
@@ -96,8 +100,8 @@ class Context(object):
     for task in environment['tasks']:
      task['output'] = (task['output']== 'true')
     db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
-    db.do("SELECT users.id, ut.token, ut.created + INTERVAL 5 DAY as expires, INET_NTOA(ut.source_ip) AS ip, users.class FROM user_tokens AS ut LEFT JOIN users ON users.id = ut.user_id ORDER BY created DESC")
-    environment['tokens'] = {x['token']:{'id':x['id'], 'expires':x['expires'].replace(tzinfo=timezone.utc), 'ip':x['ip'], 'class':x['class']} for x in db.get_rows()}
+    db.do("SELECT users.id, ut.token, users.alias, ut.created + INTERVAL 5 DAY as expires, INET_NTOA(ut.source_ip) AS ip, users.class FROM user_tokens AS ut LEFT JOIN users ON users.id = ut.user_id ORDER BY created DESC")
+    environment['tokens'] = {x['token']:{'id':x['id'], 'alias':x['alias'],'expires':x['expires'].replace(tzinfo=timezone.utc), 'ip':x['ip'], 'class':x['class']} for x in db.get_rows()}
    environment['version'] = __version__
    environment['build'] = __build__
   else:
@@ -166,7 +170,7 @@ class Context(object):
    data = self.report()
    data.update(self.config)
    data['services'] = self.services
-   data['tokens'] = {k:{'id':v['id'],'ip':v['ip'],'class':v['class'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")} for k,v in self.tokens.items()}
+   data['tokens'] = {k:{'id':v['id'],'alias':v['alias'],'ip':v['ip'],'class':v['class'],'expires':v['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")} for k,v in self.tokens.items()}
    print("System Info:\n_____________________________\n%s\n_____________________________"%(dumps(data,indent=2, sort_keys=True)))
 
  #
@@ -217,7 +221,6 @@ class Context(object):
   self._analytics[aType][aGroup] = tmp
 
  #
- # @debug_decorator('log')
  def log(self,aMsg):
   syslog = self.config['logging']['system']
   if syslog['enabled']:
@@ -262,7 +265,6 @@ class Context(object):
   return output
 
  #
- #
  def house_keeping(self):
   """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
   ret = {}
@@ -274,75 +276,38 @@ class Context(object):
   ret['expired'] = len(expired)
   for t in expired:
    self.tokens.pop(t,None)
+  ret['auth'] = self.sync_auth()
   ret['collected'] = garbage_collect()
   return ret
+
+ #
+ def randomizer(self, aLength):
+  return ''.join(choice(ascii_uppercase + digits) for _ in range(aLength))
+
+ ############################# Authentication Functions ###########################
+ #
+ def sync_auth(self):
+  with self.db as db:
+   db.do("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in self.tokens.values()]))
+   alias = {x['id']:x['alias'] for x in db.get_rows()}
+  users = [{'ip':v['ip'],'alias':alias[v['id']]} for v in self.tokens.values()]
+  for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
+   self.node_function(infra['node'], "services.%s"%infra['service'], 'sync')(aArgs = {'id':infra['id'],'users':users})
+  return len(users)
+
+ #
+ def authenticate(self, aAlias, aIP, aOP):
+  """ 'authenticate' or 'invalidate' alias and ip """
+  for infra in [{'service':v['service'],'node':v['node']} for v in self.services.values() if v['type'] == 'AUTHENTICATION']:
+   res = self.node_function(infra['node'], "services.%s"%infra['service'], aOP)(aArgs = {'alias':aAlias, 'ip': aIP})
+   self.log("Authentication service for '%s' (%s %s@%s) => %s (%s)"%(aAlias, aOP, infra['service'], infra['node'], res['status'], res.get('info','N/A')))
+  return True
 
 ########################################## WorkerPool ########################################
 #
 class WorkerPool(object):
  """ Provides queue processing, HTTP(s) call processing and a scheduler """
 
- ###################################### Workers ########################################
- #
- class QueueWorker(Thread):
-
-  def __init__(self, aNumber, aAbort, aQueue, aContext):
-   Thread.__init__(self)
-   self._n      = aNumber
-   self.name    = "QueueWorker(%02d)"%aNumber
-   self._abort  = aAbort
-   self._idle   = Event()
-   self._queue  = aQueue
-   self._ctx    = aContext.clone()
-   self.daemon  = True
-   self.start()
-
-  def run(self):
-   while not self._abort.is_set():
-    try:
-     self._idle.set()
-     (func, api, sema, output, args, kwargs) = self._queue.get(True)
-     self._idle.clear()
-     result = func(*args,**kwargs) if not api else func(self._ctx, args)
-     if output:
-      self._ctx.log("%s - %s => %s"%(self.name,repr(func).split()[1],dumps(result)))
-    except Exception as e:
-     self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
-     if self._ctx.config['mode'] == 'debug':
-      from traceback import format_exc
-      for n,v in enumerate(format_exc().split('\n')):
-       self._ctx.log("%s - DEBUG-%02d => %s"%(self.name,n,v))
-    finally:
-     if sema:
-      sema.release()
-     self._queue.task_done()
-   return False
-
- #
- #
- class ServerWorker(Thread):
-
-  def __init__(self, aNumber, aAddress, aSocket, aContext):
-   Thread.__init__(self)
-   self.name    = "ServerWorker(%02d)"%aNumber
-   self.daemon  = True
-   httpd        = HTTPServer(aAddress, SessionHandler, False)
-   self._httpd  = httpd
-   httpd.socket = aSocket
-   httpd._ctx = self._ctx = aContext.clone()
-   httpd.server_bind = httpd.server_close = lambda self: None
-   self.start()
-
-  def run(self):
-   try: self._httpd.serve_forever()
-   except: pass
-   #except SSLError as e: print("SSLError: %s => %s"%(self.name,str(e)))
-   #except Exception as e: print("Error: %s => %s"%(self.name,str(e)))
-
-  def shutdown(self):
-   self._httpd.shutdown()
-
- #
  def __init__(self, aWorkers, aContext):
   from queue import Queue
   self._queue = Queue(0)
@@ -356,9 +321,6 @@ class WorkerPool(object):
   self._servers = []
   self._scheduler = Scheduler(self._abort,self._queue)
 
- def __str__(self):
-  return "WorkerPool(count = %s, queue = %s, schedulers = %s, alive = %s)"%(self._count,self._queue.qsize(),len(self._scheduler.events()),self.alive())
-
  def start(self):
   from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
   def create_socket(port):
@@ -369,7 +331,7 @@ class WorkerPool(object):
    sock.listen(5)
    return (addr,sock)
 
-  self._workers = [self.QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
+  self._workers = [QueueWorker(n, self._abort, self._queue, self._ctx) for n in range(self._count)]
   self._idles   = [w._idle for w in self._workers]
   self._abort.clear()
   self._scheduler.start()
@@ -379,7 +341,7 @@ class WorkerPool(object):
    self._ctx.log("Starting HTTP server at: %s"%self._ctx.config['port'])
    addr,sock = create_socket(int(self._ctx.config['port']))
    self._sock = sock
-   self._servers.extend(self.ServerWorker(n,addr,sock,self._ctx) for n in range(servers,servers+4))
+   self._servers.extend(ServerWorker(n,addr,sock,self._ctx) for n in range(servers,servers+4))
    servers = 4
   if (self._ctx.config.get('ssl')):
    ssl_config = self._ctx.config['ssl']
@@ -388,7 +350,7 @@ class WorkerPool(object):
    context.load_cert_chain(ssl_config['certfile'], keyfile=ssl_config['keyfile'], password=ssl_config.get('password'))
    addr,ssock = create_socket(int(ssl_config['port']))
    self._ssock = context.wrap_socket(ssock, server_side=True)
-   self._servers.extend(self.ServerWorker(n,addr,self._ssock,self._ctx) for n in range(servers,servers+4))
+   self._servers.extend(ServerWorker(n,addr,self._ssock,self._ctx) for n in range(servers,servers+4))
   return True
 
  def close(self):
@@ -485,6 +447,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._ctx = args[2]._ctx
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
+ #
  def __read_generator(self,fd, size = 1024):
   while True:
    chunk = fd.read(size)
@@ -492,6 +455,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     break
    yield chunk
 
+ #
  def header(self,code,text,size):
   # Sends X-Code as response, self.command == POST/GET/OPTION
   self.wfile.write(('HTTP/1.1 %s %s\r\n'%(code,text)).encode('utf-8'))
@@ -502,10 +466,12 @@ class SessionHandler(BaseHTTPRequestHandler):
    except: self.send_header('X-Header-Error',k)
   self.end_headers()
 
+ #
  def do_OPTIONS(self):
   self._headers.update({'Access-Control-Allow-Headers':'X-Token,Content-Type','Access-Control-Allow-Origin':'*'})
   self.header('200','OK',0)
 
+ #
  def do_GET(self):
   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
    self.header('304','Not Modified',0)
@@ -560,7 +526,6 @@ class SessionHandler(BaseHTTPRequestHandler):
    self.header('301','Moved Permanently',0)
 
  #
- #
  def do_POST(self):
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
@@ -614,7 +579,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      output = {'status':'OK'}
      with self._ctx.db as db:
-      output['update'] = (db.insert_dict('nodes',params,"ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
+      output['update'] = (db.do("INSERT INTO nodes(node, url) VALUES ('%(node)s','%(url)s') ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
      self._ctx.log("Registered node %s: update:%s"%(args['id'],output['update']))
     self._body = dumps(output).encode('utf-8')
    else:
@@ -626,7 +591,6 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.wfile.write(self._body)
 
  #
- #
  def api(self,api,id):
   """ API serves the REST functions x.y.z.a:<port>/api/module-path/function """
   (mod,_,fun) = api.rpartition('/')
@@ -637,7 +601,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     raw = self.rfile.read(length).decode()
     header,_,_ = self.headers['Content-Type'].partition(';')
     if   header == 'application/json': args = loads(raw)
-    elif header == 'application/x-www-form-urlencoded':   args = { k: l[0] for k,l in parse_qs(raw, keep_blank_values=1).items() }
+    elif header == 'application/x-www-form-urlencoded': args = { k: l[0] for k,l in parse_qs(raw, keep_blank_values=1).items() }
     else: args = {}
    else:  args = {}
   except: args = {}
@@ -657,16 +621,14 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._body = self._ctx.rest_call("%s/internal/%s"%(self._ctx.nodes[self._headers['X-Route']]['url'],api), aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
   except Exception as e:
    if not (isinstance(e.args[0],dict) and e.args[0].get('code')):
-    error = {'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))}
+    self._headers.update({'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))})
    else:
-    error = {'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')}
-   self._headers.update(error)
+    self._headers.update({'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')})
    if self._ctx.config['mode'] == 'debug':
-    from traceback import format_exc
     for n,v in enumerate(format_exc().split('\n')):
      self._headers["X-Debug-%02d"%n] = v
 
- ####################################### AUTHENTICATION ######################################
+ ################### AUTHENTICATION #################
  #
  def auth(self):
   """ Authenticate using node function. """
@@ -691,38 +653,37 @@ class SessionHandler(BaseHTTPRequestHandler):
       # Check if client moved, update local table then...
       if entry['ip'] != args.get('ip',self.client_address[0]):
        entry['ip'] = args.get('ip',self.client_address[0])
-      output['id'] = entry['id']
-      output['token'] = token
-      output['class'] = entry['class']
-      output['expires'] = entry['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")
-      output['ip'] = entry['ip']
-      output['status'] = 'OK'
+      output = {'status':'OK','id':entry['id'],'ip':entry['ip'],'alias':entry['alias'],'token':token,'class':entry['class'],'expires':entry['expires'].strftime("%a, %d %b %Y %H:%M:%S %Z")}
       self._headers['X-Code'] = 200
     elif 'destroy' in args:
-     if self._ctx.tokens.pop(token,None):
+     info = self._ctx.tokens.pop(token,None)
+     if info:
+      self._ctx.workers.queue_function(self._ctx.authenticate, info['alias'], info['ip'], 'invalidate')
       with self._ctx.db as db:
        if (db.do("DELETE FROM user_tokens WHERE token = '%s'"%token) == 0):
         self._ctx.log("Authentication: destroying non-existent token requested from %s"%self.client_address[0])
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     else:
-     from rims.core.genlib import random_string
      passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
      with self._ctx.db as db:
       if (db.do("SELECT id, class, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
        expires = datetime.now(timezone.utc) + timedelta(days=5)
        output.update(db.get_row())
-       output.update({'ip':args.get('ip',self.client_address[0]),'expires':expires.strftime("%a, %d %b %Y %H:%M:%S %Z")})
+       output.update({'alias':username,'ip':args.get('ip',self.client_address[0]),'expires':expires.strftime("%a, %d %b %Y %H:%M:%S %Z")})
        for k,v in self._ctx.tokens.items():
+        # Existing id/ip, just update token expiration and return existing
         if v['id'] == output['id'] and v['ip'] == output['ip']:
          output['token'] = k
          v['expires'] = expires
          db.do("UPDATE user_tokens SET created = NOW() WHERE token = '%s'"%k)
          break
        else:
-        output['token'] = random_string(16)
+        # New token generated, update all tables (token, database and auth servers)
+        output['token'] = self._ctx.randomizer(16)
         db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET_ATON('%(ip)s'))"%output)
-        self._ctx.tokens[output['token']] = {'id':output['id'],'expires':expires,'ip':output['ip'],'class':output['class']}
+        self._ctx.tokens[output['token']] = {'id':output['id'],'alias':username,'expires':expires,'ip':output['ip'],'class':output['class']}
+        self._ctx.workers.queue_function(self._ctx.authenticate, username, output['ip'], 'authenticate')
        output['status'] = 'OK'
        self._headers['X-Code'] = 200
       else:
@@ -732,7 +693,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      args['ip'] = self.client_address[0]
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
      if not 'destroy' in args:
-      self._ctx.tokens[output['token']] = {'id':output['id'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S %Z"),'ip':output['ip']}
+      self._ctx.tokens[output['token']] = {'id':output['id'],'alias':output['alias'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S %Z"),'ip':output['ip']}
       self._headers['X-Code'] = 200
      elif output['status'] == 'OK':
       self._ctx.tokens.pop(args['destroy'],None)
@@ -742,3 +703,63 @@ class SessionHandler(BaseHTTPRequestHandler):
      self._headers['X-Code'] = e.args[0]['code']
   output['node'] = self._ctx.node
   self._body = dumps(output).encode('utf-8')
+
+###################################### Workers ########################################
+#
+class QueueWorker(Thread):
+
+ def __init__(self, aNumber, aAbort, aQueue, aContext):
+  Thread.__init__(self)
+  self._n      = aNumber
+  self.name    = "QueueWorker(%02d)"%aNumber
+  self._abort  = aAbort
+  self._idle   = Event()
+  self._queue  = aQueue
+  self._ctx    = aContext.clone()
+  self.daemon  = True
+  self.start()
+
+ def run(self):
+  while not self._abort.is_set():
+   try:
+    self._idle.set()
+    (func, api, sema, output, args, kwargs) = self._queue.get(True)
+    self._idle.clear()
+    result = func(*args,**kwargs) if not api else func(self._ctx, args)
+    if output:
+     self._ctx.log("%s - %s => %s"%(self.name,repr(func).split()[1],dumps(result)))
+   except Exception as e:
+    self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
+    if self._ctx.config['mode'] == 'debug':
+     from traceback import format_exc
+     for n,v in enumerate(format_exc().split('\n')):
+      self._ctx.log("%s - DEBUG-%02d => %s"%(self.name,n,v))
+   finally:
+    if sema:
+     sema.release()
+    self._queue.task_done()
+  return False
+
+#
+#
+class ServerWorker(Thread):
+
+ def __init__(self, aNumber, aAddress, aSocket, aContext):
+  Thread.__init__(self)
+  self.name    = "ServerWorker(%02d)"%aNumber
+  self.daemon  = True
+  httpd        = HTTPServer(aAddress, SessionHandler, False)
+  self._httpd  = httpd
+  httpd.socket = aSocket
+  httpd._ctx = self._ctx = aContext.clone()
+  httpd.server_bind = httpd.server_close = lambda self: None
+  self.start()
+
+ def run(self):
+  try: self._httpd.serve_forever()
+  except: pass
+  #except SSLError as e: print("SSLError: %s => %s"%(self.name,str(e)))
+  #except Exception as e: print("Error: %s => %s"%(self.name,str(e)))
+
+ def shutdown(self):
+  self._httpd.shutdown()

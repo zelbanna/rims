@@ -140,6 +140,34 @@ def shutdown(aCTX, aArgs):
  process.start()
  return {'status':'OK','state':'shutdown in progress'}
 
+################################# AUTH #############################
+#
+#
+def active_users(aCTX, aArgs):
+ """ Function retrives active user ( wrt to tokens) with ip addresses. Pull method for syncing active users to auth server
+
+ Args:
+
+ Output:
+  - data
+ """
+ ret = {}
+ with aCTX.db as db:
+  db.do("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in aCTX.tokens.values()]))
+  alias = {x['id']:x['alias'] for x in db.get_rows()}
+ return {'data':[{'ip':v['ip'],'alias':alias[v['id']]} for v in aCTX.tokens.values()]}
+
+#
+#
+def active_sync(aCTX, aArgs):
+ """ Function sync authentication servers vs the token database. Pushes active users to services
+
+ Args:
+
+ Output:
+ """
+ return {'function':'system_active_sync','users':aCTX.sync_auth()}
+
 ################################# REST #############################
 #
 #

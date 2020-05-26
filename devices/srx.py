@@ -24,9 +24,20 @@ class Device(Junos):
   except Exception as e:
    return {'status':'NOT_OK','info':str(e)}
   else:
-   table = [{'ip-address':auth['ip-address'][0]['data'],'user-name':auth['user-name'][0]['data'],'roles':auth['role-name-list'][0]['role-name'][0]['data'].split(', ')} for auth in res.get('local-authentication-info',[])]
+   table = [{'ip':auth['ip-address'][0]['data'],'alias':auth['user-name'][0]['data'],'roles':auth['role-name-list'][0]['role-name'][0]['data'].split(', ')} for auth in res.get('local-authentication-info',[])]
    return {'status':'OK','data':table}
 
- def auth_add(self, aID, aIP):
-  pass
+ def auth_add(self, aAlias, aIP, aRoles):
+  try: res = self._router.rpc.request_userfw_local_auth_table_add(user_name=aAlias,ip_address=aIP,roles=','.join(aRoles))
+  except Exception as e:
+   return {'status':'NOT_OK','info':str(e)}
+  else:
+   return {'status':'OK' if res else 'NOT_OK'}
+
+ def auth_delete(self, aAlias, aIP):
+  try: res = self._router.rpc.request_userfw_local_auth_table_delete_ip(ip_address=aIP)
+  except Exception as e:
+   return {'status':'NOT_OK','info':str(e)}
+  else:
+   return {'status':'OK' if res else 'NOT_OK'}
 

@@ -50,8 +50,8 @@ class RIMS extends Component {
 
  logOut = () => {
   auth_call({destroy:this.state.token,id:this.state.id})
-  document.cookie = "rims=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
-  document.cookie = "rims_theme=; Path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+  document.cookie = "rims=; Path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+  document.cookie = "rims_theme=; Path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC";
   document.documentElement.removeAttribute("style");
   this.setState({token:null})
  }
