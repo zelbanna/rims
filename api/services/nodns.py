@@ -1,16 +1,13 @@
-"""
-NoDNS API module. Backend in case no DNS is available, only on master node, records can be exported :-)
-
-"""
+"""NoDNS API module. Backend in case no nameserver is available, only on master node, records can be exported :-)"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
-__type__ = "DNS"
+__type__ = "NAMESERVER"
 
 #################################### Domains #######################################
 #
 #
 def domain_list(aCTX, aArgs):
- """Function returns all domains by this DNS server
+ """Function returns all domains by this server
 
  Args:
 
@@ -31,7 +28,7 @@ def domain_list(aCTX, aArgs):
 def domain_info(aCTX, aArgs):
  """ Function provide domain info and modification
 
- TODO: Bypass DNS API here and do the insert locally, return 'found' == true instead :-), do proper DB exchange for the domain cache then
+ TODO: Bypass dns API here and do the insert locally, return 'found' == true instead :-), do proper DB exchange for the domain cache then
 
  Args:
   - id (required)
@@ -164,7 +161,7 @@ def record_delete(aCTX, aArgs):
 ############################### Tools #################################
 #
 def sync(aCTX, aArgs):
- """ Synchronize device table and recreate records, write resolv info to NoDNS file
+ """ Synchronize device table and recreate records, write resolv info to file
 
  Args:
   - id (required), server_id

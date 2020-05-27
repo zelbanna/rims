@@ -54,7 +54,7 @@ export class Main extends Component {
    </NavDropDown>
    <NavDropDown key='dev_nav_dns' title='DNS' style={{float:'right'}}>
     <NavDropButton key='dev_nav_doms' title='Domains' onClick={() => this.changeImport('dns','DomainList',{})} />
-    <NavDropButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DNS'})} />
+    <NavDropButton key='dev_nav_dsrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'NAMESERVER'})} />
     <NavDropButton key='dev_nav_recs' title='Recursors' onClick={() => this.changeImport('server','List',{type:'RECURSOR'})} />
    </NavDropDown>
    <NavReload key='dev_nav_reload' onClick={() => this.changeContent(null)} />

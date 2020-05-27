@@ -1,13 +1,13 @@
-"""PowerDNS API module. Provides powerdns specific REST interface. Essentially to create a GUI management for PowerDNS."""
+"""PowerDNS API module. Provides powerdns specific REST interface. Essentially to create a GUI management"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
-__type__ = "DNS"
+__type__ = "NAMESERVER"
 
 #################################### Domains #######################################
 #
 #
 def domain_list(aCTX, aArgs):
- """Function provides a list of all domains from PowerDNS server
+ """Function provides a list of all domains from this server
 
  Args:
 
@@ -75,7 +75,7 @@ def domain_info(aCTX, aArgs):
 #
 #
 def domain_delete(aCTX, aArgs):
- """Function deletes a zone - assumes PowerDNS removes all metadata and RRs
+ """Function deletes a zone - assumes all metadata and RRs is automatically removed
 
  Args:
   - id (required)
@@ -185,6 +185,7 @@ def sync(aCTX, aArgs):
  """Function docstring for sync.
 
  Args:
+  - id (required)
 
  Output:
  """
@@ -235,14 +236,8 @@ def restart(aCTX, aArgs):
  from subprocess import check_output, CalledProcessError
  ret = {}
  settings = aCTX.config['powerdns']
- try:
-  ret['output'] = check_output(settings.get('reload','service pdns restart').split()).decode()
-  ret['code'] = 0
-  ret['output'] = 'OK'
- except CalledProcessError as c:
-  ret['code'] = c.returncode
-  ret['output'] = c.output
-  ret['status'] = 'NOT_OK'
+ try: ret = {'output':check_output(settings.get('reload','service pdns restart').split()).decode(), 'code':0, 'status':'OK' }
+ except CalledProcessError as c: ret = {'output':c.output, 'code':c.returncode, 'status':'NOT_OK'}
  return ret
 
 #
@@ -255,7 +250,7 @@ def parameters(aCTX, aArgs):
  - key - API key
  - reload - command line command to reload service
  - nameserver - For SOA records, add trailing . (dot) to be 'canonical'
- - endpoint (ip:port for DNS service, not REST API)
+ - endpoint (ip:port for nameserver, not REST API)
 
  Args:
 

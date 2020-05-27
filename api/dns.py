@@ -24,7 +24,7 @@ def domain_list(aCTX, aArgs):
  with aCTX.db as db:
   if aArgs.get('sync',False):
    org = {}
-   for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']:
+   for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']:
     org[infra['id']] = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
    ret.update({'result':{'added':[],'deleted':[],'type_fix':0}})
    db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
@@ -43,8 +43,8 @@ def domain_list(aCTX, aArgs):
     ret['result']['deleted'].append(dom)
     db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
    # Sync recursors as well
-   # INTERNAL from rims.api.dns import sync
-   sync(aCTX, aArgs = {})
+   # INTERNAL from rims.api.dns import sync_recursors
+   sync_recursors(aCTX, aArgs = {})
   ret['count']   = db.do("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if not 'filter' in aArgs else "domains.type = '%s'"%aArgs['filter']))
   ret['data'] = db.get_rows()
  return ret
@@ -66,7 +66,7 @@ def domain_info(aCTX, aArgs):
  ret = {}
  id = aArgs['id']
  if id  == 'new' and not (aArgs.get('op') == 'update'):
-  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DNS']
+  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']
   ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'Master', 'serial':0 }
  else:
   with aCTX.db as db:
@@ -92,7 +92,7 @@ def domain_info(aCTX, aArgs):
 #
 #
 def domain_delete(aCTX, aArgs):
- """Function domain_delete deletes a domain from local cache and remote DNS server. All records will be transferred to no domain.
+ """Function domain_delete deletes a domain from local cache and remote nameserver. All records will be transferred to no domain.
 
  Args:
   - id (required)
@@ -244,8 +244,8 @@ def statistics(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
- """ Function synchronizes recursors and with database/forwarders to point to the right DNS servers
+def sync_recursors(aCTX, aArgs):
+ """ Function synchronizes recursors and with database/forwarders to point them to the correct nameserver
 
  Args:
 
@@ -262,5 +262,5 @@ def sync(aCTX, aArgs):
   else:
    ret['errors'].append(("%s@%s"%(infra['node'],infra['service']),res['info']))
   ret['status'] = 'NOT_OK' if ret['errors'] else 'OK'
- aCTX.log("DNS <=> Recursors synchronized: %s"%ret['status'])
+ aCTX.log("Nameservers/Recursors synchronized: %s"%ret['status'])
  return ret
