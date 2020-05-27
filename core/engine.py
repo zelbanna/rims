@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.5"
-__build__ = 330
+__build__ = 331
 __all__ = ['Context']
 
 from crypt import crypt
@@ -18,6 +18,7 @@ from string import ascii_uppercase, digits
 from sys import stdout
 from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
 from time import localtime, time, sleep, strftime
+from traceback import format_exc
 from urllib.parse import unquote, parse_qs
 from rims.core.common import DB, rest_call, Scheduler
 
@@ -720,7 +721,6 @@ class QueueWorker(Thread):
    except Exception as e:
     self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
     if self._ctx.config['mode'] == 'debug':
-     from traceback import format_exc
      for n,v in enumerate(format_exc().split('\n')):
       self._ctx.log("%s - DEBUG-%02d => %s"%(self.name,n,v))
    finally:

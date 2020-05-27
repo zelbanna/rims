@@ -398,9 +398,11 @@ def activity_info(aCTX, aArgs):
 
  Args:
   - id (required)
-  - start (optional)
   - user_id (optional required)
   - type_id (optional required)
+  - event
+  - date
+  - time
 
  Output:
  """
@@ -412,14 +414,14 @@ def activity_info(aCTX, aArgs):
   ret['types'] = db.get_rows()
   db.do("SELECT id,alias FROM users ORDER BY alias")
   ret['users'] = db.get_rows()
-  if op == 'update':
+  if op == 'update' and all(x in aArgs for x in ['user_id','type_id']):
    aArgs['date_time'] ="%s %s:00"%(aArgs.pop('date','1970-01-01'),aArgs.pop('time','00:01'))
 
    if not id == 'new':
-    ret['update'] = db.update_dict('activities',aArgs,'id = %s'%id)
+    ret['update'] = (db.update_dict('activities',aArgs,'id = %s'%id) > 0)
    else:
-    ret['update'] = db.insert_dict('activities',aArgs)
-    id = db.get_last_id() if ret['update'] > 0 else 'new'
+    ret['update'] = (db.insert_dict('activities',aArgs) > 0)
+    id = db.get_last_id() if ret['update'] else 'new'
 
   if not id == 'new':
    ret['found'] = (db.do("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id) > 0)

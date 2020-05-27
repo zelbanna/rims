@@ -203,7 +203,7 @@ export class AddressInfo extends Component {
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
       <TextLine key='network' id='network' text={this.state.extra.network} />
       <TextInput key='ip' id='ip' label='IP'  value={this.state.data.ip} onChange={this.onChange} />
-      <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
+      <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} title='Hostname when creating FQDN for DNS entry' />
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_save' onClick={() => this.updateInfo()} title='Save' />

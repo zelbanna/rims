@@ -163,8 +163,6 @@ def record_delete(aCTX, aArgs):
 
 ############################### Tools #################################
 #
-# TODO: do loads of inserts, one for every device
-#
 def sync(aCTX, aArgs):
  """ Synchronize device table and recreate records, write resolv info to NoDNS file
 
@@ -173,10 +171,19 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- ret = {'update':0,'insert':0,'removed':0,'status':'OK'}
+ ret = {'status':'OK'}
  with aCTX.db as db:
+  # Empty all
+  db.do("TRUNCATE domain_records")
+  # Auto insert all IPAM A records
+  ret['records'] =  db.do("INSERT INTO domain_records (domain_id, name, content, type, ttl) SELECT domains.foreign_id,  CONCAT(ia.hostname,'.',domains.name), INET_NTOA(ia.ip), 'A', 3600 FROM ipam_addresses AS ia LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.server_id = %s"%aArgs['id'])
+  # Auto Insert all IPAM PTR records
+  ret['records'] += db.do("INSERT INTO domain_records (domain_id, name, content, type, ttl) SELECT ine.reverse_zone_id, CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name), CONCAT(ia.hostname,'.',domains.name), 'PTR', 3600 FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id RIGHT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id IN (SELECT id FROM domains WHERE type = 'reverse' AND server_id = %s)"%aArgs['id'])
+  # Auto Insert all Hostname CNAMEs
+  ret['records'] += db.do("INSERT INTO domain_records (domain_id, name, content, type, ttl) SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name), CONCAT(ia.hostname,'.',ia_dom.name,'.'), 'CNAME', 3600 FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE domains.server_id = %s AND ia.id IS NOT NULL"%aArgs['id'])
+
   # Write to local 'hosts' file or similar
-  if aCTX.config.get('nodns',{}).get('file'):
+  if  aCTX.config.get('nodns',{}).get('file'):
    from os import linesep
    try:
     with open(aCTX.config['nodns']['file'],'w+') as ndfile:

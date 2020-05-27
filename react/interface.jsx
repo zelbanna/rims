@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { post_call, rnd } from './infra/Functions.js';
 import { Spinner, StateLeds, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, NetworkButton, DeleteButton,ForwardButton, GoButton, InfoButton, LinkButton, ReloadButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, InfoButton, LinkButton, ReloadButton, SaveButton, SearchButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
 
 // *************** List ****************
 //
@@ -72,8 +72,6 @@ export class Info extends Component {
  deleteIpam = () => (window.confirm('Delete IP mapping?') && post_call('api/ipam/address_delete',{id:this.state.data.ipam_id}).then(result => ((result.status === 'OK') && this.setState({data:{...this.state.data, ipam_id:null}}))))
 
  updateInfo = () => post_call('api/interface/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
-
- updateDNS = () => (window.confirm('Update DNS with device-interface-name') && post_call('api/ipam/address_info',{op:'update',hostname:this.state.data.name,id:this.state.data.ipam_id}).then(result => this.setState({result:JSON.stringify(result)})))
 
  deviceChange = (e) => {
   this.setState({connect:{...this.state.connect, [e.target.name]:e.target.value}});
@@ -148,9 +146,13 @@ export class Info extends Component {
    } else {
     const ipam = (this.state.data.ipam_id);
     const peer = (this.state.peer);
+    let opresult = '';
+    if (this.state.update !== undefined) {
+     opresult = 'Updated: ' + JSON.stringify(this.state.update);
+    }
     return (<InfoArticle key='ii_article' header='Interface'>
      <InfoColumns key='ii_columns' columns={3}>
-      <TextInput key='ii_name' id='name' value={this.state.data.name} onChange={this.onChange} /><div>{ipam && <SyncButton key='ii_btn_dns' onClick={() => this.updateDNS()} title='Sync DNS information using name' />}</div>
+      <TextInput key='ii_name' id='name' value={this.state.data.name} onChange={this.onChange} /><div />
       <SelectInput key='ii_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'ii_class_'+row} value={row}>{row}</option>)}</SelectInput><div />
       <TextInput key='ii_description' id='description' value={this.state.data.description} onChange={this.onChange} /><div />
       <TextInput key='ii_snmp_index' id='snmp_index' label='SNMP index' value={this.state.data.snmp_index} onChange={this.onChange} /><div />
@@ -166,8 +168,8 @@ export class Info extends Component {
      {'changeSelf' in this.props && <BackButton key='ii_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />}
      <ReloadButton key='ii_btn_reload' onClick={() => this.componentDidMount()} />
      <SaveButton key='ii_btn_save' onClick={() => this.updateInfo()} title='Save interface information' />
-     {!peer && this.state.data.interface_id !== 'new' && ['wired','optical'].includes(this.state.data.class) && <NetworkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}
-     <Result key='ii_result' result={(this.state.status !== 'OK') ? this.state.info : this.state.result} />
+     {!peer && this.state.data.interface_id !== 'new' && ['wired','optical'].includes(this.state.data.class) && <LinkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}
+     <Result key='ii_result' result={opresult} />
     </InfoArticle>)
    }
   } else

@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { post_call, rnd } from './infra/Functions.js';
-import { RimsContext, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
+import { RimsContext, Result, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { TextLine, TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HrefButton, InfoButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 
@@ -86,12 +86,14 @@ class List extends Component {
 class Info extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, found:true};
+  this.state = {data:null};
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () =>  post_call('api/master/activity_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => {
+  post_call('api/master/activity_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ }
 
  componentDidMount(){
   post_call('api/master/activity_info',{id:this.props.id}).then(result => {
@@ -103,15 +105,17 @@ class Info extends Component {
 
  render() {
   if (this.state.data)
-   return <InfoArticle key='act_art' header='Activity'>
-     <InfoColumns key='act_content'>
-      <SelectInput key='act_user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
-      <SelectInput key='act_type_id' id='type_id' label='Type' value={this.state.data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'ai_t_'+idx} value={row.id}>{row.type}</option>)}</SelectInput>
-      <DateInput key='act_date' id='date' value={this.state.data.date} onChange={this.onChange} />
-      <TimeInput key='act_time' id='time' value={this.state.data.time} onChange={this.onChange} />
+   return <InfoArticle key='ai_art' header='Activity'>
+     <InfoColumns key='ai_content'>
+      <TextLine key='ai_id' id='id' label='ID' text={this.state.data.id} />
+      <SelectInput key='ai_user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
+      <SelectInput key='ai_type_id' id='type_id' label='Type' value={this.state.data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'ai_t_'+idx} value={row.id}>{row.type}</option>)}</SelectInput>
+      <DateInput key='ai_date' id='date' value={this.state.data.date} onChange={this.onChange} />
+      <TimeInput key='ai_time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoColumns>
-     <TextAreaInput key='act_event' id='event' value={this.state.data.event} onChange={this.onChange} />
-     <SaveButton key='act_btn_save' onClick={() => this.updateInfo()} title='Save' />
+     <TextAreaInput key='ai_event' id='event' value={this.state.data.event} onChange={this.onChange} />
+     <SaveButton key='ai_btn_save' onClick={() => this.updateInfo()} title='Save' />
+     <Result key='ai_result' result={JSON.stringify(this.state.update)} />
     </InfoArticle>
   else
    return <Spinner />
@@ -176,7 +180,7 @@ class TypeList extends Component {
 class TypeInfo extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, found:true, content:null};
+  this.state = {data:null, content:null};
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});

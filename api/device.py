@@ -236,7 +236,6 @@ def extended(aCTX, aArgs):
   - a_domain_id (optional required)
   - extra: 'domains'
 
-
  Output:
   - extended device info
  """
