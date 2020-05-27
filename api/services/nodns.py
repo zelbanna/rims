@@ -96,7 +96,7 @@ def record_list(aCTX, aArgs):
   if 'type' in aArgs:
    select.append("type = '%s'"%aArgs['type'].upper())
   tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
-  ret['count'] = db.do("SELECT domain_id, name, content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM domain_records %s ORDER BY type, name ASC"%tune)
+  ret['count'] = db.do("SELECT domain_id, name, content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM records %s ORDER BY type, name ASC"%tune)
   ret['data'] = db.get_rows()
  return ret
 
@@ -122,7 +122,7 @@ def record_info(aCTX, aArgs):
   if op == 'new':
    ret = {'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
   elif op == 'info':
-   if (db.do("SELECT domain_id,name,content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM domain_records WHERE name = '%s' AND domain_id = %s AND type = '%s'"%(aArgs['name'],aArgs['domain_id'],aArgs['type'])) > 0):
+   if (db.do("SELECT domain_id,name,content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM records WHERE name = '%s' AND domain_id = %s AND type = '%s'"%(aArgs['name'],aArgs['domain_id'],aArgs['type'])) > 0):
     ret = {'status':'OK','data':db.get_row()}
    else:
     ret = {'status':'NOT_OK','data':None}
@@ -133,9 +133,9 @@ def record_info(aCTX, aArgs):
     aArgs['name'] = aArgs['name'][:-1]
    ret['data'] = aArgs
    if op == 'insert':
-    ret['status'] = 'OK' if (db.do("INSERT INTO domain_records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0) else 'NOT_OK'
+    ret['status'] = 'OK' if (db.do("INSERT INTO records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0) else 'NOT_OK'
    elif op == 'update':
-    ret['status'] = 'OK' if (db.do("UPDATE domain_records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0) else 'NOT_OK'
+    ret['status'] = 'OK' if (db.do("UPDATE records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0) else 'NOT_OK'
  return ret
 
 #
@@ -154,7 +154,7 @@ def record_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.do("DELETE FROM domain_records WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
+  ret['deleted'] = (db.do("DELETE FROM records WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK';
  return ret
 
@@ -171,20 +171,20 @@ def sync(aCTX, aArgs):
  ret = {'status':'OK'}
  with aCTX.db as db:
   # Empty all
-  db.do("TRUNCATE domain_records")
+  db.do("TRUNCATE records")
   # Auto insert all IPAM A records
-  ret['records'] =  db.do("INSERT INTO domain_records (domain_id, name, content, type, ttl) SELECT domains.foreign_id,  CONCAT(ia.hostname,'.',domains.name), INET_NTOA(ia.ip), 'A', 3600 FROM ipam_addresses AS ia LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.server_id = %s"%aArgs['id'])
+  ret['records'] =  db.do("INSERT INTO records (domain_id, name, content, type, ttl) SELECT domains.foreign_id,  CONCAT(ia.hostname,'.',domains.name), INET_NTOA(ia.ip), 'A', 3600 FROM ipam_addresses AS ia LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.server_id = %s"%aArgs['id'])
   # Auto Insert all IPAM PTR records
-  ret['records'] += db.do("INSERT INTO domain_records (domain_id, name, content, type, ttl) SELECT ine.reverse_zone_id, CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name), CONCAT(ia.hostname,'.',domains.name), 'PTR', 3600 FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id RIGHT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id IN (SELECT id FROM domains WHERE type = 'reverse' AND server_id = %s)"%aArgs['id'])
+  ret['records'] += db.do("INSERT INTO records (domain_id, name, content, type, ttl) SELECT ine.reverse_zone_id, CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name), CONCAT(ia.hostname,'.',domains.name), 'PTR', 3600 FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id RIGHT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id IN (SELECT id FROM domains WHERE type = 'reverse' AND server_id = %s)"%aArgs['id'])
   # Auto Insert all Hostname CNAMEs
-  ret['records'] += db.do("INSERT INTO domain_records (domain_id, name, content, type, ttl) SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name), CONCAT(ia.hostname,'.',ia_dom.name,'.'), 'CNAME', 3600 FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE domains.server_id = %s AND ia.id IS NOT NULL"%aArgs['id'])
+  ret['records'] += db.do("INSERT INTO records (domain_id, name, content, type, ttl) SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name), CONCAT(ia.hostname,'.',ia_dom.name,'.'), 'CNAME', 3600 FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE domains.server_id = %s AND ia.id IS NOT NULL"%aArgs['id'])
 
   # Write to local 'hosts' file or similar
   if  aCTX.config.get('nodns',{}).get('file'):
    from os import linesep
    try:
     with open(aCTX.config['nodns']['file'],'w+') as ndfile:
-     db.do("SELECT name, content FROM domain_records WHERE type = 'A'")
+     db.do("SELECT name, content FROM records WHERE type = 'A'")
      ndfile.write(linesep.join("%s\t%s"%(rec['content'],rec['name']) for rec in db.get_rows() ))
    except Exception as e:
     aCTX.log("Error writing NoDNS file: %s"%str(e))
