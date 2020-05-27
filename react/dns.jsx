@@ -35,7 +35,7 @@ export class DomainList extends Component {
 
  syncDomains(){
   post_call('api/dns/domain_list',{sync:true}).then(result => {
-   result.result = JSON.stringify(result.result);
+   result.result = 'NS:' + result.ns.status + ', Recursors:' + result.rec.status;
    this.setState(result);
   })
  }

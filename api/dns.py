@@ -23,29 +23,10 @@ def domain_list(aCTX, aArgs):
  ret = {}
  with aCTX.db as db:
   if aArgs.get('sync',False):
-   org = {}
-   for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']:
-    org[infra['id']] = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
-   ret.update({'result':{'added':[],'deleted':[],'type_fix':0}})
-   db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
-   cache = db.get_dict('srv_id')
-   for srv,info in org.items():
-    for dom in info['data']:
-     tmp = cache.pop("%s_%s"%(srv,dom['id']),None)
-     if not tmp:
-      ret['result']['added'].append(dom)
-      # Add forward here
-      db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward', 'endpoint':info['endpoint']},"ON DUPLICATE KEY UPDATE name = '%s', endpoint = '%s'"%(dom['name'],info['endpoint']))
-     else:
-      ret['result']['type_fix'] += db.do("UPDATE domains SET type = '%s', endpoint = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',info['endpoint'],tmp['id']))
-   for id,dom in cache.items():
-    dom.pop('srv_id',None)
-    ret['result']['deleted'].append(dom)
-    db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
-   # Sync recursors as well
-   # INTERNAL from rims.api.dns import sync_recursors
-   sync_recursors(aCTX, aArgs = {})
-  ret['count']   = db.do("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if not 'filter' in aArgs else "domains.type = '%s'"%aArgs['filter']))
+   # INTERNAL from rims.api.dns import sync_recursor, sync_nameserver
+   ret['ns'] = sync_nameserver(aCTX, aArgs = {})
+   ret['rec'] = sync_recursor(aCTX, aArgs = {})
+  ret['count'] = db.do("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if not 'filter' in aArgs else "domains.type = '%s'"%aArgs['filter']))
   ret['data'] = db.get_rows()
  return ret
 
@@ -244,14 +225,45 @@ def statistics(aCTX, aArgs):
 
 #
 #
-def sync_recursors(aCTX, aArgs):
+def sync_nameserver(aCTX, aArgs):
+ """ Function synchronizes nameservers with the cache
+
+ Args:
+
+ Output:
+ """
+ ret = {'added':[],'removed':[],'fixed':0,'status':'OK'}
+ org = {}
+ for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']:
+  org[infra['id']] = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
+ with aCTX.db as db:
+  db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
+  cache = db.get_dict('srv_id')
+  for srv,info in org.items():
+   for dom in info['data']:
+    tmp = cache.pop("%s_%s"%(srv,dom['id']),None)
+    if not tmp:
+     ret['added'].append(dom)
+     # Add forward here
+     db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward', 'endpoint':info['endpoint']},"ON DUPLICATE KEY UPDATE name = '%s', endpoint = '%s'"%(dom['name'],info['endpoint']))
+    else:
+     ret['fixed'] += db.do("UPDATE domains SET type = '%s', endpoint = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',info['endpoint'],tmp['id']))
+  for id,dom in cache.items():
+   dom.pop('srv_id',None)
+   ret['removed'].append(dom)
+   db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
+ return ret
+
+#
+#
+def sync_recursor(aCTX, aArgs):
  """ Function synchronizes recursors and with database/forwarders to point them to the correct nameserver
 
  Args:
 
  Output:
  """
- ret = {'added':[],'removed':[],'errors':[]}
+ ret = {'added':[],'removed':[],'errors':[],'status':'OK'}
  # INTERNAL from rims.api.dns import domain_forwarders
  domains = domain_forwarders(aCTX,{})['data']
  for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
