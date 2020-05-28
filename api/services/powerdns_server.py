@@ -189,7 +189,18 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- return {'status':'OK'}
+ settings = aCTX.config['powerdns']['server']
+ try: domains = [x['name'] for x in aCTX.rest_call('%s/api/v1/servers/localhost/zones?dnssec=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})]
+ except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data'] if e.args[0]['data'] else str(e)}
+ else:
+  sync_data = aCTX.node_function('master','dns','sync_data')
+  ret = {'status':'OK'}
+  for dom in domains:
+   records = sync_data(aArgs = {'id':aArgs['id'],'domain':dom})['data']
+   args = {'rrsets':[{'name':x['name'],'type':x['type'],'ttl':'3600','changetype':'REPLACE','records':[{'content':x['content'],'disabled':False}],'comments':[]} for x in records]}
+   try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],dom), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+   except Exception as e: ret.update({'status':'NOT_OK',dom:e.args[0]['data']})
+ return ret
 
 #
 #
