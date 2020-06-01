@@ -150,7 +150,7 @@ class List extends Component {
 
  render(){
   if (this.state.data){
-   let device_list = this.state.data.filter(row => (row.hostname.includes(this.state.searchfield) || (row.ip && row.ip.includes(this.state.searchfield))))
+   let device_list = this.state.data.filter(row => (row.hostname.toLowerCase().includes(this.state.searchfield.toLowerCase()) || (row.ip && row.ip.includes(this.state.searchfield))))
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
    return <Fragment key={'dl_fragment'}>
     <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={device_list}>

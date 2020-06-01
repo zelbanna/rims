@@ -665,6 +665,26 @@ def system_info_discover(aCTX, aArgs):
    db.ignore_warnings(old)
  return ret
 
+
+def fdb_sync(aCTX, aArgs):
+ """ Function retrieves switch table for a device and populate FDB table for caching
+
+ Args:
+  - id (required)
+  - ip (optional).
+  - type (optional). Device type
+
+ Output:
+ """
+ from importlib import import_module
+ ret = {}
+ try:
+  module = import_module("rims.devices.%s"%aArgs.get('type','generic'))
+  ret['fdb'] = getattr(module,'Device',None)(aCTX,aArgs['id'],aArgs.get('ip')).fdb()
+ except Exception as e: ret.update({'status':'NOT_OK','info':str(e)})
+ else: ret['status'] = 'OK'
+ return ret
+
 ################################################## TYPES ##################################################
 #
 #

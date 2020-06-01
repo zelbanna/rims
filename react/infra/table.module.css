@@ -15,7 +15,7 @@
 .table { display: table; width:100%; }
 .thead { display: table-header-group; }
 .tbody { display: table-row-group; }
-.trow { display: table-row; }
+.trow { display: table-row; height:2.3rem; }
 .trow:nth-child(even) { background-color:var(--std-color); }
 .trow:nth-child(odd) { background-color:var(--main-color); }
 

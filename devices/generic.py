@@ -11,7 +11,7 @@ __type__    = "generic"
 __icon__    = "viz-generic.png"
 __oid__     = 8072
 
-from rims.core.common import VarList, Session
+from rims.core.common import VarList, VarBind, Session
 
 ########################################### Device ########################################
 class Device(object):
@@ -196,5 +196,19 @@ class Device(object):
    for k in list(neighbors.keys()):
     if not neighbors[k].get('chassis_type'):
      neighbors.pop(k,None)
-
   return neighbors
+
+ #
+ def fdb(self):
+  try:
+   objs = VarList('.1.3.6.1.2.1.17.7.1.2.2.1.2')
+   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session.walk(objs)
+  except Exception as e: return {'status':'NOT_OK','info':str(e)}
+  else:
+   ret = {}
+   if (session.ErrorInd == 0):
+   # For each object, remove base and split into vlan.macs. val = some interface identifier
+    pass
+   else:
+    return {'status':'NOT_OK','info':'SNMP error: %s'%session.ErrorInd}

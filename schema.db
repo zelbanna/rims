@@ -23,6 +23,7 @@ DROP TABLE IF EXISTS `activity_types`;
 CREATE TABLE `activity_types` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `type` varchar(40) NOT NULL,
+  `class` enum('transient','daily') NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -166,22 +167,6 @@ CREATE TABLE `devices` (
   CONSTRAINT `devices_ibfk_1` FOREIGN KEY (`a_domain_id`) REFERENCES `domains` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `devices_ibfk_3` FOREIGN KEY (`management_id`) REFERENCES `interfaces` (`interface_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `domain_records`;
-CREATE TABLE `domain_records` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `domain_id` varchar(8) NOT NULL,
-  `name` varchar(96) NOT NULL,
-  `content` varchar(96) NOT NULL,
-  `type` enum('A','PTR','CNAME') NOT NULL,
-  `ttl` int(10) unsigned DEFAULT 3600,
-  `serial` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`,`type`),
-  KEY `domain_id` (`domain_id`),
-  CONSTRAINT `domain_records_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`foreign_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -377,6 +362,22 @@ CREATE TABLE `racks` (
   CONSTRAINT `racks_ibfk_2` FOREIGN KEY (`pdu_1`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_3` FOREIGN KEY (`pdu_2`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `racks_ibfk_4` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `records`;
+CREATE TABLE `records` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `domain_id` varchar(8) NOT NULL,
+  `name` varchar(96) NOT NULL,
+  `content` varchar(96) NOT NULL,
+  `type` enum('A','PTR','CNAME') NOT NULL,
+  `ttl` int(10) unsigned DEFAULT 3600,
+  `serial` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`,`type`),
+  KEY `domain_id` (`domain_id`),
+  CONSTRAINT `records_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`foreign_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

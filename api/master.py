@@ -387,7 +387,34 @@ def activity_list(aCTX, aArgs):
  else:
   select = "activities.id"
  with aCTX.db as db:
-  db.do("SELECT %s, activity_types.type AS type, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY date_time DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
+  db.do("SELECT %s, activity_types.type AS type, activity_types.class AS class, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY date_time DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def activity_daily(aCTX, aArgs):
+ """ Function docstring for activity_daily.
+
+ Args:
+  - date (optional). Default to current date
+  - extras (optional). list: 'users'
+ Output:
+ """
+ ret = {}
+
+ if not aArgs.get('date'):
+  from datetime import date
+  dt = date.today()
+  ret['date'] = "%i-%02i-%02i"%(dt.year,dt.month,dt.day)
+ else:
+  ret['date'] = aArgs['date']
+
+ with aCTX.db as db:
+  if 'users' in aArgs.get('extras',[]):
+   db.do("SELECT id,alias FROM users ORDER BY alias")
+   ret['users'] = {x['id']:x for x in db.get_rows()}
+  db.do("SELECT at.id, act.id AS act_id, act.user_id, at.type, act.event FROM activity_types AS at LEFT JOIN activities AS act ON at.id = act.type_id AND (act.type_id = NULL OR DATE(act.date_time) = '%s') WHERE at.class = 'daily'"%ret['date'])
   ret['data'] = db.get_rows()
  return ret
 
@@ -410,10 +437,13 @@ def activity_info(aCTX, aArgs):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  db.do("SELECT * FROM activity_types ORDER BY type ASC")
-  ret['types'] = db.get_rows()
-  db.do("SELECT id,alias FROM users ORDER BY alias")
-  ret['users'] = db.get_rows()
+  extras = aArgs.get('extras',[])
+  if 'types' in extras:
+   db.do("SELECT * FROM activity_types ORDER BY type ASC")
+   ret['types'] = db.get_rows()
+  if 'users' in extras:
+   db.do("SELECT id,alias FROM users ORDER BY alias")
+   ret['users'] = db.get_rows()
   if op == 'update' and all(x in aArgs for x in ['user_id','type_id']):
    aArgs['date_time'] ="%s %s:00"%(aArgs.pop('date','1970-01-01'),aArgs.pop('time','00:01'))
 
@@ -488,7 +518,8 @@ def activity_type_info(aCTX, aArgs):
    ret['found'] = (db.do("SELECT * FROM activity_types WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   ret['data'] = {'id':'new','type':''}
+   ret['data'] = {'id':'new','class':'transient','type':''}
+ ret['classes'] = ['transient','daily']
  return ret
 
 #
