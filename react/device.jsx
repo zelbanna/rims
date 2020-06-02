@@ -208,6 +208,7 @@ export class Info extends Component {
    const change_self = (this.props.changeSelf);
    const has_ip = (extra.interface_ip);
    const function_strings = (extra.functions.length >0) ? extra.functions.split(',') : [];
+   const type = this.state.types.find(tp => tp.id === data.type_id)
    return <Fragment key='di_fragment'>
     <InfoArticle key='di_art' header='Device'>
      <InfoColumns key='di_info' style={{float:'left'}}>
@@ -221,7 +222,7 @@ export class Info extends Component {
       <SelectInput key='class' id='class' value={data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'di_class_'+row} value={row}>{row}</option>)}</SelectInput>
       <SelectInput key='type_id' id='type_id' label='Type' value={data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'di_type_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
       <TextInput key='model' id='model' value={data.model} onChange={this.onChange} extra={data.model} />
-      <TextLine key='version' id='version' text={data.version} onChange={this.onChange} />
+      <TextLine key='version' id='version' text={data.version} />
       <TextInput key='serial' id='serial' label='S/N' value={data.serial} onChange={this.onChange} />
      </InfoColumns>
      <InfoColumns key='di_rack' style={{float:'left'}}>
@@ -257,6 +258,7 @@ export class Info extends Component {
     <NavBar key='di_navigation' id='di_navigation'>
      {this.state.navconf && <NavButton key='di_nav_management' title='Management' onClick={() => this.changeContent(<ManagementInfo key='device_configure' id={this.props.id} />)} />}
      {this.state.navconf && <NavButton key='di_nav_interfaces' title='Interfaces' onClick={() => this.changeInterfaces()} />}
+     {!this.state.navconf && type.base === 'network' && has_ip && <NavButton key='di_nav_fdb' title='FDB' onClick={() => this.changeContent(<FDB key='device_fdb' id={this.props.id} ip={extra.interface_ip} type={type.name} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
      {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && <NavButton key='di_nav_stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='device_statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
@@ -303,6 +305,41 @@ class ManagementInfo extends Component {
     <SaveButton key='d_conf_btn_save' onClick={() => this.updateInfo()} title='Save' />
     <Result key='d_conf_result' result={this.state.status} />
    </InfoArticle>
+  else
+   return <Spinner />
+ }
+}
+
+// *************** FDB *****************
+//
+class FDB extends Component {
+ constructor(props){
+  super(props)
+  this.state = {wait:null}
+ }
+
+ changeContent = (elem) => this.props.changeSelf(elem);
+
+ componentDidMount(){
+  post_call('api/device/fdb_list',{id:this.props.id}).then(result => this.setState(result))
+ }
+
+ syncFDB(){
+  this.setState({wait:<Spinner />})
+  post_call('api/device/fdb_sync',{id:this.props.id, ip:this.props.ip, type:this.props.type}).then(result => this.setState({wait:null}));
+ }
+
+ changeInterface = (interface_id) => import('./interface.jsx').then(lib => this.changeContent(<lib.Info key='interface_info' device_id={this.props.id} interface_id={interface_id} changeSelf={this.changeContent} />))
+
+ listItem = (row,idx) => [row.vlan,row.snmp_index,<HrefButton key={'df_intf_'+row.interface_id} text={row.name} onClick={() => this.changeInterface(row.interface_id)} />,row.mac]
+
+ render(){
+  if (this.state.data)
+   return <ContentReport key='df_cr' header='FDB' thead={['VLAN','SNMP','Interface','MAC']} trows={this.state.data} listItem={this.listItem}>
+    <ReloadButton key='df_btn_reload' onClick={() => this.componentDidMount()} />
+    <SyncButton key='df_btn_sync' onClick={() => this.syncFDB() } title='Resync FDB' />
+    {this.state.wait}
+   </ContentReport>
   else
    return <Spinner />
  }
@@ -680,7 +717,7 @@ class TypeList extends Component {
 
  changeSelf = (elem) => this.props.changeSelf(elem);
 
- listItem = (row) => [row.base,<HrefButton text={row.name} onClick={() => this.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
+ listItem = (row) => [row.base,<HrefButton key={'tl_btn_' + row.name} text={row.name} onClick={() => this.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
 
  render(){
   return (this.state.data) ? <Fragment key='dev_tp_fragment'>
@@ -713,12 +750,12 @@ class ModelList extends Component {
  deleteList = (id) => (window.confirm('Really delete model?') && post_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return (this.state.data) ? <Fragment key='dev_ml_fragment'>
-   <ContentList key='dev_ml_cl' header='Device Models' thead={['ID','Model','Type','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+  return (this.state.data) ? <Fragment key='ml_fragment'>
+   <ContentList key='ml_cl' header='Device Models' thead={['ID','Model','Type','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='ml_btn_reload' onClick={() => this.componentDidMount()} />
-    <SyncButton key='_ml_btn_sync' onClick={() => this.syncModels() } title='Resync models' />
+    <SyncButton key='ml_btn_sync' onClick={() => this.syncModels() } title='Resync models' />
    </ContentList>
-   <ContentData key='dev_ml_cd'>{this.state.content}</ContentData>
+   <ContentData key='ml_cd'>{this.state.content}</ContentData>
   </Fragment> : <Spinner />
  }
 }

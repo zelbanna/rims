@@ -149,7 +149,7 @@ def info(aCTX, aArgs):
  with aCTX.db as db:
   extra = aArgs.pop('extra',[])
   if 'types' in extra or op == 'lookup':
-   db.do("SELECT id, name FROM device_types ORDER BY name")
+   db.do("SELECT id, name, base FROM device_types ORDER BY name")
    ret['types'] = db.get_rows()
   if 'classes' in extra:
    db.do("SHOW COLUMNS FROM devices LIKE 'class'")
@@ -665,7 +665,8 @@ def system_info_discover(aCTX, aArgs):
    db.ignore_warnings(old)
  return ret
 
-
+#
+#
 def fdb_sync(aCTX, aArgs):
  """ Function retrieves switch table for a device and populate FDB table for caching
 
@@ -677,12 +678,35 @@ def fdb_sync(aCTX, aArgs):
  Output:
  """
  from importlib import import_module
- ret = {}
  try:
   module = import_module("rims.devices.%s"%aArgs.get('type','generic'))
-  ret['fdb'] = getattr(module,'Device',None)(aCTX,aArgs['id'],aArgs.get('ip')).fdb()
- except Exception as e: ret.update({'status':'NOT_OK','info':str(e)})
- else: ret['status'] = 'OK'
+  ret = getattr(module,'Device',None)(aCTX,aArgs['id'],aArgs.get('ip')).fdb()
+ except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
+ else:
+  if ret['status'] == 'OK':
+   fdb = ret.pop('FDB',[])
+   with aCTX.db as db:
+    ret['deleted'] = db.do("DELETE FROM fdb WHERE device_id = %s"%aArgs['id'])
+    ret['insert']  = db.do("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(aArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb)) if len(fdb) > 0 else 0
+ return ret
+
+#
+#
+def fdb_list(aCTX, aArgs):
+ """ Function retrieves switch table cache for a device
+
+ Args:
+  - id (required)
+
+ Output:
+  - fdb
+ """
+ ret = {}
+ with aCTX.db as db:
+  ret['count'] = db.do("SELECT di.interface_id, di.name, LPAD(hex(fdb.mac),12,0) AS mac, fdb.snmp_index, fdb.vlan FROM fdb LEFT JOIN interfaces AS di ON di.device_id = fdb.device_id AND di.snmp_index = fdb.snmp_index WHERE fdb.device_id = %s"%aArgs['id'])
+  ret['data'] = db.get_rows()
+  for row in ret['data']:
+   row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
  return ret
 
 ################################################## TYPES ##################################################

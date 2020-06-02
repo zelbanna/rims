@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { post_call, rnd } from './infra/Functions.js';
 import { Spinner, StateLeds, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, InfoButton, LinkButton, ReloadButton, SaveButton, SearchButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, InfoButton, ItemsButton, LinkButton, ReloadButton, RemoveButton, SaveButton, SearchButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
 
 // *************** List ****************
 //
@@ -70,6 +70,8 @@ export class Info extends Component {
  changeIpam = (id) => import('./ipam.jsx').then(lib => this.changeContent(<lib.AddressInfo key={'address_info_'+id} id={id} />))
 
  deleteIpam = () => (window.confirm('Delete IP mapping?') && post_call('api/ipam/address_delete',{id:this.state.data.ipam_id}).then(result => ((result.status === 'OK') && this.setState({data:{...this.state.data, ipam_id:null}}))))
+
+ clearIpam = () => post_call('api/interface/info',{op:'update', interface_id:this.state.data.interface_id, ipam_id:null}).then(result => this.setState(result))
 
  updateInfo = () => post_call('api/interface/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
@@ -158,14 +160,15 @@ export class Info extends Component {
       <TextInput key='ii_snmp_index' id='snmp_index' label='SNMP index' value={this.state.data.snmp_index} onChange={this.onChange} /><div />
       <TextInput key='ii_mac' id='mac' value={this.state.data.mac} onChange={this.onChange} /><div />
       <TextInput key='ii_ipam_id' id='ipam_id' label='IPAM id' value={this.state.data.ipam_id} onChange={this.onChange} /><div>
-       {ipam && <GoButton key='ii_ipam' onClick={() => this.changeIpam(this.state.data.ipam_id)} title='View IPAM information' />}
+       {ipam && <GoButton key='ii_ipam' onClick={() => this.changeIpam(this.state.data.ipam_id)} title='Edit IPAM entry' />}
+       {ipam && <RemoveButton key='ii_remove' onClick={() => this.clearIpam()} title='Clear IPAM entry' />}
        {ipam && <DeleteButton key='ii_delete' onClick={() => this.deleteIpam()} title='Delete IPAM entry' />}
        {!ipam && this.state.data.interface_id !== 'new' && <AddButton key='ii_btn_ipam' onClick={() => this.stateIpam()} title='Create IPAM entry' />}
       </div>
       {peer && <Fragment key='ii_frag_peer_int'><TextLine key='ii_peer_int_id' id='peer_interface' label='Peer interface' text={this.state.peer.interface_id} /><UnlinkButton key='ii_peer_unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></Fragment>}
       {peer && <Fragment key='ii_frag_peer_dev'><TextLine key='ii_peer_dev_id' id='peer_device' text={this.state.peer.device_id} /><div/></Fragment>}
      </InfoColumns>
-     {'changeSelf' in this.props && <BackButton key='ii_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />}
+     {'changeSelf' in this.props && <ItemsButton key='ii_btn_list' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />}
      <ReloadButton key='ii_btn_reload' onClick={() => this.componentDidMount()} />
      <SaveButton key='ii_btn_save' onClick={() => this.updateInfo()} title='Save interface information' />
      {!peer && this.state.data.interface_id !== 'new' && ['wired','optical'].includes(this.state.data.class) && <LinkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}

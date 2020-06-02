@@ -206,9 +206,16 @@ class Device(object):
    session.walk(objs)
   except Exception as e: return {'status':'NOT_OK','info':str(e)}
   else:
-   ret = {}
    if (session.ErrorInd == 0):
-   # For each object, remove base and split into vlan.macs. val = some interface identifier
-    pass
+    fdb = []
+    for obj in objs:
+     entry = obj.tag[28:].split('.')
+     val = 0
+     for i in range(1,6):
+      val += int(entry[i])
+      val = val << 8
+     val += int(obj.iid)
+     fdb.append({'vlan':int(entry[0]),'mac':val,'snmp':int(obj.val.decode())})
+    return {'status':'OK','FDB':fdb}
    else:
     return {'status':'NOT_OK','info':'SNMP error: %s'%session.ErrorInd}

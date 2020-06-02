@@ -189,6 +189,19 @@ CREATE TABLE `domains` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `fdb`;
+CREATE TABLE `fdb` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `device_id` int(10) unsigned NOT NULL,
+  `snmp_index` int(10) unsigned NOT NULL,
+  `mac` bigint(20) NOT NULL,
+  `vlan` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `device_id` (`device_id`),
+  CONSTRAINT `fdb_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `interfaces`;
 CREATE TABLE `interfaces` (
   `interface_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
