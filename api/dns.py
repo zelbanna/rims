@@ -299,7 +299,7 @@ def sync_data(aCTX, aArgs):
     db.do("SELECT CONCAT(devices.hostname,'.',domains.name,'.') AS name, CONCAT(ia.hostname,'.',ia_dom.name,'.') AS content, 'CNAME' AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE devices.a_domain_id = %s AND ia.id IS NOT NULL ORDER BY devices.a_domain_id"%domain['id'])
     ret['data'].extend(db.get_rows())
    else:
-    db.do("SELECT CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name,'.') AS name, CONCAT(ia.hostname,'.',domains.name,'.') AS content, 'PTR' AS type FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id RIGHT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id = %s ORDER BY ine.reverse_zone_id"%domain['id'])
+    db.do("SELECT CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name,'.') AS name, CONCAT(ia.hostname,'.',domains.name,'.') AS content, 'PTR' AS type FROM ipam_addresses AS ia LEFT JOIN domains ON ia.a_domain_id = domains.id RIGHT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id = %s AND domains.name IS NOT NULL ORDER BY ine.reverse_zone_id"%domain['id'])
     ret['data'] = db.get_rows()
   else:
    ret['status'] = 'NOT_OK'
