@@ -3,7 +3,7 @@ import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavReload } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
-import { AddButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 
@@ -215,11 +215,9 @@ export class Info extends Component {
       <TextInput key='mac' id='mac' label='Sys Mac' value={data.mac} title='System MAC' onChange={this.onChange} />
       {data.management_id && <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={extra.interface_mac} title='Management Interface MAC' />}
       {data.management_id && <TextLine key='if_ip' id='if_ip' label='Mgmt IP' text={extra.interface_ip} />}
-      <TextLine key='snmp' id='snmp' label='SNMP' text={data.snmp} />
       {data.management_id && <StateLine key='state' id='state' state={[extra.if_state,extra.ip_state]} />}
      </InfoColumns>
      <InfoColumns key='di_extra' style={{float:'left'}}>
-      <TextLine key='id' id='id' text={this.props.id} />
       <SelectInput key='class' id='class' value={data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'di_class_'+row} value={row}>{row}</option>)}</SelectInput>
       <SelectInput key='type_id' id='type_id' label='Type' value={data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'di_type_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
       <TextInput key='model' id='model' value={data.model} onChange={this.onChange} extra={data.model} />
@@ -297,6 +295,8 @@ class ManagementInfo extends Component {
      <TextInput key='d_conf_hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
      <SelectInput key='d_conf_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'de_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      <SelectInput key='d_conf_management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={'de_intf_'+idx} value={row.interface_id}>{`${row.name} (${row.ip})`}</option>)}</SelectInput>
+     <TextLine key='id' id='id' label='Local ID'  text={this.props.id} title='Database ID' />
+     <TextLine key='snmp' id='snmp' label='SNMP' text={this.state.data.snmp} />
      <TextLine key='d_conf_oid' id='oid' label='Priv OID' text={this.state.extra.oid} />
      <TextLine key='d_conf_oui' id='oui' label='System OUI' text={this.state.extra.oui} />
     </InfoColumns>
@@ -359,7 +359,7 @@ class PemList extends Component {
  deleteList = (id) => (window.confirm('Really delete PEM?') && post_call('api/pem/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  listItem = (row) => [row.id,row.name,row.pdu_id,row.pdu_name,row.pdu_slot,row.pdu_unit,<Fragment key={'dev_pems_frag_' + row.id}>
-  <InfoButton key={'dev_pem_btn_info_' + row.id} onClick={() => this.changeContent(<PemInfo key={'pem_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit PEM information' />
+  <InfoButton key={'dev_pem_btn_info_' + row.id} onClick={() => this.changeContent(<PemInfo key={'pem_info_'+row.id} id={row.id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Edit PEM information' />
   <DeleteButton key={'dev_pem_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete PEM' />
  </Fragment>]
 
@@ -404,6 +404,7 @@ class PemInfo extends Component{
      <SelectInput key='d_pem_pdu_slot' id='pdu_slot' label='Slot' value={this.state.data.pdu_slot} onChange={this.onChange}>{slots.map((row,idx) => <option key={'d_pem_pdu_slot_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      <TextInput key='d_pem_pdu_unit' id='pdu_unit' label='Unit' value={this.state.data.pdu_unit} onChange={this.onChange} />
     </InfoColumns>
+    <BackButton key='d_pem_btn_back' onClick={() => this.props.changeSelf(<PemList key='device_pem_list' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />)} />
     <SaveButton key='d_pem_btn_save' onClick={() => this.updateInfo()} title='Save' />
     <Result key='d_pem_result' result={(this.state.update) ? (this.state.result) ? JSON.stringify(this.state.result) :JSON.stringify(this.state.update) : ''} />
    </InfoArticle>

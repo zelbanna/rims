@@ -266,7 +266,7 @@ def extended(aCTX, aArgs):
     ret['dns']['create'] = False
    ret['status'] = 'OK'
 
-  ret['found'] = (db.do("SELECT devices.id, management_id, a_domain_id, CONCAT('.1.3.6.1.4.1.',devices.oid) AS oid, devices.hostname, oui.company AS oui FROM devices LEFT JOIN oui ON oui.oui = (devices.mac >> 24) AND devices.mac != 0  WHERE devices.id = %(id)s"%aArgs) == 1)
+  ret['found'] = (db.do("SELECT devices.id, management_id, a_domain_id, snmp, CONCAT('.1.3.6.1.4.1.',devices.oid) AS oid, devices.hostname, oui.company AS oui FROM devices LEFT JOIN oui ON oui.oui = (devices.mac >> 24) AND devices.mac != 0  WHERE devices.id = %(id)s"%aArgs) == 1)
   if ret['found']:
    ret['data'] = db.get_row()
    ret['extra'] = {'oid':ret['data'].pop('oid',None),'oui':ret['data'].pop('oui',None)}
