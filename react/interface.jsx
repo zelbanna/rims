@@ -168,7 +168,7 @@ export class Info extends Component {
       {peer && <Fragment key='ii_frag_peer_int'><TextLine key='ii_peer_int_id' id='peer_interface' label='Peer interface' text={this.state.peer.interface_id} /><UnlinkButton key='ii_peer_unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></Fragment>}
       {peer && <Fragment key='ii_frag_peer_dev'><TextLine key='ii_peer_dev_id' id='peer_device' text={this.state.peer.device_id} /><div/></Fragment>}
      </InfoColumns>
-     {'changeSelf' in this.props && <ItemsButton key='ii_btn_list' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />}
+     {'changeSelf' in this.props && <ItemsButton key='ii_btn_list' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Interfaces' />}
      <ReloadButton key='ii_btn_reload' onClick={() => this.componentDidMount()} />
      <SaveButton key='ii_btn_save' onClick={() => this.updateInfo()} title='Save interface information' />
      {!peer && this.state.data.interface_id !== 'new' && ['wired','optical'].includes(this.state.data.class) && <LinkButton key='ii_btn_connect' onClick={() => this.setState({op:'device'})} title='Connect peer interface' />}

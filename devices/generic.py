@@ -201,21 +201,27 @@ class Device(object):
  #
  def fdb(self):
   try:
-   objs = VarList('.1.3.6.1.2.1.17.7.1.2.2.1.2')
+   fdb_objs = VarList('.1.3.6.1.2.1.17.7.1.2.2.1.2')
+   int_objs = VarList('.1.3.6.1.2.1.17.1.4.1.2')
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.walk(objs)
+   session.walk(fdb_objs)
+   session.walk(int_objs)
   except Exception as e: return {'status':'NOT_OK','info':str(e)}
   else:
    if (session.ErrorInd == 0):
+    # Map dot1dBasePortIfIndex - interfaces to SNMP index
+    baseport = {obj.iid:int(obj.val.decode()) for obj in int_objs}
+    # Map dot1qTpFdbPort - vlan,mac to BasePort
     fdb = []
-    for obj in objs:
+    for obj in fdb_objs:
      entry = obj.tag[28:].split('.')
      val = 0
      for i in range(1,6):
       val += int(entry[i])
       val = val << 8
      val += int(obj.iid)
-     fdb.append({'vlan':int(entry[0]),'mac':val,'snmp':int(obj.val.decode())})
+     bp = obj.val.decode()
+     fdb.append({'vlan':int(entry[0]),'mac':val,'snmp':baseport.get(bp,int(bp))})
     return {'status':'OK','FDB':fdb}
    else:
     return {'status':'NOT_OK','info':'SNMP error: %s'%session.ErrorInd}
