@@ -189,7 +189,10 @@ export class AddressInfo extends Component {
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
- updateInfo = () => post_call('api/ipam/address_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => {
+  this.setState({status:undefined});
+  post_call('api/ipam/address_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ }
 
  componentDidMount(){
   post_call('api/ipam/address_info',{id:this.props.id,network_id:this.props.network_id}).then(result => this.setState(result))
@@ -197,7 +200,14 @@ export class AddressInfo extends Component {
  }
 
  render() {
-  if (this.state && this.state.data && this.state.domains)
+  if (this.state && this.state.data && this.state.domains){
+   let result = '';
+   if (this.state.status) {
+    if (this.state.status === 'OK')
+     result = 'OK';
+    else
+     result = this.state.info
+   }
    return <InfoArticle key='ip_article' header='IP Address'>
      <InfoColumns key='ip_content'>
       <TextLine key='id' id='id' label='ID' text={this.state.data.id} />
@@ -207,9 +217,9 @@ export class AddressInfo extends Component {
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_save' onClick={() => this.updateInfo()} title='Save' />
-     <Result key='ip_operation' result={(this.state.status) ? (this.state.status !== 'OK') ? this.state.info : 'OK' : ''} />
+     <Result key='ip_operation' result={result} />
     </InfoArticle>
-  else
+  } else
    return <Spinner />
  }
 }
