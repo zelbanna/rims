@@ -194,12 +194,13 @@ def sync(aCTX, aArgs):
  except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data'] if e.args[0]['data'] else str(e)}
  else:
   sync_data = aCTX.node_function('master','dns','sync_data')
-  ret = {'status':'OK'}
+  ret = {'status':'OK','records':0}
   for dom in domains:
-   records = sync_data(aArgs = {'id':aArgs['id'],'domain':dom})['data']
+   records = sync_data(aArgs = {'server_id':aArgs['id'],'foreign_id':dom})['data']
    args = {'rrsets':[{'name':x['name'],'type':x['type'],'ttl':'3600','changetype':'REPLACE','records':[{'content':x['content'],'disabled':False}],'comments':[]} for x in records]}
    try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],dom), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
    except Exception as e: ret.update({'status':'NOT_OK',dom:e.args[0]['data']})
+   else: ret['records'] += len(records)
  return ret
 
 #

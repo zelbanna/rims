@@ -174,13 +174,14 @@ def sync(aCTX, aArgs):
   db.do("TRUNCATE records")
   # Auto insert all IPAM A records
   ret['records'] =  db.do("INSERT INTO records (domain_id, name, content, type, ttl) SELECT domains.foreign_id,  CONCAT(ia.hostname,'.',domains.name), INET_NTOA(ia.ip), 'A', 3600 FROM ipam_addresses AS ia LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.server_id = %s"%aArgs['id'])
-  # Auto Insert all IPAM PTR records
-  ret['records'] += db.do("INSERT INTO records (domain_id, name, content, type, ttl) SELECT ine.reverse_zone_id, CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name), CONCAT(ia.hostname,'.',domains.name), 'PTR', 3600 FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id RIGHT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id IN (SELECT id FROM domains WHERE type = 'reverse' AND server_id = %s)"%aArgs['id'])
   # Auto Insert all Hostname CNAMEs
   ret['records'] += db.do("INSERT INTO records (domain_id, name, content, type, ttl) SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name), CONCAT(ia.hostname,'.',ia_dom.name,'.'), 'CNAME', 3600 FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE domains.server_id = %s AND ia.id IS NOT NULL"%aArgs['id'])
+  # Auto Insert all IPAM PTR records, except if mask is smaller than 24 (because we don't want inaccurate PTRs for a domain id)
+  ret['records'] += db.do("INSERT INTO records (domain_id, name, content, type, ttl) SELECT ine.reverse_zone_id, CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name), CONCAT(ia.hostname,'.',domains.name), 'PTR', 3600 FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id AND (ine.mask >= 24 OR ia.ip < (ine.network + 256)) LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id IN (SELECT id FROM domains WHERE type = 'reverse' AND server_id = %s)"%aArgs['id'])
+
 
   # Write to local 'hosts' file or similar
-  if  aCTX.config.get('nodns',{}).get('file'):
+  if aCTX.config.get('nodns',{}).get('file'):
    from os import linesep
    try:
     with open(aCTX.config['nodns']['file'],'w+') as ndfile:

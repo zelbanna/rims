@@ -1,11 +1,11 @@
-"""Visualize API module. This module provides data for vis.js networks"""
+"""Visualize API module. This module provides data for vis.js networking"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 #
 #
 def list(aCTX, aArgs):
- """ Function produces a list of available maps/networks
+ """ Function produces a list of available map/network entries
 
  Args:
 

@@ -73,7 +73,7 @@ def domain_info(aCTX, aArgs):
 #
 #
 def domain_delete(aCTX, aArgs):
- """Function domain_delete deletes a domain from local cache and remote nameserver. All records will be transferred to no domain.
+ """Function domain_delete deletes a domain from local cache and remote nameserver. All records will have no domain
 
  Args:
   - id (required)
@@ -85,8 +85,6 @@ def domain_delete(aCTX, aArgs):
   db.do("SELECT servers.id, foreign_id, domains.type, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
   ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
-  ret['local'] = db.do("UPDATE ipam_addresses SET a_domain_id = NULL WHERE a_domain_id = %i"%id)
-  ret['networks'] = db.do("UPDATE ipam_networks SET reverse_zone_id = NULL WHERE reverse_zone_id = %i"%id)
   ret['cache'] = (db.do("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id'])) > 0) if ret['deleted'] else False
  return ret
 
@@ -278,11 +276,11 @@ def sync_recursor(aCTX, aArgs):
 
 #
 def sync_data(aCTX, aArgs):
- """ Function retrieves various data for synchronizing nameservers, data is retrieved in canonical format
+ """ Function retrieves various data for synchronizing nameservers, data is retrieved in canonical format. Only return PTR records that fits a /24
 
  Args:
-  - id (required). Server id
-  - domain (required). Foreign ID for domain to sync (i.e. local to server)
+  - server_id (required). Server id
+  - foreign_id (required). Foreign ID for domain to sync (i.e. local to server)
 
  Output:
   - data
@@ -290,7 +288,7 @@ def sync_data(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  if (db.do("SELECT id,type FROM domains WHERE server_id = %(id)s AND foreign_id = '%(domain)s'"%aArgs) == 1):
+  if (db.do("SELECT id,type FROM domains WHERE server_id = %(server_id)s AND foreign_id = '%(foreign_id)s'"%aArgs) == 1):
    ret['status'] = 'OK'
    domain = db.get_row()
    if domain['type'] == 'forward':
@@ -299,7 +297,7 @@ def sync_data(aCTX, aArgs):
     db.do("SELECT CONCAT(devices.hostname,'.',domains.name,'.') AS name, CONCAT(ia.hostname,'.',ia_dom.name,'.') AS content, 'CNAME' AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE devices.a_domain_id = %s AND ia.id IS NOT NULL ORDER BY devices.a_domain_id"%domain['id'])
     ret['data'].extend(db.get_rows())
    else:
-    db.do("SELECT CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name,'.') AS name, CONCAT(ia.hostname,'.',domains.name,'.') AS content, 'PTR' AS type FROM ipam_addresses AS ia LEFT JOIN domains ON ia.a_domain_id = domains.id RIGHT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id = %s AND domains.name IS NOT NULL ORDER BY ine.reverse_zone_id"%domain['id'])
+    db.do("SELECT CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name,'.') AS name, CONCAT(ia.hostname,'.',domains.name,'.') AS content, 'PTR' AS type FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id AND (ine.mask >= 24 OR ia.ip < (ine.network + 256)) LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id = %s AND domains.name IS NOT NULL ORDER BY ine.reverse_zone_id"%domain['id'])
     ret['data'] = db.get_rows()
   else:
    ret['status'] = 'NOT_OK'
