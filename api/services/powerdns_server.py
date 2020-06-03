@@ -114,7 +114,7 @@ def record_list(aCTX, aArgs):
   data = []
   for rrset in output['rrsets']:
    # Remove trailing dot, add below
-   data.extend({'name':rrset['name'][:-1],'type':rrset['type'],'ttl':rrset['ttl'],'serial':output.get('edited_serial',0)],'content':rec['content']} for rec in rrset['records'])
+   data.extend({'name':rrset['name'][:-1],'type':rrset['type'],'ttl':rrset['ttl'],'serial':output.get('edited_serial',0),'content':rec['content']} for rec in rrset['records'])
   ret = {'status':'OK','data':data,'count':len(data)}
  return ret
 
