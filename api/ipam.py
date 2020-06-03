@@ -49,7 +49,9 @@ def network_info(aCTX, aArgs):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DHCP']
+  ret['servers'] = [{'id':'NULL','service':'N/A','node':'N/A'}]
+  ret['servers'].extend({'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DHCP')
+
   if op == 'update':
    from struct import unpack
    from socket import inet_aton
@@ -57,8 +59,8 @@ def network_info(aCTX, aArgs):
     return unpack("!I", inet_aton(addr))[0]
 
    # Check gateway
-   low   = GL_ip2int(aArgs['network'])
-   high  = low + 2**(32-int(aArgs['mask'])) - 1
+   low  = GL_ip2int(aArgs['network'])
+   high = low + 2**(32-int(aArgs['mask'])) - 1
    try:    gwint = GL_ip2int(aArgs['gateway'])
    except: gwint = 0
    if not (low < gwint and gwint < high):
@@ -278,6 +280,11 @@ def address_info(aCTX, aArgs):
  aArgs.pop('ptr_domain_id',None)
  with aCTX.db as db:
   if op:
+   from struct import unpack
+   from socket import inet_aton
+   def GL_ip2int(addr):
+    return unpack("!I", inet_aton(addr))[0]
+
    if (id != 'new'):
     if (db.do("SELECT INET_NTOA(ip) AS ip, network_id, a_domain_id, type, hostname, reverse_zone_id AS ptr_domain_id FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) > 0):
      old = db.get_row()
@@ -290,10 +297,6 @@ def address_info(aCTX, aArgs):
    ip  = aArgs.get('ip',old['ip'])
 
    if any(i in aArgs for i in ['ip','network_id']):
-    from struct import unpack
-    from socket import inet_aton
-    def GL_ip2int(addr):
-     return unpack("!I", inet_aton(addr))[0]
     aArgs['ip'] = GL_ip2int(ip)
     aArgs['network_id'] = aArgs.get('network_id',old['network_id'])
     """ if valid in network range AND available => then go """
@@ -338,7 +341,7 @@ def address_info(aCTX, aArgs):
      domains = {x['id']:x['name'] for x in db.get_rows()}
      ret.update({'A':{},'PTR':{}})
 
-     # Remove
+     # Remove (PTR could remain, if we are sure that the old actually existed (!))
      if old['a_domain_id']:
       ret['A']['delete']   = record_delete(aCTX, {'domain_id':old['a_domain_id'],'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]), 'type':'A'})['status']
      if old['ptr_domain_id']:
@@ -354,10 +357,12 @@ def address_info(aCTX, aArgs):
       ptr = ip.split('.')
       ptr.reverse()
       ptr.append('in-addr.arpa')
-      if db.do("SELECT reverse_zone_id FROM ipam_networks AS ine WHERE id = %s AND (ine.mask >= 24 OR INET_ATON('%s') < (ine.network + 256))"%(aArgs.get('network_id',old['network_id']),ip)) > 0:
-       ret['PTR']['create'] = record_info(aCTX, {'domain_id':db.get_val('reverse_zone_id'), 'name':'.'.join(ptr), 'type':'PTR', 'content':fqdn, 'op':'insert'})['status']
-      else:
-       ret['PTR']['create'] = 'NOT_OK_NO_DOMAIN'
+      # PTR: If there is a new ip/net combo, try that one, else try restore the old one (neither might work!)
+      # PTR: .. could have saved a delete above but then we don't know if there anyway wasn't a record
+      net_id = aArgs['network_id'] if 'network_id' in aArgs else old['network_id']
+      if net_id:
+       working = (db.do("SELECT reverse_zone_id FROM ipam_networks AS ine WHERE id = %s AND (ine.mask >= 24 OR %s < (ine.network + 256))"%(net_id,GL_ip2int(ip))) > 0)
+       ret['PTR']['create'] = record_info(aCTX, {'domain_id':db.get_val('reverse_zone_id'), 'name':'.'.join(ptr), 'type':'PTR', 'content':fqdn, 'op':'insert'})['status'] if working else 'NOT_OK_NO_DOMAIN'
 
   if op and op == 'update_only':
    pass
