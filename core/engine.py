@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.5"
-__build__ = 339
+__build__ = 340
 __all__ = ['Context']
 
 from crypt import crypt
@@ -355,6 +355,12 @@ class Context(object):
 
  #################### QUEUE #####################
  #
+ def queue_api(self, aFunction, aArgs, aSema = None, aOutput = False):
+  """ Enqueue API function """
+  if aSema:
+   aSema.acquire()
+  self._queue.put((aFunction, True, aSema, aOutput, aArgs, {}))
+
  def queue_function(self, aFunction, *args, **kwargs):
   """ Enqueue a function """
   self._queue.put((aFunction,False,None,False,args,kwargs))
@@ -367,7 +373,7 @@ class Context(object):
  def queue_block(self, aFunction, aList):
   """ Apply function on list elements and have at most 20 concurrent workers """
   nworkers = max(20,int(self.config['workers']) - 5)
-  sema = BoundedSemaphore(nworkers)
+  sema = BoundedSemaphore(value = nworkers)
   for elem in aList:
    self.queue_semaphore(aFunction, sema, elem)
   for i in range(nworkers):
@@ -379,7 +385,7 @@ class Context(object):
 
  def semaphore(self,aSize):
   """ Generate a semaphor """
-  return BoundedSemaphore(aSize)
+  return BoundedSemaphore(value = aSize)
 
  ################## STATUS TOOLS ################
  #

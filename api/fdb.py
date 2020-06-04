@@ -95,3 +95,40 @@ def search(aCTX, aArgs):
     ret['status'] = 'NOT_OK'
     ret['info'] = 'No device found'
  return ret
+
+#
+#
+def check(aCTX, aArgs):
+ """ Function initiate a check/fdb_sync on all network devices
+
+ Args:
+
+ Output:
+ """
+ ret = {}
+ from importlib import import_module
+
+ def __fdb_check(lCTX,lArgs):
+  try:
+   module = import_module("rims.devices.%s"%lArgs['type'])
+   res = getattr(module,'Device',None)(aCTX, lArgs['id'], lArgs['ip']).fdb()
+  except Exception as e: aCTX.log("FDB_CHECK_ERROR: %s (%s/%s)"%(str(e),lArgs['id'],lArgs['ip']))
+  else:
+   if res['status'] == 'OK':
+    fdb = res.pop('FDB',[])
+    with lCTX.db as db:
+     db.do("DELETE FROM fdb WHERE device_id = %s"%lArgs['id'])
+     if(len(fdb) > 0):
+      db.do("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(lArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb))
+  return True
+
+ with aCTX.db as db:
+  ret['status'] = 'OK'
+  ret['count'] = db.do("SELECT devices.hostname, devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE dt.base = 'network'")
+  if ret['count'] > 0:
+   sema = aCTX.semaphore(20)
+   for dev in db.get_rows():
+    aCTX.queue_api(__fdb_check,dev,sema)
+   for i in range(20):
+    sema.acquire()
+ return ret
