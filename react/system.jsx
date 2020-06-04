@@ -39,7 +39,6 @@ export class Main extends Component {
    {master && <NavButton key='sys_nav_ctrl' title='Controls' onClick={() => this.changeContent(<Controls key='system_controls' />)} />}
    <NavDropDown key='sys_nav_reports' title='Reports'>
     <NavDropButton key='sys_nav_sys' title='System' onClick={() => this.changeContent(<Report key='system_report' />)} />
-    <NavDropButton key='sys_nav_task' title='Tasks' onClick={() => this.changeContent(<TaskReport key='task_report' />)} />
     {admin && <NavDropButton key='sys_nav_act' title='Activities' onClick={() => this.changeImport('activity','Report')} />}
     {master && <NavDropButton key='sys_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','Report')} />}
     {master && <NavDropButton key='sys_nav_dev' title='Devices' onClick={() => this.changeImport('device','Report')} />}
@@ -86,26 +85,6 @@ export class Report extends Component{
   return <ContentReport key='sys_cr' header='System Report' thead={['Key','Value']} trows={this.state.data} listItem={this.listItem} />
  }
 }
-
-// ************** TaskReport **************
-//
-export class TaskReport extends Component {
- constructor(props){
-  super(props)
-  this.state = {}
- }
-
- componentDidMount(){
-  post_call('api/master/task_list',{node:this.context.settings.node}).then(result => this.setState(result))
- }
-
- listItem = (row) => [row.node,row.frequency,row.module,row.function,row.args]
-
- render(){
-  return <ContentReport key='task_cr' header='Tasks' thead={['Node','Frequency','Module','Function','Arguments']} trows={this.state.data} listItem={this.listItem} />
- }
-}
-TaskReport.contextType = RimsContext;
 
 // ************** RestList **************
 //

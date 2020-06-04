@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.5"
-__build__ = 340
+__build__ = 341
 __all__ = ['Context']
 
 from crypt import crypt
@@ -96,10 +96,6 @@ class Context(object):
     env['nodes']   = {x['node']:{'id':x['id'],'url':x['url']} for x in db.get_rows()}
     db.do("SELECT servers.id, node, st.service, st.type FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id")
     env['services'] = {x['id']:{'node':x['node'],'service':x['service'],'type':x['type']} for x in db.get_rows()}
-    db.do("SELECT tasks.id, module, function, args, frequency, output FROM tasks LEFT JOIN nodes ON nodes.id = tasks.node_id WHERE node = '%s'"%aNode)
-    env['tasks']   = db.get_rows()
-    for task in env['tasks']:
-     task['output'] = (task['output']== 'true')
     db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
     db.do("SELECT users.id, ut.token, users.alias, ut.created + INTERVAL 5 DAY as expires, INET_NTOA(ut.source_ip) AS ip, users.class FROM user_tokens AS ut LEFT JOIN users ON users.id = ut.user_id ORDER BY created DESC")
     env['tokens'] = {x['token']:{'id':x['id'], 'alias':x['alias'],'expires':x['expires'].replace(tzinfo=timezone.utc), 'ip':x['ip'], 'class':x['class']} for x in db.get_rows()}
@@ -125,11 +121,9 @@ class Context(object):
    self.nodes.update(env['nodes'])
    self.services.update(env['services'])
    self.tokens.update(env.get('tokens',{}))
-   for task in env['tasks']:
-    try:    freq = int(task.pop('frequency'))
-    except: freq = 0
+   for task in self.config.get('tasks',[]):
     self.log("Adding task: %(module)s/%(function)s"%task)
-    self.schedule_api_task(task['module'],task['function'],freq, args = loads(task['args']), output = (task['output'] in ['true',True]))
+    self.schedule_api_task(task['module'],task['function'],int(task.get('frequency',0)), args = task.get('args',{}), output = task.get('output',False))
    self.schedule_function(self.house_keeping, 'ctx_house_keeping', 10, 3600)
    if __build__ != env['build']:
     self.log("Build mismatch between master and node: %s != %s"%(__build__,env['build']))

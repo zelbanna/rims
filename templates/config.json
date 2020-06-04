@@ -28,6 +28,15 @@
    "file": "/var/log/rims_system.log"
   }
  },
+ "tasks": [
+  {
+   "module":"device",
+   "function": "system_info_discover",
+   "args": {"lookup": true},
+   "frequency": 7200,
+   "output": true
+  }
+ ],
  "powerdns": {
   "recursor": {
    "url":"http://172.18.0.4:8082/api/v1",
