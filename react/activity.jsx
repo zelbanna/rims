@@ -68,9 +68,9 @@ class List extends Component {
 
  render(){
   if (this.state.data) {
-   let activity_list = this.state.data.filter(row => row.type.includes(this.state.searchfield));
+   let act_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => row.type.includes(this.state.searchfield));
    return <Fragment key='al_fragment'>
-    <ContentList key='al_cl' header='Activities' thead={['Date','Type','']} trows={activity_list} listItem={this.listItem}>
+    <ContentList key='al_cl' header='Activities' thead={['Date','Type','']} trows={act_list} listItem={this.listItem}>
      <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
      <AddButton key='al_btn_add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
      <SearchInput key='al_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search activities' />

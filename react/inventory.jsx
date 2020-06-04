@@ -62,7 +62,7 @@ class List extends Component {
   if (!this.state.data)
    return <Spinner />
   else {
-   let inv_list = this.state.data.filter(row => (row.model.includes(this.state.searchfield) || row.serial.includes(this.state.searchfield)));
+   const inv_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.model.includes(this.state.searchfield) || row.serial.includes(this.state.searchfield)));
    return <Fragment key='inv_fragment'>
     <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />

@@ -6,6 +6,7 @@ import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, S
 import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
+import { List as FdbList, Device as FdbDevice, Search as FdbSearch } from './fdb.jsx';
 
 // **************** Main ****************
 //
@@ -39,14 +40,16 @@ export class Main extends Component {
     <NavDropButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
    </NavDropDown>
-   <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
+   <NavDropDown key='dev_nav_tools' title='Tools'>
+    <NavDropButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} />
+    <NavDropButton key='dev_nav_fdbx' title='FDB Search' onClick={() => this.changeContent(<FdbSearch key='fdb_search' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='dev_nav_fdbs' title='FDB List' onClick={() => this.changeContent(<FdbList key='fdb_list' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='dev_nav_ouis' title='OUI Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
+    <NavDropButton key='dev_nav_ouil' title='OUI List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
+   </NavDropDown>
    {(this.state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{this.state.pdu.map((row,idx) => <NavDropButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeImport('pdu','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
    {(this.state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{this.state.console.map((row,idx) => <NavDropButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeImport('console','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
    {(this.state.rack_id) && <NavButton key='dev_nav_rack' title={this.state.name} onClick={() => this.changeImport('rack','Layout',{id:this.state.rack_id})} />}
-   <NavDropDown key='dev_nav_oui' title='OUI'>
-    <NavDropButton key='dev_nav_ouis' title='Search' onClick={() => this.changeContent(<OUISearch key='oui_search' />)} />
-    <NavDropButton key='dev_nav_ouil' title='List' onClick={() => this.changeContent(<OUIList key='oui_list' />)} />
-   </NavDropDown>
    <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','List',{})} style={{float:'right'}} />
    <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
     <NavDropButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
@@ -89,7 +92,7 @@ class Search extends Component {
  onChange = (e) => this.setState({[e.target.name]:e.target.value})
 
  render() {
-  return <LineArticle key='d_srch_art' header='Device Search'>
+  return <LineArticle key='ds_art' header='Device Search'>
    <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field}>
     <optgroup label='Group'>
      <option value='hostname'>Hostname</option>
@@ -150,10 +153,10 @@ class List extends Component {
 
  render(){
   if (this.state.data){
-   let device_list = this.state.data.filter(row => (row.hostname.toLowerCase().includes(this.state.searchfield.toLowerCase()) || (row.ip && row.ip.includes(this.state.searchfield))))
+   const dev_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.hostname.toLowerCase().includes(this.state.searchfield.toLowerCase()) || (row.ip && row.ip.includes(this.state.searchfield))))
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
    return <Fragment key={'dl_fragment'}>
-    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={device_list}>
+    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
      <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} ip='0.0.0.0' />)} title='Add device' />
@@ -213,7 +216,7 @@ export class Info extends Component {
     <InfoArticle key='di_art' header='Device'>
      <InfoColumns key='di_info' style={{float:'left'}}>
       <TextLine key='hostname' id='hostname' text={data.hostname} />
-      <TextInput key='mac' id='mac' label='Sys Mac' value={data.mac} title='System MAC' onChange={this.onChange} />
+      <TextInput key='mac' id='mac' label='MAC' value={data.mac} title='System MAC' onChange={this.onChange} />
       {data.management_id && <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={extra.interface_mac} title='Management Interface MAC' />}
       {data.management_id && <TextLine key='if_ip' id='if_ip' label='Mgmt IP' text={extra.interface_ip} />}
       {data.management_id && <StateLine key='state' id='state' state={[extra.if_state,extra.ip_state]} />}
@@ -258,7 +261,7 @@ export class Info extends Component {
     <NavBar key='di_navigation' id='di_navigation'>
      {this.state.navconf && <NavButton key='di_nav_management' title='Management' onClick={() => this.changeContent(<ManagementInfo key='device_configure' id={this.props.id} />)} />}
      {this.state.navconf && <NavButton key='di_nav_interfaces' title='Interfaces' onClick={() => this.changeInterfaces()} />}
-     {!this.state.navconf && type.base === 'network' && has_ip && <NavButton key='di_nav_fdb' title='FDB' onClick={() => this.changeContent(<FDB key='device_fdb' id={this.props.id} ip={extra.interface_ip} type={type.name} changeSelf={this.changeContent} />)} />}
+     {!this.state.navconf && type.base === 'network' && has_ip && <NavButton key='di_nav_fdb' title='FDB' onClick={() => this.changeContent(<FdbDevice key='fdb_device' id={this.props.id} ip={extra.interface_ip} type={type.name} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
      {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && <NavButton key='di_nav_stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='device_statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
@@ -305,41 +308,6 @@ class ManagementInfo extends Component {
     <SaveButton key='d_conf_btn_save' onClick={() => this.updateInfo()} title='Save' />
     <Result key='d_conf_result' result={this.state.status} />
    </InfoArticle>
-  else
-   return <Spinner />
- }
-}
-
-// *************** FDB *****************
-//
-class FDB extends Component {
- constructor(props){
-  super(props)
-  this.state = {wait:null}
- }
-
- changeContent = (elem) => this.props.changeSelf(elem);
-
- componentDidMount(){
-  post_call('api/device/fdb_list',{id:this.props.id}).then(result => this.setState(result))
- }
-
- syncFDB(){
-  this.setState({wait:<Spinner />})
-  post_call('api/device/fdb_sync',{id:this.props.id, ip:this.props.ip, type:this.props.type}).then(result => this.setState({wait:null}));
- }
-
- changeInterface = (interface_id) => import('./interface.jsx').then(lib => this.changeContent(<lib.Info key='interface_info' device_id={this.props.id} interface_id={interface_id} changeSelf={this.changeContent} />))
-
- listItem = (row,idx) => [row.vlan,row.snmp_index,<HrefButton key={'df_intf_'+row.interface_id} text={row.name} onClick={() => this.changeInterface(row.interface_id)} />,row.mac]
-
- render(){
-  if (this.state.data)
-   return <ContentReport key='df_cr' header='FDB' thead={['VLAN','SNMP','Interface','MAC']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='df_btn_reload' onClick={() => this.componentDidMount()} />
-    <SyncButton key='df_btn_sync' onClick={() => this.syncFDB() } title='Resync FDB' />
-    {this.state.wait}
-   </ContentReport>
   else
    return <Spinner />
  }
@@ -691,7 +659,7 @@ class Discover extends Component {
 //
 export class Report extends Component {
  componentDidMount(){
-  post_call('api/device/list', { extra:['system','type','mac','oui','class']}).then(result => this.setState(result))
+  post_call('api/device/list', { extra:['system','mac','type','oui','class']}).then(result => this.setState(result))
  }
 
  listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,<StateLeds key={'dr_'+row.id} state={row.state} />]

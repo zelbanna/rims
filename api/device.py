@@ -27,61 +27,72 @@ def list(aCTX, aArgs):
  ret = {}
  sort = 'ORDER BY ia.ip' if aArgs.get('sort','ip') == 'ip' else 'ORDER BY devices.hostname'
  fields = ['devices.id', 'devices.hostname', 'INET_NTOA(ia.ip) AS ip','ia.state AS ip_state','di.state AS if_state']
- tables = ['interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id']
- filter = ['TRUE']
- if aArgs.get('rack_id'):
-  tables.append("rack_info AS ri ON ri.device_id = devices.id")
-  filter.append("ri.rack_id = %(rack_id)s"%aArgs)
- if 'search' in aArgs:
-  if   aArgs['field'] == 'hostname':
-   filter.append("devices.hostname LIKE '%%%(search)s%%'"%aArgs)
-  elif aArgs['field'] == 'ip':
-   filter.append("ia.ip = INET_ATON('%(search)s')"%aArgs)
-  elif aArgs['field'] == 'type':
-   tables.append("device_types AS dt ON dt.id = devices.type_id")
-   filter.append("dt.name = '%(search)s'"%aArgs)
-  elif aArgs['field'] == 'base':
-   tables.append("device_types AS dt ON dt.id = devices.type_id")
-   filter.append("dt.base = '%(search)s'"%aArgs)
-  elif aArgs['field'] == 'mac':
-   try:    filter.append("di.mac = %i"%int(aArgs['search'].replace(':',""),16))
-   except: filter.append("di.mac <> 0")
-  else:
-   filter.append("devices.%(field)s IN (%(search)s)"%aArgs)
-
+ joins = ['interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id']
+ where = ['TRUE']
  extras = aArgs.get('extra')
+ search = aArgs.get('search')
+
+ if aArgs.get('rack_id'):
+  joins.append("rack_info AS ri ON ri.device_id = devices.id")
+  where.append("ri.rack_id = %(rack_id)s"%aArgs)
+
+ if search:
+  sfield = aArgs['field']
+  if   sfield == 'hostname':
+   where.append("devices.hostname LIKE '%%%s%%'"%search)
+  elif sfield == 'ip':
+   where.append("ia.ip = INET_ATON('%s')"%search)
+  elif sfield == 'type':
+   joins.append("device_types AS dt ON dt.id = devices.type_id")
+   where.append("dt.name = '%s'"%search)
+  elif sfield == 'base':
+   joins.append("device_types AS dt ON dt.id = devices.type_id")
+   where.append("dt.base = '%s'"%search)
+  elif sfield == 'mac':
+   try: mac = int(search.replace(':',""),16)
+   except: where.append("devices.mac <> 0")
+   else: where.append("devices.mac = %i OR di.mac = %i"%(mac,mac))
+  else:
+   where.append("devices.%(field)s IN (%(search)s)"%aArgs)
+
  if  extras:
   if 'domain' in extras:
    fields.append('domains.name AS domain')
-   tables.append('domains ON domains.id = ia.a_domain_id')
+   joins.append('domains ON domains.id = ia.a_domain_id')
   if 'type' in extras or 'functions' in extras:
    if 'functions' in extras:
     fields.append('dt.functions AS type_functions')
    if 'type' in extras:
     fields.append('dt.name AS type_name, dt.base AS type_base')
    if not (aArgs.get('field') in ['type','base']):
-    tables.append("device_types AS dt ON dt.id = devices.type_id")
+    joins.append("device_types AS dt ON dt.id = devices.type_id")
   if 'url' in extras:
    fields.append('devices.url')
   if 'model' in extras:
    fields.append('devices.model')
-  if 'mac' in extras or 'oui' in extras:
-   fields.append('LPAD(hex(di.mac),12,0) AS mac')
+  if any(i in extras for i in ['mac','oui']):
+   fields.append('LPAD(hex(devices.mac),12,0) AS mac')
    if 'oui' in extras:
     fields.append('oui.company AS oui')
-    tables.append("oui ON oui.oui = (di.mac >> 24) and di.mac != 0")
+    joins.append("oui ON oui.oui = (devices.mac >> 24) and devices.mac != 0")
+  if 'mgmtmac' in extras:
+   fields.append('LPAD(hex(di.mac),12,0) AS mgmtmac')
   if 'system' in extras:
-   fields.extend(['devices.serial','devices.version','ia.state','devices.oid'])
+   fields.extend(['devices.serial','devices.version','ia.state','devices.oid','devices.model'])
   if 'class' in extras:
    fields.append('devices.class')
 
  with aCTX.db as db:
-  sql = "SELECT %s FROM devices LEFT JOIN %s WHERE %s %s"%(', '.join(fields),' LEFT JOIN '.join(tables),' AND '.join(filter),sort)
-  ret['count'] = db.do(sql)
+  ret['count'] = db.do("SELECT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort))
   ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
-  if extras and 'mac' in extras:
+  if extras and any(i in extras for i in ['mac','mgmtmac']):
+   sys = 'mac' in extras
+   mgmt= 'mgmtmac' in extras
    for row in ret['data']:
-    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10]) if row['mac'] else "00:00:00:00:00:00"
+    if sys:
+     row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10]) if row['mac'] else "00:00:00:00:00:00"
+    if mgmt:
+     row['mgmtmac'] = ':'.join(row['mgmtmac'][i:i+2] for i in [0,2,4,6,8,10]) if row['mgmtmac'] else "00:00:00:00:00:00"
  return ret
 
 #
@@ -663,50 +674,6 @@ def system_info_discover(aCTX, aArgs):
    old = db.ignore_warnings(True)
    ret['sync'] = "OK" if (db.do("INSERT IGNORE INTO device_models (name, type_id) SELECT DISTINCT model AS name ,type_id FROM devices") > 0) else "NO_NEW_MODELS"
    db.ignore_warnings(old)
- return ret
-
-#
-#
-def fdb_sync(aCTX, aArgs):
- """ Function retrieves switch table for a device and populate FDB table for caching
-
- Args:
-  - id (required)
-  - ip (optional).
-  - type (optional). Device type
-
- Output:
- """
- from importlib import import_module
- try:
-  module = import_module("rims.devices.%s"%aArgs.get('type','generic'))
-  ret = getattr(module,'Device',None)(aCTX,aArgs['id'],aArgs.get('ip')).fdb()
- except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
- else:
-  if ret['status'] == 'OK':
-   fdb = ret.pop('FDB',[])
-   with aCTX.db as db:
-    ret['deleted'] = db.do("DELETE FROM fdb WHERE device_id = %s"%aArgs['id'])
-    ret['insert']  = db.do("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(aArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb)) if len(fdb) > 0 else 0
- return ret
-
-#
-#
-def fdb_list(aCTX, aArgs):
- """ Function retrieves switch table cache for a device
-
- Args:
-  - id (required)
-
- Output:
-  - fdb
- """
- ret = {}
- with aCTX.db as db:
-  ret['count'] = db.do("SELECT di.interface_id, di.name, LPAD(hex(fdb.mac),12,0) AS mac, fdb.snmp_index, fdb.vlan FROM fdb LEFT JOIN interfaces AS di ON di.device_id = fdb.device_id AND di.snmp_index = fdb.snmp_index WHERE fdb.device_id = %s"%aArgs['id'])
-  ret['data'] = db.get_rows()
-  for row in ret['data']:
-   row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
  return ret
 
 ################################################## TYPES ##################################################
