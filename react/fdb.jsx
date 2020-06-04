@@ -2,7 +2,9 @@ import React, { Component, Fragment } from 'react';
 import { post_call } from './infra/Functions.js';
 import { Spinner, LineArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SearchInput, SelectInput } from './infra/Inputs.jsx';
-import { HrefButton, ReloadButton, SearchButton, SyncButton } from './infra/Buttons.jsx';
+import { HrefButton, NetworkButton, ReloadButton, SearchButton, SyncButton } from './infra/Buttons.jsx';
+
+import { Edit as VisualizeEdit } from './visualize.jsx';
 
 // ************** Search **************
 //
@@ -77,16 +79,18 @@ export class List extends Component {
 
  changeSearch = (mac,idx) => this.setState({content:<Info key={'fi_'+idx} mac={mac} />});
 
+ changeVisualize = (device_id) => ('changeSelf' in this.props && this.setState({content:<VisualizeEdit key={'viz_id_' + device_id} type='device' id={device_id} />}));
+
  searchHandler = (e) => this.setState({searchfield:e.target.value})
 
- listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'fd_intf_'+idx} text={row.mac} onClick={() => this.changeSearch(row.mac,idx)} />]
+ listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'fd_intf_'+idx} text={row.mac} onClick={() => this.changeSearch(row.mac,idx)} />,<NetworkButton key={'fd_map_'+idx} onClick={() => this.changeVisualize(row.device_id)} />]
 
  render(){
   if (this.state.data){
    const search = this.state.searchfield.toUpperCase();
    const data = (search.length === 0) ? this.state.data : this.state.data.filter(row => row.mac.includes(search))
    return <Fragment key='fl_frag'>
-    <ContentList key='fl_cr' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC']} trows={data} listItem={this.listItem}>
+    <ContentList key='fl_cr' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC','']} trows={data} listItem={this.listItem}>
      <ReloadButton key='fl_btn_reload' onClick={() => this.componentDidMount()} />
      <SearchInput key='fl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search MAC' />
     </ContentList>
