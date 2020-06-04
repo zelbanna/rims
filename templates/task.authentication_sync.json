@@ -1,7 +1,5 @@
 {
- "node":"master",
  "module":"authentication",
  "function":"sync",
- "args":{},
  "frequency": 86400
 }

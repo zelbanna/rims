@@ -1,8 +1,6 @@
 {
- "node":"master",
  "module":"master",
  "function":"oui_fetch",
  "args":{"clear":true},
- "output":false,
  "frequency":864000
 }

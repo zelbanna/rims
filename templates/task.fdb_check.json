@@ -1,7 +1,5 @@
 {
  "module": "fdb",
  "function": "check",
- "args": {},
- "frequency": 86400,
- "output": false
+ "frequency": 7200
 }

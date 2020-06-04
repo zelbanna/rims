@@ -1,5 +1,4 @@
 {
- "node":"master",
  "module":"device",
  "function":"system_info_discover",
  "args":{"lookup":true},

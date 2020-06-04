@@ -1,10 +1,6 @@
 {
- "node":"master",
  "module":"reservation",
  "function":"expiration_status",
- "args":{
-  "threshold":14400
- },
- "output":false,
+ "args":{ "threshold":14400 },
  "frequency":3600
 }
