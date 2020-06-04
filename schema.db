@@ -255,9 +255,9 @@ CREATE TABLE `ipam_addresses` (
   `ip` int(10) unsigned NOT NULL,
   `network_id` int(10) unsigned NOT NULL,
   `a_domain_id` int(10) unsigned DEFAULT NULL,
-  `type` tinyint(1) DEFAULT 0,
   `hostname` varchar(40) DEFAULT 'unknown',
   `state` enum('unknown','up','down') NOT NULL,
+  `type` enum('host','dhcp') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip_network` (`ip`,`network_id`),
   UNIQUE KEY `hostname` (`hostname`,`a_domain_id`),
@@ -432,21 +432,6 @@ CREATE TABLE `service_types` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `service_type` (`service`,`type`),
   KEY `name` (`service`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `tasks`;
-CREATE TABLE `tasks` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `node_id` int(10) unsigned NOT NULL,
-  `module` varchar(30) NOT NULL,
-  `function` varchar(60) DEFAULT '',
-  `args` varchar(300) NOT NULL,
-  `frequency` int(10) unsigned DEFAULT 300,
-  `output` enum('false','true') NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `node_id` (`node_id`),
-  CONSTRAINT `tasks_ibfk_1` FOREIGN KEY (`node_id`) REFERENCES `nodes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
