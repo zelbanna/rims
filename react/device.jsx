@@ -53,7 +53,6 @@ export class Main extends Component {
    <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','List',{})} style={{float:'right'}} />
    <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
     <NavDropButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
-    <NavDropButton key='dev_nav_dhcp' title='DHCP' onClick={() => this.changeImport('dhcp','Servers',{})} />
     <NavDropButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DHCP'})} />
    </NavDropDown>
    <NavDropDown key='dev_nav_dns' title='DNS' style={{float:'right'}}>

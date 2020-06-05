@@ -33,6 +33,7 @@ export const RemoveButton = (props) => info_template('fas fa-minus',props);
 export const RevertButton = (props) => info_template('fas fa-history',props);
 export const SaveButton = (props) => info_template('fas fa-download',props);
 export const SearchButton = (props) => info_template('fas fa-search',props);
+export const ServeButton = (props) => info_template('fas fa-hand-holding',props);
 export const ShutdownButton = (props) => info_template('fas fa-power-off',props);
 export const SnapshotButton = (props) => info_template('fas fa-camera',props);
 export const StartButton = (props) => <button id={props.id} className={styles.info} style={{backgroundColor:'#26CB20'}} onClick={props.onClick} title={props.title}><i className='fas fa-play' /></button>;
@@ -47,4 +48,5 @@ export const ViewButton = (props) => info_template('fas fa-search-plus',props);
 
 const ipam_template = (color,props) => <button id={props.id} className={styles.ipam} style={{backgroundColor:color}} onClick={props.onClick} title={props.title}>{props.text}</button>
 export const IpamGreenButton = (props) => ipam_template('#26CB20',props)
+export const IpamGreyButton = (props) => ipam_template('#9CA6B0',props)
 export const IpamRedButton = (props) => ipam_template('#CB2026',props)

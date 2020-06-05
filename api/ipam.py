@@ -238,18 +238,22 @@ def address_list(aCTX, aArgs):
    ret['mask']    = network['mask']
    ret['network'] = network['netasc']
    ret['gateway'] = network['gwasc']
-   tables = ['ipam_addresses AS ia']
    fields = ['ia.ip AS ip_integer','INET_NTOA(ia.ip) AS ip','ia.id','ia.state']
-   for field in aArgs.get('extra',[]):
-    if   field == 'device_id':
+   joins = ['ipam_addresses AS ia']
+   extras = aArgs.get('extra')
+   if extras:
+    if 'device_id' in extras:
      fields.append('di.device_id')
-     tables.append('interfaces AS di ON ia.id = di.ipam_id')
-    elif field == 'a_domain_id':
+     joins.append('interfaces AS di ON ia.id = di.ipam_id')
+    if 'a_domain_id' in extras:
      fields.extend(['a_domain_id','domains.name AS domain'])
-     tables.append('domains ON a_domain_id = domains.id')
-    else:
-     fields.append(field)
-   ret['count']   = db.do("SELECT %s FROM %s WHERE network_id = %s ORDER BY ip_integer"%(",".join(fields)," LEFT JOIN ".join(tables),aArgs['network_id']))
+     joins.append('domains ON a_domain_id = domains.id')
+    if 'hostname' in extras:
+     fields.append('ia.hostname')
+    if 'dhcp' in extras:
+     fields.append('dh.id AS dhcp_id')
+     joins.append('dhcp_ipam AS dh ON dh.id = ia.id')
+   ret['count']   = db.do("SELECT %s FROM %s WHERE network_id = %s ORDER BY ip_integer"%(",".join(fields)," LEFT JOIN ".join(joins),aArgs['network_id']))
    ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   else:
    ret['status'] = 'NOT_OK'
@@ -508,21 +512,21 @@ def address_events(aCTX, aArgs):
     db.do("TRUNCATE ipam_events")
   else:
    fields = ['DATE_FORMAT(ie.time,"%Y-%m-%d %H:%i") AS time', 'ie.state']
-   tables = ['ipam_events AS ie']
+   joins = ['ipam_events AS ie']
    if 'id' in aArgs:
     filter = "ie.ipam_id = %s"%aArgs['id']
    else:
     filter = "TRUE"
     fields.append('ie.ipam_id AS id')
    if 'extra' in aArgs:
-    tables.append('ipam_addresses AS ia')
+    joins.append('ipam_addresses AS ia')
     if 'hostname' in aArgs['extra']:
      fields.append('ia.hostname')
     if 'ip' in aArgs['extra']:
      fields.append('INET_NTOA(ia.ip) AS ip')
     if 'ip_state' in aArgs['extra']:
      fields.append('ia.state AS ip_state')
-   ret['count'] = db.do("SELECT {} FROM {} WHERE {} ORDER BY time DESC LIMIT {} OFFSET {}".format(", ".join(fields), " LEFT JOIN ".join(tables), filter, aArgs.get('limit','50'), aArgs.get('offset','0')))
+   ret['count'] = db.do("SELECT {} FROM {} WHERE {} ORDER BY time DESC LIMIT {} OFFSET {}".format(", ".join(fields), " LEFT JOIN ".join(joins), filter, aArgs.get('limit','50'), aArgs.get('offset','0')))
    ret['events']= db.get_rows()
  return ret
 

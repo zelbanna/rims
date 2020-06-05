@@ -1,14 +1,14 @@
-"""FDB API module. This module provides FDB interaction with network devices"""
+"""DHCP API module. This module provides DHCP allocation functionality"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 #
 #
 def list(aCTX, aArgs):
- """ Function retrieves dhcp allocated ip addresses
+ """ Function retrieves dhcp allocated ip addresses for either server_id or network_id
 
  Args:
-  - server_id (required)
+  - server_id (optional)
   - network_id (optional)
 
  Output:
@@ -16,7 +16,10 @@ def list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT di.id, ia.network_id, INET_NTOA(ia.ip) AS ip FROM dhcp_ipam AS di LEFT JOIN ipam_addresses AS ia ON di.id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ine.server_id = %s"%aArgs['server_id'])
+  if aArgs.get('network_id'):
+   ret['count'] = db.do("SELECT di.id, INET_NTOA(ia.ip) AS ip FROM dhcp_ipam AS di LEFT JOIN ipam_addresses AS ia ON di.id = ia.id WHERE ia.network_id = %s"%aArgs['network_id'])
+  else:
+   ret['count'] = db.do("SELECT di.id, INET_NTOA(ia.ip) AS ip, ia.network_id, INET_NTOA(ine.network) AS network FROM dhcp_ipam AS di LEFT JOIN ipam_addresses AS ia ON di.id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ine.server_id = %s"%aArgs['server_id'])
   ret['data'] = db.get_rows()
  return ret
 
