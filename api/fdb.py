@@ -60,6 +60,9 @@ def list(aCTX, aArgs):
    if 'hostname' in extras:
     fields.append('devices.hostname')
     joins.append('devices ON fdb.device_id = devices.id')
+   if 'oui' in extras:
+    fields.append('oui.company AS oui')
+    joins.append('oui ON oui.oui = (fdb.mac >> 24)')
 
   ret['count'] = db.do("SELECT %s FROM fdb LEFT JOIN %s WHERE %s"%(','.join(fields), ' LEFT JOIN '.join(joins), ' AND '.join(where)))
   ret['data'] = db.get_rows()
@@ -86,12 +89,13 @@ def search(aCTX, aArgs):
  else:
   ret = {}
   with aCTX.db as db:
-   if (db.do("SELECT device_id, interface_id, name, description FROM interfaces WHERE mac = %i ORDER BY snmp_index, name"%mac) > 0):
+   if (db.do("SELECT device_id, interface_id, name, description, oui.company AS oui FROM interfaces LEFT JOIN oui ON oui.oui = (%i >> 24) WHERE mac = %i ORDER BY snmp_index, name"%(mac,mac)) > 0):
     ret['interfaces'] = db.get_rows()
     db.do("SELECT id, hostname FROM devices WHERE id = %i"%ret['interfaces'][0]['device_id'])
     ret['device'] = db.get_row()
     ret['status'] = 'OK'
    else:
+    ret['oui'] = db.get_val('company') if (db.do("SELECT company FROM oui WHERE oui.oui = (%i >> 24)"%mac) > 0) else 'N/A'
     ret['status'] = 'NOT_OK'
     ret['info'] = 'No device found'
  return ret

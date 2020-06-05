@@ -53,6 +53,7 @@ export class Main extends Component {
    <NavButton key='dev_nav_resv' title='Reservations' onClick={() => this.changeImport('reservation','List',{})} style={{float:'right'}} />
    <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
     <NavDropButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
+    <NavDropButton key='dev_nav_dhcp' title='DHCP' onClick={() => this.changeImport('dhcp','Servers',{})} />
     <NavDropButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DHCP'})} />
    </NavDropDown>
    <NavDropDown key='dev_nav_dns' title='DNS' style={{float:'right'}}>
@@ -772,14 +773,14 @@ class OUISearch extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  ouiSearch = () => {
-  post_call('api/master/oui_info',{oui:this.state.data.oui}).then(result => this.setState({content:<InfoArticle key='oui_art'><InfoColumns key='oui_cont'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.data.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.data.company}</span></InfoColumns></InfoArticle>}))
+  post_call('api/master/oui_info',{oui:this.state.data.oui}).then(result => this.setState({content:<InfoArticle key='os_art'><InfoColumns key='os_cont'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.data.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.data.company}</span></InfoColumns></InfoArticle>}))
  }
 
  render() {
   return <Flex key='flex'>
-   <LineArticle key='oui_src_art'>
-    Type OUI or MAC address to find OUI/company name,<TextInput key='oui' id='oui' onChange={this.onChange} value={this.state.data.oui} placeholder='00:00:00' />
-    <SearchButton key='oui_btn_search' onClick={() => this.ouiSearch()} title='Search for OUI' />
+   <LineArticle key='os_art'>
+    Type MAC address to find <TextInput key='oui' id='oui' onChange={this.onChange} value={this.state.data.oui} placeholder='00:00:00' />
+    <SearchButton key='os_btn_search' onClick={() => this.ouiSearch()} title='Search for OUI' />
    </LineArticle>
    {this.state.content}
   </Flex>

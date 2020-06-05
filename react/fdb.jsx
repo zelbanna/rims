@@ -41,7 +41,7 @@ export class Device extends Component {
  changeContent = (elem) => this.props.changeSelf(elem);
 
  componentDidMount(){
-  post_call('api/fdb/list',{field:"device_id",search:this.props.id}).then(result => this.setState(result))
+  post_call('api/fdb/list',{field:"device_id",search:this.props.id, extra:['oui']}).then(result => this.setState(result))
  }
 
  syncFDB(){
@@ -51,11 +51,11 @@ export class Device extends Component {
 
  changeInterface = (interface_id) => import('./interface.jsx').then(lib => this.changeContent(<lib.Info key='interface_info' device_id={this.props.id} interface_id={interface_id} changeSelf={this.changeContent} />))
 
- listItem = (row,idx) => [row.vlan,row.snmp_index,<HrefButton key={'fd_intf_'+row.interface_id} text={row.name} onClick={() => this.changeInterface(row.interface_id)} />,row.mac]
+ listItem = (row,idx) => [row.vlan,row.snmp_index,<HrefButton key={'fd_intf_'+row.interface_id} text={row.name} onClick={() => this.changeInterface(row.interface_id)} />,row.mac,row.oui]
 
  render(){
   if (this.state.data)
-   return <ContentReport key='fd_cr' header='FDB' thead={['VLAN','SNMP','Interface','MAC']} trows={this.state.data} listItem={this.listItem}>
+   return <ContentReport key='fd_cr' header='FDB' thead={['VLAN','SNMP','Interface','MAC','OUI']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='fd_btn_reload' onClick={() => this.componentDidMount()} />
     <SyncButton key='fd_btn_sync' onClick={() => this.syncFDB() } title='Resync FDB' />
     {this.state.wait}
@@ -115,9 +115,11 @@ class Info extends Component {
 
  render(){
   if (this.state.device)
-   return <ContentReport key='fd_cr' header={`${this.state.device.hostname} (${this.state.device.id})`} thead={['ID','Name','Description']} trows={this.state.interfaces} listItem={(row) => [row.interface_id,row.name,row.description]} />
+   return <ContentReport key='fd_cr' header={`${this.state.device.hostname} (${this.state.device.id})`} thead={['ID','Name','Description','OUI']} trows={this.state.interfaces} listItem={(row) => [row.interface_id,row.name,row.description,row.oui]} />
+  else if (this.state.oui)
+   return <LineArticle key='fd_oui_la' header='Search result'>OUI: {this.state.oui}</LineArticle>
   else if (this.state.status)
-   return <LineArticle key='fd_la' header='Search error'>Search result: {this.state.info}</LineArticle>
+   return <LineArticle key='fd_oui_la' header='Search result'>Search result: {this.state.info}</LineArticle>
   else
    return <Spinner />
  }

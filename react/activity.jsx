@@ -10,7 +10,7 @@ import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigatio
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = <Daily key='activity_daily' />
+  this.state = <Daily key='activity_daily' changeSelf={this.changeContent} />
  }
 
  componentDidMount(){

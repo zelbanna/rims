@@ -265,9 +265,8 @@ def address_info(aCTX, aArgs):
   - op (optional) 'update'/'update_only'
   - ip (optional)
   - network_id (optional required when ip supplied)
-  - a_domain_id (optional)
-  - type (optional)
   - hostname (optional)
+  - a_domain_id (optional)
 
  Output:
   - same as above + ptr_domain_id
@@ -286,12 +285,12 @@ def address_info(aCTX, aArgs):
     return unpack("!I", inet_aton(addr))[0]
 
    if (id != 'new'):
-    if (db.do("SELECT INET_NTOA(ip) AS ip, network_id, a_domain_id, type, hostname, reverse_zone_id AS ptr_domain_id FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) > 0):
+    if (db.do("SELECT INET_NTOA(ip) AS ip, network_id, a_domain_id, hostname, reverse_zone_id AS ptr_domain_id FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) > 0):
      old = db.get_row()
     else:
      return {'status':'NOT_OK', 'info':'Illegal id'}
    else:
-    old = {'ip':'0.0.0.0','network_id':None,'a_domain_id':None,'type':0,'hostname':'unknown','ptr_domain_id':None}
+    old = {'ip':'0.0.0.0','network_id':None,'a_domain_id':None,'hostname':'unknown','ptr_domain_id':None}
    ret = {'status':'OK','info':None}
    # Save for DNS
    ip  = aArgs.get('ip',old['ip'])
@@ -365,8 +364,8 @@ def address_info(aCTX, aArgs):
        ret['PTR']['create'] = record_info(aCTX, {'domain_id':db.get_val('reverse_zone_id'), 'name':'.'.join(ptr), 'type':'PTR', 'content':fqdn, 'op':'insert'})['status'] if working else 'NOT_OK_NO_DOMAIN'
 
   if op and op == 'update_only':
-   pass
-  elif not (id == 'new') and (db.do("SELECT ia.id, INET_NTOA(ip) AS ip, ia.state, network_id, INET_NTOA(ine.network) AS network, a_domain_id, ine.reverse_zone_id AS ptr_domain_id, type, hostname FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) == 1):
+   ret['id'] = id
+  elif not (id == 'new') and (db.do("SELECT ia.id, INET_NTOA(ip) AS ip, ia.state, network_id, INET_NTOA(ine.network) AS network, a_domain_id, ine.reverse_zone_id AS ptr_domain_id, hostname FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) == 1):
    ret['data'] = db.get_row()
    ret['extra']= {'network':ret['data'].pop('network',None), 'ptr_domain_id': ret['data'].pop('ptr_domain_id',None)}
   else:
@@ -375,7 +374,7 @@ def address_info(aCTX, aArgs):
     network_id = int(aArgs['network_id'])
    else:
     network,network_id = '0.0.0.0',None
-   ret['data'] = {'id':id,'network_id':network_id,'ip':network,'a_domain_id':None, 'type':0,'hostname':'unknown','state':'unknown'}
+   ret['data'] = {'id':id,'network_id':network_id,'ip':network,'a_domain_id':None, 'hostname':'unknown','state':'unknown'}
    ret['extra']= {'network':network, 'ptr_domain_id':None}
  return ret
 

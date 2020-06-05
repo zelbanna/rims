@@ -170,6 +170,14 @@ CREATE TABLE `devices` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `dhcp_ipam`;
+CREATE TABLE `dhcp_ipam` (
+  `id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `dhcp_ipam_ibfk_1` FOREIGN KEY (`id`) REFERENCES `ipam_addresses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `domains`;
 CREATE TABLE `domains` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -257,7 +265,6 @@ CREATE TABLE `ipam_addresses` (
   `a_domain_id` int(10) unsigned DEFAULT NULL,
   `hostname` varchar(40) DEFAULT 'unknown',
   `state` enum('unknown','up','down') NOT NULL,
-  `type` enum('host','dhcp') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip_network` (`ip`,`network_id`),
   UNIQUE KEY `hostname` (`hostname`,`a_domain_id`),
