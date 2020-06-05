@@ -1,8 +1,4 @@
-"""Module docstring.
-
-Generic Library. Many are for reference, make them "inline"
-
-"""
+"""Generic Library. Many are for reference, make them 'inline'"""
 __author__ = "Zacharias El Banna"
 
 ##############################################################################
@@ -11,7 +7,7 @@ def debug_decorator(func_name):
  def decorator(func):
   def decorated(*args,**kwargs):
    res = func(*args,**kwargs)
-   print("DEBUGGER: %s(%s,%s) => %s"%(func_name, args, kwargs, res))
+   print('DEBUGGER: %s(%s,%s) => %s'%(func_name, args, kwargs, res))
    return res
   return decorated
  return decorator
@@ -36,7 +32,7 @@ class DummyContext(object):
   return self.log if aFunction == 'log' else lambda x: None
 
  def log(aArgs = None):
-  print("%(id)s => %(message)s"%(aArgs))
+  print('%(id)s => %(message)s'%(aArgs))
 
 
 ################################### Generics ##################################
@@ -51,56 +47,46 @@ def get_host_name(aIP):
  try:    return gethostbyaddr(aIP)[0].partition('.')[0]
  except: return None
 
-def ip2int(addr):
+def v4ToInt(addr):
  from struct import unpack
  from socket import inet_aton
- return unpack("!I", inet_aton(addr))[0]
+ return unpack('!I', inet_aton(addr))[0]
 
-def int2ip(addr):
+def intToV4(addr):
  from struct import pack
  from socket import inet_ntoa
- return inet_ntoa(pack("!I", addr))
+ return inet_ntoa(pack('!I', addr))
 
-def ips2range(addr1,addr2):
- from struct import pack, unpack
- from socket import inet_ntoa, inet_aton
- return [inet_ntoa(pack("!I", addr)) for addr in range(unpack("!I", inet_aton(addr1))[0], unpack("!I", inet_aton(addr2))[0] + 1)]
-
-def ipint2range(start,end):
- from struct import pack
- from socket import inet_ntoa
- return [inet_ntoa(pack("!I", addr)) for addr in range(start,end + 1)]
-
-def ip2ptr(addr):
+def v4ToPtr(addr):
  octets = addr.split('.')
  octets.reverse()
- octets.append("in-addr.arpa")
- return ".".join(octets)
+ octets.append('in-addr.arpa')
+ return '.'.join(octets)
 
-def ip2arpa(addr):
+def v4ToArpa(addr):
  octets = addr.split('.')[:3]
  octets.reverse()
- octets.append("in-addr.arpa")
- return ".".join(octets)
+ octets.append('in-addr.arpa')
+ return '.'.join(octets)
 
-def int2mac(aInt):
- return ':'.join("%s%s"%x for x in zip(*[iter("{:012x}".format(aInt))]*2))
+def intToMac(aInt):
+ return ':'.join('%s%s'%x for x in zip(*[iter('{:012x}'.format(aInt))]*2))
 
-def mac2int(aMAC):
- try:    return int(aMAC.replace(":",""),16)
+def macToInt(aMAC):
+ try:    return int(aMAC.replace(':',''),16)
  except: return 0
 
-def ping_os(ip):
+def ping_os(aIP):
  from os import system
- return system("ping -c 1 -w 1 " + ip + " > /dev/null 2>&1") == 0
+ return system('ping -c 1 -w 1 %s > /dev/null 2>&1'%aIP) == 0
 
-def external_ip():
+def external_ip(aType = 'v4'):
  from dns import resolver
  from socket import gethostbyname
  try:
   opendns  = resolver.Resolver()
   opendns.nameservers = [gethostbyname('resolver1.opendns.com')]
-  res = str(opendns.query("myip.opendns.com",'A').response.answer[0])
+  res = str(opendns.query('myip.opendns.com','A').response.answer[0])
   return res.split()[4]
  except:
   return None
@@ -109,12 +95,12 @@ def get_quote(aString):
  from urllib.parse import quote_plus
  return quote_plus(aString)
 
-def str2hex(arg):
+def strToHex(arg):
  try:    return '0x{0:02x}'.format(int(arg))
  except: return '0x00'
 
 def file_replace(afile,old,new):
- if afile == "" or new == "" or old == "":
+ if afile == '' or new == '' or old == '':
   return False
  with open(afile, 'r') as f:
   filedata = f.read()

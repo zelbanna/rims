@@ -51,7 +51,7 @@ def error(aCTX, aArgs):
 #
 #
 def external_ip(aCTX, aArgs):
- """Function docstring for external_ip. TBD
+ """Function provides the public IPv4 address of the system
 
  Args:
 

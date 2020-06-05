@@ -59,7 +59,7 @@ def new(aCTX, aArgs):
    net = aArgs['network_id']
    dom = aArgs.get('a_domain_id','NULL')
    if (db.do("SELECT network FROM ipam_networks WHERE id = %s AND %i > network AND %i < (network + POW(2,(32-mask))-1)"%(net,start,end)) == 1):
-    if (db.do("SELECT id, INET_NTOA(ip) AS ip FROM ipam_addresses WHERE network_id = %s AND %i <= ip AND ip <= %i"%(net,start,end)) > 0):
+    if (db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.network_id = %s AND %i <= ia.ip AND ia.ip <= %i"%(net,start,end)) > 0):
      ret['info'] = 'Occupied range'
      ret['data'] = db.get_rows()
     else:

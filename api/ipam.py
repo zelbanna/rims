@@ -98,7 +98,7 @@ def network_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT id, a_domain_id FROM ipam_addresses WHERE network_id = %s AND a_domain_id IS NOT NULL"%aArgs['id'])
+  db.do("SELECT id, a_domain_id FROM ipam_addresses AS ia WHERE network_id = %s AND a_domain_id IS NOT NULL"%aArgs['id'])
   for address in db.get_rows():
     # INTERNAL from rims.api.ipam import address_delete
    address_delete(aCTX, address)
@@ -137,7 +137,7 @@ def network_discover(aCTX, aArgs):
   ip_start = net['network'] + 1
   ip_end   = net['network'] + 2**(32 - net['mask']) - 1
   ret.update({'start':{'ipint':ip_start,'ip':inet_ntoa(pack("!I", ip_start))},'end':{'ipint':ip_end,'ip':inet_ntoa(pack("!I", ip_end))},'reverse_zone_id':net['reverse_zone_id']})
-  db.do("SELECT ip FROM ipam_addresses WHERE network_id = %s"%aArgs['id'])
+  db.do("SELECT ia.ip FROM ipam_addresses AS ia WHERE network_id = %s"%aArgs['id'])
   ip_list = db.get_dict('ip')
 
  try:
@@ -167,7 +167,7 @@ def network_discrepancy(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT id, ip AS ip_integer, INET_NTOA(ip) AS ip FROM ipam_addresses WHERE id NOT IN (SELECT ipam_id FROM devices_interfaces) AND type = 0 ORDER BY ip_integer")
+  db.do("SELECT ia.id, ia.ip AS ip_integer, INET_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.id NOT IN (SELECT ipam_id FROM interfaces WHERE ipam_id IS NOT NULL) ORDER BY ip_integer")
   ret['data'] = db.get_rows()
  return ret
 
@@ -304,7 +304,7 @@ def address_info(aCTX, aArgs):
     aArgs['network_id'] = aArgs.get('network_id',old['network_id'])
     """ if valid in network range AND available => then go """
     if (db.do("SELECT network FROM ipam_networks WHERE id = %(network_id)s AND %(ip)s > network AND %(ip)s < (network + POW(2,(32-mask))-1)"%aArgs) == 1):
-     if (db.do("SELECT id FROM ipam_addresses WHERE ip = %(ip)s AND network_id = %(network_id)s"%aArgs) == 1):
+     if (db.do("SELECT id FROM ipam_addresses AS ia WHERE ia.ip = %(ip)s AND network_id = %(network_id)s"%aArgs) == 1):
       existing = db.get_val('id')
       if (existing and id == 'new') or (existing != int(id)):
        ret['status'] = 'NOT_OK'
@@ -433,7 +433,7 @@ def address_find(aCTX, aArgs):
   if (db.do("SELECT network, INET_NTOA(network) as netasc, mask FROM ipam_networks WHERE id = %(network_id)s"%aArgs) == 0):
    return {'status':'NOT_OK', 'info':'Network not found'}
   net = db.get_row()
-  db.do("SELECT ip FROM ipam_addresses WHERE network_id = %(network_id)s"%aArgs)
+  db.do("SELECT ia.ip FROM ipam_addresses AS ia WHERE network_id = %(network_id)s"%aArgs)
   iplist = db.get_dict('ip')
  network = int(net.get('network'))
  start  = None
@@ -454,7 +454,7 @@ def address_find(aCTX, aArgs):
     ret['end'] = GL_int2ip(start + consecutive - 1)
     break
    else:
-    count = count - 1
+    count -= 1
  return ret
 
 #
@@ -482,7 +482,7 @@ def address_delete(aCTX, aArgs):
     ptr.reverse()
     ptr.append('in-addr.arpa')
     ret['PTR'] = record_delete(aCTX, {'name':'.'.join(ptr), 'domain_id':old['ptr_domain_id'],'type':'PTR'})['status']
-  ret['deleted'] = (db.do("DELETE FROM ipam_addresses WHERE id = %(id)s"%aArgs) == 1)
+  ret['deleted'] = (db.do("DELETE FROM ipam_addresses AS ia WHERE ia.id = %(id)s"%aArgs) == 1)
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 
@@ -549,7 +549,7 @@ def clear(aCTX, aArgs):
    filter = "network_id = %s"%aArgs['network_id']
   else:
    filter = 'TRUE'
-  ret['count'] = db.do("UPDATE ipam_addresses SET state = 'unknown' WHERE %s"%filter)
+  ret['count'] = db.do("UPDATE ipam_addresses AS ia SET ia.state = 'unknown' WHERE %s"%filter)
  return ret
 
 #
@@ -625,7 +625,7 @@ def report(aCTX, aArgs):
   for chg in ['up','down']:
    change = aArgs.get(chg)
    if change:
-    ret[chg] = db.do("UPDATE ipam_addresses SET state = '%s' WHERE id IN (%s)"%(chg,",".join(str(x) for x in change)))
+    ret[chg] = db.do("UPDATE ipam_addresses AS ia SET ia.state = '%s' WHERE id IN (%s)"%(chg,",".join(str(x) for x in change)))
     begin = 0
     final  = len(change)
     while begin < final:

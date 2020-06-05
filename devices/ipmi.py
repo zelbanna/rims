@@ -30,9 +30,9 @@ class Device(GenericDevice):
   from io import open
   from os import devnull
   from subprocess import check_call
-  from rims.core.genlib import str2hex
+  from rims.core.genlib import strToHex
   FNULL = open(devnull, 'w')
-  rear  = str2hex(arear)
-  front = str2hex(afront)
+  rear  = strToHex(arear)
+  front = strToHex(afront)
   ipmistring = "ipmitool -H " + self._ip + " -U " + self._ctx.config['ipmi']['username'] + " -P " + self._ctx.config['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   return check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)
