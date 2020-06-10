@@ -153,7 +153,7 @@ def active_users(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in aCTX.tokens.values()]))
+  db.query("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in aCTX.tokens.values()]))
   alias = {x['id']:x['alias'] for x in db.get_rows()}
  return {'data':[{'ip':v['ip'],'alias':alias[v['id']]} for v in aCTX.tokens.values()]}
 
@@ -434,5 +434,5 @@ def inventory(aCTX, aArgs):
  ret.update(aCTX.node_function('master','master','inventory')(aArgs = {'node':aCTX.node,'user_id':aArgs.get('user_id',-1)}))
  # INTERNAL from rims.api.system import external_ip
  ext = external_ip(aCTX,None)
- ret['navinfo'].append(ext['ip'] if ext['status'] == 'OK' else '0.0.0.0')
+ ret['navinfo'].append(ext['ip'] if ext['status'] == 'OK' else 'IP N/A')
  return ret

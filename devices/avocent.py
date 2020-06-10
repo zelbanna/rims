@@ -28,8 +28,6 @@ class Device(GenericDevice):
  def __init__(self, aCTX, aID, aIP = None):
   GenericDevice.__init__(self, aCTX, aID, aIP)
 
- def __str__(self): return "Avocent[%s,%s]"%(self._id,self._ip)
-
  #
  def set_state(self,slot,unit,state):
   from time import sleep

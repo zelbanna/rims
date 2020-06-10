@@ -30,8 +30,7 @@ def list(aCTX, aArgs):
   fields.extend(['inv.%s'%x for x in aArgs['extra']])
 
  with aCTX.db as db:
-  sql = "SELECT %s FROM %s WHERE %s %s"%(", ".join(fields),' LEFT JOIN '.join(tables),' AND '.join(filter),sort)
-  ret['count'] = db.do(sql)
+  ret['count'] = db.query("SELECT %s FROM %s WHERE %s %s"%(", ".join(fields),' LEFT JOIN '.join(tables),' AND '.join(filter),sort))
   ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
  return ret
 
@@ -46,7 +45,7 @@ def vendor_list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT vendor, count(*) AS count FROM inventory GROUP BY vendor")
+  ret['count'] = db.query("SELECT vendor, count(*) AS count FROM inventory GROUP BY vendor")
   ret['data']  = db.get_rows()
  return ret
 
@@ -91,7 +90,7 @@ def info(aCTX, aArgs):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT * FROM inventory WHERE id = '%s'"%id) == 1)
+   ret['found'] = (db.query("SELECT * FROM inventory WHERE id = '%s'"%id) == 1)
    ret['data'] = db.get_row()
    ret['data']['receive_date'] = str(ret['data']['receive_date']) if ret['data']['receive_date'] else None
    ret['data']['support_end_date'] = str(ret['data']['support_end_date']) if ret['data']['support_end_date'] else None
@@ -100,7 +99,7 @@ def info(aCTX, aArgs):
   else:
    ret['found'] = True
    ret['data'] = {'id':'new','vendor':'','serial':'','model':'','license':False,'license_key':'','support_contract':False,'support_end_date':'','description':'N/A','purchase_order':'','location_id':None,'receive_date':'','product':''}
-  db.do("SELECT id,name FROM locations")
+  db.query("SELECT id,name FROM locations")
   ret['locations'] = db.get_rows()
  return ret
 
@@ -116,5 +115,5 @@ def delete(aCTX, aArgs):
   - deleted (bool)
  """
  with aCTX.db as db:
-  res = (db.do("DELETE FROM inventory WHERE id = %s"%aArgs['id']) == 1)
+  res = (db.execute("DELETE FROM inventory WHERE id = %s"%aArgs['id']) == 1)
  return {'deleted':res}

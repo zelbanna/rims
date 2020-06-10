@@ -20,7 +20,7 @@ if __name__ == "__main__":
   config  = load(config_file)
  database = DB(config['database']['name'],config['database']['host'],config['database']['username'],config['database']['password'])
  with database as db:
-  db.do("SELECT * FROM locations")
+  db.query("SELECT * FROM locations")
   locations = db.get_dict('name')
   for location in locations.values():
    print(location)

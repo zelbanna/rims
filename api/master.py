@@ -19,7 +19,7 @@ def inventory(aCTX, aArgs):
  if aArgs['node'] == 'master':
   ret.update({'node':True,'users':True})
  with aCTX.db as db:
-  if 'user_id' in aArgs and (db.do("SELECT alias FROM users WHERE id = %s"%aArgs['user_id']) > 0):
+  if 'user_id' in aArgs and (db.query("SELECT alias FROM users WHERE id = %s"%aArgs['user_id']) > 0):
    ret['navinfo'].append(db.get_val('alias'))
  return ret
 
@@ -49,14 +49,14 @@ def oui_fetch(aCTX, aArgs):
  else:
   with aCTX.db as db:
    if aArgs.get('clear') is True:
-    db.do("TRUNCATE oui")
+    db.execute("TRUNCATE oui")
    for line in data.split('\n'):
     if len(line) > 0:
      parts = line.split()
      if len(parts) > 3 and parts[1] == '(base' and parts[2] == '16)':
       oui = int(parts[0].upper(),16)
       company = (" ".join(parts[3:]).replace("'",''))[0:60]
-      ret['new'] += db.do("INSERT INTO oui(oui,company) VALUES(%d,'%s') ON DUPLICATE KEY UPDATE company = '%s'"%(oui,company,company))
+      ret['new'] += db.execute("INSERT INTO oui(oui,company) VALUES(%d,'%s') ON DUPLICATE KEY UPDATE company = '%s'"%(oui,company,company))
    else:
     ret['status'] = 'OK'
  return ret
@@ -75,7 +75,7 @@ def oui_info(aCTX, aArgs):
  try:
   oui = int(aArgs['oui'].translate(str.maketrans({":":"","-":""}))[:6],16)
   with aCTX.db as db:
-   found = (db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) == 1)
+   found = (db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) == 1)
    ret['data']= db.get_row() if found else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
    ret['status'] = 'OK' if ret['data']['oui'] != 'NOT_FOUND' else 'NOT_FOUND'
  except Exception as e:
@@ -93,7 +93,7 @@ def oui_list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui")
+  db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui")
   ret['data'] = db.get_rows()
  return ret
 
@@ -109,7 +109,7 @@ def node_list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT * FROM nodes")
+  ret['count'] = db.query("SELECT * FROM nodes")
   ret['data']  = db.get_rows()
  return ret
 
@@ -140,7 +140,7 @@ def node_info(aCTX, aArgs):
     ret['update'] = (db.insert_dict('nodes',aArgs) > 0)
     id = db.get_last_id() if ret['update'] else 'new'
   if not id == 'new':
-   ret['found'] = (db.do("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
+   ret['found'] = (db.query("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
    if ret['found'] and op == 'update':
     node = ret['data']
@@ -166,9 +166,9 @@ def node_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  if (aArgs['id'] != 'new') and db.do("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aArgs['id']) > 0:
+  if (aArgs['id'] != 'new') and db.query("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aArgs['id']) > 0:
    aCTX.nodes.pop(db.get_val('node'),None)
-   ret['deleted'] = (db.do("DELETE FROM nodes WHERE id = %s"%aArgs['id']) == 1)
+   ret['deleted'] = (db.execute("DELETE FROM nodes WHERE id = %s"%aArgs['id']) == 1)
   else:
    ret['deleted'] = False
  return ret
@@ -198,7 +198,7 @@ def user_list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT id, alias, name, email FROM users ORDER by name")
+  ret['count'] = db.query("SELECT id, alias, name, email FROM users ORDER by name")
   ret['data']  = db.get_rows()
  return ret
 
@@ -255,7 +255,7 @@ def user_info(aCTX, aArgs):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT users.* FROM users WHERE id = '%s'"%id) > 0)
+   ret['found'] = (db.query("SELECT users.* FROM users WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
    ret['data'].pop('password',None)
   else:
@@ -274,7 +274,7 @@ def user_delete(aCTX, aArgs):
  Output:
  """
  with aCTX.db as db:
-  res = (db.do("DELETE FROM users WHERE id = '%s'"%aArgs['id']) == 1)
+  res = (db.execute("DELETE FROM users WHERE id = '%s'"%aArgs['id']) == 1)
  return { 'deleted':res }
 
 ################################ SERVERS ##################################
@@ -290,7 +290,7 @@ def server_list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT servers.id, st.service, servers.node, st.type, servers.ui FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY servers.node"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
+  db.query("SELECT servers.id, st.service, servers.node, st.type, servers.ui FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY servers.node"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
   ret['data']= db.get_rows()
  return ret
 
@@ -318,9 +318,9 @@ def server_info(aCTX, aArgs):
     ret['update'] = db.insert_dict('servers',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
   if not id == 'new':
-   ret['found'] = (db.do("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
+   ret['found'] = (db.query("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
-   db.do("SELECT id, service, type FROM service_types WHERE type IN (SELECT st.type FROM service_types AS st JOIN servers ON st.id = servers.type_id WHERE servers.id = '%s')"%ret['data']['id'])
+   db.query("SELECT id, service, type FROM service_types WHERE type IN (SELECT st.type FROM service_types AS st JOIN servers ON st.id = servers.type_id WHERE servers.id = '%s')"%ret['data']['id'])
    ret['services'] = db.get_rows()
    if op == 'update':
     for x in ret['services']:
@@ -329,7 +329,7 @@ def server_info(aCTX, aArgs):
       break
   else:
    ret['data'] = {'id':'new','node':None,'type_id':None,'ui':''}
-   db.do("SELECT id, service, type FROM service_types WHERE %s"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
+   db.query("SELECT id, service, type FROM service_types WHERE %s"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
    ret['services'] = db.get_rows()
 
  return ret
@@ -346,7 +346,7 @@ def server_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = db.do("DELETE FROM servers WHERE id = %s"%aArgs['id'])
+  ret['deleted'] = db.execute("DELETE FROM servers WHERE id = %s"%aArgs['id'])
   aCTX.services.pop(int(aArgs['id']),None)
  return ret
 
@@ -387,7 +387,7 @@ def activity_list(aCTX, aArgs):
  else:
   select = "activities.id"
  with aCTX.db as db:
-  db.do("SELECT %s, activity_types.type AS type, activity_types.class AS class, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY date_time DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
+  db.query("SELECT %s, activity_types.type AS type, activity_types.class AS class, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY date_time DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
   ret['data'] = db.get_rows()
  return ret
 
@@ -412,9 +412,9 @@ def activity_daily(aCTX, aArgs):
 
  with aCTX.db as db:
   if 'users' in aArgs.get('extras',[]):
-   db.do("SELECT id,alias FROM users ORDER BY alias")
+   db.query("SELECT id,alias FROM users ORDER BY alias")
    ret['users'] = {x['id']:x for x in db.get_rows()}
-  db.do("SELECT at.id, act.id AS act_id, act.user_id, at.type, act.event FROM activity_types AS at LEFT JOIN activities AS act ON at.id = act.type_id AND (act.type_id = NULL OR DATE(act.date_time) = '%s') WHERE at.class = 'daily'"%ret['date'])
+  db.query("SELECT at.id, act.id AS act_id, act.user_id, at.type, act.event FROM activity_types AS at LEFT JOIN activities AS act ON at.id = act.type_id AND (act.type_id = NULL OR DATE(act.date_time) = '%s') WHERE at.class = 'daily'"%ret['date'])
   ret['data'] = db.get_rows()
  return ret
 
@@ -439,10 +439,10 @@ def activity_info(aCTX, aArgs):
  with aCTX.db as db:
   extras = aArgs.get('extras',[])
   if 'types' in extras:
-   db.do("SELECT * FROM activity_types ORDER BY type ASC")
+   db.query("SELECT * FROM activity_types ORDER BY type ASC")
    ret['types'] = db.get_rows()
   if 'users' in extras:
-   db.do("SELECT id,alias FROM users ORDER BY alias")
+   db.query("SELECT id,alias FROM users ORDER BY alias")
    ret['users'] = db.get_rows()
   if op == 'update' and all(x in aArgs for x in ['user_id','type_id']):
    aArgs['date_time'] ="%s %s:00"%(aArgs.pop('date','1970-01-01'),aArgs.pop('time','00:01'))
@@ -454,7 +454,7 @@ def activity_info(aCTX, aArgs):
     id = db.get_last_id() if ret['update'] else 'new'
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id) > 0)
+   ret['found'] = (db.query("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
    from time import localtime
@@ -476,7 +476,7 @@ def activity_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.do("DELETE FROM activities WHERE id = '%s'"%aArgs['id']) == 1)
+  ret['deleted'] = (db.execute("DELETE FROM activities WHERE id = '%s'"%aArgs['id']) == 1)
  return ret
 
 #
@@ -490,7 +490,7 @@ def activity_type_list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT * FROM activity_types ORDER BY type ASC")
+  db.query("SELECT * FROM activity_types ORDER BY type ASC")
   ret['data'] = db.get_rows()
  return ret
 
@@ -515,7 +515,7 @@ def activity_type_info(aCTX, aArgs):
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT * FROM activity_types WHERE id = '%s'"%id) > 0)
+   ret['found'] = (db.query("SELECT * FROM activity_types WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','class':'transient','type':''}
@@ -534,5 +534,5 @@ def activity_type_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.do("DELETE FROM activity_types WHERE id = '%s'"%aArgs['id']) == 1)
+  ret['deleted'] = (db.execute("DELETE FROM activity_types WHERE id = '%s'"%aArgs['id']) == 1)
  return ret

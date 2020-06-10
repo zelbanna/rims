@@ -49,11 +49,11 @@ def vm_info(aCTX, aArgs):
   ret['status'] = 'OK'
   ret['interfaces'] = ret['data'].pop('interfaces',None)
   with aCTX.db as db:
-   if (db.do("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.server_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE device_uuid = '%s'"%ret['data']['device_uuid']) == 1):
+   if (db.query("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.server_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE device_uuid = '%s'"%ret['data']['device_uuid']) == 1):
     ret['data'].update(db.get_row())
     vm = ret['data'].pop('vm',None)
     if(ret['data']['device_id']):
-     db.do("SELECT interface_id, LPAD(hex(mac),12,0) AS mac, name FROM interfaces WHERE device_id = %s"%ret['data']['device_id'])
+     db.query("SELECT interface_id, LPAD(hex(mac),12,0) AS mac, name FROM interfaces WHERE device_id = %s"%ret['data']['device_id'])
      ret['device'] = db.get_rows()
      for intf in ret['device']:
        intf['mac'] = ':'.join(intf['mac'][i:i+2] for i in [0,2,4,6,8,10]) if intf.get('mac') else '00:00:00:00:00:00'
@@ -67,7 +67,7 @@ def vm_info(aCTX, aArgs):
         ret['device'].pop(vm_if['pos'])
         vm_if.pop('pos',None)
     if aArgs.get('op') == 'update' or vm != ret['data']['name']:
-     ret['update'] = (db.do("UPDATE device_vm_uuid SET vm = '%s', config = '%s', snmp_id = '%s' WHERE device_uuid = '%s'"%(ret['data']['name'], ret['data']['config'], aArgs['vm_id'],  ret['data']['device_uuid'])) == 1)
+     ret['update'] = (db.execute("UPDATE device_vm_uuid SET vm = '%s', config = '%s', snmp_id = '%s' WHERE device_uuid = '%s'"%(ret['data']['name'], ret['data']['config'], aArgs['vm_id'],  ret['data']['device_uuid'])) == 1)
  return ret
 
 #
@@ -91,8 +91,8 @@ def vm_map(aCTX, aArgs):
     aArgs['device_id'] = int(aArgs['device_id'])
     aArgs['host_id'] = int(aArgs['host_id'])
    except: pass
-   else:   ret['update'] = (db.do("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
-  ret['data'] = db.get_val('device_id') if (db.do("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs) > 0) else ''
+   else:   ret['update'] = (db.execute("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
+  ret['data'] = db.get_val('device_id') if (db.query("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs) > 0) else ''
  return ret
 
 #

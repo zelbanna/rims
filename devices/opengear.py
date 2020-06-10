@@ -19,9 +19,6 @@ class Device(GenericDevice):
  def __init__(self, aCTX, aID, aIP = None):
   GenericDevice.__init__(self, aCTX, aID, aIP)
 
- def __str__(self):
-  return "OpenGear[%s,%s]"%(self._id,self._ip)
-
  def get_inventory(self):
   result = []
   try:

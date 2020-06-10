@@ -15,7 +15,7 @@ def list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT * FROM locations")
+  ret['count'] = db.query("SELECT * FROM locations")
   ret['data'] =  db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
  return ret
 
@@ -42,7 +42,7 @@ def info(aCTX, aArgs):
     ret['insert'] = db.insert_dict('locations',aArgs)
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
-  ret['data'] = db.get_row() if  not id == 'new' and (db.do("SELECT id,name FROM locations WHERE id = '%s'"%id) > 0) else {'id':'new','name':''}
+  ret['data'] = db.get_row() if  not id == 'new' and (db.query("SELECT id,name FROM locations WHERE id = '%s'"%id) > 0) else {'id':'new','name':''}
  return ret
 
 #
@@ -58,6 +58,6 @@ def delete(aCTX, aArgs):
  ret = {}
  # Racks and inventory sets NULL anyway
  with aCTX.db as db:
-  ret['deleted'] = (db.do("DELETE FROM locations WHERE id = %s"%aArgs['id']) == 1)
+  ret['deleted'] = (db.execute("DELETE FROM locations WHERE id = %s"%aArgs['id']) == 1)
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret

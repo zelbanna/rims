@@ -19,7 +19,7 @@ def list(aCTX, aArgs):
  select = ['ds.*']
  tables = ['device_statistics AS ds']
  with aCTX.db as db:
-  db.do("SELECT %s FROM %s WHERE device_id = %s"%(', '.join(select),' LEFT JOIN '.join(tables),id))
+  db.query("SELECT %s FROM %s WHERE device_id = %s"%(', '.join(select),' LEFT JOIN '.join(tables),id))
   ret['data'] = db.get_rows()
  return ret
 
@@ -50,7 +50,7 @@ def info(aCTX, aArgs):
     id = db.get_last_id() if ret['update'] else 'new'
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT * FROM device_statistics WHERE id = %s"%id) > 0)
+   ret['found'] = (db.query("SELECT * FROM device_statistics WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','device_id':aArgs['device_id'], 'measurement':"",'tags':"",'name':"",'oid':""}
@@ -68,7 +68,7 @@ def delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.do("DELETE FROM device_statistics WHERE id = %s"%aArgs['id']) == 1)
+  ret['deleted'] = (db.execute("DELETE FROM device_statistics WHERE id = %s"%aArgs['id']) == 1)
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 
@@ -86,13 +86,13 @@ def lookup(aCTX, aArgs):
  ret = {'inserts':0}
  from importlib import import_module
  with aCTX.db as db:
-  if (db.do("SELECT INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON di.interface_id = devices.management_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id = %s"%id) > 0):
+  if (db.query("SELECT INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON di.interface_id = devices.management_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id = %s"%id) > 0):
    info = db.get_row()
    try:
     module = import_module("rims.devices.%s"%info['type'])
     device = getattr(module,'Device',None)(aCTX, id, info['ip'])
     for ddp in device.get_data_points():
-     ret['inserts'] += db.do("INSERT INTO device_statistics (device_id,measurement,tags,name,oid) VALUES(%i,'%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = id"%(int(id),ddp[0],ddp[1],ddp[2],ddp[3]))
+     ret['inserts'] += db.execute("INSERT INTO device_statistics (device_id,measurement,tags,name,oid) VALUES(%i,'%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = id"%(int(id),ddp[0],ddp[1],ddp[2],ddp[3]))
    except Exception as e:
     ret['status'] = 'NOT_OK'
     ret['info'] = str(e)
@@ -103,9 +103,6 @@ def lookup(aCTX, aArgs):
    ret['status'] = 'NOT_OK'
    ret['info'] = 'device info not found'
  return ret
-"""Monitor API module. Provides generic device monitoring"""
-__author__ = "Zacharias El Banna"
-__add_globals__ = lambda x: globals().update(x)
 
 #################################### Monitor #################################
 #
@@ -123,10 +120,10 @@ def check(aCTX, aArgs):
  devices = []
 
  with aCTX.db as db:
-  db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
-  db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
+  db.query("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
+  db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
-   if (db.do("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']) > 0):
+   if (db.query("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']) > 0):
     dev['data_points'] = []
     measurements = {}
     for ddp in db.get_rows():
@@ -139,7 +136,7 @@ def check(aCTX, aArgs):
      vobj.append({'name':ddp['name'],'oid':ddp['oid'],'value':None})
     for m,tags in measurements.items():
      dev['data_points'].extend([{'measurement':m,'tags':t,'snmp':values} for t,values in tags.items()])
-   if (db.do("SELECT snmp_index,interface_id,name FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
+   if (db.query("SELECT snmp_index,interface_id,name FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
     dev['interfaces'] = db.get_rows()
    if any(i in dev for i in ['data_points','interfaces']):
     devices.append(dev)

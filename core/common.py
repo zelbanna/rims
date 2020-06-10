@@ -138,7 +138,7 @@ class DB(object):
   self._conn_lock, self._wait_lock = RLock(), Lock()
   self._conn_waiting = 0
   self._conn_in_thread = 0
-  self.count = {'DO':0,'COMMIT':0,'CONNECT':0,'CLOSE':0}
+  self.count = {'COMMIT':0,'CONNECT':0,'CLOSE':0,'QUERY':0,'EXECUTE':0}
 
  def __enter__(self):
   self.connect()
@@ -177,12 +177,17 @@ class DB(object):
   if self._conn_in_thread == 0:
    self._conn_lock.release()
 
- def do(self,aQuery, aLog = False):
-  op = aQuery[0:6].upper()
-  self.count['DO'] += 1
-  self._dirty = (self._dirty or op in ['UPDATE','INSERT','DELETE'])
+ def query(self,aQuery, aLog = False):
+  self.count['QUERY'] += 1
   if aLog:
-   print("SQL: %s"%aQuery)
+   print("SQL: %s;"%aQuery)
+  return self._curs.execute(aQuery)
+
+ def execute(self,aQuery, aLog = False):
+  self.count['EXECUTE'] += 1
+  self._dirty = True
+  if aLog:
+   print("SQL: %s;"%aQuery)
   return self._curs.execute(aQuery)
 
  def commit(self):
@@ -220,12 +225,10 @@ class DB(object):
  ################# Extras ##################
  #
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
-  self.count['DO'] += 1
   self._dirty = True
   return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k,"'%s'"%v if not (v == 'NULL' or v is None) else 'NULL') for k,v in aDict.items()),aCondition))
 
  def insert_dict(self, aTable, aDict, aException = ""):
-  self.count['DO'] += 1
   self._dirty = True
   return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join("'%s'"%v if not (v == 'NULL' or v is None) else 'NULL' for v in aDict.values()),aException))
 

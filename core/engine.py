@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "6.5"
-__build__ = 343
+__version__ = "6.6"
+__build__ = 344
 __all__ = ['Context']
 
 from crypt import crypt
@@ -92,12 +92,12 @@ class Context(object):
   elif self.config.get('database'):
    env = {'tokens':{}}
    with self.db as db:
-    db.do("SELECT id, node, url FROM nodes")
+    db.query("SELECT id, node, url FROM nodes")
     env['nodes']   = {x['node']:{'id':x['id'],'url':x['url']} for x in db.get_rows()}
-    db.do("SELECT servers.id, node, st.service, st.type FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id")
+    db.query("SELECT servers.id, node, st.service, st.type FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id")
     env['services'] = {x['id']:{'node':x['node'],'service':x['service'],'type':x['type']} for x in db.get_rows()}
-    db.do("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
-    db.do("SELECT users.id, ut.token, users.alias, ut.created + INTERVAL 5 DAY as expires, INET_NTOA(ut.source_ip) AS ip, users.class FROM user_tokens AS ut LEFT JOIN users ON users.id = ut.user_id ORDER BY created DESC")
+    db.execute("DELETE FROM user_tokens WHERE created + INTERVAL 5 DAY < NOW()")
+    db.query("SELECT users.id, ut.token, users.alias, ut.created + INTERVAL 5 DAY as expires, INET6_NTOA(ut.source_ip) AS ip, users.class FROM user_tokens AS ut LEFT JOIN users ON users.id = ut.user_id ORDER BY created DESC")
     env['tokens'] = {x['token']:{'id':x['id'], 'alias':x['alias'],'expires':x['expires'].replace(tzinfo=timezone.utc), 'ip':x['ip'], 'class':x['class']} for x in db.get_rows()}
    env['version'] = __version__
    env['build'] = __build__
@@ -316,7 +316,7 @@ class Context(object):
    with self.db as db:
     oids = {}
     for type in ['devices','device_types']:
-     db.do("SELECT DISTINCT oid FROM %s"%type)
+     db.query("SELECT DISTINCT oid FROM %s"%type)
      oids[type] = [x['oid'] for x in db.get_rows()]
    output['Unhandled detected OIDs']= ",".join(str(x) for x in oids['devices'] if x not in oids['device_types'])
    output.update({'Mounted directory: %s'%k:"%s => %s/files/%s/"%(v,node_url,k) for k,v in self.config.get('files',{}).items()})
@@ -332,7 +332,7 @@ class Context(object):
  def auth_sync(self):
   """ Synchronizes external services auth entries with user tokens """
   with self.db as db:
-   db.do("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in self.tokens.values()]))
+   db.query("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in self.tokens.values()]))
    alias = {x['id']:x['alias'] for x in db.get_rows()}
   users = [{'ip':v['ip'],'alias':alias[v['id']]} for v in self.tokens.values()]
   for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
@@ -569,7 +569,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     else:
      output = {'status':'OK'}
      with self._ctx.db as db:
-      output['update'] = (db.do("INSERT INTO nodes(node, url) VALUES ('%(node)s','%(url)s') ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
+      output['update'] = (db.execute("INSERT INTO nodes(node, url) VALUES ('%(node)s','%(url)s') ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
      self._ctx.log("Registered node %s: update:%s"%(args['id'],output['update']))
     self._body = dumps(output).encode('utf-8')
    else:
@@ -650,14 +650,14 @@ class SessionHandler(BaseHTTPRequestHandler):
      if info:
       self._ctx.queue_function(self._ctx.auth_exec, info['alias'], info['ip'], 'invalidate')
       with self._ctx.db as db:
-       if (db.do("DELETE FROM user_tokens WHERE token = '%s'"%token) == 0):
+       if (db.execute("DELETE FROM user_tokens WHERE token = '%s'"%token) == 0):
         self._ctx.log("Authentication: destroying non-existent token requested from %s"%self.client_address[0])
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     else:
      passcode = crypt(password, "$1$%s$"%self._ctx.config['salt']).split('$')[3]
      with self._ctx.db as db:
-      if (db.do("SELECT id, class, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
+      if (db.query("SELECT id, class, theme FROM users WHERE alias = '%s' and password = '%s'"%(username,passcode)) == 1):
        expires = datetime.now(timezone.utc) + timedelta(days=5)
        output.update(db.get_row())
        output.update({'alias':username,'ip':args.get('ip',self.client_address[0]),'expires':expires.strftime("%a, %d %b %Y %H:%M:%S %Z")})
@@ -666,12 +666,12 @@ class SessionHandler(BaseHTTPRequestHandler):
         if v['id'] == output['id'] and v['ip'] == output['ip']:
          output['token'] = k
          v['expires'] = expires
-         db.do("UPDATE user_tokens SET created = NOW() WHERE token = '%s'"%k)
+         db.execute("UPDATE user_tokens SET created = NOW() WHERE token = '%s'"%k)
          break
        else:
         # New token generated, update all tables (token, database and auth servers)
         output['token'] = self.__randomizer(16)
-        db.do("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET_ATON('%(ip)s'))"%output)
+        db.execute("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET6_ATON('%(ip)s'))"%output)
         self._ctx.tokens[output['token']] = {'id':output['id'],'alias':username,'expires':expires,'ip':output['ip'],'class':output['class']}
         self._ctx.queue_function(self._ctx.auth_exec, username, output['ip'], 'authenticate')
        output['status'] = 'OK'

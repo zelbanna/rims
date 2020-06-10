@@ -21,9 +21,6 @@ class Device(Junos):
   self._style  = None
   self._interfacenames = {}
 
- def __str__(self):
-  return "EX(ip=%s, style=%s)"%(self._style,self._ip)
-
  #
  # should prep for ELS only and send "instance = 'default-instance'" - then id could be retrieved too
  # since grouping is different

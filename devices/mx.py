@@ -18,7 +18,3 @@ class Device(Junos):
  def __init__(self, aCTX, aID, aIP = None):
   Junos.__init__(self, aCTX, aID, aIP)
   self._interfacenames = {}
-
- def __str__(self):
-  return Junos.__str__(self)
-

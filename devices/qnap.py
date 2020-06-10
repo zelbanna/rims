@@ -10,6 +10,3 @@ class Device(GenericDevice):
 
  def __init__(self, aCTX, aID, aIP = None):
   GenericDevice.__init__(self, aCTX, aID, aIP)
-
- def __str__(self):
-  return "QNAP[%s,%s]"%(self._id,self._ip)

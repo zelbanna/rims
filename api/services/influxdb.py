@@ -103,7 +103,7 @@ def sync(aCTX, aArgs):
 def status(aCTX, aArgs):
  """Function shows stats form node influxdb...
 
- TODO+: Format nicer
+ TODO++: Format nicer
 
  Args:
   - count (optional)

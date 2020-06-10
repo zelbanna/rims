@@ -24,7 +24,7 @@ def dump(aCTX, aArgs):
  try:
   line_number = 0
   mode = aArgs.get('mode','schema')
-  cmd  = ["mysqldump", "-u" + username, "-p" + password, '-h',host,db]
+  cmd  = ["mysqldump", "--hex-blob", "-u" + username, "-p" + password, '-h',host,db]
   output = []
 
   if   mode == 'schema':

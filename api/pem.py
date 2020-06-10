@@ -22,7 +22,7 @@ def list(aCTX, aArgs):
   select.append('devices.hostname AS pdu_name')
   tables.append('devices ON dp.pdu_id = devices.id')
  with aCTX.db as db:
-  db.do("SELECT %s FROM %s WHERE device_id = %s"%(', '.join(select),' LEFT JOIN '.join(tables),id))
+  db.query("SELECT %s FROM %s WHERE device_id = %s"%(', '.join(select),' LEFT JOIN '.join(tables),id))
   ret['data'] = db.get_rows()
  return ret
 
@@ -53,17 +53,17 @@ def info(aCTX, aArgs):
     id = db.get_last_id() if ret['update'] else 'new'
 
   if not id == 'new':
-   ret['found'] = (db.do("SELECT * FROM device_pems WHERE id = %s"%id) > 0)
+   ret['found'] = (db.query("SELECT * FROM device_pems WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','device_id':aArgs['device_id'], 'name':'PEM','pdu_id':None,'pdu_slot':0,'pdu_unit':0}
 
   if ret.get('update') and not (ret['data']['pdu_id'] in [None,'NULL']):
    from importlib import import_module
-   db.do("SELECT hostname FROM devices WHERE id = %s"%ret['data']['device_id'])
+   db.query("SELECT hostname FROM devices WHERE id = %s"%ret['data']['device_id'])
    hostname = db.get_val('hostname')
    # Slot id is RIMS slot ID, so we need to look up pdu_slot => pdu_info.X_slot_id
-   db.do("SELECT INET_NTOA(ia.ip) AS ip, devices.hostname, dt.name AS type, pi.%(pdu_slot)s_slot_id AS pdu_slot FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN pdu_info AS pi ON devices.id = pi.device_id WHERE devices.id = %(pdu_id)s"%ret['data'])
+   db.query("SELECT INET6_NTOA(ia.ip) AS ip, devices.hostname, dt.name AS type, pi.%(pdu_slot)s_slot_id AS pdu_slot FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN pdu_info AS pi ON devices.id = pi.device_id WHERE devices.id = %(pdu_id)s"%ret['data'])
    pdu_info = db.get_row()
    try:
     module = import_module("rims.devices.%s"%pdu_info['type'])
@@ -89,6 +89,6 @@ def delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.do("DELETE FROM device_pems WHERE id = %s"%aArgs['id']) == 1)
+  ret['deleted'] = (db.execute("DELETE FROM device_pems WHERE id = %s"%aArgs['id']) == 1)
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret

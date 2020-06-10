@@ -14,7 +14,7 @@ def list(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT id,name FROM visualize")
+  ret['count'] = db.query("SELECT id,name FROM visualize")
   ret['data']  = db.get_rows()
  return ret
 
@@ -31,7 +31,7 @@ def delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = db.do("DELETE FROM visualize WHERE id = %(id)s"%aArgs)
+  ret['deleted'] = db.execute("DELETE FROM visualize WHERE id = %(id)s"%aArgs)
  return ret
 
 #
@@ -50,7 +50,7 @@ def show(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %(id)s"%aArgs) > 0)
+  ret['found'] = (db.query("SELECT * FROM visualize WHERE id = %(id)s"%aArgs) > 0)
   if ret['found']:
    from json import loads
    data = db.get_row()
@@ -69,7 +69,6 @@ def network(aCTX, aArgs):
   - id (optional required)
   - op (optional)
   - type (required) 'map/device'
-  - ip (optional required). IP of device, valid only for type 'device'
   - diameter (optional) integer from 1-3, defaults to 2 to build graph for type 'device'
   - name (optional)
   - options (optional)
@@ -97,16 +96,16 @@ def network(aCTX, aArgs):
    for tp in ['options','nodes','edges']:
     args[tp] = dumps(args[tp])
    if id == 'new' or type == 'device':
-    ret['insert']= (db.do("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args) > 0)
+    ret['insert']= (db.execute("INSERT INTO visualize (name,options,nodes,edges) VALUES('%(name)s','%(options)s','%(nodes)s','%(edges)s')"%args) > 0)
     id = db.get_last_id()
     type  = 'map'
     ret['status']= 'OK'
    else:
-    ret['update']= (db.do("UPDATE visualize SET name='%(name)s',options='%(options)s',nodes='%(nodes)s',edges='%(edges)s' WHERE id = %(id)s"%args) > 0)
+    ret['update']= (db.execute("UPDATE visualize SET name='%(name)s',options='%(options)s',nodes='%(nodes)s',edges='%(edges)s' WHERE id = %(id)s"%args) > 0)
     ret['status']= 'OK'
 
   if type == 'map':
-   ret['found'] = (db.do("SELECT * FROM visualize WHERE id = %s"%id) == 1)
+   ret['found'] = (db.query("SELECT * FROM visualize WHERE id = %s"%id) == 1)
    if ret['found']:
     data = db.get_row()
     ret['data'] = {'id':id,'name':data.get('name',"N/A"),'type':'map'}
@@ -119,10 +118,6 @@ def network(aCTX, aArgs):
      ret['data']['nodes'] = data.get('nodes','[]')
      ret['data']['edges'] = data.get('edges','[]')
      ret['data']['options'] = data.get('options','{}')
-  else:
-   if 'ip' in args:
-    db.do("SELECT devices.id FROM devices LEFT JOIN interfaces AS di ON devices.id = di.device_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE ia.ip = INET_ATON('%(ip)s')"%args)
-    id = db.get_val('id')
 
    nodes = {id:{'processed':False,'distance':0,'connected':0}}
    edges = []
@@ -135,7 +130,7 @@ def network(aCTX, aArgs):
      if not current_node['processed']:
       local_nodes = {}
       local_edges = []
-      current_node['edges'] = db.do(sql_connected.format(current_id))
+      current_node['edges'] = db.query(sql_connected.format(current_id))
       # Deduce if interface is registered (the hard way, as no double dictionaries) by checking 'recursively' if node has been processed else process the connection
       for con in db.get_rows():
        to_id   = con['b_device']
@@ -157,7 +152,7 @@ def network(aCTX, aArgs):
       edges.extend(local_edges)
 
    # Now update nodes with hostname and type and model, rename fields to fitting info
-   db.do("SELECT devices.id, hostname AS label, model, icon AS image FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id IN (%s)"%(",".join(str(x) for x in nodes.keys())))
+   db.query("SELECT devices.id, hostname AS label, model, icon AS image FROM devices LEFT JOIN device_types ON devices.type_id = device_types.id WHERE devices.id IN (%s)"%(",".join(str(x) for x in nodes.keys())))
    ret['data']['nodes'] = db.get_rows()
    for node in ret['data']['nodes']:
     nodes[node['id']]['hostname'] = node['label']

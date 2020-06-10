@@ -23,8 +23,8 @@ def sync(aCTX, aArgs):
   if ret['status'] == 'OK':
    fdb = ret.pop('FDB',[])
    with aCTX.db as db:
-    ret['deleted'] = db.do("DELETE FROM fdb WHERE device_id = %s"%aArgs['id'])
-    ret['insert']  = db.do("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(aArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb)) if len(fdb) > 0 else 0
+    ret['deleted'] = db.execute("DELETE FROM fdb WHERE device_id = %s"%aArgs['id'])
+    ret['insert']  = db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(aArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb)) if len(fdb) > 0 else 0
  return ret
 
 #
@@ -64,7 +64,7 @@ def list(aCTX, aArgs):
     fields.append('oui.company AS oui')
     joins.append('oui ON oui.oui = (fdb.mac >> 24)')
 
-  ret['count'] = db.do("SELECT %s FROM fdb LEFT JOIN %s WHERE %s"%(','.join(fields), ' LEFT JOIN '.join(joins), ' AND '.join(where)))
+  ret['count'] = db.query("SELECT %s FROM fdb LEFT JOIN %s WHERE %s"%(','.join(fields), ' LEFT JOIN '.join(joins), ' AND '.join(where)))
   ret['data'] = db.get_rows()
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
@@ -89,13 +89,13 @@ def search(aCTX, aArgs):
  else:
   ret = {}
   with aCTX.db as db:
-   if (db.do("SELECT device_id, interface_id, name, description, oui.company AS oui FROM interfaces LEFT JOIN oui ON oui.oui = (%i >> 24) WHERE mac = %i ORDER BY snmp_index, name"%(mac,mac)) > 0):
+   if (db.query("SELECT device_id, interface_id, name, description, oui.company AS oui FROM interfaces LEFT JOIN oui ON oui.oui = (%i >> 24) WHERE mac = %i ORDER BY snmp_index, name"%(mac,mac)) > 0):
     ret['interfaces'] = db.get_rows()
-    db.do("SELECT id, hostname FROM devices WHERE id = %i"%ret['interfaces'][0]['device_id'])
+    db.query("SELECT id, hostname FROM devices WHERE id = %i"%ret['interfaces'][0]['device_id'])
     ret['device'] = db.get_row()
     ret['status'] = 'OK'
    else:
-    ret['oui'] = db.get_val('company') if (db.do("SELECT company FROM oui WHERE oui.oui = (%i >> 24)"%mac) > 0) else 'N/A'
+    ret['oui'] = db.get_val('company') if (db.query("SELECT company FROM oui WHERE oui.oui = (%i >> 24)"%mac) > 0) else 'N/A'
     ret['status'] = 'NOT_OK'
     ret['info'] = 'No device found'
  return ret
@@ -121,14 +121,14 @@ def check(aCTX, aArgs):
    if res['status'] == 'OK':
     fdb = res.pop('FDB',[])
     with lCTX.db as db:
-     db.do("DELETE FROM fdb WHERE device_id = %s"%lArgs['id'])
+     db.execute("DELETE FROM fdb WHERE device_id = %s"%lArgs['id'])
      if(len(fdb) > 0):
-      db.do("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(lArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb))
+      db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(lArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb))
   return True
 
  with aCTX.db as db:
   ret['status'] = 'OK'
-  ret['count'] = db.do("SELECT devices.hostname, devices.id, INET_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE dt.base = 'network'")
+  ret['count'] = db.query("SELECT devices.hostname, devices.id, INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE dt.base = 'network'")
   if ret['count'] > 0:
    sema = aCTX.semaphore(20)
    for dev in db.get_rows():

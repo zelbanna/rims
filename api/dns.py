@@ -1,8 +1,7 @@
-"""
-DNS API module. This module is a REST wrapper for interfaces to a particular DNS server type module.
+"""DNS API module.
 
-This API will do all interaction with RIMS database and wrap actual service calls and data.
-
+- This module is a REST wrapper for interfaces to a particular DNS server type module.
+- The API will do all interaction with RIMS database and wrap actual service calls and data.
 """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
@@ -26,7 +25,7 @@ def domain_list(aCTX, aArgs):
    # INTERNAL from rims.api.dns import sync_recursor, sync_nameserver
    ret['ns'] = sync_nameserver(aCTX, aArgs = {})
    ret['rec'] = sync_recursor(aCTX, aArgs = {})
-  ret['count'] = db.do("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if not 'filter' in aArgs else "domains.type = '%s'"%aArgs['filter']))
+  ret['count'] = db.query("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if not 'filter' in aArgs else "domains.type = '%s'"%aArgs['filter']))
   ret['data'] = db.get_rows()
  return ret
 
@@ -52,9 +51,9 @@ def domain_info(aCTX, aArgs):
  else:
   with aCTX.db as db:
    if id == 'new':
-    infra = (db.do("SELECT servers.id, 'new' AS foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE servers.id = %s"%aArgs.pop('server_id','0')) > 0)
+    infra = (db.query("SELECT servers.id, 'new' AS foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE servers.id = %s"%aArgs.pop('server_id','0')) > 0)
    else:
-    infra = (db.do("SELECT servers.id,  foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id) > 0)
+    infra = (db.query("SELECT servers.id,  foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id) > 0)
    if infra:
     ret['infra'] = db.get_row()
     aArgs['id']  = ret['infra']['foreign_id']
@@ -82,10 +81,10 @@ def domain_delete(aCTX, aArgs):
  """
  id = int(aArgs['id'])
  with aCTX.db as db:
-  db.do("SELECT servers.id, foreign_id, domains.type, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
+  db.query("SELECT servers.id, foreign_id, domains.type, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
   ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
-  ret['cache'] = (db.do("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id'])) > 0) if ret['deleted'] else False
+  ret['cache'] = (db.execute("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id'])) > 0) if ret['deleted'] else False
  return ret
 
 #
@@ -105,7 +104,7 @@ def domain_ptr_list(aCTX, aArgs):
   octets.append("in-addr.arpa")
   return ".".join(octets)
  with aCTX.db as db:
-  db.do("SELECT domains.id, name, CONCAT(st.service,'@',node) AS server FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.name = '%s'"%(GL_ip2arpa(aArgs['prefix'])))
+  db.query("SELECT domains.id, name, CONCAT(st.service,'@',node) AS server FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.name = '%s'"%(GL_ip2arpa(aArgs['prefix'])))
   domains = db.get_rows()
  return domains
 
@@ -121,7 +120,7 @@ def domain_forwarders(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.do("SELECT domains.name, domains.foreign_id, domains.endpoint FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.type = 'forward' AND st.service <> 'nodns'")
+  ret['count'] = db.query("SELECT domains.name, domains.foreign_id, domains.endpoint FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.type = 'forward' AND st.service <> 'nodns'")
   ret['data'] = db.get_rows()
  return ret
 
@@ -140,7 +139,7 @@ def record_list(aCTX, aArgs):
  """
  if aArgs.get('domain_id') is not None:
   with aCTX.db as db:
-   db.do("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
+   db.query("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
  else:
@@ -173,7 +172,7 @@ def record_info(aCTX, aArgs):
  else:
   domain_id = aArgs['domain_id']
   with aCTX.db as db:
-   db.do("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
+   db.query("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
   ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_info')(aArgs = aArgs)
@@ -195,7 +194,7 @@ def record_delete(aCTX, aArgs):
  Output:
  """
  with aCTX.db as db:
-  db.do("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
+  db.query("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
   infra = db.get_row()
  aArgs['domain_id'] = infra['foreign_id']
  return aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_delete')(aArgs = aArgs)
@@ -235,7 +234,7 @@ def sync_nameserver(aCTX, aArgs):
  for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']:
   org[infra['id']] = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
  with aCTX.db as db:
-  db.do("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
+  db.query("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
   cache = db.get_dict('srv_id')
   for srv,info in org.items():
    for dom in info['data']:
@@ -245,11 +244,11 @@ def sync_nameserver(aCTX, aArgs):
      # Add forward here
      db.insert_dict('domains',{'name':dom['name'],'server_id':srv,'foreign_id':dom['id'],'type':'reverse' if 'arpa' in dom['name'] else 'forward', 'endpoint':info['endpoint']},"ON DUPLICATE KEY UPDATE name = '%s', endpoint = '%s'"%(dom['name'],info['endpoint']))
     else:
-     ret['fixed'] += db.do("UPDATE domains SET type = '%s', endpoint = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',info['endpoint'],tmp['id']))
+     ret['fixed'] += db.execute("UPDATE domains SET type = '%s', endpoint = '%s' WHERE id = %s"%('reverse' if 'arpa' in dom['name'] else 'forward',info['endpoint'],tmp['id']))
   for id,dom in cache.items():
    dom.pop('srv_id',None)
    ret['removed'].append(dom)
-   db.do("DELETE FROM domains WHERE id = '%s'"%dom['id'])
+   db.execute("DELETE FROM domains WHERE id = '%s'"%dom['id'])
  return ret
 
 #
@@ -288,18 +287,23 @@ def sync_data(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  if (db.do("SELECT id,type FROM domains WHERE server_id = %(server_id)s AND foreign_id = '%(foreign_id)s'"%aArgs) == 1):
+  if (db.query("SELECT id,type FROM domains WHERE server_id = %(server_id)s AND foreign_id = '%(foreign_id)s'"%aArgs) == 1):
    ret['status'] = 'OK'
    domain = db.get_row()
    if domain['type'] == 'forward':
-    db.do("SELECT CONCAT(ia.hostname,'.',domains.name,'.') AS name, INET_NTOA(ia.ip) AS content, 'A' AS type FROM ipam_addresses AS ia LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.id = %s ORDER BY domains.foreign_id"%domain['id'])
+    db.query("SELECT CONCAT(ia.hostname,'.',domains.name,'.') AS name, INET6_NTOA(ia.ip) AS content, IF(IS_IPV4(INET6_NTOA(ine.network)),'A','AAAA') AS type FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.id = %s ORDER BY domains.foreign_id"%domain['id'])
     ret['data'] = db.get_rows()
-    db.do("SELECT CONCAT(devices.hostname,'.',domains.name,'.') AS name, CONCAT(ia.hostname,'.',ia_dom.name,'.') AS content, 'CNAME' AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE devices.a_domain_id = %s AND ia.id IS NOT NULL ORDER BY devices.a_domain_id"%domain['id'])
+    db.query("SELECT CONCAT(devices.hostname,'.',domains.name,'.') AS name, CONCAT(ia.hostname,'.',ia_dom.name,'.') AS content, 'CNAME' AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE devices.a_domain_id = %s AND ia.id IS NOT NULL ORDER BY devices.a_domain_id"%domain['id'])
     ret['data'].extend(db.get_rows())
    else:
-    db.do("SELECT CONCAT( SUBSTRING_INDEX(INET_NTOA(ip),'.',-1), '.',ia_dom.name,'.') AS name, CONCAT(ia.hostname,'.',domains.name,'.') AS content, 'PTR' AS type FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id AND (ine.mask >= 24 OR ia.ip < (ine.network + 256)) LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id = %s AND domains.name IS NOT NULL ORDER BY ine.reverse_zone_id"%domain['id'])
-    ret['data'] = db.get_rows()
+    from ipaddress import IPv4Address, IPv4Network
+    ret['data'] = []
+    db.query("SELECT INET6_NTOA(ip) AS ip, INET6_NTOA(ine.network) AS network, ine.mask, CONCAT(ia.hostname,'.',domains.name,'.') AS content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_id = domains.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id AND IS_IPV4(INET6_NTOA(ine.network)) LEFT JOIN domains AS ia_dom ON ine.reverse_zone_id = ia_dom.id WHERE ine.reverse_zone_id = %s AND domains.name IS NOT NULL ORDER BY ine.reverse_zone_id"%domain['id'])
+    for addr in db.get_rows():
+     ip = IPv4Address(addr['ip'])
+     if addr['mask'] >= 24 or ip in IPv4Network('%s/24'%addr['network']):
+      ret['data'].append({'name':ip.reverse_pointer,'content':addr['content'],'type':'PTR'})
   else:
    ret['status'] = 'NOT_OK'
+   ret['info'] = 'server/domain pair mismatch'
  return ret
-

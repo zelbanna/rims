@@ -4,17 +4,19 @@ __add_globals__ = lambda x: globals().update(x)
 __type__ = "DHCP"
 
 #
+# Writes IPv4 entries into DHCPd.conf file
 #
 def __write_file(aFile,aEntries):
  # Create file
  from time import strftime, localtime
+ from ipaddress import ip_address
  with open(aFile,'w') as config_file:
   config_file.write("# Modified: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
   for entry in aEntries:
-   config_file.write("host {0: <10} {{ hardware ethernet {1}; fixed-address {2}; }} # Network: {3}\n".format(entry['id'],entry['mac'],entry['ip'],entry['network']))
+   if ip_address(entry['ip']).version == 4:
+    config_file.write("host {0: <10} {{ hardware ethernet {1}; fixed-address {2}; }} # Network: {3}\n".format(entry['id'],entry['mac'],entry['ip'],entry['network']))
  return True
 
-#
 #
 #
 def status(aCTX, aArgs):
@@ -25,11 +27,7 @@ def status(aCTX, aArgs):
 
  Output:
  """
- def GL_ip2int(addr):
-  from struct import unpack
-  from socket import inet_aton
-  return unpack("!I", inet_aton(addr))[0]
-
+ from ipaddress import ip_address
  result = []
  lease  = {}
  with open(aCTX.config['iscdhcp']['active'],'r') as leasefile:
@@ -51,7 +49,7 @@ def status(aCTX, aArgs):
     lease[parts[0]] = " ".join(parts[2:])[:-1]
    elif parts[0] == 'client-hostname':
     lease['hostname'] = parts[1][1:-2]
-  result.sort(key=lambda d: GL_ip2int(d['ip']))
+  result.sort(key=lambda d: int(ip_address(d['ip'])))
  return {'status':'OK','data':result }
 
 #
@@ -64,7 +62,7 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'id':aArgs['id']})
+ entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'server_id':aArgs['id']})
  __write_file(aCTX.config['iscdhcp']['static'],entries['data'])
  # INTERNAL from rims.api.iscdhcp import restart
  return restart(aCTX, None)

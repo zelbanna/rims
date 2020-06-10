@@ -22,9 +22,6 @@ class Device(Junos):
   self._style  = 'els'
   self._interfacenames = {}
 
- def __str__(self):
-  return "QFX(ip=%s, style=%s)"%(self._style,self._ip)
-
  def switch_table(self):
   fdblist = []
   try:

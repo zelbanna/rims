@@ -12,9 +12,6 @@ class Device(GenericDevice):
  def __init__(self, aCTX, aID, aIP = None):
   GenericDevice.__init__(self, aCTX, aID, aIP)
 
- def __str__(self):
-  return "Unifi[%s,%s]"%(self._id,self._ip)
-
  # Name decoding according to how LLDP sees 'this' machine
  def name_decode(self, aName):
   name = aName.split()

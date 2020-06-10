@@ -50,10 +50,10 @@ def info(aCTX, aArgs):
      args['%d_slot_name'%i] = slot[1]
     db.update_dict('pdu_info',args,"device_id = %s"%aArgs['device_id'])
 
-  if (db.do("SELECT * FROM pdu_info WHERE device_id = '%(device_id)s'"%aArgs) > 0):
+  if (db.query("SELECT * FROM pdu_info WHERE device_id = '%(device_id)s'"%aArgs) > 0):
    ret['data'] = db.get_row()
   else:
-   db.do("INSERT INTO pdu_info SET device_id = %(device_id)s, slots = 1"%aArgs)
+   db.execute("INSERT INTO pdu_info SET device_id = %(device_id)s, slots = 1"%aArgs)
    ret['data'] = {'slots':1, '0_slot_id':0, '0_slot_name':"", '1_slot_id':1, '1_slot_name':"" }
  return ret
 

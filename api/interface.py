@@ -22,7 +22,7 @@ def list(aCTX, aArgs):
   if 'filter' in aArgs:
    if 'connected' in aArgs['filter']:
     filter.append("di.connection_id IS NULL")
-  ret['count'] = db.do("SELECT interface_id, ipam_id, class, INET_NTOA(ia.ip) AS ip, connection_id, LPAD(hex(mac),12,0) AS mac, di.state AS if_state, ia.state AS ip_state, snmp_index, di.name AS name, description FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE device_id = %s AND %s ORDER BY %s"%(ret['device_id']," AND ".join(filter),sort))
+  ret['count'] = db.query("SELECT interface_id, ipam_id, class, INET6_NTOA(ia.ip) AS ip, connection_id, LPAD(hex(mac),12,0) AS mac, di.state AS if_state, ia.state AS ip_state, snmp_index, di.name AS name, description FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE device_id = %s AND %s ORDER BY %s"%(ret['device_id']," AND ".join(filter),sort))
   ret['data'] = db.get_rows()
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
@@ -33,17 +33,28 @@ def list(aCTX, aArgs):
 def info(aCTX, aArgs):
  """Show or update a specific interface for a device
 
+ TODO: interface_ipam table
+  - make interface_ipam table and keep all addresses there, primary ipam will remain in interface for management purposes
+  - with unique index
+  - remove swap and instead provide address_list with ipam_id/ip
+  - modify ipam_check so that it covers all interfaces for infra/oob devices
+
  Args:
   - interface_id (required) 'new'/<if-id>
   - device_id (required)
   - ipam_id (optional)
+  - ipam_alt_id (optional)
   - mac (optional)
   - connection_id
   - snmp_index (optional)
   - name (optional)
   - description (optional)
-  - op (optional), 'update','auto_insert'
-  - extra (optional) list of extra data to pull
+  - op (optional), 'update','auto_insert','swap'
+
+  - extra (optional) list of extra data to pull, 'classes'/'ip'
+
+  - ipam_record (optional). IPAM record to create for ipam_id/ipam_alt_id
+  - entry (conditional). 'ipam_id'/'ipam_alt_id'.
 
  Output:
  """
@@ -52,16 +63,20 @@ def info(aCTX, aArgs):
  extra = aArgs.pop('extra',[])
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  if op:
+  if op == 'swap':
+   ret['update'] = (db.execute("UPDATE interfaces SET ipam_id=(@temp:=ipam_id), ipam_id = ipam_alt_id, ipam_alt_id = @temp WHERE interface_id = %s"%iid) > 0)
+   ret['status'] = 'OK' if ret['update'] else 'NOT_OK'
+  elif op in ['update','auto_insert']:
    if 'mac' in aArgs:
     try:   aArgs['mac'] = int(aArgs['mac'].replace(':',""),16)
     except:aArgs['mac'] = 0
    if 'ipam_record' in aArgs:
+    entry = aArgs.pop('entry','ipam_id')
     args = aArgs.pop('ipam_record',None)
     args.update({'op':'insert','id':'new'})
     if 'hostname' in aArgs:
      args['hostname'] = aArgs['hostname']
-    elif (db.do("SELECT name FROM interfaces WHERE interface_id = '%s'"%iid) > 0):
+    elif (db.query("SELECT name FROM interfaces WHERE interface_id = '%s'"%iid) > 0):
      args['hostname'] = db.get_val('name')
     else:
      args['hostname'] = 'unknown'
@@ -69,7 +84,7 @@ def info(aCTX, aArgs):
     ret['ipam'] = address_info(aCTX, args)
     ret['status'] = ret['ipam'].pop('status','NOT_OK')
     if ret['status'] == 'OK':
-     aArgs['ipam_id'] = ret['ipam']['data']['id']
+     aArgs[entry] = ret['ipam']['data']['id']
     else:
      ret['info'] = ret['ipam'].pop('info','IPAM unknown error')
    elif 'ipam_id' in aArgs:
@@ -97,18 +112,22 @@ def info(aCTX, aArgs):
       ret['exception'] = repr(e)
       ret['info'] = "Could not insert interface, check unique SNMP or IPAM id"
      else:   iid = db.get_last_id() if ret['insert'] > 0 else 'new'
+
   if 'classes' in extra:
-   db.do("SHOW COLUMNS FROM interfaces LIKE 'class'")
+   db.query("SHOW COLUMNS FROM interfaces LIKE 'class'")
    parts = (db.get_val('Type')).split("'")
    ret['classes'] = [parts[i] for i in range(1,len(parts),2)]
-  if not iid == 'new' and (db.do("SELECT di.* FROM interfaces AS di WHERE di.interface_id = '%s'"%iid) > 0):
+  if not iid == 'new' and (db.query("SELECT di.* FROM interfaces AS di WHERE di.interface_id = '%s'"%iid) > 0):
    ret['data'] = db.get_row()
    ret['data']['mac'] = ':'.join(("%s%s"%x).upper() for x in zip(*[iter("{:012x}".format(ret['data']['mac']))]*2))
    ret['data'].pop('manual',None)
-   if ret['data']['connection_id'] and (db.do("SELECT interface_id,device_id FROM interfaces AS di WHERE connection_id = %(connection_id)s AND device_id <> %(device_id)s"%ret['data']) > 0):
+   if 'ip' in extra and ret['data']['ipam_id']:
+    db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.id IN (%s)"%','.join([str(x) for x in [ret['data']['ipam_id'],ret['data']['ipam_alt_id']] if x]))
+    ret['ip'] = {x['id']:x['ip'] for x in db.get_rows()}
+   if ret['data']['connection_id'] and (db.query("SELECT interface_id,device_id FROM interfaces AS di WHERE connection_id = %(connection_id)s AND device_id <> %(device_id)s"%ret['data']) > 0):
     ret['peer'] = db.get_row()
   else:
-   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':None,'name':aArgs.get('name','Unknown'),'description':'Unknown','class':aArgs.get('class','wired')}
+   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'ipam_alt_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':None,'name':aArgs.get('name','Unknown'),'description':'Unknown','class':aArgs.get('class','wired')}
  return ret
 
 #
@@ -128,14 +147,14 @@ def delete(aCTX, aArgs):
  ret = {'interfaces':[],'cleared':0,'deleted':0}
  with aCTX.db as db:
   if 'device_id' in aArgs:
-   # ret['cleared'] = db.do("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE device_id = %s)"%aArgs['device_id'])
-   ret['deleted'] = db.do("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s)"%aArgs)
+   # ret['cleared'] = db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE device_id = %s)"%aArgs['device_id'])
+   ret['deleted'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND ipam_alt_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s)"%aArgs)
   elif 'interfaces' in aArgs:
    from rims.api.ipam import address_delete
    for id in aArgs['interfaces']:
-    ipam = address_delete(aCTX, {'id':db.get_val('ipam_id')})['status'] if (db.do("SELECT ipam_id FROM interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id) > 0) else "NO_IPAM"
-    ret['cleared'] += db.do("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
-    ret['deleted'] += db.do("DELETE FROM interfaces WHERE interface_id = %s"%id)
+    ipam = address_delete(aCTX, {'id':db.get_val('ipam_id')})['status'] if (db.query("SELECT ipam_id FROM interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id) > 0) else "NO_IPAM"
+    ret['cleared'] += db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
+    ret['deleted'] += db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id)
     ret['interfaces'].append({'id':id,'ipam':ipam})
  return ret
 
@@ -154,13 +173,13 @@ def connect(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['clear'] = db.do("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id IN (%(a_id)s,%(b_id)s))"%aArgs)
+  ret['clear'] = db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id IN (%(a_id)s,%(b_id)s))"%aArgs)
   if not aArgs.get('disconnect',False):
-   db.do("INSERT INTO connections SET map = '%s'"%('true' if aArgs.get('map',True) else 'false'))
+   db.execute("INSERT INTO connections SET map = '%s'"%('true' if aArgs.get('map',True) else 'false'))
    id = db.get_last_id()
-   ret['update'] = (db.do("UPDATE interfaces SET connection_id = %s WHERE interface_id IN (%s,%s) AND class NOT IN ('logical','virtual')"%(id,aArgs['a_id'],aArgs['b_id'])) == 2)
+   ret['update'] = (db.execute("UPDATE interfaces SET connection_id = %s WHERE interface_id IN (%s,%s) AND class NOT IN ('logical','virtual')"%(id,aArgs['a_id'],aArgs['b_id'])) == 2)
    if not ret['update']:
-    ret['rollback'] = (db.do("DELETE FROM connections WHERE id = %s"%id) == 1)
+    ret['rollback'] = (db.execute("DELETE FROM connections WHERE id = %s"%id) == 1)
  return ret
 
 #
@@ -178,7 +197,7 @@ def snmp(aCTX, aArgs):
 
  ret = {}
  with aCTX.db as db:
-  db.do("SELECT INET_NTOA(ia.ip) AS ip, device_types.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aArgs['device_id'])
+  db.query("SELECT INET6_NTOA(ia.ip) AS ip, device_types.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aArgs['device_id'])
   info = db.get_row()
   try:
    module  = import_module("rims.devices.%s"%(info['type']))
@@ -199,16 +218,16 @@ def snmp(aCTX, aArgs):
     def mac2int(aMAC):
      try:    return int(aMAC.replace(':',""),16)
      except: return 0
-    db.do("SELECT interface_id, snmp_index, name, description, mac FROM interfaces WHERE device_id = %s"%aArgs['device_id'])
+    db.query("SELECT interface_id, snmp_index, name, description, mac FROM interfaces WHERE device_id = %s"%aArgs['device_id'])
     for con in db.get_rows():
      entry = data.pop(con['snmp_index'],None)
      if entry:
       mac = mac2int(entry.get('mac','0'))
       if not ((entry['name'] == con['name']) and (entry['description'] == con['description']) and (mac == con['mac'])):
-       ret['update'] += db.do("UPDATE interfaces SET name = '%s', description = '%s', mac = %s WHERE interface_id = %s"%(entry['name'][:24],entry['description'],mac,con['interface_id']))
+       ret['update'] += db.execute("UPDATE interfaces SET name = '%s', description = '%s', mac = %s WHERE interface_id = %s"%(entry['name'][:24],entry['description'],mac,con['interface_id']))
     for key, entry in data.items():
      if entry['state'] == 'up':
-      ret['insert'] += db.do("INSERT INTO interfaces (device_id,name,description,snmp_index,mac) VALUES (%s,'%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][:24],entry['description'],key,mac2int(entry['mac'])))
+      ret['insert'] += db.execute("INSERT INTO interfaces (device_id,name,description,snmp_index,mac) VALUES (%s,'%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][:24],entry['description'],key,mac2int(entry['mac'])))
      else:
       ret['skip'] += 1
  return ret
@@ -227,7 +246,7 @@ def stats(aCTX, aArgs):
  ret = {'status':'NOT_OK'}
  from rims.devices.generic import Device
  with aCTX.db as db:
-  if (db.do("SELECT snmp_index,interface_id FROM interfaces WHERE device_id = %s AND snmp_index > 0"%aArgs['device_id']) > 0):
+  if (db.query("SELECT snmp_index,interface_id FROM interfaces WHERE device_id = %s AND snmp_index > 0"%aArgs['device_id']) > 0):
    interfaces = db.get_rows()
    device = Device(aCTX, aArgs['device_id'], aArgs.get('ip'))
    res = device.data_points([],interfaces)
@@ -253,11 +272,11 @@ def connection_info(aCTX, aArgs):
  op = aArgs.get('op')
  with aCTX.db as db:
   if op == 'update':
-   ret['status'] = 'OK' if (db.do("UPDATE connections SET map = '%s' WHERE id = '%s'"%('true' if aArgs.get('map',False) else 'false',id)) > 0) else 'NOT_OK'
-  ret['found'] = (db.do("SELECT map FROM connections WHERE id = '%s'"%id) == 1)
+   ret['status'] = 'OK' if (db.execute("UPDATE connections SET map = '%s' WHERE id = '%s'"%('true' if aArgs.get('map',False) else 'false',id)) > 0) else 'NOT_OK'
+  ret['found'] = (db.query("SELECT map FROM connections WHERE id = '%s'"%id) == 1)
   if ret['found']:
    ret['data'] = {'map':True if db.get_val('map') == 'true' else False,'connection_id':id}
-   db.do("SELECT di.interface_id, di.name AS interface_name, di.device_id, devices.hostname AS device_name FROM interfaces AS di LEFT JOIN devices ON di.device_id = devices.id WHERE connection_id = '%s'"%id)
+   db.query("SELECT di.interface_id, di.name AS interface_name, di.device_id, devices.hostname AS device_name FROM interfaces AS di LEFT JOIN devices ON di.device_id = devices.id WHERE connection_id = '%s'"%id)
    ret['interfaces'] = db.get_rows()
  return ret
 
@@ -287,18 +306,12 @@ def lldp_mapping(aCTX, aArgs):
 
  Output:
  """
- from struct import unpack
- from socket import inet_aton
-
  def mac2int(aMAC):
   try:    return int(aMAC.replace(':',""),16)
   except: return 0
 
- def ip2int(addr):
-  return unpack("!I", inet_aton(addr))[0]
-
  with aCTX.db as db:
-  if (db.do("SELECT dt.name AS type, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = '%(device_id)s'"%aArgs) > 0):
+  if (db.query("SELECT dt.name AS type, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = '%(device_id)s'"%aArgs) > 0):
    dev = db.get_row()
    from importlib import import_module
    try:
@@ -309,15 +322,15 @@ def lldp_mapping(aCTX, aArgs):
    else:
     # First find local interfaces
     sql_intf = "SELECT interface_id, snmp_index, name, connection_id FROM interfaces WHERE device_id = %(device_id)s AND snmp_index IS NOT NULL"
-    if (db.do(sql_intf%aArgs) == 0):
+    if (db.query(sql_intf%aArgs) == 0):
      # INTERNAL from rims.api.interface import snmp
      snmp(aCTX, aArgs)
-     db.do(sql_intf%aArgs)
+     db.query(sql_intf%aArgs)
     interfaces = db.get_dict('snmp_index')
     for k,v in info.items():
      args = {}
      if not interfaces.get(int(k)):
-      db.do("INSERT INTO device_logs (device_id,message) VALUES (%s,'%s')"%(aArgs['device_id'],"LLDP local interface index not in database: %s"%k))
+      db.execute("INSERT INTO device_logs (device_id,message) VALUES (%s,'%s')"%(aArgs['device_id'],"LLDP local interface index not in database: %s"%k))
       v['status'] = 'no_local_interface'
       v['connection_id'] = None
       continue
@@ -326,7 +339,7 @@ def lldp_mapping(aCTX, aArgs):
       args['id'] = "devices.mac = %s"%mac2int(v['chassis_id'])
       tables.append('devices ON devices.id = di.device_id')
      elif v['chassis_type'] == 5:
-      args['id'] = "ia.ip = %s"%ip2int(v['chassis_id'])
+      args['id'] = "ia.ip = INET6_ATON('%s')"%v['chassis_id']
       tables.append('ipam_addresses AS ia ON di.ipam_id = ia.id')
      else:
       v['status'] = "chassis_mapping_impossible_no_id"
@@ -342,7 +355,7 @@ def lldp_mapping(aCTX, aArgs):
       v['status'] = "chassis_mapping_impossible_no_port"
       continue
      args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%s'"%v['port_desc'] if len(v['port_desc']) > 0 else "FALSE"
-     if (db.do("SELECT di.name, di.connection_id, di.mac, di.interface_id, di.description FROM %s WHERE %s AND (%s OR %s)"%(' LEFT JOIN '.join(tables),args['id'],args['port'],args['desc'])) > 0):
+     if (db.query("SELECT di.name, di.connection_id, di.mac, di.interface_id, di.description FROM %s WHERE %s AND (%s OR %s)"%(' LEFT JOIN '.join(tables),args['id'],args['port'],args['desc'])) > 0):
       local = interfaces[int(k)]
       remote = db.get_row()
       if local['connection_id'] == remote['connection_id']:
@@ -350,9 +363,9 @@ def lldp_mapping(aCTX, aArgs):
         v['status'] = 'existing_connection'
         v['connection_id'] = remote['connection_id']
        else:
-        db.do("INSERT INTO connections SET map = 'true'")
+        db.execute("INSERT INTO connections SET map = 'true'")
         cid = db.get_last_id()
-        db.do("UPDATE interfaces SET connection_id = %s WHERE interface_id IN (%s,%s)"%(cid,local['interface_id'],remote['interface_id']))
+        db.execute("UPDATE interfaces SET connection_id = %s WHERE interface_id IN (%s,%s)"%(cid,local['interface_id'],remote['interface_id']))
         v['status'] = 'new connection'
         v['connection_id'] = cid
       else:
@@ -392,7 +405,7 @@ def clear(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.do("UPDATE interfaces SET state = 'unknown' WHERE %s"%('TRUE' if not aArgs.get('device_id') else 'device_id = %s'%aArgs['device_id']))
+  ret['count'] = db.execute("UPDATE interfaces SET state = 'unknown' WHERE %s"%('TRUE' if not aArgs.get('device_id') else 'device_id = %s'%aArgs['device_id']))
  return ret
 
 #
@@ -409,10 +422,11 @@ def check(aCTX, aArgs):
  devices = []
 
  with aCTX.db as db:
-  db.do("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
-  db.do("SELECT devices.id AS device_id, INET_NTOA(ia.ip) AS ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
+  db.query("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
+  db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
-   if (db.do("SELECT snmp_index,interface_id,state FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
+
+   if (db.query("SELECT snmp_index,interface_id,state FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
     dev['interfaces'] = db.get_rows()
     devices.append(dev)
 
@@ -473,5 +487,5 @@ def report(aCTX, aArgs):
  with aCTX.db as db:
   for chg in ['up','down']:
    if aArgs.get(chg):
-    ret[chg] = db.do("UPDATE interfaces SET state = '%s' WHERE interface_id IN (%s)"%(chg,",".join(str(x) for x in aArgs[chg])))
+    ret[chg] = db.execute("UPDATE interfaces SET state = '%s' WHERE interface_id IN (%s)"%(chg,",".join(str(x) for x in aArgs[chg])))
  return ret

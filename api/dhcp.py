@@ -1,4 +1,4 @@
-"""DHCP API module. This module provides DHCP allocation functionality"""
+"""DHCP API module. This module provides DHCP allocation functionality, ATM only for IPv4"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -17,9 +17,9 @@ def list(aCTX, aArgs):
  ret = {}
  with aCTX.db as db:
   if aArgs.get('network_id'):
-   ret['count'] = db.do("SELECT di.id, INET_NTOA(ia.ip) AS ip FROM dhcp_ipam AS di LEFT JOIN ipam_addresses AS ia ON di.id = ia.id WHERE ia.network_id = %s"%aArgs['network_id'])
+   ret['count'] = db.query("SELECT di.id, INET6_NTOA(ia.ip) AS ip FROM dhcp_ipam AS di LEFT JOIN ipam_addresses AS ia ON di.id = ia.id WHERE ia.network_id = %s ORDER BY ia.ip"%aArgs['network_id'])
   else:
-   ret['count'] = db.do("SELECT di.id, INET_NTOA(ia.ip) AS ip, ia.network_id, INET_NTOA(ine.network) AS network FROM dhcp_ipam AS di LEFT JOIN ipam_addresses AS ia ON di.id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ine.server_id = %s"%aArgs['server_id'])
+   ret['count'] = db.query("SELECT di.id, INET6_NTOA(ia.ip) AS ip, ia.network_id, INET6_NTOA(ine.network) AS network FROM dhcp_ipam AS di LEFT JOIN ipam_addresses AS ia ON di.id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ine.server_id = %s AND IS_IPV4(INET6_NTOA(ine.network)) ORDER BY ia.ip"%aArgs['server_id'])
   ret['data'] = db.get_rows()
  return ret
 
@@ -37,38 +37,35 @@ def new(aCTX, aArgs):
 
  Output:
  """
+ from ipaddress import ip_address
  from rims.api.ipam import address_info
- from struct import pack, unpack
- from socket import inet_aton, inet_ntoa
- def GL_ip2int(addr):
-  return unpack("!I", inet_aton(addr))[0]
- def GL_int2ip(addr):
-  return inet_ntoa(pack("!I", addr))
 
  with aCTX.db as db:
   if aArgs.get('ip'):
-   try: ipint = GL_ip2int(aArgs['ip'])
+   try: ip = ip_address(aArgs['ip'])
    except: ret = {'status':'NOT_OK','info':'Illegal IP'}
    else:
-    ret = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':aArgs['network_id'], 'ip':aArgs['ip'], 'hostname':'dhcp-%i'%ipint, 'a_domain_id':aArgs.get('a_domain_id','NULL')})
-    ret['dhcp'] = (db.do("INSERT INTO dhcp_ipam (id) VALUES (%s)"%ret['id']) > 0) if ret['status'] == 'OK' else False
+    ret = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':aArgs['network_id'], 'ip':str(ip), 'hostname':'dhcp-%i'%int(ip), 'a_domain_id':aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL'})
+    ret['dhcp'] = (db.execute("INSERT INTO dhcp_ipam (id) VALUES (%s)"%ret['id']) > 0) if ret['status'] == 'OK' else False
   else:
    ret = {'status':'NOT_OK'}
-   start = GL_ip2int(aArgs['start'])
-   end = GL_ip2int(aArgs['end'])
    net = aArgs['network_id']
-   dom = aArgs.get('a_domain_id','NULL')
-   if (db.do("SELECT network FROM ipam_networks WHERE id = %s AND %i > network AND %i < (network + POW(2,(32-mask))-1)"%(net,start,end)) == 1):
-    if (db.do("SELECT ia.id, INET_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.network_id = %s AND %i <= ia.ip AND ia.ip <= %i"%(net,start,end)) > 0):
+   dom = aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL'
+   # v4 DHCP
+   if (db.query("SELECT ine.network FROM ipam_networks AS ine WHERE ine.id = %s AND INET6_ATON('%s') >= ine.network AND INET6_ATON('%s') <= ine.broadcast"%(net,aArgs['start'],aArgs['end'])) == 1):
+    if (db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.network_id = %s AND INET6_ATON('%s') <= ia.ip AND ia.ip <= INET6_ATON('%s')"%(net,aArgs['start'],aArgs['end'])) > 0):
      ret['info'] = 'Occupied range'
      ret['data'] = db.get_rows()
     else:
      ret['status'] = 'OK'
      ret['dhcp'] = True
-     for ipint in range(start, end+1):
-      res = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':net, 'ip':GL_int2ip(ipint), 'hostname':'dhcp-%i'%ipint, 'a_domain_id':dom})
-      if not (res['status'] == 'OK' and (db.do("INSERT INTO dhcp_ipam (id) VALUES (%s)"%res['id']) > 0)):
+     ip = ip_address(aArgs['start'])
+     end = ip_address(aArgs['end'])
+     while ip <= end:
+      res = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':net, 'ip':str(ip), 'hostname':'dhcp-%i'%int(ip), 'a_domain_id':dom})
+      if not (res['status'] == 'OK' and (db.execute("INSERT INTO dhcp_ipam (id) VALUES (%s)"%res['id']) > 0)):
         ret['dhcp'] = False
+      ip = ip + 1
    else:
     ret['info'] = 'IP not in network range'
  return ret
