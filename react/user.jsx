@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { post_call, rnd } from './infra/Functions.js';
-import { RimsContext, Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import { RimsContext, Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, Result } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput, TextLine, PasswordInput, SelectInput } from './infra/Inputs.jsx';
 
@@ -51,6 +51,7 @@ export class Info extends Component {
  }
 
  updateInfo = () => {
+  this.setState({update:false})
   if(this.context.settings.id === this.state.data.id)
    this.context.changeTheme(this.state.data.theme);
   post_call('api/master/user_info',{op:'update', ...this.state.data},{'X-Log':'false'}).then(result => this.setState(result))
@@ -60,6 +61,7 @@ export class Info extends Component {
   if (!this.state.found)
    return <InfoArticle key='ui_art'>User with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data && this.state.themes){
+   let result = (this.state.update) ? 'OK - updated' : '';
    return <InfoArticle key='ui_art' header='User'>
      <InfoColumns key='ui_content'>
       {(this.context.settings.id === this.props.id) ?  <TextLine key='alias' id='alias' text={this.state.data.alias} /> : <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />}
@@ -70,6 +72,7 @@ export class Info extends Component {
       <SelectInput key='theme' id='theme' value={this.state.data.theme} onChange={this.onChange}>{this.state.themes.map(row => <option key={'ui_theme_'+row} value={row}>{row}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ui_btn_save' onClick={() => this.updateInfo()} title='Save' />
+     <Result key='ui_operation' result={result} />
     </InfoArticle>
   } else
    return <Spinner />

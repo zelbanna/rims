@@ -247,11 +247,11 @@ def user_info(aCTX, aArgs):
    else:
     ret['password_check_failed'] = (not (aArgs.pop('password',None) is None))
    if not id == 'new':
-    ret['update'] = db.update_dict('users',aArgs,"id=%s"%id)
+    ret['update'] = (db.update_dict('users',aArgs,"id=%s"%id) == 1)
    else:
     if not 'password' in aArgs:
      aArgs['password'] = crypt('changeme','$1$%s$'%aCTX.config['salt']).split('$')[3]
-    ret['update'] = db.insert_dict('users',aArgs)
+    ret['update'] = (db.insert_dict('users',aArgs) == 1)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
   if not id == 'new':
