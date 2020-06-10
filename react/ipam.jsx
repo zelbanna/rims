@@ -3,7 +3,7 @@ import React, { Fragment, Component } from 'react'
 import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, HrefButton, ItemsButton, ReloadButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
 
 // *************** Main ***************
 //
@@ -35,11 +35,12 @@ export class NetworkList extends Component {
  listItem = (row) => [row.id,
    row.netasc,
    row.description,
-   (row.class === 'v4') ? <HrefButton key={'net_btn_dhcp_'+row.id} text={row.service} onClick={() => this.changeContent(<DhcpList key={'dhcp_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='DHCP allocation for network' /> : '',
+   row.service,
    <Fragment key={'network_buttons_'+row.id}>
     <ConfigureButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />)} title='Edit network properties' />
     <ItemsButton key={'net_btn_items2_'+row.id} onClick={() => this.changeContent(<AddressList key={'address_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View addresses' />
     {row.class === 'v4' && <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout key={'address_layout_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View usage map' />}
+    {row.class === 'v4' && <CheckButton key={'net_btn_resv_'+row.id} onClick={() => this.changeContent(<ReservationList key={'resv_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='Reserved addresses for network' />}
     <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete network' />
     <ReloadButton key={'net_btn_rset_'+row.id} onClick={() => this.resetStatus(row.id)} title='Reset state for network addresses' />
   </Fragment>]
@@ -107,7 +108,7 @@ class NetworkInfo extends Component {
 class Layout extends Component {
 
  componentDidMount(){
-  post_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id','dhcp','ip_integer']}).then(result => this.setState(result))
+  post_call('api/ipam/address_list',{network_id:this.props.network_id,dict:'ip_integer',extra:['device_id','reservation','ip_integer']}).then(result => this.setState(result))
  }
 
  changeContent = (elem) => this.props.changeSelf(elem)
@@ -233,40 +234,40 @@ export class AddressInfo extends Component {
  }
 }
 
-// *************** DHCP List ***************
+// *************** Reservation List ***************
 //
-class DhcpList extends Component {
+class ReservationList extends Component {
  constructor(props){
   super(props);
   this.state = {}
  }
 
  componentDidMount(){
-  post_call('api/dhcp/list',{network_id:this.props.network_id}).then(result => this.setState(result))
+  post_call('api/ipam/reservation_list',{network_id:this.props.network_id}).then(result => this.setState(result))
  }
 
- deleteList = (id) => (window.confirm('Really delete DHCP ip?') && post_call('api/dhcp/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
+ deleteList = (id) => post_call('api/ipam/reservation_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))}))
 
- listItem = (row,idx) => [row.ip,<DeleteButton key={'dhcp_list_delete_'+row.id} onClick={() => this.deleteList(row.id)} />]
+ listItem = (row,idx) => [row.ip,row.type,<DeleteButton key={'resv_list_delete_'+row.id} onClick={() => this.deleteList(row.id)} />]
 
- addEntry = () => this.props.changeSelf(<DhcpNew key={'dhcp_new_'+this.props.network_id} network_id={this.props.network_id} changeSelf={this.props.changeSelf} />);
+ addEntry = () => this.props.changeSelf(<ReservationNew key={'resv_new_'+this.props.network_id} network_id={this.props.network_id} changeSelf={this.props.changeSelf} />);
 
  render() {
   if(this.state.data){
-   return <ContentReport key={'dhcp_list_'+this.props.server_id} header='DHCP allocation' thead={['IP','']} trows={this.state.data} listItem={this.listItem}>
-    <AddButton key='dhcp_list_add_btn' onClick={() => this.addEntry()} />
+   return <ContentReport key={'resv_list_'+this.props.server_id} header='Reservations' thead={['IP','Type','']} trows={this.state.data} listItem={this.listItem}>
+    <AddButton key='resv_list_add_btn' onClick={() => this.addEntry()} />
    </ContentReport>
   } else
    return <Spinner />
  }
 }
 
-// *************** DHCP New ****************
+// *************** Reservation New ****************
 //
-class DhcpNew extends Component {
+class ReservationNew extends Component {
   constructor(props){
   super(props);
-  this.state = {ip:'',start:'',end:'', result:undefined}
+  this.state = {ip:'',start:'',end:'', result:undefined,type:'dhcp'}
  }
 
  onChange = (e) => this.setState({[e.target.name]:e.target.value});
@@ -276,28 +277,31 @@ class DhcpNew extends Component {
   post_call('api/dns/domain_list',{'filter':'forward'}).then(result => this.setState({domains:result.data}))
  }
 
- updateInfo = () => post_call('api/dhcp/new',{network_id:this.props.network_id, ip:this.state.ip, start:this.state.start, end:this.state.end}).then(result => this.setState({result:result}))
+ updateInfo = () => post_call('api/ipam/reservation_new',{network_id:this.props.network_id, ip:this.state.ip, type:this.state.type, a_domain_id:this.state.a_domain_id, start:this.state.start, end:this.state.end}).then(result => this.setState({result:result}))
 
  render() {
   if (this.state.domains){
    const network_id = this.props.network_id;
-   const result = (this.state.result) ? JSON.stringify(this.state.result.dhcp) : '';
-   return <InfoArticle key='dn_article' header='DHCP Address/Scope'>
-    <span>Allocate DHCP with either 'ip' or 'start' to 'end' (e.g. a scope)</span>
+   const result = (this.state.result) ? JSON.stringify(this.state.result.resv) : '';
+   return <InfoArticle key='dn_article' header='Reservation Address/Scope'>
+    <span>Allocate address with either 'ip' or 'start' to 'end' (e.g. a scope)</span>
     <InfoColumns key='dn_content'>
      <TextLine key='id' id='network_id' label='Network ID' text={network_id} />
      <TextLine key='network' id='network' text={this.state.network + '/' + this.state.mask} />
      <TextInput key='ip' id='ip' label='IP' value={this.state.ip} onChange={this.onChange} />
      <TextInput key='start' id='start' label='Start IP' value={this.state.start} onChange={this.onChange} />
      <TextInput key='end' id='end' label='End IP' value={this.state.end} onChange={this.onChange} />
+     <SelectInput key='type' id='type' label='Type' value={this.state.type} onChange={this.onChange}>
+      <option key='dhcp' value='dhcp'>dhcp</option>
+      <option key='reservation' value='reservation'>reservation</option>
+     </SelectInput>
      <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
     </InfoColumns>
-    {this.props.changeSelf && <BackButton key='dn_btn_back' onClick={() => this.props.changeSelf(<DhcpList key={'dhcp_list_' + network_id} network_id={network_id} changeSelf={this.props.changeSelf} />)} />}
+    {this.props.changeSelf && <BackButton key='dn_btn_back' onClick={() => this.props.changeSelf(<ReservationList key={'resv_list_' + network_id} network_id={network_id} changeSelf={this.props.changeSelf} />)} />}
     <SaveButton key='dn_btn_save' onClick={() => this.updateInfo()} title='Save' />
     <Result key='dn_operation' result={result} />
    </InfoArticle>
- } else
-  return <div>TBD</div>
+  } else
+   return <Spinner />
  }
 }
-

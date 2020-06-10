@@ -30,6 +30,7 @@ export const NetworkButton = (props) => info_template('fas fa-share-alt',props);
 export const PauseButton = (props) => info_template('fas fa-pause',props);
 export const ReloadButton = (props) => info_template('fas fa-redo-alt',props);
 export const RemoveButton = (props) => info_template('fas fa-minus',props);
+export const ReserveButton = (props) => info_template('fas fa-clipboard-check',props);
 export const RevertButton = (props) => info_template('fas fa-history',props);
 export const SaveButton = (props) => info_template('fas fa-download',props);
 export const SearchButton = (props) => info_template('fas fa-search',props);

@@ -169,49 +169,6 @@ def network_discrepancy(aCTX, aArgs):
   ret['data'] = db.get_rows()
  return ret
 
-#################################### DHCP ###############################
-#
-#
-def server_leases(aCTX, aArgs):
- """Server_leases returns free or active server leases for DHCP servers
-
- Args:
-  - type (required). active/free
-
- Output:
- """
- ret = {'data':[],'type':aArgs.get('type','active')}
- for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'DHCP']:
-  data = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'status')(aArgs = {'binding':ret['type']})['data']
-  if data:
-   ret['data'].extend(data)
- oui_s = ",".join(set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']]))
- if len(oui_s) > 0:
-  with aCTX.db as db:
-   db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui in (%s)"%oui_s)
-   oui_d = {x['oui']:x['company'] for x in db.get_rows()}
-  for lease in ret['data']:
-   lease['oui'] = oui_d.get(lease['mac'][0:8].replace(':','').upper())
- return ret
-
-#
-#
-def server_macs(aCTX, aArgs):
- """Function returns all MACs for ip addresses belonging to networks belonging to particular server.
-
- Args:
-  - server_id (required)
-
- Output:
- """
- ret = {'status':'OK'}
- with aCTX.db as db:
-  ret['count'] = db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id OR di.ipam_alt_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'], True)
-  ret['data']  = db.get_rows()
-  for row in ret['data']:
-   row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
- return ret
-
 ################################## Addresses #############################
 #
 # Addresses contains types, IP (v4 for now)
@@ -248,9 +205,9 @@ def address_list(aCTX, aArgs):
      joins.append('domains ON a_domain_id = domains.id')
     if 'hostname' in extras:
      fields.append('ia.hostname')
-    if 'dhcp' in extras:
-     fields.append('dh.id AS dhcp_id')
-     joins.append('dhcp_ipam AS dh ON dh.id = ia.id')
+    if 'reservation' in extras:
+     fields.append('ir.id AS resv_id')
+     joins.append('ipam_reservations AS ir ON ir.id = ia.id')
    ret['count']   = db.query("SELECT %s FROM %s WHERE network_id = %s ORDER BY ia.ip"%(",".join(fields)," LEFT JOIN ".join(joins),aArgs['network_id']))
    ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   else:
@@ -595,3 +552,130 @@ def report(aCTX, aArgs):
      db.execute("INSERT INTO ipam_events (ipam_id, state) VALUES %s"%(",".join("(%s,'%s')"%(x,chg) for x in change[begin:end])))
      begin = end
  return ret
+
+#################################### DHCP ###############################
+#
+#
+def server_leases(aCTX, aArgs):
+ """Server_leases returns free or active server leases for DHCP servers
+
+ Args:
+  - type (required). active/free
+
+ Output:
+ """
+ ret = {'data':[],'type':aArgs.get('type','active')}
+ for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'DHCP']:
+  data = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'status')(aArgs = {'binding':ret['type']})['data']
+  if data:
+   ret['data'].extend(data)
+ oui_s = ",".join(set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']]))
+ if len(oui_s) > 0:
+  with aCTX.db as db:
+   db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui in (%s)"%oui_s)
+   oui_d = {x['oui']:x['company'] for x in db.get_rows()}
+  for lease in ret['data']:
+   lease['oui'] = oui_d.get(lease['mac'][0:8].replace(':','').upper())
+ return ret
+
+#
+#
+def server_macs(aCTX, aArgs):
+ """Function returns all MACs for ip addresses belonging to networks belonging to particular server.
+
+ Args:
+  - server_id (required)
+
+ Output:
+ """
+ ret = {'status':'OK'}
+ with aCTX.db as db:
+  ret['count'] = db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id OR di.ipam_alt_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'], True)
+  ret['data']  = db.get_rows()
+  for row in ret['data']:
+   row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
+ return ret
+
+#
+#
+def reservation_list(aCTX, aArgs):
+ """ Function retrieves allocated ip addresses for either server_id or network_id
+
+ Args:
+  - server_id (optional)
+  - network_id (optional)
+
+ Output:
+  - data
+ """
+ ret = {}
+ with aCTX.db as db:
+  if aArgs.get('network_id'):
+   ret['count'] = db.query("SELECT ir.id, INET6_NTOA(ia.ip) AS ip, type FROM ipam_reservations AS ir LEFT JOIN ipam_addresses AS ia ON ir.id = ia.id WHERE ia.network_id = %s ORDER BY ia.ip"%aArgs['network_id'])
+  else:
+   ret['count'] = db.query("SELECT ir.id, INET6_NTOA(ia.ip) AS ip, type, ia.network_id, INET6_NTOA(ine.network) AS network FROM ipam_reservations AS ir LEFT JOIN ipam_addresses AS ia ON ir.id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ine.server_id = %s AND IS_IPV4(INET6_NTOA(ine.network)) ORDER BY ia.ip"%aArgs['server_id'])
+  ret['data'] = db.get_rows()
+ return ret
+
+#
+#
+def reservation_new(aCTX, aArgs):
+ """ Function inserts a new reservation for address (ip) or scope of addresses (start => end)
+
+ aArgs:
+  - network_id (required)
+  - type (required) 'dhcp'/'reservation'
+  - ip (optional)
+  - start (optional)
+  - end (optional)
+  - a_domain_id (optional)
+
+ Output:
+ """
+ from ipaddress import ip_address
+ from rims.api.ipam import address_info
+
+ with aCTX.db as db:
+  if aArgs.get('ip'):
+   try: ip = ip_address(aArgs['ip'])
+   except: ret = {'status':'NOT_OK','info':'Illegal IP'}
+   else:
+    ret = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':aArgs['network_id'], 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL'})
+    ret['reserved'] = (db.execute("INSERT INTO ipam_reservations (id, type) VALUES (%s, '%s')"%(ret['id'],aArgs.get('type','dhcp'))) > 0) if ret['status'] == 'OK' else False
+  else:
+   ret = {'status':'NOT_OK'}
+   net = aArgs['network_id']
+   dom = aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL'
+   # v4
+   if (db.query("SELECT ine.network FROM ipam_networks AS ine WHERE ine.id = %s AND INET6_ATON('%s') >= ine.network AND INET6_ATON('%s') <= ine.broadcast"%(net,aArgs['start'],aArgs['end'])) == 1):
+    if (db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.network_id = %s AND INET6_ATON('%s') <= ia.ip AND ia.ip <= INET6_ATON('%s')"%(net,aArgs['start'],aArgs['end'])) > 0):
+     ret['info'] = 'Occupied range'
+     ret['data'] = db.get_rows()
+    else:
+     ret['status'] = 'OK'
+     ret['reserved'] = True
+     ip = ip_address(aArgs['start'])
+     end = ip_address(aArgs['end'])
+     while ip <= end:
+      print({'op':'update_only', 'id':'new', 'network_id':net, 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':dom})
+      res = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':net, 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':dom})
+      if not (res['status'] == 'OK' and (db.execute("INSERT INTO ipam_reservations (id, type) VALUES (%s, '%s')"%(res['id'], aArgs.get('type','dhcp'))) > 0)):
+        ret['reserved'] = False
+      ip = ip + 1
+   else:
+    ret['info'] = 'IP not in network range'
+ return ret
+
+#
+#
+def reservation_delete(aCTX, aArgs):
+ """ Function deletes a reserved address (id)
+
+ Args:
+  - id (optional)
+
+ Output:
+ """
+ # Since DB constraints will delete reservation entry, with IPAM entry this is really a No OP
+ from rims.api.ipam import address_delete
+ return address_delete(aCTX, {'id':aArgs['id']})
