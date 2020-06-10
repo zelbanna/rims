@@ -227,7 +227,7 @@ CREATE TABLE `interfaces` (
   PRIMARY KEY (`interface_id`),
   UNIQUE KEY `device_index` (`device_id`,`snmp_index`),
   UNIQUE KEY `ipam_id` (`ipam_id`),
-  UNIQUE KEY `ipam6_id` (`ipam_alt_id`),
+  UNIQUE KEY `ipam_alt_id` (`ipam_alt_id`),
   KEY `connection_id` (`connection_id`),
   CONSTRAINT `interfaces_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `interfaces_ibfk_2` FOREIGN KEY (`connection_id`) REFERENCES `connections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
