@@ -1,5 +1,0 @@
-{
- "module":"authentication",
- "function":"sync",
- "frequency": 86400
-}
