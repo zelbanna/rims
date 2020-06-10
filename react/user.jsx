@@ -51,7 +51,7 @@ export class Info extends Component {
  }
 
  updateInfo = () => {
-  this.setState({update:false})
+  this.setState({update:false,password_check:''})
   if(this.context.settings.id === this.state.data.id)
    this.context.changeTheme(this.state.data.theme);
   post_call('api/master/user_info',{op:'update', ...this.state.data},{'X-Log':'false'}).then(result => this.setState(result))

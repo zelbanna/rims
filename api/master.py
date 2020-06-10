@@ -245,7 +245,7 @@ def user_info(aCTX, aArgs):
    if len(aArgs.get('password','')) > 5:
     aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aCTX.config['salt']).split('$')[3]
    else:
-    ret['password_check_failed'] = (not (aArgs.pop('password',None) is None))
+    ret['password_check'] = 'OK' if (aArgs.pop('password',None) is None) else 'NOT_OK'
    if not id == 'new':
     ret['update'] = (db.update_dict('users',aArgs,"id=%s"%id) == 1)
    else:
