@@ -35,7 +35,7 @@ export class Search extends Component {
 export class Device extends Component {
  constructor(props){
   super(props)
-  this.state = {wait:null}
+  this.state = {wait:null, searchfield:''}
  }
 
  changeContent = (elem) => this.props.changeSelf(elem);
@@ -54,13 +54,16 @@ export class Device extends Component {
  listItem = (row,idx) => [row.vlan,row.snmp_index,<HrefButton key={'fd_intf_'+row.interface_id} text={row.name} onClick={() => this.changeInterface(row.interface_id)} />,row.mac,row.oui]
 
  render(){
-  if (this.state.data)
-   return <ContentReport key='fd_cr' header='FDB' thead={['VLAN','SNMP','Interface','MAC','OUI']} trows={this.state.data} listItem={this.listItem}>
+  if (this.state.data) {
+   const search = this.state.searchfield.toUpperCase();
+   const data = (search.length === 0) ? this.state.data : this.state.data.filter(row => row.mac.includes(search))
+   return <ContentReport key='fd_cr' header='FDB' thead={['VLAN','SNMP','Interface','MAC','OUI']} trows={data} listItem={this.listItem}>
     <ReloadButton key='fd_btn_reload' onClick={() => this.componentDidMount()} />
     <SyncButton key='fd_btn_sync' onClick={() => this.syncFDB() } title='Resync FDB' />
+    <SearchInput key='fd_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' />
     {this.state.wait}
    </ContentReport>
-  else
+  } else
    return <Spinner />
  }
 }
