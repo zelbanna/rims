@@ -60,8 +60,6 @@ class List extends Component {
    </Fragment>
   ]
 
- searchHandler = (e) => { this.setState({searchfield:e.target.value}) }
-
  changeContent = (elem) => this.setState({content:elem})
 
  deleteList = (id) => (window.confirm('Delete activity') && post_call('api/master/activity_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
@@ -73,7 +71,7 @@ class List extends Component {
     <ContentList key='al_cl' header='Activities' thead={['Date','Type','']} trows={act_list} listItem={this.listItem}>
      <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
      <AddButton key='al_btn_add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
-     <SearchInput key='al_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search activities' />
+     <SearchInput key='al_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search activities' />
     </ContentList>
     <ContentData key='al_cd'>{this.state.content}</ContentData>
    </Fragment>

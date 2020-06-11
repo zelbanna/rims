@@ -54,7 +54,6 @@ class List extends Component {
    <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete inventory item' />
   </Fragment>]
 
- searchHandler = (e) => this.setState({searchfield:e.target.value})
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete item') && post_call('api/inventory/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
@@ -67,7 +66,7 @@ class List extends Component {
     <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
      <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
-     <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search inventory (case sensitive)' />
+     <SearchInput key='inv_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory (case sensitive)' />
     </ContentList>
     <ContentData key='inv_cd'>{this.state.content}</ContentData>
    </Fragment>

@@ -124,8 +124,6 @@ class List extends Component {
 
  changeContent = (elem) => this.setState({content:elem})
 
- searchHandler = (e) => { this.setState({searchfield:e.target.value}) }
-
  sortList = (method) => {
   if (method === 'hostname')
    this.state.data.sort((a,b) => a.hostname.localeCompare(b.hostname));
@@ -153,7 +151,7 @@ class List extends Component {
 
  render(){
   if (this.state.data){
-   const dev_list = (this.state.searchfield.length < 2) ? this.state.data : this.state.data.filter(row => (row.hostname.toLowerCase().includes(this.state.searchfield.toLowerCase()) || (row.ip && row.ip.includes(this.state.searchfield))))
+   const dev_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.hostname.toLowerCase().includes(this.state.searchfield.toLowerCase()) || (row.ip && row.ip.includes(this.state.searchfield))))
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
    return <Fragment key={'dl_fragment'}>
     <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
@@ -161,7 +159,7 @@ class List extends Component {
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
      <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} ip='0.0.0.0' />)} title='Add device' />
      <SearchButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover new devices' />
-     <SearchInput key='dl_search' searchHandler={this.searchHandler} value={this.state.searchfield} placeholder='Search devices' />
+     <SearchInput key='dl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search devices' />
     </ContentList>
     <ContentData key='dl_content'>{this.state.content}</ContentData>
    </Fragment>
