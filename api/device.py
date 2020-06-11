@@ -169,8 +169,8 @@ def info(aCTX, aArgs):
    ret['classes'] = [parts[i] for i in range(1,len(parts),2)]
   if op == 'lookup':
    db.query("SELECT INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.management_id = di.interface_id WHERE devices.id = '%s'"%id)
-   # INTERNAL from rims.api.device import detect_hardware
-   res = detect_hardware(aCTX,{'ip':db.get_val('ip')})
+   from rims.devices.detector import execute as detect_info
+   res = detect_info(db.get_val('ip'), aCTX.config['snmp'])
    ret['status'] = res['status']
    if res['status'] == 'OK':
     args = res['data']
@@ -497,12 +497,12 @@ def discover(aCTX, aArgs):
  Output:
  """
  from time import time
+ from rims.devices.detector import execute as detect_info
  from rims.api.ipam import network_discover, address_info, address_delete
  from rims.api.dns import record_info
 
  def __detect_thread(aIP, aDB, aCTX):
-  # INTERNAL from rims.api.device import detect_hardware
-  res = detect_hardware(aCTX,{'ip':aIP})
+  res = detect_info(aIP, aCTX.config['snmp'])
   aDB[aIP] = res['data'] if res['status'] == 'OK' else {}
   return (res['status'] == 'OK')
 
@@ -635,9 +635,9 @@ def system_info_discover(aCTX, aArgs):
 
  Output:
  """
+ from rims.devices.detector import execute as detect_info
  def __detect_thread(aCTX, aDev, aInfo):
-  # INTERNAL from rims.api.device import detect_hardware
-  res = detect_hardware(aCTX,{'ip':aDev['ip'],'basic':aInfo})
+  res = detect_info(aDev['ip'], aCTX.config['snmp'], aBasic = aInfo)
   if res['status'] == 'OK':
    aDev.update(res['data'])
   return True
@@ -918,11 +918,9 @@ def log_clear(aCTX, aArgs):
   ret['deleted'] = ret['count'] > 0
  return ret
 
-
-################################################### Hardware ###################################################
 #
 #
-def detect_hardware(aCTX, aArgs):
+def detect_info(aCTX, aArgs):
  """ Function does device detection and mapping
 
  Args:
@@ -935,124 +933,5 @@ def detect_hardware(aCTX, aArgs):
   - info (dependent)
   - data (dependent)
  """
- from rims.core.common import VarList, Session
- ret = {}
- try:
-  session = Session(Version = 2, DestHost = aArgs['ip'], Community = aCTX.config['snmp']['read'], UseNumeric = 1, Timeout = int(aCTX.config['snmp'].get('timeout',100000)), Retries = 2)
-  sysoid = VarList('.1.0.8802.1.1.2.1.3.2.0','.1.3.6.1.2.1.1.2.0')
-  session.get(sysoid)
-  if (session.ErrorInd != 0):
-   raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
-  if not aArgs.get('basic',False):
-   # Device info, Device name, Enterprise OID
-   devoid = VarList('.1.3.6.1.2.1.1.1.0','.1.3.6.1.2.1.1.5.0','.1.3.6.1.2.1.1.2.0')
-   session.get(devoid)
-   if (session.ErrorInd != 0):
-    raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
- except Exception as err:
-  ret['status'] = 'NOT_OK'
-  ret['info'] = str(err)
- else:
-  ret['status'] = 'OK'
-  ret['data'] = info = {}
-  if sysoid[0].val:
-   try: info['mac'] = int(sysoid[0].val.hex(),16) if not aArgs.get('decode') else ':'.join("%s%s"%x for x in zip(*[iter(sysoid[0].val.hex())]*2)).upper()
-   except: pass
-  if sysoid[1].val:
-   try:    info['oid'] = int(sysoid[1].val.decode().split('.')[7])
-   except: pass
-  #
-  # Device dependendant lookups: devoid, sysoid as arguments, info should merge the result
-  #
-  if not aArgs.get('basic',False):
-   info.update({'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':info.get('mac',0 if not aArgs.get('decode') else '00:00:00:00:00:00'),'oid':info.get('oid',0)})
-   if devoid[1].val.decode():
-    info['snmp'] = devoid[1].val.decode().lower()
-   if devoid[2].val.decode():
-    try:    enterprise = devoid[2].val.decode().split('.')[7]
-    except: enterprise = 0
-    infolist = devoid[0].val.decode().split()
-    info['oid'] = enterprise
-    if enterprise == '2636':
-     # Juniper
-     try:
-      extobj = VarList('.1.3.6.1.4.1.2636.3.1.2.0','.1.3.6.1.4.1.2636.3.1.3.0')
-      session.get(extobj)
-      info['serial'] = extobj[1].val.decode()
-      model_list = extobj[0].val.decode().lower().split()
-      try: info['model'] = model_list[model_list.index('juniper') + 1]
-      except: info['model'] = 'unknown'
-      if (info['model']) in ['switch','internet','unknown','virtual']:
-       info['model'] = ("%s" if not info['model'] == 'virtual' else "%s (VC)")%infolist[3].lower()
-     except: pass
-     else:
-      for tp in [ 'ex', 'srx', 'qfx', 'mx' ]:
-       if tp in info['model']:
-        info['type'] = tp
-        break
-     try:    info['version'] = infolist[infolist.index('JUNOS') + 1][:-1].lower()
-     except: pass
-    elif enterprise == '4526':
-     # Netgear
-     info['type'] = 'netgear'
-     try:
-      extobj = VarList('.1.3.6.1.4.1.4526.11.1.1.1.3.0','.1.3.6.1.4.1.4526.11.1.1.1.4.0','.1.3.6.1.4.1.4526.11.1.1.1.13.0')
-      session.get(extobj)
-      info['model']  = extobj[0].val.decode()
-      info['serial'] = extobj[1].val.decode()
-      info['version'] = extobj[2].val.decode()
-     except: pass
-    elif enterprise == '6876':
-     # VMware
-     info['type'] = "esxi"
-     try:
-      extobj = VarList('.1.3.6.1.4.1.6876.1.1.0','.1.3.6.1.4.1.6876.1.2.0','.1.3.6.1.4.1.6876.1.4.0')
-      session.get(extobj)
-      info['model']  = extobj[0].val.decode()
-      info['version'] = "%s-%s"%(extobj[1].val.decode(),extobj[2].val.decode())
-     except: pass
-    elif enterprise == '24681':
-     info['type'] = "qnap"
-     try:
-      extobj = VarList('.1.3.6.1.4.1.24681.1.4.1.1.1.1.1.2.1.3.1','.1.3.6.1.4.1.24681.1.4.1.1.1.1.1.2.1.4.1')
-      session.get(extobj)
-      info['model']  = extobj[0].val.decode()
-      info['serial'] = extobj[1].val.decode()
-     except: pass
-    elif enterprise == '8072':
-     info['model'] = ' '.join(infolist[0:4])
-     if info['snmp'] == 'ubnt' and info['model'][0:5] == 'Linux':
-      info['type'] = 'unifi_switch'
-      # Fucked up MAC, saved as string instead of hex
-      info['mac'] = sysoid[0].val.decode().replace('-',':') if aArgs.get('decode') else int(sysoid[0].val.decode().replace('-',""),16)
-     elif info['model'][0:3] == 'UAP':
-      info['type'] = 'unifi_ap'
-      try:
-       extobj = VarList('.1.3.6.1.4.1.41112.1.6.3.3.0','.1.3.6.1.4.1.41112.1.6.3.6.0')
-       session.get(extobj)
-       info['model']  = extobj[0].val.decode()
-       info['version'] = extobj[1].val.decode()
-      except: pass
-     else:
-      os = {'8':'freebsd','10':'linux','13':'win32','16':'macosx'}.get(devoid[2].val.decode().split('.')[10],'unknown')
-      info['type'] = os
-    elif enterprise == '4413':
-     if infolist[0][0:3] == 'USW':
-      info['type'] = 'unifi_switch'
-      try:
-       extobj = VarList('.1.3.6.1.4.1.4413.1.1.1.1.1.2.0','.1.3.6.1.4.1.4413.1.1.1.1.1.13.0')
-       session.get(extobj)
-       info['model']  = extobj[0].val.decode()
-       info['version'] = extobj[1].val.decode()
-      except: pass
-     else:
-      info['model'] = ' '.join(infolist[0:4])
-    # Linux
-    elif infolist[0] == 'Linux':
-     info['model'] = 'debian' if 'Debian' in devoid[0].val.decode() else 'generic'
-    else:
-     info['model'] = ' '.join(infolist[0:4])
-  for k,l in [('model',30),('snmp',20),('version',20),('serial',20)]:
-   if info.get(k):
-    info[k] = info[k][:l]
- return ret
+ from rims.devices.detector import execute
+ return execute(aArgs['ip'],aCTX.config['snmp'], aArgs.get('basic',False), aArgs.get('decode',False))
