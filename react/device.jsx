@@ -153,7 +153,7 @@ class List extends Component {
 
  render(){
   if (this.state.data){
-   const dev_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.hostname.toLowerCase().includes(this.state.searchfield.toLowerCase()) || (row.ip && row.ip.includes(this.state.searchfield))))
+   const dev_list = (this.state.searchfield.length < 2) ? this.state.data : this.state.data.filter(row => (row.hostname.toLowerCase().includes(this.state.searchfield.toLowerCase()) || (row.ip && row.ip.includes(this.state.searchfield))))
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
    return <Fragment key={'dl_fragment'}>
     <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>

@@ -1,6 +1,7 @@
 {
  "id": "master",
  "master": "http://127.0.0.1:8080",
+ "debug": false,
  "port": 8080,
  "ssl": {
   "port": 8081,
@@ -17,7 +18,6 @@
  "salt":"WBEUAHfO",
  "token": "INTERNALTOKEN",
  "workers": 30,
- "mode": "debug",
  "logging": {
   "rest": {
    "enabled":true,
@@ -55,10 +55,10 @@
   "file":"/var/tmp/nodns.conf"
  },
  "influxdb": {
-  "database":"DATABASE",
-  "username":"USERNAME",
-  "password":"PASSWORD",
-  "url":"http://127.0.0.1:8086"
+  "url":"http://172.18.0.3:8086",
+  "database":"rims",
+  "username":"",
+  "password":""
  },
  "esxi": {
   "password": "PASSWORD",
@@ -129,4 +129,3 @@
   }
  }
 }
-

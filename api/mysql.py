@@ -64,6 +64,7 @@ def restore(aCTX, aArgs):
  """ Function restores database schema or values or full database info, Caution (!) if restoring a schema there will be no/0 rows in any table in the database
 
  Args:
+  - file required
   - username (optional)
   - password (optional)
   - host (optional)

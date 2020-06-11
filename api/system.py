@@ -87,20 +87,6 @@ def environment(aCTX, aArgs):
 
 #
 #
-def mode(aCTX, aArgs):
- """ Function sets run mode
-
- Args:
-  - mode (optional) - 'api'/'debug'
-
- Output:
- """
- if 'mode' in aArgs and aArgs['mode'] in ['api','debug']:
-  aCTX.config['mode'] = aArgs['mode']
- return {'mode':aCTX.config['mode']}
-
-#
-#
 def report(aCTX, aArgs):
  """ Function generates a system report
 

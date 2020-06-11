@@ -88,7 +88,7 @@ export class List extends Component {
  render(){
   if (this.state.data){
    const search = this.state.searchfield.toUpperCase();
-   const data = (search.length === 0) ? this.state.data : this.state.data.filter(row => row.mac.includes(search))
+   const data = (search.length < 2) ? this.state.data : this.state.data.filter(row => row.mac.includes(search))
    return <Fragment key='fl_frag'>
     <ContentList key='fl_cr' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC','']} trows={data} listItem={this.listItem}>
      <ReloadButton key='fl_btn_reload' onClick={() => this.componentDidMount()} />

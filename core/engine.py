@@ -59,7 +59,7 @@ class Context(object):
   self.services = {}
   self.rest_call = rest_call
   self.config['salt'] = self.config.get('salt','WBEUAHfO')
-  self.config['mode'] = self.config.get('mode','api')
+  self.config['debug'] = self.config.get('debug',False)
   self.config['workers'] = self.config.get('workers',20)
   self.config['logging'] = self.config.get('logging',{})
   self.config['logging']['rest']   = self.config['logging'].get('rest',{'enabled':False,'file':None})
@@ -117,7 +117,7 @@ class Context(object):
    print("Load environment error: %s"%str(e))
    return False
   else:
-   self.log("______ Loading environment - version: %s mode: %s ______"%(__build__,self.config['mode']))
+   self.log("______ Loading environment - version: %s debug: %s ______"%(__build__,self.config['debug']))
    self.nodes.update(env['nodes'])
    self.services.update(env['services'])
    self.tokens.update(env.get('tokens',{}))
@@ -220,7 +220,7 @@ class Context(object):
  #
  def debugging(self):
   """ Return debug status """
-  return (self.config['mode'] == 'debug')
+  return self.config['debug']
 
  #
  def log(self,aMsg):
@@ -614,7 +614,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers.update({'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))})
    else:
     self._headers.update({'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')})
-   if self._ctx.config['mode'] == 'debug':
+   if self._ctx.config['debug']:
     for n,v in enumerate(format_exc().split('\n')):
      self._headers["X-Debug-%02d"%n] = v
 
@@ -720,7 +720,7 @@ class QueueWorker(Thread):
      self._ctx.log("%s - %s => %s"%(self.name,repr(func).split()[1],dumps(result)))
    except Exception as e:
     self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
-    if self._ctx.config['mode'] == 'debug':
+    if self._ctx.config['debug']:
      for n,v in enumerate(format_exc().split('\n')):
       self._ctx.log("%s - DEBUG-%02d => %s"%(self.name,n,v))
    finally:
