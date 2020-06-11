@@ -961,6 +961,9 @@ def detect_hardware(aCTX, aArgs):
   if sysoid[1].val:
    try:    info['oid'] = int(sysoid[1].val.decode().split('.')[7])
    except: pass
+  #
+  # Device dependendant lookups: devoid, sysoid as arguments, info should merge the result
+  #
   if not aArgs.get('basic',False):
    info.update({'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':info.get('mac',0 if not aArgs.get('decode') else '00:00:00:00:00:00'),'oid':info.get('oid',0)})
    if devoid[1].val.decode():
@@ -989,15 +992,6 @@ def detect_hardware(aCTX, aArgs):
         break
      try:    info['version'] = infolist[infolist.index('JUNOS') + 1][:-1].lower()
      except: pass
-    elif enterprise == '14525':
-     info['type'] = 'wlc'
-     try:
-      extobj = VarList('.1.3.6.1.4.1.14525.4.2.1.1.0','.1.3.6.1.4.1.14525.4.2.1.4.0')
-      session.get(extobj)
-      info['serial'] = extobj[0].val.decode()
-      info['version'] = extobj[1].val.decode()
-     except: pass
-     info['model'] = " ".join(infolist[0:4])
     elif enterprise == '4526':
      # Netgear
      info['type'] = 'netgear'

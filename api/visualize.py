@@ -114,11 +114,13 @@ def network(aCTX, aArgs):
      ret['data']['edges'] = loads(data.get('edges','[]'))
      ret['data']['options'] = loads(data.get('options','{}'))
     except Exception as e:
+     ret['status'] = 'NOT_OK'
      ret['info'] = str(e)
      ret['data']['nodes'] = data.get('nodes','[]')
      ret['data']['edges'] = data.get('edges','[]')
      ret['data']['options'] = data.get('options','{}')
 
+  else:
    nodes = {id:{'processed':False,'distance':0,'connected':0}}
    edges = []
    ret['data'] = {'id':id,'type':'device','options':{'layout':{'randomSeed':2}, 'physics':{'enabled':True }, 'edges':{'length':180}, 'nodes': {'shadow': True, 'font':'14px verdana blue','shape':'image','image':'images/viz-generic.png' }}}
