@@ -3,7 +3,7 @@ import React, { Fragment, Component } from 'react'
 import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, DocButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
 
 // *************** Main ***************
 //
@@ -175,8 +175,9 @@ class AddressList extends Component{
 
  listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<Fragment key={'ip_button_'+row.id}>
    <StateLeds state={row.state} />
-   <ConfigureButton key={'al_btn_info'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} title='Edit address entry' />
-   <DeleteButton key={'al_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
+   <ConfigureButton key={'al_btn_info_'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} title='Edit address entry' />
+   <DocButton key={'al_btn_logs_' + row.id} onClick={() => this.changeContent(<AddressLogs key={'address_logs_'+row.id} id={row.id} />)} title='IPAM state logs' />
+   <DeleteButton key={'al_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
   </Fragment>]
 
  deleteList = (id) => (window.confirm('Delete address?') && post_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
@@ -231,6 +232,29 @@ export class AddressInfo extends Component {
     </InfoArticle>
   } else
    return <Spinner />
+ }
+}
+
+// *************** Address Logs ***************
+//
+class AddressLogs extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
+
+ componentDidMount(){
+  post_call('api/ipam/address_events',{id:this.props.id}).then(result => this.setState(result))
+ }
+
+ listItem = (row,idx) => [row.time,<StateLeds state={row.state} />]
+
+ clearList = () => post_call('api/ipam/address_events',{op:'clear', id:this.props.id}).then(result => this.setState({events:[]}))
+
+ render(){
+  return <ContentReport key={'alo_cr_'+this.props.id} header='State changes' thead={['Time','']} trows={this.state.events} listItem={this.listItem}>
+   <DeleteButton key='alo_btn_clear' onClick={() => this.clearList()} title='clear logs' />
+  </ContentReport>
  }
 }
 
