@@ -209,7 +209,7 @@ export class Info extends Component {
    const change_self = (this.props.changeSelf);
    const has_ip = (extra.interface_ip);
    const function_strings = (extra.functions.length >0) ? extra.functions.split(',') : [];
-   const type = this.state.types.find(tp => tp.id === data.type_id)
+   const type = this.state.types.find(tp => tp.id === parseInt(data.type_id));
    return <Fragment key='di_fragment'>
     <InfoArticle key='di_art' header='Device'>
      <InfoColumns key='di_info' style={{float:'left'}}>

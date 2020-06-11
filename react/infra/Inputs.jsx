@@ -42,17 +42,24 @@ export const SelectInput = (props) => <Fragment key={'fraginput_'+props.id}>
   </select>
  </Fragment>
 
-// SearchInput takes a property function 'searchFire' which takes one argument that is the current value of the input
+//
+// SearchInput
+// - property: function 'searchFire' which takes one argument that is the current value of the input
+// - text: text use in the searchfield. A means for external input
+//
 export class SearchInput extends Component{
  constructor(props){
   super(props)
-  this.state = {text:''};
+  this.state = {text:(this.props.text) ? this.props.text : ''}
   this.timer = null;
  }
 
  componentDidUpdate (prevProps, prevState) {
   if(prevState.text !== this.state.text) {
    this.handleCheck();
+  }
+  if(prevProps.text !== this.props.text){
+   this.setState({text:this.props.text})
   }
  }
 

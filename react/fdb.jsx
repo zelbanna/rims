@@ -73,6 +73,12 @@ export class List extends Component {
   this.state = {searchfield:'', content:null}
  }
 
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props){
+   this.componentDidMount()
+  }
+ }
+
  componentDidMount(){
   post_call('api/fdb/list',{search:this.props.search, field:this.props.field, extra:['device_id','hostname']}).then(result => this.setState(result))
  }
@@ -90,7 +96,7 @@ export class List extends Component {
    return <Fragment key='fl_frag'>
     <ContentList key='fl_cr' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC','']} trows={data} listItem={this.listItem}>
      <ReloadButton key='fl_btn_reload' onClick={() => this.componentDidMount()} />
-     <SearchInput key='fl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' />
+     <SearchInput key='fl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' text={this.state.searchfield} />
     </ContentList>
     <ContentData key='fl_content'>{this.state.content}</ContentData>
    </Fragment>
