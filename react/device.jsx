@@ -5,7 +5,6 @@ import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigatio
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
-import { List as VisualizeList, Edit as VisualizeEdit } from './visualize.jsx';
 import { List as FdbList, Device as FdbDevice, Search as FdbSearch } from './fdb.jsx';
 
 // **************** Main ****************
@@ -50,7 +49,7 @@ export class Main extends Component {
    {(this.state.pdu.length > 0) && <NavDropDown key='dev_nav_pdus' title='PDUs'>{this.state.pdu.map((row,idx) => <NavDropButton key={'dev_nav_pdu_' + idx} title={row.hostname} onClick={() => this.changeImport('pdu','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
    {(this.state.console.length > 0) && <NavDropDown key='dev_nav_consoles' title='Consoles'>{this.state.console.map((row,idx) => <NavDropButton key={'dev_nav_console_' + idx} title={row.hostname} onClick={() => this.changeImport('console','Inventory',{device_id:row.id,type:row.type})} />)}</NavDropDown>}
    {(this.state.rack_id) && <NavButton key='dev_nav_rack' title={this.state.name} onClick={() => this.changeImport('rack','Layout',{id:this.state.rack_id})} />}
-   <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeContent(<VisualizeList key='visualize_list' />)} style={{float:'right'}}/>
+   <NavButton key='dev_nav_maps' title='Maps' onClick={() => this.changeImport('visualize','List',{})} style={{float:'right'}}/>
    <NavDropDown key='dev_nav_ipam' title='IPAM' style={{float:'right'}}>
     <NavDropButton key='dev_nav_nets' title='Networks' onClick={() => this.changeImport('ipam','NetworkList',{})} />
     <NavDropButton key='dev_nav_isrv' title='Servers' onClick={() => this.changeImport('server','List',{type:'DHCP'})} />
@@ -200,6 +199,7 @@ export class Info extends Component {
  }
 
  changeInterfaces = () => import('./interface.jsx').then(lib => this.changeContent(<lib.List key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />))
+ changeVisualize = () => import('./visualize.jsx').then(lib => this.changeSelf(<lib.Edit key={'viz_id_' + this.props.id} type='device' changeSelf={this.changeSelf} id={this.props.id} />))
 
  render() {
   if(this.state.data){
@@ -248,7 +248,7 @@ export class Info extends Component {
      <ConfigureButton key='di_btn_edit' onClick={() => this.setState({navconf:!this.state.navconf})} title='Toggle config mode' />
      <StartButton key='di_btn_cont' onClick={() => this.changeContent(<Control key='device_control' id={this.props.id} />)} title='Device control' />
      <CheckButton key='di_btn_conf' onClick={() => this.changeContent(<Template key='device_configure' id={this.props.id} />)} title='Configuration template' />
-     {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.changeSelf(<VisualizeEdit key={'ve_'+this.props.id} type='device' id={this.props.id} changeSelf={this.props.changeSelf} />)} title='Connectivity map' />}
+     {change_self && <NetworkButton key='di_btn_netw' onClick={() => this.changeVisualize()} title='Connectivity map' />}
      {has_ip && <SearchButton key='di_btn_srch' onClick={() => this.lookupInfo()} title='Information lookup' />}
      {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title='Logs' />}
      {function_strings.includes('manage') && <GoButton key='d_btn_manage' onClick={() => this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{device_id:this.props.id, type:this.state.extra.type_name}})} title={'Manage ' + data.hostname} />}

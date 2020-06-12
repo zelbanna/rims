@@ -1,6 +1,6 @@
 {
   "name": "rims",
-  "version": "6.6",
+  "version": "0.1.0",
   "proxy": "http://localhost:8080",
   "private": true,
   "dependencies": {
@@ -11,9 +11,11 @@
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.0",
+    "source-map-explorer": "^2.4.2",
     "vis-network": "^7.6.6"
   },
   "scripts": {
+    "analyze": "source-map-explorer 'build/static/js/*.js' --json",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

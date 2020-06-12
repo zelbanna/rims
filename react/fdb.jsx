@@ -4,8 +4,6 @@ import { Spinner, LineArticle, ContentReport, ContentList, ContentData } from '.
 import { TextInput, SearchInput, SelectInput } from './infra/Inputs.jsx';
 import { HrefButton, InfoButton, NetworkButton, ReloadButton, SearchButton, SyncButton } from './infra/Buttons.jsx';
 
-import { Edit as VisualizeEdit } from './visualize.jsx';
-
 // ************** Search **************
 //
 export class Search extends Component {
@@ -88,7 +86,7 @@ export class List extends Component {
 
  changeSearch = (mac,idx) => this.setState({content:<Info key={'fi_'+idx} mac={mac} />});
 
- changeVisualize = (device_id) => ('changeSelf' in this.props && this.setState({content:<VisualizeEdit key={'viz_id_' + device_id} type='device' id={device_id} />}));
+ changeVisualize = (device_id) => ('changeSelf' in this.props && import('./visualize.jsx').then(lib => this.setState({content:<lib.Edit key={'viz_id_' + device_id} type='device' changeSelf={this.props.changeSelf} id={device_id} />})));
 
  listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'fd_intf_'+idx} text={row.mac} onClick={() => this.setState({searchfield:row.mac})} />,<Fragment><InfoButton key={'fd_intf_'+idx}  onClick={() => this.changeSearch(row.mac,idx)} title='Find interface(s)' /><NetworkButton key={'fd_map_'+idx} onClick={() => this.changeVisualize(row.device_id)} /></Fragment>]
 
