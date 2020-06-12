@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { post_call } from './infra/Functions.js';
-import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport, MemoContentList } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
@@ -155,13 +155,13 @@ class List extends Component {
    const dev_list = (searchfield.length === 0) ? data : data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))));
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
    return <Fragment>
-    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
+    <MemoContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
      <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key='dn_new' ip='0.0.0.0' />)} title='Add device' />
      <SearchButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover new devices' />
      <SearchInput key='dl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search devices' />
-    </ContentList>
+    </MemoContentList>
     <ContentData key='dl_content'>{this.state.content}</ContentData>
    </Fragment>
   } else
@@ -666,10 +666,10 @@ export class Report extends Component {
   post_call('api/device/list', { extra:['system','mac','type','oui','class']}).then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.model,row.oid,row.serial,<StateLeds key={'dr_'+row.id} state={row.state} />]
+ listItem = (row) => [row.id,row.hostname,row.class,row.ip,row.mac,row.oui,row.type_name,row.oid,row.serial,<StateLeds key={'dr_'+row.id} state={row.state} />]
 
  render(){
-  return (!this.state) ? <Spinner /> : <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','Class','IP','MAC','OUI','Model','OID','Serial','State']} trows={this.state.data} listItem={this.listItem} />
+  return (!this.state) ? <Spinner /> : <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','Class','IP','MAC','OUI','Type','OID','Serial','State']} trows={this.state.data} listItem={this.listItem} />
  }
 }
 

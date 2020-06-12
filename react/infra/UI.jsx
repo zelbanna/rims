@@ -1,4 +1,4 @@
-import React, { createContext, Component, Fragment, PureComponent, memo } from 'react';
+import React, { createContext, Component, Fragment, PureComponent, memo	} from 'react';
 import { auth_call, post_call } from './Functions.js';
 import { CloseButton } from './Buttons.jsx';
 import { TextInput, TextLine, TextAreaInput, PasswordInput } from './Inputs.jsx';
@@ -47,7 +47,8 @@ export const Result = (props) => <span className={uiStyles.result}>{props.result
 
 export const Row = (props) => <div className={tableStyles.trow}>{props.cells.map((row,idx) => <div key={idx} className={tableStyles.td}>{row}</div> )}</div>
 
-export const ContentList = memo((props) => <section className={uiStyles.contentLeft}>{content(tableStyles.list,props)}</section>)
+export const ContentList = (props) => <section className={uiStyles.contentLeft}>{content(tableStyles.list,props)}</section>
+export const MemoContentList = memo(ContentList);
 export const ContentData = (props) => <section className={uiStyles.contentRight}>{props.children}</section>
 export const ContentReport = (props) => content(tableStyles.report,props)
 
