@@ -1,4 +1,4 @@
-import React, { createContext, Component, Fragment } from 'react';
+import React, { createContext, Component, Fragment, PureComponent } from 'react';
 import { auth_call, post_call } from './Functions.js';
 import { CloseButton } from './Buttons.jsx';
 import { TextInput, TextLine, TextAreaInput, PasswordInput } from './Inputs.jsx';
@@ -17,7 +17,7 @@ export const Spinner = () => <div className={uiStyles.spinOverlay}><div classNam
 
 const Led = (props) => <div className={{on:uiStyles.stateGreen, off:uiStyles.stateRed, unknown:uiStyles.stateGrey, up:uiStyles.stateGreen, down:uiStyles.stateRed, undefined:uiStyles.stateOrange, null:uiStyles.stateOrange}[props.state] || uiStyles.stateOrange} title={props.state} />
 
-export const StateLeds = (props) => <div className={uiStyles.stateLeds}>{(Array.isArray(props.state)) ? props.state.map((val,idx) => <Led key={'led_'+idx} state={val} />) : <Led key='led' state={props.state} />}</div>
+export const StateLeds = (props) => <div className={uiStyles.stateLeds}>{(Array.isArray(props.state)) ? props.state.map((val,idx) => <Led key={idx} state={val} />) : <Led key='led' state={props.state} />}</div>
 
 // ***************************** Info ********************************
 //
@@ -45,7 +45,7 @@ InfoColumns.defaultProps = {columns:2};
 
 export const Result = (props) => <span className={uiStyles.result}>{props.result}</span>
 
-export const Row = (props) => <div className={tableStyles.trow}>{props.cells.map((row,idx) => <div key={'tr_'+idx} className={tableStyles.td}>{row}</div> )}</div>
+export const Row = (props) => <div className={tableStyles.trow}>{props.cells.map((row,idx) => <div key={idx} className={tableStyles.td}>{row}</div> )}</div>
 
 export const ContentList = (props) => <section className={uiStyles.contentLeft}>{content(tableStyles.list,props)}</section>
 export const ContentData = (props) => <section className={uiStyles.contentRight}>{props.children}</section>
@@ -58,9 +58,9 @@ const content = (type,props) => {
     {props.children}
     <Result key='con_result' result={props.result} />
     <div className={tableStyles.table}>
-     <div className={tableStyles.thead}>{props.thead.map((row,idx) => <div key={'th_'+idx} className={tableStyles.th}>{row}</div> )}</div>
+     <div className={tableStyles.thead}>{props.thead.map((row,idx) => <div key={idx} className={tableStyles.th}>{row}</div> )}</div>
      <div className={tableStyles.tbody}>
-      {props.trows.map((row,idx) => <Row key={'tr_'+idx} cells={props.listItem(row,idx)} /> )}
+      {props.trows.map((row,ridx) => <Row key={ridx} cells={props.listItem(row,ridx)} /> )}
      </div>
     </div>
    </article>
@@ -184,7 +184,7 @@ export class Portal extends Component {
    <MenuButton key='hb_system' title='System' onClick={() => this.changeContent({module:'system',function:'Main'})} />)
 
   return (
-   <React.Fragment key='portal'>
+   <Fragment>
     <Theme key='portal_theme' theme={this.context.settings.theme} />
     <Header key='portal_header' title={this.state.title} logOut={() => this.context.logOut()}>
      {buttons}
@@ -193,7 +193,7 @@ export class Portal extends Component {
     <ErrorBoundary key='portal_error'>
      <main className={uiStyles.main}>{this.state.content}</main>
     </ErrorBoundary>
-  </React.Fragment>
+  </Fragment>
   )
  }
 }
@@ -201,7 +201,7 @@ Portal.contextType = RimsContext;
 
 // *** Login application ***
 //
-export class Login extends Component {
+export class Login extends PureComponent {
  constructor(props){
   super(props)
   this.state = {message:'',username:'username',password:'password'}

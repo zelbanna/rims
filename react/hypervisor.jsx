@@ -21,7 +21,7 @@ export class Main extends Component {
 
  listItem = (row) => {
   const up =  (row.ip_state === 'up');
-  return [row.hostname,row.type_name,<Fragment key={'hyp_buttons_'+row.id}>
+  return [row.hostname,row.type_name,<Fragment>
    <StateLeds state={row.ip_state} />
    {up && row.type_functions === 'manage' && <InfoButton key={'hyp_btn_info_'+row.id} onClick={() => this.context.changeMain(<Manage key={'hypervisor_manage_'+row.id} device_id={row.id} type={row.type_name} />)} />}
    {up && row.url && row.url.length > 0 && <UiButton key={'hyp_ btn_ui_'+row.id} onClick={() => window.open(row.url,'_blank') } />}
@@ -31,7 +31,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return <Fragment key='hyp_fragment'>
+  return <Fragment>
    <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','']} trows={this.state.data} listItem={this.listItem}>
     <SyncButton key='hyp_btn_sync' onClick={() => this.changeContent(<Sync />) } />
    </ContentList>
@@ -90,7 +90,7 @@ export class Manage extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return  <Fragment key='manage_base'>{this.state.content}</Fragment>
+  return  <Fragment>{this.state.content}</Fragment>
  }
 }
 Manage.contextType = RimsContext;
@@ -122,7 +122,7 @@ export class Inventory extends Component{
  render(){
   if (this.state.data){
    const thead = [<HeaderButton key='hl_btn_id' text='ID' highlight={(this.state.sort === 'id')} onClick={() => this.sortList('id')} />,<HeaderButton key='hl_btn_vm' text='VM' highlight={(this.state.sort === 'name')} onClick={() => this.sortList('name')} />,'Operations'];
-   return <Fragment key='hl_fragment'>
+   return <Fragment>
     <ContentList key='hl_cl' header='Inventory' thead={thead} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='hl_btn_reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
      <LogButton key='hl_btn_logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
@@ -155,7 +155,7 @@ class Operation extends Component{
  render(){
    const on = (this.state.state === 'on');
    const off = (this.state.state === 'off');
-   return <Fragment key={'hyp_frag_'+this.props.vm_id}>
+   return <Fragment>
     <InfoButton key={'hyp_btn_info_'+this.props.vm_id} onClick={() => this.props.changeContent(<Info key={'hypervisor_info_'+this.props.vm_id} device_id={this.props.device_id} vm_id={this.props.vm_id} type={this.props.type} changeSelf={this.props.changeContent} />)} title='VM info' />
     {(off || this.state.state === 'suspended')  && <StartButton key={'hyp_btn_start_'+this.props.vm_id} onClick={() => this.operation('on')} title={this.state.status} />}
     {on && <StopButton key={'hyp_btn_stop_'+this.props.vm_id} onClick={() => this.operation('shutdown')} title={this.state.status} />}
@@ -210,7 +210,7 @@ class Info extends Component{
  render(){
   if (this.state.data) {
    const data = this.state.data;
-   return <Fragment key='hyp_frag'>
+   return <Fragment>
     <InfoArticle key='hyp_article' header='VM info'>
      <InfoColumns key='hyp_ic' columns={3}>
       <TextLine key='hyp_name' id='name' text={data.name} /><div />
@@ -220,7 +220,7 @@ class Info extends Component{
       <TextLine key='hyp_uuid' id='uuid' label='UUID' text={data.device_uuid} /><div />
       <StateLine key='hyp_state' id='state' state={data.state} /><div />
       <TextLine key='hyp_config' id='config' text={data.config} /><div />
-      {Object.entries(this.state.interfaces).map(row => <Fragment key={'hyp_intf_frag_'+row[0]}><TextLine key={'hyp_intf_'+row[0]} id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row)}</Fragment>)}
+      {Object.entries(this.state.interfaces).map((row,idx) => <Fragment key={idx}><TextLine key={'hyp_intf_'+row[0]} id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row)}</Fragment>)}
      </InfoColumns>
      <SaveButton key='hyp_btn_save' onClick={() => this.updateInfo()} title='Save mapping' />
      <SyncButton key='hyp_btn_sync' onClick={() => this.syncDatabase()} title='Resync database with VM info' />
@@ -266,7 +266,7 @@ class Snapshots extends Component{
   }
  }
 
- listItem = (row) => [row.name,row.id,row.desc,row.created,row.state,<Fragment key={'hyp_snap_buttons_'+row.id}>
+ listItem = (row) => [row.name,row.id,row.desc,row.created,row.state,<Fragment>
   <RevertButton key={'hs_revert_'+row.id} onClick={() => this.snapshot('revert',row.id)} title='Revert to snapshot' />
   <DeleteButton key={'hs_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete snapshot' />
  </Fragment>]

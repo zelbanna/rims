@@ -32,7 +32,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 }
 Main.contextType = RimsContext;
@@ -49,7 +49,7 @@ class List extends Component {
   post_call('api/inventory/list',this.props.args).then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.serial,row.model,<Fragment key={'inventory_buttons_'+row.id}>
+ listItem = (row) => [row.id,row.serial,row.model,<Fragment>
    <InfoButton key={'inv_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } title='View inventory item' />
    <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete inventory item' />
   </Fragment>]
@@ -62,7 +62,7 @@ class List extends Component {
    return <Spinner />
   else {
    const inv_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.model.includes(this.state.searchfield) || row.serial.includes(this.state.searchfield)));
-   return <Fragment key='inv_fragment'>
+   return <Fragment>
     <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
      <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
@@ -157,7 +157,7 @@ class Vendor extends Component {
  listItem = (row) => [<HrefButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.changeContent(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} />)} />,row.count]
 
  render(){
-  return <Fragment key='inv_fragment'>
+  return <Fragment>
    <ContentList key='inv_cl' header='Vendors' thead={['Name','Count']} trows={this.state.data} listItem={this.listItem} />
    <ContentData key='inv_cd'>{this.state.content}</ContentData>
   </Fragment>

@@ -22,7 +22,7 @@ export class List extends Component {
    post_call('api/master/server_list',{type:this.props.type}).then(result => this.setState(result))
  }
 
- listItem = (row) => [row.node,row.service,row.type,<Fragment key='sl_buttons'>
+ listItem = (row) => [row.node,row.service,row.type,<Fragment>
    <InfoButton key={'sl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />)} title='Service information' />
    <DeleteButton key={'sl_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete service' />
    {row.hasOwnProperty('ui') && row.ui.length > 0 && <UiButton key={'sl_btn_ui'+row.id} onClick={() =>  window.open(row.ui,'_blank')} title='Server UI' />}
@@ -32,7 +32,7 @@ export class List extends Component {
  deleteList = (id) => (window.confirm('Really delete service?') && post_call('api/master/server_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='sl_fragment'>
+  return <Fragment>
    <ContentList key='sl_cl' header='Servers' thead={['Node','Service','Type','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='sl_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='sl_btn_add' onClick={() => this.changeContent(<Info key={'sl_new_' + rnd()} id='new' type={this.props.type} />)} title='Add service' />
@@ -72,7 +72,7 @@ class Info extends Component {
   else if (this.state.data){
    const old = (this.state.data.id !== 'new');
    return (
-    <Fragment key='si_info_fragment'>
+    <Fragment>
     <InfoArticle key='si_art' header='Server'>
      <InfoColumns key='si_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />

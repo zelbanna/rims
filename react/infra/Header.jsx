@@ -1,4 +1,4 @@
-import React, { Component }  from 'react';
+import React, { PureComponent }  from 'react';
 import styles from './header.module.css';
 
 // ************************** Header and Menu ******************************
@@ -11,7 +11,7 @@ export const MenuSeparator = (props) => <li className={styles.menuSeparator}></l
 
 export const HeaderButton = (props) => <button className={styles.button} onClick={props.onClick} title={props.title}><i className={props.type} style={props.style} /></button>
 
-export class Header extends Component {
+export class Header extends PureComponent {
  constructor(props){
   super(props)
   this.state = {height:0,zoom:(document.documentElement.style.getPropertyValue('font-size') !== '')};

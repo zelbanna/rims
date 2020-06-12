@@ -22,7 +22,7 @@ export class Manage extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='manage_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 }
 Manage.contextType = RimsContext;
@@ -82,7 +82,7 @@ export class Inventory extends Component{
 
  render(){
   if (this.state.data){
-   return <Fragment key='con_fragment'>
+   return <Fragment>
     <ContentList key='con_cl' header='Inventory' thead={['Port','Device','']} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='con_btn_reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
     </ContentList>

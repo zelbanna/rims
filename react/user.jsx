@@ -16,7 +16,7 @@ export class List extends Component {
   post_call('api/master/user_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.alias,row.name,<Fragment key={'ul_buttons_'+row.id}>
+ listItem = (row) => [row.id,row.alias,row.name,<Fragment>
    <ConfigureButton key={'ul_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)} title='Edit user' />
    <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete user' />
   </Fragment>]
@@ -25,7 +25,7 @@ export class List extends Component {
  deleteList = (id) => (window.confirm('Really delete user?') && post_call('api/master/user_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='ul_fragment'>
+  return <Fragment>
    <ContentList key='ul_cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='ul_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='ul_btn_add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />)} title='Add user' />
@@ -66,10 +66,10 @@ export class Info extends Component {
      <InfoColumns key='ui_content'>
       {(this.context.settings.id === this.props.id) ?  <TextLine key='alias' id='alias' text={this.state.data.alias} /> : <TextInput key='alias' id='alias' value={this.state.data.alias} onChange={this.onChange} />}
       <PasswordInput key='password' id='password' placeholder='******' onChange={this.onChange} />
-      {this.context.settings.class === 'admin' && <SelectInput key='class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'class_'+row} value={row}>{row}</option>)}</SelectInput>}
+      {this.context.settings.class === 'admin' && <SelectInput key='class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>}
       <TextInput key='email' id='email' label='E-Mail' value={this.state.data.email} onChange={this.onChange} />
       <TextInput key='name' id='name' label='Full name' value={this.state.data.name} onChange={this.onChange} />
-      <SelectInput key='theme' id='theme' value={this.state.data.theme} onChange={this.onChange}>{this.state.themes.map(row => <option key={'ui_theme_'+row} value={row}>{row}</option>)}</SelectInput>
+      <SelectInput key='theme' id='theme' value={this.state.data.theme} onChange={this.onChange}>{this.state.themes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ui_btn_save' onClick={() => this.updateInfo()} title='Save' />
      <Result key='ui_operation' result={result} />

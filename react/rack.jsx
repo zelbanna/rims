@@ -38,7 +38,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 }
 Main.contextType = RimsContext;
@@ -55,7 +55,7 @@ export class List extends Component {
   post_call('api/rack/list',{sort:'name'}).then(result => this.setState(result))
  }
 
- listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment key='rack_list_buttons'>
+ listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment>
    <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} title='Rack information' />
    <GoButton key={'rl_btn_go_'+row.id} onClick={() => this.context.changeMain(<DeviceMain key={'rack_device_'+row.id} rack_id={row.id} />)} title='Rack inventory' />
    <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Layout key={'rack_layout_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title='Rack layout'/>
@@ -66,7 +66,7 @@ export class List extends Component {
  deleteList = (id) => (window.confirm('Really delete rack?') && post_call('api/rack/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='rack_fragment'>
+  return <Fragment>
    <ContentList key='rack_cl' header='Racks' thead={['Location','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='rl_btn_add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />)} title='Add rack' />
@@ -138,14 +138,14 @@ export class Layout extends Component {
 
  render(){
   if (this.state.size) {
-   return (<Fragment key='rt_frag'>
+   return <Fragment>
     <InfoArticle key='rl_front' header='Front'>
      {this.createRack('front',this.state.front,1)}
     </InfoArticle>
     <InfoArticle key='rl_back' header='Back'>
      {this.createRack('back',this.state.back,-1)}
     </InfoArticle>
-   </Fragment>)
+   </Fragment>
   } else
    return <Spinner />
  }
@@ -163,15 +163,12 @@ export class Infra extends Component {
   post_call('api/device/list',{field:'base',search:this.props.type,extra:['type']}).then(result => this.setState(result))
  }
 
- listItem = (row) => [<HrefButton key={'rinfra_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,
-   row.hostname,<Fragment key='rinfra_buttons'>
-   <InfoButton key={'rinfra_btn_' + row.id} onClick={() => this.context.changeMain({module:row.type_base,function:'Manage',args:{device_id:row.id, type:row.type_name}})} title='Manage device' />
-   </Fragment>]
+ listItem = (row) => [<HrefButton key={'rinfra_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,row.hostname,<InfoButton key={'rinfra_btn_' + row.id} onClick={() => this.context.changeMain({module:row.type_base,function:'Manage',args:{device_id:row.id, type:row.type_name}})} title='Manage device' />]
 
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return <Fragment key='rinfra_fragment'>
+  return <Fragment>
    <ContentList key='rinfra_cl' header={this.props.type} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='rinfra_btn_reload' onClick={() => this.componentDidMount()} />
    </ContentList>

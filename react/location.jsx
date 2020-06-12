@@ -19,14 +19,14 @@ constructor(props){
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete location?') && post_call('api/location/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
- listItem = (row) => [row.id,row.name,<Fragment key={'location_buttons_'+row.id}>
+ listItem = (row) => [row.id,row.name,<Fragment>
    <ConfigureButton key={'loc_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'location_'+row.id} id={row.id} />)} title='Edit location' />
    <DeleteButton key={'loc_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete location' />
    </Fragment>
   ]
 
  render(){
-  return <Fragment key='loc_fragment'>
+  return <Fragment>
    <ContentList key='loc_cl' header='Locations' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='loc_btn_reload' onClick={() => this.componentDidMount() } />
     <AddButton key='loc_btn_add' onClick={() => this.changeContent(<Info key={'location_new_' + rnd()} id='new' />)} title='Add location' />

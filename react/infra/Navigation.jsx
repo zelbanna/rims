@@ -1,4 +1,4 @@
-import React, { Component }  from 'react';
+import React, { PureComponent }  from 'react';
 import styles from './navigation.module.css';
 
 // ************************** Navigation ******************************
@@ -9,7 +9,7 @@ export const NavButton = (props) => <li className={styles.item} style={props.sty
 
 export const NavDropButton = (props) => <li className={styles.dropDownItem} style={props.style}><button className={styles.dropbutton} onClick={props.onClick}>{props.title}</button></li>
 
-export class NavDropDown extends Component{
+export class NavDropDown extends PureComponent{
  constructor(props){
   super(props)
   this.state = {height:0};

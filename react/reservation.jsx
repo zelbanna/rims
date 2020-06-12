@@ -26,7 +26,7 @@ export class List extends Component {
 
  listItem = (row) => {
   const buttons = (this.context.settings.id === row.user_id || !row.valid);
-  return [row.alias,row.hostname,row.end,<Fragment key='reservation_buttons'>
+  return [row.alias,row.hostname,row.end,<Fragment>
    {buttons && <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>}
    {buttons && <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />}
    {buttons && <DeleteButton key={'rsv_btn_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />}
@@ -34,7 +34,7 @@ export class List extends Component {
  }
 
  render(){
-  return <Fragment key='rsv_fragment'>
+  return <Fragment>
    <ContentList key='rsv_cl' header='Reservations' thead={['User','Device','Until','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='rsv_btn_reload' onClick={() => this.componentDidMount() } />
     <AddButton key='rsv_btn_new' onClick={() => this.changeContent(<New key='rsv_new' />)} />

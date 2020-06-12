@@ -22,7 +22,7 @@ export class Manage extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='manage_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 }
 Manage.contextType = RimsContext;
@@ -81,7 +81,7 @@ export class Inventory extends Component{
 
  render(){
   if (this.state.data){
-   return <Fragment key='pdu_fragment'>
+   return <Fragment>
     <ContentList key='pdu_cl' header='Inventory' thead={['Position','Device','State']} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='pdu_btn_reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
     </ContentList>
@@ -106,13 +106,13 @@ class Operation extends Component{
  }
 
  render(){
-   const off = (this.state.state === 'off');
-   return <Fragment key={'pdu_frag_'+this.props.idx}>
-    {off && <StartButton key={'pdu_btn_start_'+this.props.idx} onClick={() => this.operation('on')} title={this.state.status} />}
-    {!off && <StopButton key={'pdu_btn_stop_'+this.props.idx} onClick={() => this.operation('off')} title={this.state.status} />}
-    {!off && <ReloadButton key={'pdu_btn_reload_'+this.props.idx} onClick={() => this.operation('reboot')} title={this.state.status} />}
-    {this.state.wait}
-   </Fragment>
+  const off = (this.state.state === 'off');
+  return <Fragment>
+   {off && <StartButton key={'pdu_btn_start_'+this.props.idx} onClick={() => this.operation('on')} title={this.state.status} />}
+   {!off && <StopButton key={'pdu_btn_stop_'+this.props.idx} onClick={() => this.operation('off')} title={this.state.status} />}
+   {!off && <ReloadButton key={'pdu_btn_reload_'+this.props.idx} onClick={() => this.operation('reboot')} title={this.state.status} />}
+   {this.state.wait}
+  </Fragment>
  }
 }
 

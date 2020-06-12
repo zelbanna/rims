@@ -14,7 +14,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 }
 
@@ -40,7 +40,7 @@ export class DomainList extends Component {
   })
  }
 
- listItem = (row) => [row.id,row.name,row.service,<Fragment key={'domain_buttons_'+row.id}>
+ listItem = (row) => [row.id,row.name,row.service,<Fragment>
    <ConfigureButton key={'net_info_'+row.id} onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } title='Edit domain information' />
    <ItemsButton key={'net_items_'+row.id} onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } title='View domain records' />
    <DeleteButton key={'net_delete_'+row.id} onClick={() => this.deleteList(row.id) } title='Delete domain' />
@@ -51,7 +51,7 @@ export class DomainList extends Component {
  deleteList = (id) => (window.confirm('Really delete domain') && post_call('api/dns/domain_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='dl_fragment'>
+  return <Fragment>
    <ContentList key='dl_cl' header='Domains' thead={['ID','Domain','Server','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount() } />
     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } title='Add domain' />
@@ -148,7 +148,7 @@ class RecordList extends Component {
 
  changeContent = (elem) => this.props.changeSelf(elem);
 
- listItem = (row,idx) => [row.name,row.content,row.type,row.ttl,<Fragment key={'rl_buttons_'+idx}>
+ listItem = (row,idx) => [row.name,row.content,row.type,row.ttl,<Fragment>
    <ConfigureButton key={'record_info_btn_' + idx} onClick={() => this.changeContent(<RecordInfo key={'record_info_'+idx} domain_id={this.props.domain_id} op='info' {...row} />)} title='Configure record' />
    {['A','AAAA','CNAME','PTR'].includes(row.type) && <DeleteButton key={'record_del_btn_' + idx} onClick={() => this.deleteList(row.name,row.type)} title='Delete record' />}
   </Fragment>]

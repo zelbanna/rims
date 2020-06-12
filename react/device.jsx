@@ -73,7 +73,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return  <Fragment key='main_base'>{this.state.content}</Fragment>
+  return  <Fragment>{this.state.content}</Fragment>
  }
 }
 Main.contextType = RimsContext;
@@ -140,7 +140,7 @@ class List extends Component {
   this.setState({sort:method})
  }
 
- listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<Fragment key={'dl_buttons_'+row.id}>
+ listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<Fragment>
   <StateLeds key={'dl_state_' + row.id} state={(row.ip_state) ? row.ip_state : row.if_state} />
   <InfoButton key={'dl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />
   <DeleteButton key={'dl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete device' />
@@ -150,10 +150,12 @@ class List extends Component {
 
  render(){
   if (this.state.data){
+   const data = this.state.data
    const searchfield = this.state.searchfield.toLowerCase();
-   const dev_list = (searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))))
+   const dev_list = (searchfield.length === 0) ? data : data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))))
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
-   return <Fragment key={'dl_fragment'}>
+   console.log("devices")
+   return <Fragment>
     <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
@@ -210,7 +212,7 @@ export class Info extends Component {
    const has_ip = (extra.interface_ip);
    const function_strings = (extra.functions.length >0) ? extra.functions.split(',') : [];
    const type = this.state.types.find(tp => tp.id === parseInt(data.type_id));
-   return <Fragment key='di_fragment'>
+   return <Fragment>
     <InfoArticle key='di_art' header='Device'>
      <InfoColumns key='di_info' style={{float:'left'}}>
       <TextLine key='hostname' id='hostname' text={data.hostname} />
@@ -361,7 +363,7 @@ class PemList extends Component {
 
  deleteList = (id) => (window.confirm('Really delete PEM?') && post_call('api/pem/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
- listItem = (row) => [row.id,row.name,row.pdu_id,row.pdu_name,row.pdu_slot,row.pdu_unit,<Fragment key={'dev_pems_frag_' + row.id}>
+ listItem = (row) => [row.id,row.name,row.pdu_id,row.pdu_name,row.pdu_slot,row.pdu_unit,<Fragment>
   <InfoButton key={'dev_pem_btn_info_' + row.id} onClick={() => this.changeContent(<PemInfo key={'pem_info_'+row.id} id={row.id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Edit PEM information' />
   <DeleteButton key={'dev_pem_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete PEM' />
  </Fragment>]
@@ -436,7 +438,7 @@ class StatisticsList extends Component {
 
  lookupStats = () => post_call('api/statistics/lookup',{device_id:this.props.device_id}).then(result => { this.setState(result); this.loadList()} )
 
- listItem = (row) => [row.id,row.measurement,row.tags,row.name,row.oid,<Fragment key={'dev_stats_frag_' + row.id}>
+ listItem = (row) => [row.id,row.measurement,row.tags,row.name,row.oid,<Fragment>
   <InfoButton key={'dev_stats_btn_info_' + row.id} onClick={() => this.changeContent(<StatisticsInfo key={'statistics_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit data point' />
   <DeleteButton key={'dev_stats_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete data point' />
  </Fragment>]
@@ -520,11 +522,11 @@ class Control extends Component {
      <label htmlFor='shutdown'>Shutdown:</label><ShutdownButton id='shutdown' key='dev_ctr_shutdown' onClick={() => this.operationDev('shutdown','Really shutdown?')} title='Shutdown' />
      {this.state.pems.map(pem => {
       if(pem.state === 'off')
-       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}:</label><StartButton key={'dc_btn_start_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'on','Power on PEM?')} title='Power ON' /></Fragment>
+       return <Fragment key={pem.id}><label htmlFor={pem.id}>{pem.name}:</label><StartButton key={'dc_btn_start_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'on','Power on PEM?')} title='Power ON' /></Fragment>
       else if (pem.state === 'on')
-       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}:</label><ShutdownButton key={'dc_btn_stop_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'off','Power off PEM?')} title='Power OFF' /></Fragment>
+       return <Fragment key={pem.id}><label htmlFor={pem.id}>{pem.name}:</label><ShutdownButton key={'dc_btn_stop_'+pem.id} id={pem.id} onClick={() => this.operationPem(pem.id,'off','Power off PEM?')} title='Power OFF' /></Fragment>
       else
-       return <Fragment key={'dc_pems_'+pem.id}><label htmlFor={pem.id}>{pem.name}:</label><SearchButton key={'dc_btn_lookup_'+pem.id} id={pem.id} onClick={() => this.lookupState(pem.id)} title='Lookup State' /></Fragment>
+       return <Fragment key={pem.id}><label htmlFor={pem.id}>{pem.name}:</label><SearchButton key={'dc_btn_lookup_'+pem.id} id={pem.id} onClick={() => this.lookupState(pem.id)} title='Lookup State' /></Fragment>
      })}
     </InfoColumns>
     <Result key='dc_result' result={JSON.stringify(this.state.result)} />
@@ -635,7 +637,7 @@ class Discover extends Component {
  render() {
   if (this.state.networks && this.state.domains){
    return (
-    <Fragment key='dd_fragment'>
+    <Fragment>
      <InfoArticle key='dd_art' header='Device Discovery'>
       <InfoColumns key='dd_content'>
        <SelectInput key='dd_ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={'dd_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
@@ -686,7 +688,7 @@ class TypeList extends Component {
  listItem = (row) => [row.base,<HrefButton key={'tl_btn_' + row.name} text={row.name} onClick={() => this.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
 
  render(){
-  return (this.state.data) ? <Fragment key='dev_tp_fragment'>
+  return (this.state.data) ? <Fragment>
    <ContentList key='dev_tp_cl' header='Device Types' thead={['Class','Name','Icon']} trows={this.state.data} listItem={this.listItem} />
    <ContentData key='dev_tp_cd'>{this.state.content}</ContentData>
   </Fragment> : <Spinner />
@@ -707,7 +709,7 @@ class ModelList extends Component {
 
  syncModels = () => post_call('api/device/model_list',{op:'sync'}).then(result => this.setState(result))
 
- listItem = (row) => [row.id,row.name,row.type,<Fragment key={'ml_' + row.id}>
+ listItem = (row) => [row.id,row.name,row.type,<Fragment>
   <ConfigureButton key={'ml_btn_info_' + row.id} onClick={() => this.changeContent(<ModelInfo key={'model_info_'+row.id} id={row.id} />)} title='Edit model information' />
   <DeleteButton key={'ml_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete model' />
  </Fragment>]
@@ -716,7 +718,7 @@ class ModelList extends Component {
  deleteList = (id) => (window.confirm('Really delete model?') && post_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return (this.state.data) ? <Fragment key='ml_fragment'>
+  return (this.state.data) ? <Fragment>
    <ContentList key='ml_cl' header='Device Models' thead={['ID','Model','Type','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='ml_btn_reload' onClick={() => this.componentDidMount()} />
     <SyncButton key='ml_btn_sync' onClick={() => this.syncModels() } title='Resync models' />

@@ -1,11 +1,11 @@
-import React, { Fragment, Component } from 'react';
+import React, { Fragment, PureComponent } from 'react';
 import { StateLeds } from './UI.jsx';
 import styles from './input.module.css';
 
 const auto_label = (props) => (props.label) ? props.label : props.id;
 
-const input_template = (type,props) =>   <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label><input className={styles.input} type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} size={props.size} /></Fragment>
-const line_template = (content,props) => <Fragment key={'template_'+props.id}><label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label>{content}</Fragment>
+const input_template = (type,props) =>   <Fragment><label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label><input className={styles.input} type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} size={props.size} /></Fragment>
+const line_template = (content,props) => <Fragment><label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label>{content}</Fragment>
 
 //
 // Display Only
@@ -23,18 +23,18 @@ export const PasswordInput = (props) => input_template('password',props);
 export const DateInput = (props) => input_template('date',props);
 export const TimeInput = (props) => input_template('time',props);
 
-export const TextAreaInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><textarea id={props.id} name={props.id} onChange={props.onChange} className={styles.textarea} value={props.value} /></Fragment>
+export const TextAreaInput = (props) => <Fragment><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><textarea id={props.id} name={props.id} onChange={props.onChange} className={styles.textarea} value={props.value} /></Fragment>
 
-export const CheckboxInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} className={styles.checkbox} /></Fragment>
+export const CheckboxInput = (props) => <Fragment><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} className={styles.checkbox} /></Fragment>
 
-export const RadioInput = (props) => <Fragment key={'fraginput_'+props.id}><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><div>{
-  props.options.map((opt,idx) => <Fragment key={'fragradio_'+props.id+'_'+idx}>
+export const RadioInput = (props) => <Fragment><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><div>{
+  props.options.map((opt,idx) => <Fragment key={idx}>
    <label htmlFor={'radio_input_'+props.id+'_'+idx}>{opt.text}</label>
-   <input type='radio' key={'radio_input_'+props.id+'_'+idx} id={'radio_input_'+props.id+'_'+idx} name={props.id} onChange={props.onChange} value={opt.value} checked={(props.value.toString() === opt.value.toString()) ? 'checked' : ''}/>
+   <input type='radio' id={'radio_input_'+props.id+'_'+idx} name={props.id} onChange={props.onChange} value={opt.value} checked={(props.value.toString() === opt.value.toString()) ? 'checked' : ''}/>
   </Fragment>)
  }</div></Fragment>
 
-export const SelectInput = (props) => <Fragment key={'fraginput_'+props.id}>
+export const SelectInput = (props) => <Fragment>
   <label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label>
   <select name={props.id} onChange={props.onChange} value={(props.value !== null && props.value !== undefined) ? props.value : 'NULL'} className={styles.input}>
   {(props.value === null || props.value === undefined) && props.children.find(child => child.props.value === 'NULL') === undefined && <option value='NULL'>{'<Empty>'}</option>}
@@ -47,7 +47,7 @@ export const SelectInput = (props) => <Fragment key={'fraginput_'+props.id}>
 // - property: function 'searchFire' which takes one argument that is the current value of the input
 // - text: text use in the searchfield. A means for external input
 //
-export class SearchInput extends Component{
+export class SearchInput extends PureComponent{
  constructor(props){
   super(props)
   this.state = {text:(this.props.text) ? this.props.text : ''}
@@ -61,6 +61,10 @@ export class SearchInput extends Component{
   if(prevProps.text !== this.props.text){
    this.setState({text:this.props.text})
   }
+ }
+
+ componentWillUnmount(){
+  clearTimeout(this.timer);
  }
 
  handleCheck = () => {

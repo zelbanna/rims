@@ -36,7 +36,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 
 }
@@ -54,7 +54,7 @@ class List extends Component {
   post_call('api/master/activity_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'al_btn_hinfo_'+row.id} onClick={() => this.changeContent(<Info key={'activity_info_'+row.id} id={row.id} />)} text={row.type} />,<Fragment key={'activity_buttons_'+row.id}>
+ listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'al_btn_hinfo_'+row.id} onClick={() => this.changeContent(<Info key={'activity_info_'+row.id} id={row.id} />)} text={row.type} />,<Fragment>
    <InfoButton key={'al_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } title='Activity information' />
    <DeleteButton key={'al_btn_delete_'+row.id} onClick={() => this.deleteList(row.id) } title='Delete activity' />
    </Fragment>
@@ -67,7 +67,7 @@ class List extends Component {
  render(){
   if (this.state.data) {
    let act_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => row.type.includes(this.state.searchfield));
-   return <Fragment key='al_fragment'>
+   return <Fragment>
     <ContentList key='al_cl' header='Activities' thead={['Date','Type','']} trows={act_list} listItem={this.listItem}>
      <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
      <AddButton key='al_btn_add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
@@ -164,7 +164,7 @@ class Daily extends Component {
   })
 
  listItem = (row) => {
-  return [row.type, (row.user_id) ? this.state.users[row.user_id].alias : '-', (row.event) ? row.event : '-',<Fragment key={'ad_btn_'+row.id}>
+  return [row.type, (row.user_id) ? this.state.users[row.user_id].alias : '-', (row.event) ? row.event : '-',<Fragment>
   {!row.user_id && <AddButton key={'ad_add_'+row.id} onClick={() => this.syncEvent(row.id,row.act_id)} />}
   {row.user_id && row.user_id !== parseInt(this.state.user_id) && <SyncButton key={'ad_sync_'+row.id} onClick={() => this.syncEvent(row.id,row.act_id)} />}
   {row.act_id && <InfoButton key={'ad_info'} onClick={() => this.changeContent(<Info key={'activity_'+row.act_id} id={row.act_id} />)} />}
@@ -216,7 +216,7 @@ class TypeList extends Component {
   post_call('api/master/activity_type_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.type,row.class,<Fragment key='activity_buttons'>
+ listItem = (row) => [row.id,row.type,row.class,<Fragment>
    <ConfigureButton key='act_tp_info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } title='Edit type information' />
    <DeleteButton key='act_tp_delete' onClick={() => this.deleteList(row.id) } title='Delete type' />
   </Fragment>
@@ -226,7 +226,7 @@ class TypeList extends Component {
  deleteList = (id) => (window.confirm('Really delete type?') && post_call('api/master/activity_type_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='act_tp_fragment'>
+  return <Fragment>
    <ContentList key='act_tp_cl' header='Activity Types' thead={['ID','Type','Class','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='act_tp_btn_reload' onClick={() => this.componentDidMount() } />
     <AddButton key='act_tp_btn_add' onClick={() => this.changeContent(<TypeInfo key={'act_tp_new_' + rnd()} id='new' />) } title='Add activity type' />

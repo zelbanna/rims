@@ -16,7 +16,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 }
 
@@ -36,7 +36,7 @@ export class NetworkList extends Component {
    row.netasc,
    row.description,
    row.service,
-   <Fragment key={'network_buttons_'+row.id}>
+   <Fragment>
     <ConfigureButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />)} title='Edit network properties' />
     <ItemsButton key={'net_btn_items2_'+row.id} onClick={() => this.changeContent(<AddressList key={'address_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View addresses' />
     {row.class === 'v4' && <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout key={'address_layout_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View usage map' />}
@@ -51,7 +51,7 @@ export class NetworkList extends Component {
  resetStatus = (id) => post_call('api/ipam/clear',{network_id:id}).then(result => this.setState({result:result.count}))
 
  render(){
-  return <Fragment key='nl_fragment'>
+  return <Fragment>
    <ContentList key='nl_cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='nl_btn_reload'  onClick={() => this.componentDidMount() } />
     <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_'+rnd()} id='new' />)} title='Add network' />
@@ -173,7 +173,7 @@ class AddressList extends Component{
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<Fragment key={'ip_button_'+row.id}>
+ listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<Fragment>
    <StateLeds state={row.state} />
    <ConfigureButton key={'al_btn_info_'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} />)} title='Edit address entry' />
    <DocButton key={'al_btn_logs_' + row.id} onClick={() => this.changeContent(<AddressLogs key={'address_logs_'+row.id} id={row.id} />)} title='IPAM state logs' />

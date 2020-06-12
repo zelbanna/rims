@@ -16,7 +16,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment key='main_base'>{this.state}</Fragment>
+  return  <Fragment>{this.state}</Fragment>
  }
 }
 
@@ -33,7 +33,7 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => [row.id,row.name,<Fragment key='vl_buttons'>
+ listItem = (row) => [row.id,row.name,<Fragment>
   <EditButton key={'vl_btn_edt_'+row.id} onClick={() => this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)} title='Show and edit map' />
   <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => window.open(`viz.html?id=${row.id}`,'_blank')} title='Show resulting map' />
   <DeleteButton key={'vl_btn_del_'+row.id}  onClick={() => this.deleteList(row.id)} />
@@ -43,7 +43,7 @@ export class List extends Component {
  deleteList = (id) => (window.confirm('Delete map?') && post_call('api/visualize/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='vl_fragment'>
+  return <Fragment>
    <ContentList key='vl_cl' header='Maps' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='vl_btn_reload' onClick={() => this.componentDidMount() } />
    </ContentList>

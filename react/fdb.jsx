@@ -90,13 +90,13 @@ export class List extends Component {
 
  changeVisualize = (device_id) => ('changeSelf' in this.props && this.setState({content:<VisualizeEdit key={'viz_id_' + device_id} type='device' id={device_id} />}));
 
- listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'fd_intf_'+idx} text={row.mac} onClick={() => this.setState({searchfield:row.mac})} />,<Fragment key={'fd_frag_'+idx}><InfoButton key={'fd_intf_'+idx}  onClick={() => this.changeSearch(row.mac,idx)} /><NetworkButton key={'fd_map_'+idx} onClick={() => this.changeVisualize(row.device_id)} /></Fragment>]
+ listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'fd_intf_'+idx} text={row.mac} onClick={() => this.setState({searchfield:row.mac})} />,<Fragment><InfoButton key={'fd_intf_'+idx}  onClick={() => this.changeSearch(row.mac,idx)} title='Find interface(s)' /><NetworkButton key={'fd_map_'+idx} onClick={() => this.changeVisualize(row.device_id)} /></Fragment>]
 
  render(){
   if (this.state.data){
    const search = this.state.searchfield.toUpperCase();
    const data = (search.length === 0) ? this.state.data : this.state.data.filter(row => row.mac.includes(search))
-   return <Fragment key='fl_frag'>
+   return <Fragment>
     <ContentList key='fl_cr' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC','']} trows={data} listItem={this.listItem}>
      <ReloadButton key='fl_btn_reload' onClick={() => this.componentDidMount()} />
      <SearchInput key='fl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' text={this.state.searchfield} />
@@ -122,7 +122,7 @@ class Info extends Component {
 
  render(){
   if (this.state.device)
-   return <ContentReport key='fd_cr' header={`${this.state.device.hostname} (${this.state.device.id})`} thead={['ID','Name','Description','OUI']} trows={this.state.interfaces} listItem={(row) => [row.interface_id,row.name,row.description,row.oui]} />
+   return <ContentReport key='fd_cr' header={`${this.state.device.hostname} (${this.state.device.id})`} thead={['ID','Interface','Description','OUI']} trows={this.state.interfaces} listItem={(row) => [row.interface_id,row.name,row.description,row.oui]} />
   else if (this.state.oui)
    return <LineArticle key='fd_oui_la' header='Search result'>OUI: {this.state.oui}</LineArticle>
   else if (this.state.status)

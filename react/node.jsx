@@ -17,7 +17,7 @@ export class List extends Component {
   post_call('api/master/node_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.node,row.url,<Fragment key='node_buttons'>
+ listItem = (row) => [row.node,row.url,<Fragment>
    <InfoButton key={'nl_btn_info'+row.id} onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} title='Node information' />
    <DeleteButton key={'nl_btn_delete'+row.id} onClick={() => this.deleteList(row.id)} title='Delete node' />
   </Fragment>]
@@ -26,7 +26,7 @@ export class List extends Component {
  deleteList = (id) => (window.confirm('Really delete node?') && post_call('api/master/node_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment key='node_fragment'>
+  return <Fragment>
    <ContentList key='node_cl' header='Nodes' thead={['Node','URL','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='nl_btn_reload' onClick={() => this.componentDidMount() } />
     <AddButton key='nl_btn_add' onClick={() => this.changeContent(<Info key={'node_new_' + rnd()} id='new' />)} title='Add node' />
@@ -61,7 +61,7 @@ class Info extends Component {
    return <InfoArticle key='node_art'>Node with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data) {
    const old = (this.state.data.id !== 'new');
-   return <Fragment key='node_info_fragment'>
+   return <Fragment>
     <InfoArticle key='node_art' header='Node'>
      <InfoColumns key='node_content'>
       <TextInput key='node' id='node' value={this.state.data.node} onChange={this.onChange} />
