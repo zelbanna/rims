@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { post_call, rnd } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
@@ -118,16 +118,16 @@ class List extends Component {
  }
 
  componentDidMount(){
-  post_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState(result))
+  post_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState({...result, original:result.data}))
  }
 
  changeContent = (elem) => this.setState({content:elem})
 
  sortList = (method) => {
   if (method === 'hostname')
-   this.state.data.sort((a,b) => a.hostname.localeCompare(b.hostname));
+   this.state.original.sort((a,b) => a.hostname.localeCompare(b.hostname));
   else
-   this.state.data.sort((a,b) => {
+   this.state.original.sort((a,b) => {
     if (a.ip && b.ip){
      const num1 = Number(a.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
      const num2 = Number(b.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
@@ -137,7 +137,15 @@ class List extends Component {
    else
     return a.hostname.localeCompare(b.hostname)
    });
-  this.setState({sort:method})
+  this.searchList(this.state.searchfield,method)
+ }
+
+ searchFire = (search) => this.searchList(search, this.state.sort);
+
+ searchList = (search,method) => {
+  const data = this.state.original
+  const searchfield = search.toLowerCase();
+  this.setState({searchfield:searchfield, sort:method, data:(searchfield.length === 0) ? data : data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))))});
  }
 
  listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<Fragment>
@@ -150,17 +158,15 @@ class List extends Component {
 
  render(){
   if (this.state.data){
-   const data = this.state.data
-   const searchfield = this.state.searchfield.toLowerCase();
-   const dev_list = (searchfield.length === 0) ? data : data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))))
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
+   console.log("device list");
    return <Fragment>
-    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
+    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={this.state.data}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
-     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key={'dn_new_' + rnd()} ip='0.0.0.0' />)} title='Add device' />
+     <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key='dn_new' ip='0.0.0.0' />)} title='Add device' />
      <SearchButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover new devices' />
-     <SearchInput key='dl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search devices' />
+     <SearchInput key='dl_search' searchFire={this.searchFire} placeholder='Search devices' />
     </ContentList>
     <ContentData key='dl_content'>{this.state.content}</ContentData>
    </Fragment>
@@ -363,14 +369,14 @@ class PemList extends Component {
  deleteList = (id) => (window.confirm('Really delete PEM?') && post_call('api/pem/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  listItem = (row) => [row.id,row.name,row.pdu_id,row.pdu_name,row.pdu_slot,row.pdu_unit,<Fragment>
-  <InfoButton key={'dev_pem_btn_info_' + row.id} onClick={() => this.changeContent(<PemInfo key={'pem_info_'+row.id} id={row.id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Edit PEM information' />
-  <DeleteButton key={'dev_pem_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete PEM' />
+  <InfoButton key={'pem_btn_info_' + row.id} onClick={() => this.changeContent(<PemInfo key={'pem_info_'+row.id} id={row.id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Edit PEM information' />
+  <DeleteButton key={'pem_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete PEM' />
  </Fragment>]
 
  render(){
-  return (this.state.data) ? <ContentReport key='dev_pems' header='PEMs' thead={['ID','Name','PDU ID','PDU Name','PDU Slot','PDU Unit','']} trows={this.state.data} listItem={this.listItem}>
-   <ReloadButton key='dev_pems_btn_reload' onClick={() => this.componentDidMount()} />
-   <AddButton key='dev_pems_btn_add' onClick={() => this.changeContent(<PemInfo key={'device_pem_info_new_' + rnd()} id='new' device_id={this.props.device_id} />)} title='Add PEM' />
+  return (this.state.data) ? <ContentReport key='pems' header='PEMs' thead={['ID','Name','PDU ID','PDU Name','PDU Slot','PDU Unit','']} trows={this.state.data} listItem={this.listItem}>
+   <ReloadButton key='pems_btn_reload' onClick={() => this.componentDidMount()} />
+   <AddButton key='pems_btn_add' onClick={() => this.changeContent(<PemInfo key='pem_new' id='new' device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Add PEM' />
   </ContentReport>
   : <Spinner />
  }
@@ -438,15 +444,15 @@ class StatisticsList extends Component {
  lookupStats = () => post_call('api/statistics/lookup',{device_id:this.props.device_id}).then(result => { this.setState(result); this.loadList()} )
 
  listItem = (row) => [row.id,row.measurement,row.tags,row.name,row.oid,<Fragment>
-  <InfoButton key={'dev_stats_btn_info_' + row.id} onClick={() => this.changeContent(<StatisticsInfo key={'statistics_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit data point' />
-  <DeleteButton key={'dev_stats_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete data point' />
+  <InfoButton key={'stats_btn_info_' + row.id} onClick={() => this.changeContent(<StatisticsInfo key={'statistics_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit data point' />
+  <DeleteButton key={'stats_btn_delete_' + row.id}  onClick={() => this.deleteList(row.id) } title='Delete data point' />
  </Fragment>]
 
  render(){
-  return (this.state.data) ? <ContentReport key='dev_stats' header='Device statistics' thead={['ID','Measurement','Tags','Name','OID','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-   <ReloadButton key='dev_stats_btn_reload' onClick={() => this.loadList(true)} />
-   <SearchButton key='dev_stats_btn_lookup' onClick={() => this.lookupStats()} title='Lookup device type stats' />
-   <AddButton key='dev_stats_btn_add' onClick={() => this.changeContent(<StatisticsInfo key={'device_statistics_info_new_' + rnd()} id='new' device_id={this.props.device_id} />)} title='Add statistics' />
+  return (this.state.data) ? <ContentReport key='stats' header='Device statistics' thead={['ID','Measurement','Tags','Name','OID','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+   <ReloadButton key='stats_btn_reload' onClick={() => this.loadList(true)} />
+   <SearchButton key='stats_btn_lookup' onClick={() => this.lookupStats()} title='Lookup device type stats' />
+   <AddButton key='stats_btn_add' onClick={() => this.changeContent(<StatisticsInfo key={'stats_new_'} id='new' device_id={this.props.device_id} />)} title='Add statistics' />
   </ContentReport>
   : <Spinner />
  }
@@ -576,6 +582,11 @@ export class New extends Component {
   post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}))
   post_call('api/ipam/network_list').then(result => this.setState({networks:result.data}))
   post_call('api/device/class_list').then(result => this.setState({classes:result.data}))
+ }
+
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.setState({data:{ip:this.props.ip,mac:'00:00:00:00:00:00',class:'device',ipam_network_id:this.props.ipam_network_id,hostname:''}})
  }
 
  addDevice = () => {

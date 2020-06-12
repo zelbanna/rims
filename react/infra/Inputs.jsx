@@ -56,7 +56,7 @@ export class SearchInput extends PureComponent{
 
  componentDidUpdate (prevProps, prevState) {
   if(prevState.text !== this.state.text) {
-   this.handleCheck();
+   this.handleInput();
   }
   if(prevProps.text !== this.props.text){
    this.setState({text:this.props.text})
@@ -67,10 +67,10 @@ export class SearchInput extends PureComponent{
   clearTimeout(this.timer);
  }
 
- handleCheck = () => {
+ handleInput = () => {
   // Clears running timer and starts a new one each time the user types
   clearTimeout(this.timer);
-  this.timer = setTimeout(() => this.props.searchFire(this.state.text), 500);
+  this.timer = setTimeout(() => this.props.searchFire(this.state.text), 400);
  }
 
  render(){
