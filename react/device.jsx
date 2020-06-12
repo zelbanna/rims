@@ -118,16 +118,16 @@ class List extends Component {
  }
 
  componentDidMount(){
-  post_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState({...result, original:result.data}))
+  post_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState(result));
  }
 
  changeContent = (elem) => this.setState({content:elem})
 
  sortList = (method) => {
   if (method === 'hostname')
-   this.state.original.sort((a,b) => a.hostname.localeCompare(b.hostname));
+   this.state.data.sort((a,b) => a.hostname.localeCompare(b.hostname));
   else
-   this.state.original.sort((a,b) => {
+   this.state.data.sort((a,b) => {
     if (a.ip && b.ip){
      const num1 = Number(a.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
      const num2 = Number(b.ip.split('.').map(num => (`000${num}`).slice(-3) ).join(''));
@@ -137,15 +137,7 @@ class List extends Component {
    else
     return a.hostname.localeCompare(b.hostname)
    });
-  this.searchList(this.state.searchfield,method)
- }
-
- searchFire = (search) => this.searchList(search, this.state.sort);
-
- searchList = (search,method) => {
-  const data = this.state.original
-  const searchfield = search.toLowerCase();
-  this.setState({searchfield:searchfield, sort:method, data:(searchfield.length === 0) ? data : data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))))});
+  this.setState({sort:method});
  }
 
  listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<Fragment>
@@ -158,15 +150,17 @@ class List extends Component {
 
  render(){
   if (this.state.data){
+   const data = this.state.data
+   const searchfield = this.state.searchfield.toLowerCase();
+   const dev_list = (searchfield.length === 0) ? data : data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))));
    const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
-   console.log("device list");
    return <Fragment>
-    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={this.state.data}>
+    <ContentList key='dl_list' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
      <ReloadButton key='dl_btn_reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='dl_btn_items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
      <AddButton key='dl_btn_add' onClick={() => this.changeContent(<New key='dn_new' ip='0.0.0.0' />)} title='Add device' />
      <SearchButton key='dl_btn_devices' onClick={() => this.changeContent(<Discover key='dd' />) } title='Discover new devices' />
-     <SearchInput key='dl_search' searchFire={this.searchFire} placeholder='Search devices' />
+     <SearchInput key='dl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search devices' />
     </ContentList>
     <ContentData key='dl_content'>{this.state.content}</ContentData>
    </Fragment>
