@@ -120,7 +120,7 @@ export class Info extends Component {
      return <LineArticle key='ii_cnct_art'>
       Connect {this.state.data.name} to {this.state.connect.name} on
       <SelectInput key='ii_cnct_int' id='interface_id' label='Interface' value={this.state.connect.interface_id} onChange={this.interfaceChange}>
-       {this.state.interfaces.map(row => <option key={'ii_cnct_int_'+row.interface_id} value={row.interface_id}>{`${row.interface_id} (${row.name} - ${row.description})`}</option>)}
+       {this.state.interfaces.map(row => <option key={row.interface_id} value={row.interface_id}>{`${row.interface_id} (${row.name} - ${row.description})`}</option>)}
       </SelectInput>
       <CheckboxInput key='ii_cnct_map' id='map' value={this.state.connect.map} onChange={this.interfaceChange} />
       <BackButton key='ii_cnct_btn_back' onClick={() => this.setState({op:'device'})} title='Back' />
@@ -129,9 +129,9 @@ export class Info extends Component {
     else if (this.state.op === 'ipam'){
      return <InfoArticle key='ii_ipam_article' header='Create IPAM record'>
       <InfoColumns key='ii_ipam_create'>
-       <SelectInput key='ii_ipam_net' id='network_id' label='Network' value={this.state.ipam.network_id} onChange={this.ipamChange}>{this.state.networks.map((row,idx) => <option key={'ii_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
+       <SelectInput key='ii_ipam_net' id='network_id' label='Network' value={this.state.ipam.network_id} onChange={this.ipamChange}>{this.state.networks.map(row => <option key={row.id} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
        <TextInput key='ii_ipam_ip' id='ip' value={this.state.ipam.ip} label='IP' onChange={this.ipamChange} />
-       <SelectInput key='ii_ipam_dom' id='a_domain_id' label='Domain' value={this.state.ipam.a_domain_id} onChange={this.ipamChange}>{this.state.domains.map((row,idx) => <option key={'ii_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+       <SelectInput key='ii_ipam_dom' id='a_domain_id' label='Domain' value={this.state.ipam.a_domain_id} onChange={this.ipamChange}>{this.state.domains.map(row => <option key={row.id} value={row.id}>{row.name}</option>)}</SelectInput>
       </InfoColumns>
       <BackButton key='ii_ipam_btn_back' onClick={() => this.setState({op:null})} title='Back'/>
       <SearchButton key='ii_ipam_btn_find' onClick={() => this.searchIP()} title='Search IP within network' />
@@ -152,7 +152,7 @@ export class Info extends Component {
     return (<InfoArticle key='ii_article' header='Interface'>
      <InfoColumns key='ii_columns' columns={3}>
       <TextInput key='ii_name' id='name' value={this.state.data.name} onChange={this.onChange} /><div />
-      <SelectInput key='ii_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'ii_class_'+row} value={row}>{row}</option>)}</SelectInput><div />
+      <SelectInput key='ii_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput><div />
       <TextInput key='ii_description' id='description' value={this.state.data.description} onChange={this.onChange} /><div />
       <TextInput key='ii_snmp_index' id='snmp_index' label='SNMP index' value={this.state.data.snmp_index} onChange={this.onChange} /><div />
       <TextInput key='ii_mac' id='mac' value={this.state.data.mac} onChange={this.onChange} /><div />
@@ -207,7 +207,7 @@ class ConnectionInfo extends Component {
    return <InfoArticle key='ci_article' header={'Connection '+ this.props.id}>
     <InfoColumns key='ci_columns'>
      <CheckboxInput key='map' id='map' value={this.state.data.map} onChange={this.onChange} />
-     {this.state.interfaces.map((row,idx) => <TextLine key={'conn_int_'+idx} id={'interface_' +idx} text={`${row.device_name} - ${row.interface_name} (${row.interface_id})`} />)}
+     {this.state.interfaces.map((row,idx) => <TextLine key={idx} id={'interface_' +idx} text={`${row.device_name} - ${row.interface_name} (${row.interface_id})`} />)}
     </InfoColumns>
     <BackButton key='ci_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />
     <SaveButton key='ci_btn_save' onClick={() => this.updateInfo()} title='Save connection information' />

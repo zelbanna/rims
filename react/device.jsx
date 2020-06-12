@@ -222,8 +222,8 @@ export class Info extends Component {
       {data.management_id && <StateLine key='state' id='state' state={[extra.if_state,extra.ip_state]} />}
      </InfoColumns>
      <InfoColumns key='di_extra' style={{float:'left'}}>
-      <SelectInput key='class' id='class' value={data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'di_class_'+row} value={row}>{row}</option>)}</SelectInput>
-      <SelectInput key='type_id' id='type_id' label='Type' value={data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'di_type_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='class' id='class' value={data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
+      <SelectInput key='type_id' id='type_id' label='Type' value={data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
       <TextInput key='model' id='model' value={data.model} onChange={this.onChange} extra={data.model} />
       <TextLine key='version' id='version' text={data.version} />
       <TextInput key='serial' id='serial' label='S/N' value={data.serial} onChange={this.onChange} />
@@ -232,7 +232,7 @@ export class Info extends Component {
       {rack && <TextLine key='rack_pos' id='rack_pos' label='Rack/Pos' text={`${rack.rack_name} (${rack.rack_unit})`} />}
       {rack && <TextLine key='rack_size' id='rack_size' label='Size (U)' text={rack.rack_size} />}
       {rack && <TextLine key='rack_con' id='rack_con' label='TS/Port' text={`${rack.console_name} (${rack.console_port})`} />}
-      {rack && this.state.pems.map(pem => <TextLine key={'pem_'+pem.id} id={'pem_'+pem.id} label={pem.name+' PDU'} text={`${pem.pdu_name} (${pem.pdu_unit})`} />)}
+      {rack && this.state.pems.map(pem => <TextLine key={pem.id} id={'pem_'+pem.id} label={pem.name+' PDU'} text={`${pem.pdu_name} (${pem.pdu_unit})`} />)}
      </InfoColumns>
      <InfoColumns key='di_vm' style={{float:'left'}}>
       {vm && <TextLine key='vm_name' id ='vm_name' label='VM Name' text={vm.name} />}
@@ -298,8 +298,8 @@ class ManagementInfo extends Component {
    return <InfoArticle key='d_conf_art' header='Management Configuration'>
     <InfoColumns key='d_conf_ic'>
      <TextInput key='d_conf_hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
-     <SelectInput key='d_conf_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'de_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
-     <SelectInput key='d_conf_management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={'de_intf_'+idx} value={row.interface_id}>{`${row.name} (${row.ip})`}</option>)}</SelectInput>
+     <SelectInput key='d_conf_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='d_conf_management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={idx} value={row.interface_id}>{`${row.name} (${row.ip})`}</option>)}</SelectInput>
      <TextLine key='id' id='id' label='Local ID'  text={this.props.id} title='Database ID' />
      <TextLine key='snmp' id='snmp' label='SNMP' text={this.state.data.snmp} />
      <TextLine key='d_conf_oid' id='oid' label='Priv OID' text={this.state.extra.oid} />
@@ -334,10 +334,10 @@ class RackInfo extends Component {
    const racked = (this.state.data.rack_id && this.state.data.rack_id !== 'NULL');
    return <InfoArticle key='d_rack_art' header='Rack'>
     <InfoColumns key='d_rack_ic'>
-     <SelectInput key='d_rack_id' id='rack_id' label='Rack ID' value={this.state.data.rack_id} onChange={this.onChange}>{this.state.racks.map((row,idx) => <option key={'d_rack_id_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='d_rack_id' id='rack_id' label='Rack ID' value={this.state.data.rack_id} onChange={this.onChange}>{this.state.racks.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
      {racked && <TextInput key='d_rack_size' id='rack_size' label='Size' value={this.state.data.rack_size} onChange={this.onChange} title='Size of device in U' />}
      {racked && <TextInput key='d_rack_unit' id='rack_unit' label='Unit' value={this.state.data.rack_unit} onChange={this.onChange} title='First unit of placement' />}
-     {racked && <SelectInput key='d_rack_con_id' id='console_id' label='Console' value={this.state.data.console_id} onChange={this.onChange}>{this.state.consoles.map((row,idx) => <option key={'d_rack_con_id_'+idx} value={row.id}>{row.hostname}</option>)}</SelectInput>}
+     {racked && <SelectInput key='d_rack_con_id' id='console_id' label='Console' value={this.state.data.console_id} onChange={this.onChange}>{this.state.consoles.map((row,idx) => <option key={idx} value={row.id}>{row.hostname}</option>)}</SelectInput>}
      {racked && <TextInput key='d_rack_con_port' id='console_port' label='Console Port' value={this.state.data.console_port} onChange={this.onChange} />}
     </InfoColumns>
     <SaveButton key='d_rack_btn_save' onClick={() => this.updateInfo()} title='Save' />
@@ -405,8 +405,8 @@ class PemInfo extends Component{
    return <InfoArticle key='d_pem_art' header='PEM'>
     <InfoColumns key='d_pem_ic'>
      <TextInput key='d_pem_name' id='name' value={this.state.data.name} onChange={this.onChange} />
-     <SelectInput key='d_pem_pdu_id' id='pdu_id' label='PDU' value={this.state.data.pdu_id} onChange={this.onChange}>{this.state.pdus.map((row,idx) => <option key={'d_pem_pdu_id_'+idx} value={row.device_id}>{row.name}</option>)}</SelectInput>
-     <SelectInput key='d_pem_pdu_slot' id='pdu_slot' label='Slot' value={this.state.data.pdu_slot} onChange={this.onChange}>{slots.map((row,idx) => <option key={'d_pem_pdu_slot_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='d_pem_pdu_id' id='pdu_id' label='PDU' value={this.state.data.pdu_id} onChange={this.onChange}>{this.state.pdus.map((row,idx) => <option key={idx} value={row.device_id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='d_pem_pdu_slot' id='pdu_slot' label='Slot' value={this.state.data.pdu_slot} onChange={this.onChange}>{slots.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
      <TextInput key='d_pem_pdu_unit' id='pdu_unit' label='Unit' value={this.state.data.pdu_unit} onChange={this.onChange} />
     </InfoColumns>
     <BackButton key='d_pem_btn_back' onClick={() => this.props.changeSelf(<PemList key='device_pem_list' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />)} />
@@ -597,10 +597,10 @@ export class New extends Component {
     <InfoArticle key='dn_art' header='Device Add'>
      <InfoColumns key='dn_content'>
       <TextInput key='dn_hostname' id='hostname' value={this.state.data.hostname} placeholder='Device hostname' onChange={this.onChange} />
-      <SelectInput key='dn_class' id='class' label='Device Class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'dn_class_'+row} value={row}>{row}</option>)}</SelectInput>
-      <SelectInput key='dn_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dn_a_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
-      <SelectInput key='dn_if_domain_id' id='if_domain_id' label='Interface Domain' value={this.state.data.if_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dn_if_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
-      <SelectInput key='dn_ipam_network_id' id='ipam_network_id' label='Interface Network' value={this.state.data.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={'dn_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
+      <SelectInput key='dn_class' id='class' label='Device Class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
+      <SelectInput key='dn_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='dn_if_domain_id' id='if_domain_id' label='Interface Domain' value={this.state.data.if_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='dn_ipam_network_id' id='ipam_network_id' label='Interface Network' value={this.state.data.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
       <TextInput key='dn_ip' id='ip' label='IP' value={this.state.data.ip} onChange={this.onChange} />
       <TextInput key='dn_mac' id='mac' label='MAC' value={this.state.data.mac} onChange={this.onChange} />
      </InfoColumns>
@@ -640,9 +640,9 @@ class Discover extends Component {
     <Fragment>
      <InfoArticle key='dd_art' header='Device Discovery'>
       <InfoColumns key='dd_content'>
-       <SelectInput key='dd_ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={'dd_net_'+idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
-       <SelectInput key='dd_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dd_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
-       <SelectInput key='dd_if_domain_id' id='if_domain_id' label='Interface Domain' value={this.state.if_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'dd_if_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+       <SelectInput key='dd_ipam_network_id' id='ipam_network_id' label='Network' value={this.state.ipam_network_id} onChange={this.onChange}>{this.state.networks.map((row,idx) => <option key={idx} value={row.id}>{`${row.netasc} (${row.description})`}</option>)}</SelectInput>
+       <SelectInput key='dd_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
+       <SelectInput key='dd_if_domain_id' id='if_domain_id' label='Interface Domain' value={this.state.if_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
       </InfoColumns>
       <StartButton key='dd_btn_start' onClick={() => this.runDiscovery()} title='Start discovery' />
      </InfoArticle>

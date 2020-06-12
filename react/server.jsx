@@ -76,8 +76,8 @@ class Info extends Component {
     <InfoArticle key='si_art' header='Server'>
      <InfoColumns key='si_content'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
-      <SelectInput key='node' id='node' value={this.state.data.node} onChange={this.onChange}>{this.state.nodes.map((row,idx) => <option key={'si_node_'+idx} value={row}>{row}</option>)}</SelectInput>
-      <SelectInput key='type_id' id='type_id' label='Service' value={this.state.data.type_id} onChange={this.onChange}>{this.state.services.map((row,idx) => <option key={'si_svc_'+idx} value={row.id}>{`${row.service} (${row.type})`}</option>)}</SelectInput>
+      <SelectInput key='node' id='node' value={this.state.data.node} onChange={this.onChange}>{this.state.nodes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
+      <SelectInput key='type_id' id='type_id' label='Service' value={this.state.data.type_id} onChange={this.onChange}>{this.state.services.map(row => <option key={row.id} value={row.id}>{`${row.service} (${row.type})`}</option>)}</SelectInput>
       <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} onChange={this.onChange} />
      </InfoColumns>
      <SaveButton key='si_btn_save' onClick={() => this.updateInfo()} title='Save' />

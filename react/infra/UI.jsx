@@ -56,7 +56,7 @@ const content = (type,props) => {
   return <article className={type}>
     <h1 className={tableStyles.title}>{props.header}</h1>
     {props.children}
-    <Result key='con_result' result={props.result} />
+    <Result key='result' result={props.result} />
     <div className={tableStyles.table}>
      <div className={tableStyles.thead}>{props.thead.map((row,idx) => <div key={idx} className={tableStyles.th}>{row}</div> )}</div>
      <div className={tableStyles.tbody}>
@@ -93,11 +93,11 @@ class ErrorBoundary extends React.Component {
   if (this.state.hasError)
    return <div className={uiStyles.overlay} style={{top:0}}>
     <article className={uiStyles.error}>
-     <CloseButton key='error_close' onClick={() => this.setState({hasError: false, error: undefined, info:[]})} />
+     <CloseButton key='close' onClick={() => this.setState({hasError: false, error: undefined, info:[]})} />
      <h1 className={uiStyles.title}>UI Error</h1>
-     <InfoColumns key='error_ic'>
-      <TextLine id='type' text={this.state.error} />
-      <TextAreaInput id='info' value={this.state.info.join('\n')} />
+     <InfoColumns key='ic'>
+      <TextLine key='type' id='type' text={this.state.error} />
+      <TextAreaInput key='text' id='info' value={this.state.info.join('\n')} />
      </InfoColumns>
     </article>
    </div>
@@ -159,29 +159,29 @@ export class Portal extends Component {
    try {
     import("../"+panel.module+".jsx").then(lib => {
      var Elem = lib[panel.function];
-     this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />});
+     this.setState({navigation:<NavBar key='portal_navigation' />,content:<Elem key={panel.module + '_' + panel.function} {...panel.args} />});
     })
    } catch(err) {
     console.error("Mapper error: "+panel);
     alert(err);
    }
   } else
-   this.setState({navigation:<NavBar key='portal_navigation_empty' />,content:panel})
+   this.setState({navigation:<NavBar key='portal_navigation' />,content:panel})
  }
 
  render() {
   let buttons = []
   for (let [key, panel] of Object.entries(this.state.menu)){
    if (panel.type === 'module')
-    buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => this.changeContent(panel)} />)
+    buttons.push(<MenuButton key={key} title={key} onClick={() => this.changeContent(panel)} />)
    else if (panel.type === 'tab')
-    buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => window.open(panel.tab,'_blank')} />)
+    buttons.push(<MenuButton key={key} title={key} onClick={() => window.open(panel.tab,'_blank')} />)
    else if (panel.type === 'frame')
-    buttons.push(<MenuButton key={'hb_'+key} title={key} onClick={() => this.changeContent(<iframe className={uiStyles.frame} title={key} src={panel.frame} />)} />)
+    buttons.push(<MenuButton key={key} title={key} onClick={() => this.changeContent(<iframe className={uiStyles.frame} title={key} src={panel.frame} />)} />)
   }
   buttons.push(<MenuSeparator key='hs_1' />,
-   <MenuButton key='hb_user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.settings.id}})} />,
-   <MenuButton key='hb_system' title='System' onClick={() => this.changeContent({module:'system',function:'Main'})} />)
+   <MenuButton key='user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.settings.id}})} />,
+   <MenuButton key='system' title='System' onClick={() => this.changeContent({module:'system',function:'Main'})} />)
 
   return (
    <Fragment>

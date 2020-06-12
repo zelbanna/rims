@@ -90,10 +90,10 @@ class NetworkInfo extends Component {
       <TextInput key='mask' id='mask' value={this.state.data.mask} onChange={this.onChange} />
       <TextInput key='gateway' id='gateway' value={this.state.data.gateway} onChange={this.onChange} />
       <SelectInput key='server_id' id='server_id' label='Server' value={this.state.data.server_id} onChange={this.onChange}>
-       {this.state.servers.map((row,idx) => <option key={'ni_srv_'+idx} value={row.id}>{`${row.service}@${row.node}`}</option>)}
+       {this.state.servers.map((row,idx) => <option key={idx} value={row.id}>{`${row.service}@${row.node}`}</option>)}
       </SelectInput>
       <SelectInput key='reverse_zone_id' id='reverse_zone_id' label='Reverse Zone' value={this.state.data.reverse_zone_id} onChange={this.onChange}>
-       {this.state.domains.map((row,idx) => <option key={'ni_rzone_'+idx} value={row.id}>{`${row.server} (${row.name})`}</option>)}
+       {this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{`${row.server} (${row.name})`}</option>)}
       </SelectInput>
      </InfoColumns>
      <SaveButton key='network_btn_save' onClick={() => this.updateInfo()} title='Save' />
@@ -225,7 +225,7 @@ export class AddressInfo extends Component {
       <TextLine key='network' id='network' text={this.state.extra.network} />
       <TextInput key='ip' id='ip' label='IP'  value={this.state.data.ip} onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} title='Hostname when creating FQDN for DNS entry' />
-      <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_save' onClick={() => this.updateInfo()} title='Save' />
      <Result key='ip_operation' result={result} />
@@ -319,7 +319,7 @@ class ReservationNew extends Component {
       <option key='dhcp' value='dhcp'>dhcp</option>
       <option key='reservation' value='reservation'>reservation</option>
      </SelectInput>
-     <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={'ai_dom_'+idx} value={row.id}>{row.name}</option>)}</SelectInput>
+     <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
     </InfoColumns>
     {this.props.changeSelf && <BackButton key='dn_btn_back' onClick={() => this.props.changeSelf(<ReservationList key={'resv_list_' + network_id} network_id={network_id} changeSelf={this.props.changeSelf} />)} />}
     <SaveButton key='dn_btn_save' onClick={() => this.updateInfo()} title='Save' />

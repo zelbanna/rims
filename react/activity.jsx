@@ -107,8 +107,8 @@ class Info extends Component {
    return <InfoArticle key='ai_art' header='Activity'>
      <InfoColumns key='ai_content'>
       <TextLine key='ai_id' id='id' label='ID' text={this.state.data.id} />
-      <SelectInput key='ai_user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
-      <SelectInput key='ai_type_id' id='type_id' label='Type' value={this.state.data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={'ai_t_'+idx} value={row.id}>{row.type}</option>)}</SelectInput>
+      <SelectInput key='ai_user_id' id='user_id' label='User' value={this.state.data.user_id} onChange={this.onChange}>{this.state.users.map((row,idx) => <option key={idx} value={row.id}>{row.alias}</option>)}</SelectInput>
+      <SelectInput key='ai_type_id' id='type_id' label='Type' value={this.state.data.type_id} onChange={this.onChange}>{this.state.types.map((row,idx) => <option key={idx} value={row.id}>{row.type}</option>)}</SelectInput>
       <DateInput key='ai_date' id='date' value={this.state.data.date} onChange={this.onChange} />
       <TimeInput key='ai_time' id='time' value={this.state.data.time} onChange={this.onChange} />
      </InfoColumns>
@@ -176,7 +176,7 @@ class Daily extends Component {
   if (this.state.data)
    return <ContentReport key='ad_cr' header='Activities' thead={['Type','User','Event','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='ad_reload_btn' onClick={() => this.componentDidMount()} />
-    <SelectInput key='ad_user_id' id='user_id' label='User' value={this.state.user_id} onChange={this.onChange}>{Object.values(this.state.users).map((row,idx) => <option key={'ai_u_'+idx} value={row.id}>{row.alias}</option>)}</SelectInput>
+    <SelectInput key='ad_user_id' id='user_id' label='User' value={this.state.user_id} onChange={this.onChange}>{Object.values(this.state.users).map((row,idx) => <option key={idx} value={row.id}>{row.alias}</option>)}</SelectInput>
     <DateInput key='ad_date' id='date' value={this.state.date} onChange={this.onChange} />
    </ContentReport>
   else
@@ -261,7 +261,7 @@ class TypeInfo extends Component {
      <InfoColumns key='at_content'>
       <TextLine key='id' id='id' text={this.state.data.id} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
-      <SelectInput key='class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={'at_class_'+row} value={row}>{row}</option>)}</SelectInput>
+      <SelectInput key='class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='at_save' onClick={() => this.updateInfo()} title='Save' />
     </InfoArticle>
