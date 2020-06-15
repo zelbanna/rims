@@ -445,7 +445,7 @@ def address_events(aCTX, aArgs):
      fields.append('INET6_NTOA(ia.ip) AS ip')
     if 'ip_state' in aArgs['extra']:
      fields.append('ia.state AS ip_state')
-   ret['count'] = db.query("SELECT {} FROM {} WHERE {} ORDER BY DESC LIMIT {} OFFSET {}".format(", ".join(fields), " LEFT JOIN ".join(joins), filter, aArgs.get('limit','50'), aArgs.get('offset','0')))
+   ret['count'] = db.query("SELECT {} FROM {} WHERE {} ORDER BY ie.time DESC LIMIT {} OFFSET {}".format(", ".join(fields), " LEFT JOIN ".join(joins), filter, aArgs.get('limit','50'), aArgs.get('offset','0')),True)
    ret['events']= db.get_rows()
  return ret
 
