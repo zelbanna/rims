@@ -1,9 +1,9 @@
-import React, { memo } from 'react';
+import React from 'react';
 import styles from './button.module.css';
 
 // ************************** Link ****************************
 
-export const HrefButton = memo((props) => <button id={props.id} className={styles.href} style={props.style} onClick={props.onClick} title={props.title}>{props.text}</button>);
+export const HrefButton = (props) => <button id={props.id} className={styles.href} style={props.style} onClick={props.onClick} title={props.title}>{props.text}</button>
 export const HeaderButton = (props) => <button id={props.id} className={styles.href} style={(props.highlight) ? {color:'var(--high-color)'} : {}} onClick={props.onClick} title={props.title}>{props.text}</button>
 
 // *********************** Info Types *************************
@@ -15,14 +15,16 @@ export const BackButton = (props) => info_template('fas fa-arrow-left',props);
 export const CheckButton = (props) => info_template('fas fa-tasks',props);
 export const CloseButton = (props) => <button id={props.id} className={styles.info} style={{float:'right'}} onClick={props.onClick} title={props.title}><i className='fas fa-times-circle' /></button>
 export const ConfigureButton = (props) => info_template('fas fa-cog',props);
-export const DeleteButton = memo((props) => info_template('fas fa-trash-alt',props));
+export const DeleteButton = (props) => info_template('fas fa-trash-alt',props);
 export const DevicesButton = (props) => info_template('fas fa-network-wired',props);
 export const DocButton = (props) => info_template('fas fa-clipboard-list',props);
 export const EditButton = (props) => info_template('fas fa-edit',props);
 export const FixButton = (props) => info_template('fas fa-thumbtack',props);
 export const ForwardButton = (props) => info_template('fas fa-arrow-right',props);
 export const GoButton = (props) => info_template('fas fa-share-square',props);
-export const InfoButton = memo((props) => info_template('fas fa-info',props));
+// should really be 'monitor-heart-rate' but that's a pro version
+export const HealthButton = (props) => info_template('fas fa-file-medical-alt',props);
+export const InfoButton = (props) => info_template('fas fa-info',props);
 export const ItemsButton = (props) => info_template('fas fa-list-ul',props);
 export const LinkButton = (props) => info_template('fas fa-link',props);
 export const LogButton = (props) => info_template('fas fa-file-alt',props);

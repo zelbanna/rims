@@ -4,6 +4,7 @@ import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, DocButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
+import styles from './infra/ui.module.css';
 
 // *************** Main ***************
 //
@@ -255,6 +256,34 @@ class AddressLogs extends Component {
   return <ContentReport key={'alo_cr_'+this.props.id} header='State changes' thead={['Time','']} trows={this.state.events} listItem={this.listItem}>
    <DeleteButton key='alo_btn_clear' onClick={() => this.clearList()} title='clear logs' />
   </ContentReport>
+ }
+}
+
+// *************** Address Events ****************
+//
+export class AddressEvents extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+  this.canvas = React.createRef()
+  this.graph = null
+ }
+
+componentDidMount(){
+ import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => post_call('api/ipam/address_events',{id:this.props.id}).then(result => {
+   if (result.count > 0){
+    const events = result.events.map(({state, time}) => ({content:state, start:time, style:(state === 'up') ? 'background-color:#26CB20;' : 'background-color:#CB2026;', title:time}));
+    const dataset = new vis.DataSet(events);
+    this.graph = new vis.Timeline(this.canvas.current, dataset, { min:events[events.length - 1].start, align:'left', width:'100%', height:150, zoomMin:60000, zoomMax:1209600000});
+   } else
+    this.canvas.current.innerHTML = 'no events';
+  }))
+ }
+
+ render(){
+  return <Article key='ae_art' header='Events'>
+   <div className={styles.events} ref={this.canvas} />
+  </Article>
  }
 }
 

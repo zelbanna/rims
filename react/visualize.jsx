@@ -52,43 +52,6 @@ export class List extends Component {
  }
 }
 
-// ************** Show **************
-//
-export class Show extends Component {
-
- componentDidMount(){
-  var args = (this.props.hasOwnProperty('id')) ? {id:this.props.id}:{name:this.props.name};
-  import('vis-network/standalone/esm/vis-network').then(vis => {
-   post_call('api/visualize/show',args).then(result => {
-    var nodes = new vis.DataSet(result.data.nodes);
-    var edges = new vis.DataSet(result.data.edges);
-    var network = new vis.Network(this.refs.show_canvas, {nodes:nodes, edges:edges}, result.data.options);
-    network.on('stabilizationIterationsDone', () => network.setOptions({ physics: false }))
-    network.on('doubleClick', (params) => this.doubleClick(params))
-   })
-  })
- }
-
- doubleClick = (params) => {
-  console.log('DoubleClick',params.nodes);
-  if (params.nodes[0]){
-   post_call('api/device/management',{id:params.nodes[0]}).then(result => {
-    if (result && result.status === 'OK'){
-     if(result.data.url && result.data.url.length > 0)
-      window.open(result.data.url);
-     else
-      window.open('ssh://' + result.data.username + '@' + result.data.ip,'_self');
-    }else
-     console.log('Data not ok:' + result)
-   })
-  }
- }
-
- render(){
-  return <Article key='viz_show'><div className={styles.network} id='div_network' ref='show_canvas' /></Article>
- }
-}
-
 // ************** Edit **************
 //
 export class Edit extends Component {
@@ -96,7 +59,7 @@ export class Edit extends Component {
   super(props)
   this.state = {content:'network', physics_button:StartButton, found:true, data:{name:'N/A'}, result:''}
   this.viz = {network:null,nodes:null,edges:null}
-  this.results = React.createRef();
+  this.canvas = React.createRef()
   this.edit = false;
  }
 
@@ -106,7 +69,7 @@ export class Edit extends Component {
     this.viz.nodes = new vis.DataSet(result.data.nodes);
     this.viz.edges = new vis.DataSet(result.data.edges);
     result.data.options.physics.enabled = true;
-    this.viz.network = new vis.Network(this.refs.edit_canvas, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
+    this.viz.network = new vis.Network(this.canvas.current, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
     this.viz.network.on('stabilizationIterationsDone', () => this.viz.network.setOptions({ physics: false }))
     this.viz.network.on('doubleClick', (params) => this.doubleClick(params))
     this.viz.network.on('dragEnd', (params) => this.networkSync(params))
@@ -178,7 +141,7 @@ export class Edit extends Component {
     <TextButton key='viz_edges' text='Edges' onClick={() => this.setState({content:'edges'})} />
     <TextInput key='viz_name' id='name' value={this.state.data.name} onChange={this.onChange} />
     <Result key='viz_result' result={this.state.result} />
-    <div className={styles.network} style={this.showDiv('network')} ref='edit_canvas' />
+    <div className={styles.network} style={this.showDiv('network')} ref={this.canvas} />
     <div className={styles.network} style={this.showDiv('options')}><textarea id='options' name='options' value={JSON.stringify(this.state.data.options,undefined,2)} onChange={this.jsonHandler}/></div>
     <div className={styles.network} style={this.showDiv('nodes')}><textarea id='nodes' name='nodes' value={JSON.stringify(this.state.data.nodes,undefined,2)} onChange={this.jsonHandler} /></div>
     <div className={styles.network} style={this.showDiv('edges')}><textarea id='edges' name='edges' value={JSON.stringify(this.state.data.edges,undefined,2)} onChange={this.jsonHandler} /></div>

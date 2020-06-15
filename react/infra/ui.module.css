@@ -12,8 +12,10 @@
  .main {}
  .contentLeft { width:100%;}
  .contentRight { width:100%; }
- .info {width:calc(100% - 6px); overflow-x:scroll }
- .code {width:calc(100% - 6px); overflow-x:scroll }
+ .info { width:calc(100vw - 6px); overflow-x:scroll }
+ .code { width:calc(100vw - 6px); overflow-x:scroll }
+ .events { width:calc(100vw - 14px); height:120px; }
+ .network { width:calc(100vw - 14px); height:calc(100vw - 14px); }
 
 }
 
@@ -22,6 +24,8 @@
  .main { display:flex; height:calc(100vh - 7rem - 2px);}
  .contentLeft { min-width:max-content; width:25%; position:relative; top:0; bottom:0; }
  .contentRight { width:auto; }
+ .events { width:420px; height:120px; }
+ .network { width:600px; height:500px; resize:horizontal}
 }
 
 /******* Portal ******/
@@ -71,7 +75,6 @@
 .href { color:var(--std-txt-color); }
 .href:visited{ color:var(--std-txt-color); }
 
-.network { height:500px; width:600px; resize:horizontal}
 .network > textarea { height:500px; width:99%; font-size:1rem; }
 
 .spinOverlay { position: absolute; top:7rem; bottom:0; left:0; right:0; z-index:900; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.4); }

@@ -196,7 +196,7 @@ def info(aCTX, aArgs):
   ret['found'] = (db.query("SELECT * FROM devices WHERE id = %s"%id) == 1)
   if ret['found']:
    ret['data'] = db.get_row()
-   db.query("SELECT ia.state AS ip_state, di.state AS if_state, di.interface_id, dt.base AS type_base, dt.name as type_name, dt.functions, LPAD(hex(di.mac),12,0) AS interface_mac, INET6_NTOA(ia.ip) as interface_ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%id)
+   db.query("SELECT ia.state AS ip_state, ia.id AS ipam_id, di.state AS if_state, di.interface_id, dt.base AS type_base, dt.name as type_name, dt.functions, LPAD(hex(di.mac),12,0) AS interface_mac, INET6_NTOA(ia.ip) as interface_ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE devices.id = %s"%id)
    ret['extra'] = db.get_row()
    # Pick login name from netconf
    ret['extra']['username'] = aCTX.config['netconf']['username']

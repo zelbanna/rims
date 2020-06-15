@@ -3,7 +3,7 @@ import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport, MemoContentList } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as FdbList, Device as FdbDevice, Search as FdbSearch } from './fdb.jsx';
 
@@ -198,6 +198,7 @@ export class Info extends Component {
   post_call('api/device/info',{id:this.props.id, op:'lookup'}).then(result => this.setState({...result,content:null}))
  }
 
+ changeIpam = (id) => import('./ipam.jsx').then(lib => this.changeContent(<lib.AddressEvents key='address_eventes' id={id} changeSelf={this.changeContent} />))
  changeInterfaces = () => import('./interface.jsx').then(lib => this.changeContent(<lib.List key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />))
  changeVisualize = () => import('./visualize.jsx').then(lib => this.changeSelf(<lib.Edit key={'viz_id_' + this.props.id} type='device' changeSelf={this.changeSelf} id={this.props.id} />))
 
@@ -253,6 +254,7 @@ export class Info extends Component {
      {has_ip && <LogButton key='di_btn_logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title='Logs' />}
      {function_strings.includes('manage') && <GoButton key='d_btn_manage' onClick={() => this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{device_id:this.props.id, type:this.state.extra.type_name}})} title={'Manage ' + data.hostname} />}
      {has_ip && <TermButton key='di_btn_ssh' onClick={() => window.open(`ssh://${extra.username}@${extra.interface_ip}`,'_self')} title='SSH connection' />}
+     {has_ip && <HealthButton key='di_btn_health' onClick={() => this.changeIpam(this.state.extra.ipam_id)} title='IP health report' />}
      {rack && rack.console_url && <TermButton key='di_btn_console' onClick={() => window.open(rack.console_url,'_self')} title='Serial Connection' /> }
      {data.url && <UiButton key='di_btn_ui' onClick={() => window.open(data.url,'_blank')} title='Web UI' />}
      <Result key='dev_result' result={JSON.stringify(this.state.update)} />
