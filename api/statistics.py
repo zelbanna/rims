@@ -15,7 +15,7 @@ def query_interface(aCTX, aArgs):
  Output:
  """
  db = aCTX.config['influxdb']
- args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8, non_negative_derivative(mean(out8s), 1s)*8 FROM interface WHERE host_id = '%s' AND if_id = '%s' AND time >= now() - %sh GROUP BY time(1m) fill(null)"%(aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
+ args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)/256, non_negative_derivative(mean(out8s), 1s)/256 FROM interface WHERE host_id = '%s' AND if_id = '%s' AND time >= now() - %sh GROUP BY time(1m) fill(null)"%(aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
  try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
