@@ -48,7 +48,7 @@
 
 /****** Articles *****/
 
-.article { background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; float:left; white-space:pre; font-size:1rem;}
+.article { background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; float:left; white-space:pre; font-size:1rem; color:var(--std-txt-color);}
 .info {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; float:left; resize:horizontal; height:max-content;}
 .line {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; height:max-content; color:var(--std-txt-color); }
 .code {    background-color:var(--std-color); border-radius: 4px; margin: 3px; overflow:hidden; padding:4px; max-width:100%; float:left; width:calc(100% - 6px); resize:horizontal; white-space:pre; font-family:monospace; font-size:1rem; color:var(--std-txt-color);}
