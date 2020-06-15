@@ -69,6 +69,7 @@ export class Edit extends Component {
     this.viz.nodes = new vis.DataSet(result.data.nodes);
     this.viz.edges = new vis.DataSet(result.data.edges);
     result.data.options.physics.enabled = true;
+    result.data.options.clickToUse = true;
     this.viz.network = new vis.Network(this.canvas.current, {nodes:this.viz.nodes, edges:this.viz.edges}, result.data.options);
     this.viz.network.on('stabilizationIterationsDone', () => this.viz.network.setOptions({ physics: false }))
     this.viz.network.on('doubleClick', (params) => this.doubleClick(params))

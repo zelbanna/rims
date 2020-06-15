@@ -3,7 +3,7 @@ import React, { Fragment, Component } from 'react'
 import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, HealthButton, ItemsButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, HealthButton, ItemsButton, RevertButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
 import styles from './infra/ui.module.css';
 
 // *************** Main ***************
@@ -267,7 +267,7 @@ export class AddressEvents extends Component {
   super(props)
   this.state = {}
   this.canvas = React.createRef()
-  this.graph = null
+  this.timeline = null
  }
 
 componentDidMount(){
@@ -275,17 +275,23 @@ componentDidMount(){
    if (result.count > 0){
     const events = result.events.map(({state, time}) => ({content:state, start:time, style:(state === 'up') ? 'background-color:#26CB20;' : 'background-color:#CB2026;', title:time}));
     const dataset = new vis.DataSet(events);
-    this.graph = new vis.Timeline(this.canvas.current, dataset, { min:events[events.length - 1].start, align:'left', width:'100%', height:120, zoomMin:60000, zoomMax:1209600000});
+    this.timeline = new vis.Timeline(this.canvas.current, dataset, { min:events[events.length - 1].start, align:'left', width:'100%', height:150, zoomMin:60000, zoomMax:1209600000, clickToUse:true});
    } else
     this.canvas.current.innerHTML = 'no events';
   }))
  }
 
- clearList = () => post_call('api/ipam/address_events',{op:'clear', id:this.props.id}).then(result => { this.setState({graph:null}); this.canvas.current.innerHTML = 'no events';})
+ clearList = () => post_call('api/ipam/address_events',{op:'clear', id:this.props.id}).then(result => { this.setState({timeline:null}); this.canvas.current.innerHTML = 'no events';})
+
+ gotoNow = () => {
+  const today = new Date()
+  this.timeline.moveTo(today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate());
+ }
 
  render(){
   return <Article key='ae_art' header='Events'>
    <div className={styles.events} ref={this.canvas} />
+   <RevertButton key='ae_btn_reset' onClick={() => this.gotoNow()} title='Go to now' />
    <DeleteButton key='ae_btn_clear' onClick={() => this.clearList()} title='clear logs' />
   </Article>
  }
