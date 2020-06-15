@@ -1,4 +1,3 @@
-
 import React, { Fragment, Component } from 'react'
 import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
@@ -285,7 +284,7 @@ componentDidMount(){
 
  gotoNow = () => {
   const today = new Date()
-  this.timeline.moveTo(today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate());
+  this.timeline.moveTo(today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+' '+today.getHours()+':'+today.getMinutes());
  }
 
  render(){

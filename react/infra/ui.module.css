@@ -75,6 +75,8 @@
 .href { color:var(--std-txt-color); }
 .href:visited{ color:var(--std-txt-color); }
 
+.graphs { width:500px; height: 400px }
+
 .network > textarea { height:500px; width:99%; font-size:1rem; }
 
 .spinOverlay { position: absolute; top:7rem; bottom:0; left:0; right:0; z-index:900; display:flex; justify-content:center; align-items:center; background-color: rgba(0,0,0,0.4); }

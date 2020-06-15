@@ -4,6 +4,31 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
+def query_interface(aCTX, aArgs):
+ """ Function retrieves/queries database for interface_statistics
+
+ Args:
+  - device_id (required)
+  - interface_id (required)
+  - range (optional). hours, default: 1
+
+ Output:
+ """
+ db = aCTX.config['influxdb']
+ args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8, non_negative_derivative(mean(out8s), 1s)*8 FROM interface WHERE host_id = '%s' AND if_id = '%s' AND time >= now() - %sh GROUP BY time(1m) fill(null)"%(aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
+ try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
+ except Exception as e:
+  return {'status':'NOT_OK','info':str(e)}
+ else:
+  if 'series' in res:
+   ret = {'data':[{'time':x[0],'in8s':x[1],'out8s':x[2]} for x in res['series'][0]['values']]}
+  else:
+   ret = {'data':[]}
+  return ret
+
+################################## Device Data Points ###################################
+#
+#
 def list(aCTX, aArgs):
  """ Function provides stats for a device
 

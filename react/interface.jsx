@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react'
 import { post_call, rnd } from './infra/Functions.js';
-import { Spinner, StateLeds, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
+import { Spinner, StateLeds, Article, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, InfoButton, ItemsButton, LinkButton, ReloadButton, RemoveButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, HealthButton, InfoButton, ItemsButton, LinkButton, ReloadButton, RemoveButton, RevertButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
+import styles from './infra/ui.module.css';
 
 // *************** List ****************
 //
@@ -30,14 +31,15 @@ export class List extends Component{
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
    <Fragment>
     <StateLeds key={'il_if_state_' + row.interface_id} state={[row.if_state,row.ip_state]} />
-    <InfoButton key={'il_btn_info_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
+    <InfoButton key={'il_btn_info_' + row.interface_id} onClick={() => this.changeContent(<Info key={row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
+    {row.snmp_index && <HealthButton key={'il_btn_stats_' + row.interface_id} onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} />)} title='Interface stats' />}
     <DeleteButton key={'il_btn_del_' + row.interface_id} onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
-    {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key={'il_btn_sync_' + row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
+    {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key={row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
    </Fragment>]
 
  render(){
   if (this.state.data) {
-   return <ContentReport key='il_cl' header='Interfaces' thead={['ID','Name','MAC','IP Address','Description','Type','Link','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+   return <ContentReport key='il_cl' header='Interfaces' thead={['SNMP','Name','MAC','IP Address','Description','Type','Link','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='il_btn_reload' onClick={() => this.componentDidMount()} />
     <AddButton key='il_btn_add' onClick={() => this.changeContent(<Info key={'interface_info_' + rnd()} device_id={this.props.device_id} interface_id='new' changeSelf={this.props.changeSelf} />) } title='Add interface' />
     <TextButton key='il_btn_rset' onClick={() => this.resetStatus()} title='Reset interface state manually' text='Reset' />
@@ -151,6 +153,7 @@ export class Info extends Component {
     }
     return (<InfoArticle key='ii_article' header='Interface'>
      <InfoColumns key='ii_columns' columns={3}>
+      <TextLine key='ii_id' id='id' label='Local ID' text={this.state.data.interface_id} /><div />
       <TextInput key='ii_name' id='name' value={this.state.data.name} onChange={this.onChange} /><div />
       <SelectInput key='ii_class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput><div />
       <TextInput key='ii_description' id='description' value={this.state.data.description} onChange={this.onChange} /><div />
@@ -183,6 +186,44 @@ export class Info extends Component {
    }
   } else
    return <Spinner />
+ }
+}
+
+// *************** Statistics ****************
+//
+class Statistics extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+  this.canvas = React.createRef()
+  this.graph = null
+ }
+
+ componentDidMount(){
+  import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:10}).then(result => {
+   if (result.data.length > 0){
+    const data = result.data.flatMap(({time, in8s, out8s}) => [{x:new Date(time*1000), y:in8s, group:'in'},{x:new Date(time*1000), y:out8s, group:'out'}]);
+    const dataset = new vis.DataSet(data);
+    const groups = new vis.DataSet();
+    groups.add({id:'in',  content:'In (bps)',  options: { drawPoints: { style: 'circle' }, shaded: { orientation: 'bottom' }}});
+    groups.add({id:'out', content:'Out (bps)', options: { drawPoints: { style: 'circle' }}});
+    const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, legend:true };
+    this.graph = new vis.Graph2d(this.canvas.current, dataset, groups, options);
+   } else
+    this.canvas.current.innerHTML = 'no stats';
+  }))
+ }
+
+ gotoNow = () => {
+  const today = new Date()
+  this.graph.moveTo(today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+' '+today.getHours()+':'+today.getMinutes());
+ }
+
+ render(){
+  return <Article key='is_art' header='Statistics'>
+   <div className={styles.graphs} ref={this.canvas} />
+   <RevertButton key='ae_btn_reset' onClick={() => this.gotoNow()} title='Go to now' />
+  </Article>
  }
 }
 
