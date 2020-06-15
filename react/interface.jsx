@@ -205,7 +205,7 @@ class Statistics extends Component {
     const groups = new vis.DataSet([{id:'in',  content:'In', options: { shaded: { orientation: 'bottom' }}},{id:'out', content:'Out' }]);
     const data = result.data.flatMap(({time, in8s, out8s}) => [{x:new Date(time*1000), y:in8s, group:'in'},{x:new Date(time*1000), y:out8s, group:'out'}]);
     const dataset = new vis.DataSet(data);
-    const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{icons:true, left:{ title:{ text:'kbps' } } } };
+    const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ left:{ title:{ text:'kbps' } } } };
     this.graph = new vis.Graph2d(this.canvas.current, dataset, groups, options);
    } else
     this.canvas.current.innerHTML = 'no stats';

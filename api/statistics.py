@@ -5,17 +5,19 @@ __add_globals__ = lambda x: globals().update(x)
 #
 #
 def query_interface(aCTX, aArgs):
- """ Function retrieves/queries database for interface_statistics
+ """ Function retrieves/queries database for interface_statistics, formatted to Xbps
 
  Args:
   - device_id (required)
   - interface_id (required)
   - range (optional). hours, default: 1
+  - unit (optional). 'b','k','m', default: 'k' as kbps
 
  Output:
  """
  db = aCTX.config['influxdb']
- args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)/256, non_negative_derivative(mean(out8s), 1s)/256 FROM interface WHERE host_id = '%s' AND if_id = '%s' AND time >= now() - %sh GROUP BY time(1m) fill(null)"%(aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
+ unit = {'b':1,'k':1024,'m':1048576}.get(aArgs.get('unit','k'))
+ args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8/%s, non_negative_derivative(mean(out8s), 1s)*8/%s FROM interface WHERE host_id = '%s' AND if_id = '%s' AND time >= now() - %sh GROUP BY time(1m) fill(null)"%(unit,unit,aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
  try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
