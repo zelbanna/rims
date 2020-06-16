@@ -206,11 +206,11 @@ class Statistics extends Component {
    const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ left:{ title:{ text:'kbps' } } } };
    const groups = new vis.DataSet([{id:'in',  content:'In', options: { shaded: { orientation: 'bottom' }}},{id:'out', content:'Out' }]);
    this.graph = new vis.Graph2d(this.canvas.current, [], groups, options);
-   this.updateItems();
+   this.updateItems(this.state.range);
   })
  }
 
- updateItems = () => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:this.state.range}).then(result => {
+ updateItems = (range) => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:range}).then(result => {
   const data = result.data.flatMap(({time, in8s, out8s}) => [{x:new Date(time*1000), y:in8s, group:'in'},{x:new Date(time*1000), y:out8s, group:'out'}]);
   this.graph.setItems(data);
   this.graph.fit();
@@ -218,7 +218,7 @@ class Statistics extends Component {
 
  onChange = (e) => {
   this.setState({[e.target.name]:e.target.value})
-  this.updateItems();
+  this.updateItems(e.target.value);
  }
 
  gotoNow = () => {
