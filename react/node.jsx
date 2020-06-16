@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { post_call, rnd } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import {Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { TextInput, UrlInput } from './infra/Inputs.jsx';
@@ -18,7 +18,7 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.node,row.url,<>
-   <InfoButton key='info' onClick={() => this.changeContent(<Info key={'node_info_'+row.id} id={row.id} />)} title='Node information' />
+   <InfoButton key='info' onClick={() => this.changeContent(<Info key='node_info' id={row.id} />)} title='Node information' />
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete node' />
   </>]
 
@@ -27,11 +27,11 @@ export class List extends Component {
 
  render(){
   return <>
-   <ContentList key='node_cl' header='Nodes' thead={['Node','URL','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Nodes' thead={['Node','URL','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='add' onClick={() => this.changeContent(<Info key={'node_new_' + rnd()} id='new' />)} title='Add node' />
+    <AddButton key='add' onClick={() => this.changeContent(<Info key='node_info' id='new' />)} title='Add node' />
    </ContentList>
-   <ContentData key='node_cd'>{this.state.content}</ContentData>
+   <ContentData key='cd'>{this.state.content}</ContentData>
   </>
  }
 }
@@ -42,6 +42,11 @@ class Info extends Component {
  constructor(props){
   super(props);
   this.state = {data:null, found:true, content:null};
+ }
+
+ componentDidUpdate(prevProps){
+  if (prevProps !== this.props)
+   post_call('api/master/node_info',{id:this.props.id}).then(result => this.setState(result))
  }
 
  componentDidMount(){
@@ -58,12 +63,12 @@ class Info extends Component {
 
  render() {
   if (!this.state.found)
-   return <InfoArticle key='node_art'>Node with id: {this.props.id} removed</InfoArticle>
+   return <InfoArticle key='ia_node'>Node with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data) {
    const old = (this.state.data.id !== 'new');
    return <>
-    <InfoArticle key='node_art' header='Node'>
-     <InfoColumns key='node_content'>
+    <InfoArticle key='ia_node' header='Node'>
+     <InfoColumns key='ic'>
       <TextInput key='node' id='node' value={this.state.data.node} onChange={this.onChange} />
       <UrlInput key='url' id='url' value={this.state.data.url}  onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />

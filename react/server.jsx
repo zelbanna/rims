@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { post_call, rnd } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
@@ -23,7 +23,7 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.node,row.service,row.type,<>
-   <InfoButton key='info' onClick={() => this.changeContent(<Info key={'server_info_'+row.id} id={row.id} />)} title='Service information' />
+   <InfoButton key='info' onClick={() => this.changeContent(<Info key='server_info' id={row.id} />)} title='Service information' />
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete service' />
    {row.hasOwnProperty('ui') && row.ui.length > 0 && <UiButton key='ui' onClick={() =>  window.open(row.ui,'_blank')} title='Server UI' />}
   </>]
@@ -35,7 +35,7 @@ export class List extends Component {
   return <>
    <ContentList key='sl_cl' header='Servers' thead={['Node','Service','Type','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
-    <AddButton key='add' onClick={() => this.changeContent(<Info key={'sl_new_' + rnd()} id='new' type={this.props.type} />)} title='Add service' />
+    <AddButton key='add' onClick={() => this.changeContent(<Info key='server_info' id='new' type={this.props.type} />)} title='Add service' />
    </ContentList>
    <ContentData key='sl_cd'>{this.state.content}</ContentData>
   </>
@@ -48,6 +48,12 @@ class Info extends Component {
  constructor(props){
   super(props);
   this.state = {data:null, found:true, content:null};
+ }
+
+
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.componentDidMount()
  }
 
  componentDidMount(){
@@ -72,8 +78,8 @@ class Info extends Component {
   else if (this.state.data){
    const old = (this.state.data.id !== 'new');
    return <>
-    <InfoArticle key='si_art' header='Server'>
-     <InfoColumns key='si_content'>
+    <InfoArticle key='ia' header='Server'>
+     <InfoColumns key='ic'>
       <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
       <SelectInput key='node' id='node' value={this.state.data.node} onChange={this.onChange}>{this.state.nodes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
       <SelectInput key='type_id' id='type_id' label='Service' value={this.state.data.type_id} onChange={this.onChange}>{this.state.services.map(row => <option key={row.id} value={row.id}>{`${row.service} (${row.type})`}</option>)}</SelectInput>

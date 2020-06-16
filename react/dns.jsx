@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { post_call, rnd,  } from './infra/Functions.js';
+import { post_call, rnd } from './infra/Functions.js';
 import { Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HealthButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
@@ -41,7 +41,7 @@ export class DomainList extends Component {
  }
 
  listItem = (row) => [row.id,row.name,row.service,<>
-   <ConfigureButton key='info' onClick={() => this.changeContent(<DomainInfo key={'domain_'+row.id} id={row.id} />) } title='Edit domain information' />
+   <ConfigureButton key='info' onClick={() => this.changeContent(<DomainInfo key='domain_info' id={row.id} />) } title='Edit domain information' />
    <ItemsButton key='items' onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } title='View domain records' />
    <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete domain' />
   </>]
@@ -53,7 +53,7 @@ export class DomainList extends Component {
   return <>
    <ContentList key='cl' header='Domains' thead={['ID','Domain','Server','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='add' onClick={() => this.changeContent(<DomainInfo key={'domain_new_' + rnd()} id='new' />) } title='Add domain' />
+    <AddButton key='add' onClick={() => this.changeContent(<DomainInfo key='domain_info' id='new' />) } title='Add domain' />
     <SyncButton key='sync' onClick={() => this.syncDomains()} title='Sync external DNS servers with cache' />
     <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key='recursor_statistics' />)} title='View DNS statistics' />
    </ContentList>
@@ -76,6 +76,11 @@ class DomainInfo extends Component {
 
  updateInfo = () =>  post_call('api/dns/domain_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.componentDidMount()
+ }
+
  componentDidMount(){
   post_call('api/dns/domain_info',{id:this.props.id}).then(result => this.setState(result))
  }
@@ -83,8 +88,8 @@ class DomainInfo extends Component {
  render() {
   if (this.state.data) {
    const old = (this.state.data.id !== 'new');
-   return <InfoArticle key='dom_art' header='Domain'>
-     <InfoColumns key='domain_content'>
+   return <InfoArticle key='ia_dom' header='Domain'>
+     <InfoColumns key='ic'>
       {old && <TextLine key='node' id='node' text={this.state.infra.node} />}
       {old && <TextLine key='service' id='service' text={this.state.infra.service} />}
       {old && <TextLine key='foreign_id' id='foreign_id' label='Foreign ID' text={this.state.infra.foreign_id} />}
@@ -94,7 +99,7 @@ class DomainInfo extends Component {
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} />
       <TextLine  key='serial' id='serial' text={this.state.data.serial} />
      </InfoColumns>
-     <SaveButton key='domain_save' onClick={() => this.updateInfo()} title='Save domain information' />
+     <SaveButton key='save' onClick={() => this.updateInfo()} title='Save domain information' />
     </InfoArticle>
   } else
    return <Spinner />

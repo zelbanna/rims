@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { post_call, rnd } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Result, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextLine, TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HrefButton, InfoButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
@@ -54,8 +54,8 @@ class List extends Component {
   post_call('api/master/activity_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'info_'+row.id} onClick={() => this.changeContent(<Info key={'activity_info_'+row.id} id={row.id} />)} text={row.type} />,<>
-   <InfoButton key='info' onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } title='Activity information' />
+ listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'info_'+row.id} onClick={() => this.changeContent(<Info key='activity' id={row.id} />)} text={row.type} />,<>
+   <InfoButton key='info' onClick={() => this.changeContent(<Info key='activity_info' id={row.id} />) } title='Activity information' />
    <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete activity' />
   </>]
 
@@ -69,7 +69,7 @@ class List extends Component {
    return <>
     <ContentList key='cl' header='Activities' thead={['Date','Type','']} trows={act_list} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
-     <AddButton key='add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
+     <AddButton key='add' onClick={() => this.changeContent(<Info key='activity_info' id='new' />) } title='Add activity' />
      <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search activities' />
     </ContentList>
     <ContentData key='cd'>{this.state.content}</ContentData>
@@ -91,6 +91,15 @@ class Info extends Component {
 
  updateInfo = () => {
   post_call('api/master/activity_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ }
+
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   post_call('api/master/activity_info',{id:this.props.id}).then(result => {
+    if (result.data.user_id === null)
+     result.data.user_id = this.context.settings.id;
+    this.setState(result);
+   })
  }
 
  componentDidMount(){
@@ -214,7 +223,7 @@ class TypeList extends Component {
  }
 
  listItem = (row) => [row.id,row.type,row.class,<>
-   <ConfigureButton key='info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } title='Edit type information' />
+   <ConfigureButton key='info' onClick={() => this.changeContent(<TypeInfo key='act_tp' id={row.id} />) } title='Edit type information' />
    <DeleteButton key='delete' onClick={() => this.deleteList(row.id) } title='Delete type' />
   </>]
 
@@ -225,7 +234,7 @@ class TypeList extends Component {
   return <>
    <ContentList key='cl' header='Activity Types' thead={['ID','Type','Class','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='add' onClick={() => this.changeContent(<TypeInfo key={'act_tp_new_' + rnd()} id='new' />) } title='Add activity type' />
+    <AddButton key='add' onClick={() => this.changeContent(<TypeInfo key='act_tp' id='new' />) } title='Add activity type' />
    </ContentList>
    <ContentData key='cd'>{this.state.content}</ContentData>
   </>
@@ -246,6 +255,11 @@ class TypeInfo extends Component {
 
  updateInfo = () =>  post_call('api/master/activity_type_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   post_call('api/master/activity_type_info',{id:this.props.id}).then(result => this.setState(result))
+ }
+
  componentDidMount(){
   post_call('api/master/activity_type_info',{id:this.props.id}).then(result => this.setState(result))
  }
@@ -253,13 +267,13 @@ class TypeInfo extends Component {
  render() {
   if (this.state.data)
    return (
-    <InfoArticle key='at_art' header='Activity Type'>
-     <InfoColumns key='at_content'>
+    <InfoArticle key='ia_at' header='Activity Type'>
+     <InfoColumns key='ic'>
       <TextLine key='id' id='id' text={this.state.data.id} />
       <TextInput key='type' id='type' value={this.state.data.type} onChange={this.onChange} placeholder='name' />
       <SelectInput key='class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
      </InfoColumns>
-     <SaveButton key='at_save' onClick={() => this.updateInfo()} title='Save' />
+     <SaveButton key='save' onClick={() => this.updateInfo()} title='Save' />
     </InfoArticle>
    )
   else

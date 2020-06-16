@@ -16,9 +16,9 @@ def domain_list(aCTX, aArgs):
   - data. List of domains
   - endpoint
  """
- ret = {}
+ ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count']   = db.query("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns'"%aCTX.node)
+  ret['count'] = db.query("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns'"%aCTX.node)
   ret['data'] = db.get_rows()
   ret['endpoint'] = aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')
  return ret

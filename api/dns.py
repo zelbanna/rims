@@ -229,10 +229,20 @@ def sync_nameserver(aCTX, aArgs):
 
  Output:
  """
- ret = {'added':[],'removed':[],'fixed':0,'status':'OK'}
+ ret = {'added':[],'removed':[],'fixed':0,'errors':[]}
  org = {}
  for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']:
-  org[infra['id']] = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
+  res = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
+  if res['status'] == 'OK':
+   org[infra['id']] = res
+  else:
+   ret['errors'].append(("%s@%s"%(infra['node'],infra['service']),res['info']))
+ if ret['errors']:
+  ret['status'] = 'NOT_OK'
+  return ret
+ else:
+  ret['status'] = 'OK'
+
  with aCTX.db as db:
   db.query("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
   cache = db.get_dict('srv_id')
@@ -260,7 +270,7 @@ def sync_recursor(aCTX, aArgs):
 
  Output:
  """
- ret = {'added':[],'removed':[],'errors':[],'status':'OK'}
+ ret = {'added':[],'removed':[],'errors':[]}
  # INTERNAL from rims.api.dns import domain_forwarders
  domains = domain_forwarders(aCTX,{})['data']
  for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
