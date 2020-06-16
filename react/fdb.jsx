@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { Spinner, LineArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SearchInput, SelectInput } from './infra/Inputs.jsx';
@@ -88,19 +88,22 @@ export class List extends Component {
 
  changeVisualize = (device_id) => ('changeSelf' in this.props && import('./visualize.jsx').then(lib => this.setState({content:<lib.Edit key={'viz_id_' + device_id} type='device' changeSelf={this.props.changeSelf} id={device_id} />})));
 
- listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'fd_intf_'+idx} text={row.mac} onClick={() => this.setState({searchfield:row.mac})} />,<Fragment><InfoButton key={'fd_intf_'+idx}  onClick={() => this.changeSearch(row.mac,idx)} title='Find interface(s)' /><NetworkButton key={'fd_map_'+idx} onClick={() => this.changeVisualize(row.device_id)} /></Fragment>]
+ listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'intf_'+idx} text={row.mac} onClick={() => this.setState({searchfield:row.mac})} />,<>
+   <InfoButton key='info' onClick={() => this.changeSearch(row.mac,idx)} title='Find interface(s)' />
+   <NetworkButton key='map' onClick={() => this.changeVisualize(row.device_id)} />
+  </>]
 
  render(){
   if (this.state.data){
    const search = this.state.searchfield.toUpperCase();
    const data = (search.length === 0) ? this.state.data : this.state.data.filter(row => row.mac.includes(search))
-   return <Fragment>
-    <ContentList key='fl_cr' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC','']} trows={data} listItem={this.listItem}>
-     <ReloadButton key='fl_btn_reload' onClick={() => this.componentDidMount()} />
-     <SearchInput key='fl_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' text={this.state.searchfield} />
+   return <>
+    <ContentList key='cl' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC','']} trows={data} listItem={this.listItem}>
+     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
+     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' text={this.state.searchfield} />
     </ContentList>
-    <ContentData key='fl_content'>{this.state.content}</ContentData>
-   </Fragment>
+    <ContentData key='cd'>{this.state.content}</ContentData>
+   </>
   } else
    return <Spinner />
  }

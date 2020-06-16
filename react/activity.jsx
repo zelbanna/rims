@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Result, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextLine, TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
@@ -36,7 +36,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment>{this.state}</Fragment>
+  return <>{this.state}</>
  }
 
 }
@@ -54,11 +54,10 @@ class List extends Component {
   post_call('api/master/activity_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'al_btn_hinfo_'+row.id} onClick={() => this.changeContent(<Info key={'activity_info_'+row.id} id={row.id} />)} text={row.type} />,<Fragment>
-   <InfoButton key={'al_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } title='Activity information' />
-   <DeleteButton key={'al_btn_delete_'+row.id} onClick={() => this.deleteList(row.id) } title='Delete activity' />
-   </Fragment>
-  ]
+ listItem = (row) => [row.date + ' - ' + row.time,<HrefButton key={'info_'+row.id} onClick={() => this.changeContent(<Info key={'activity_info_'+row.id} id={row.id} />)} text={row.type} />,<>
+   <InfoButton key='info' onClick={() => this.changeContent(<Info key={'activity_'+row.id} id={row.id} />) } title='Activity information' />
+   <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete activity' />
+  </>]
 
  changeContent = (elem) => this.setState({content:elem})
 
@@ -67,14 +66,14 @@ class List extends Component {
  render(){
   if (this.state.data) {
    let act_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => row.type.includes(this.state.searchfield));
-   return <Fragment>
-    <ContentList key='al_cl' header='Activities' thead={['Date','Type','']} trows={act_list} listItem={this.listItem}>
-     <ReloadButton key='al_btn_reload' onClick={() => this.componentDidMount() } />
-     <AddButton key='al_btn_add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
-     <SearchInput key='al_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search activities' />
+   return <>
+    <ContentList key='cl' header='Activities' thead={['Date','Type','']} trows={act_list} listItem={this.listItem}>
+     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
+     <AddButton key='add' onClick={() => this.changeContent(<Info key={'activity_new_' + rnd()} id='new' />) } title='Add activity' />
+     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search activities' />
     </ContentList>
-    <ContentData key='al_cd'>{this.state.content}</ContentData>
-   </Fragment>
+    <ContentData key='cd'>{this.state.content}</ContentData>
+   </>
   } else
    return <Spinner />
  }
@@ -163,21 +162,19 @@ class Daily extends Component {
    }
   })
 
- listItem = (row) => {
-  return [row.type, (row.user_id) ? this.state.users[row.user_id].alias : '-', (row.event) ? row.event : '-',<Fragment>
-  {!row.user_id && <AddButton key={'ad_add_'+row.id} onClick={() => this.syncEvent(row.id,row.act_id)} />}
-  {row.user_id && row.user_id !== parseInt(this.state.user_id) && <SyncButton key={'ad_sync_'+row.id} onClick={() => this.syncEvent(row.id,row.act_id)} />}
-  {row.act_id && <InfoButton key={'ad_info'} onClick={() => this.changeContent(<Info key={'activity_'+row.act_id} id={row.act_id} />)} />}
-  {row.act_id && <DeleteButton key={'ad_del'} onClick={() => this.deleteList(row.act_id)} />}
-  </Fragment>]
- }
+ listItem = (row) => [row.type, (row.user_id) ? this.state.users[row.user_id].alias : '-', (row.event) ? row.event : '-',<>
+   {!row.user_id && <AddButton key='add' onClick={() => this.syncEvent(row.id,row.act_id)} />}
+   {row.user_id && row.user_id !== parseInt(this.state.user_id) && <SyncButton key='sync' onClick={() => this.syncEvent(row.id,row.act_id)} />}
+   {row.act_id && <InfoButton key='info' onClick={() => this.changeContent(<Info key={'activity_'+row.act_id} id={row.act_id} />)} />}
+   {row.act_id && <DeleteButton key='del' onClick={() => this.deleteList(row.act_id)} />}
+  </>]
 
  render(){
   if (this.state.data)
-   return <ContentReport key='ad_cr' header='Activities' thead={['Type','User','Event','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='ad_reload_btn' onClick={() => this.componentDidMount()} />
-    <SelectInput key='ad_user_id' id='user_id' label='User' value={this.state.user_id} onChange={this.onChange}>{Object.values(this.state.users).map((row,idx) => <option key={idx} value={row.id}>{row.alias}</option>)}</SelectInput>
-    <DateInput key='ad_date' id='date' value={this.state.date} onChange={this.onChange} />
+   return <ContentReport key='cr' header='Activities' thead={['Type','User','Event','']} trows={this.state.data} listItem={this.listItem}>
+    <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
+    <SelectInput key='user_id' id='user_id' label='User' value={this.state.user_id} onChange={this.onChange}>{Object.values(this.state.users).map((row,idx) => <option key={idx} value={row.id}>{row.alias}</option>)}</SelectInput>
+    <DateInput key='date' id='date' value={this.state.date} onChange={this.onChange} />
    </ContentReport>
   else
    return <Spinner />
@@ -216,23 +213,22 @@ class TypeList extends Component {
   post_call('api/master/activity_type_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.type,row.class,<Fragment>
-   <ConfigureButton key='act_tp_info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } title='Edit type information' />
-   <DeleteButton key='act_tp_delete' onClick={() => this.deleteList(row.id) } title='Delete type' />
-  </Fragment>
- ]
+ listItem = (row) => [row.id,row.type,row.class,<>
+   <ConfigureButton key='info' onClick={() => this.changeContent(<TypeInfo key={'activity_type_'+row.id} id={row.id} />) } title='Edit type information' />
+   <DeleteButton key='delete' onClick={() => this.deleteList(row.id) } title='Delete type' />
+  </>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete type?') && post_call('api/master/activity_type_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment>
-   <ContentList key='act_tp_cl' header='Activity Types' thead={['ID','Type','Class','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='act_tp_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='act_tp_btn_add' onClick={() => this.changeContent(<TypeInfo key={'act_tp_new_' + rnd()} id='new' />) } title='Add activity type' />
+  return <>
+   <ContentList key='cl' header='Activity Types' thead={['ID','Type','Class','']} trows={this.state.data} listItem={this.listItem}>
+    <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='add' onClick={() => this.changeContent(<TypeInfo key={'act_tp_new_' + rnd()} id='new' />) } title='Add activity type' />
    </ContentList>
-   <ContentData key='act_tp_cd'>{this.state.content}</ContentData>
-  </Fragment>
+   <ContentData key='cd'>{this.state.content}</ContentData>
+  </>
  }
 }
 

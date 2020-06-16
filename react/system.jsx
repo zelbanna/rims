@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Title, Spinner, Article, CodeArticle, LineArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
 import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
@@ -62,7 +62,7 @@ export class Main extends Component {
  }
 
  render(){
-  return <Fragment>{this.state.content}</Fragment>
+  return <>{this.state.content}</>
  }
 }
 Main.contextType = RimsContext;
@@ -108,10 +108,10 @@ class RestList extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='rest_tp_cl' header='REST API' thead={['API','Function']} trows={this.state.data} listItem={this.listItem} />
    <ContentData key='rest_tp_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 
@@ -178,10 +178,10 @@ class Controls extends Component {
  listItem = (row) => [<HrefButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='ctl_cl' header='' thead={['API']} trows={this.state.data} listItem={this.listItem} />
    <ContentData key='ctl_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 
@@ -224,7 +224,7 @@ export class FileList extends Component {
   if (this.state.mode === 'images')
    return (row.substr(row.length - 4) === '.png') ? [row,<img src={this.state.path +'/'+row} alt={this.state.path +'/'+row} />] : []
   else
-   return [<Fragment>{this.state.path + '/'}<a className={styles.href} href={this.state.path + '/' + row} target='_blank' rel='noopener noreferrer'>{row}</a></Fragment>]
+   return [<>{this.state.path + '/'}<a className={styles.href} href={this.state.path + '/' + row} target='_blank' rel='noopener noreferrer'>{row}</a></>]
  }
 
  render() {

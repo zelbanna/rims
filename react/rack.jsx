@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput, SelectInput } from './infra/Inputs.jsx';
@@ -38,7 +38,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment>{this.state}</Fragment>
+  return  <>{this.state}</>
  }
 }
 Main.contextType = RimsContext;
@@ -55,24 +55,24 @@ export class List extends Component {
   post_call('api/rack/list',{sort:'name'}).then(result => this.setState(result))
  }
 
- listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<Fragment>
-   <InfoButton key={'rl_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} title='Rack information' />
-   <GoButton key={'rl_btn_go_'+row.id} onClick={() => this.context.changeMain(<DeviceMain key={'rack_device_'+row.id} rack_id={row.id} />)} title='Rack inventory' />
-   <ItemsButton key={'rl_btn_list_'+row.id} onClick={() => this.changeContent(<Layout key={'rack_layout_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title='Rack layout'/>
-   <DeleteButton key={'rl_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete rack' />
-  </Fragment>]
+ listItem = (row) => [<HrefButton key={'rl_btn_loc_'+row.id} text={row.location} onClick={() => this.changeContent(<LocationInfo key={'li_'+row.location_id} id={row.location_id} />)} />,row.name,<>
+   <InfoButton key='info' onClick={() => this.changeContent(<Info key={'rack_info_'+row.id} id={row.id} />)} title='Rack information' />
+   <GoButton key='go' onClick={() => this.context.changeMain(<DeviceMain key={'rack_device_'+row.id} rack_id={row.id} />)} title='Rack inventory' />
+   <ItemsButton key='items' onClick={() => this.changeContent(<Layout key={'rack_layout_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title='Rack layout'/>
+   <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete rack' />
+  </>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete rack?') && post_call('api/rack/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='rack_cl' header='Racks' thead={['Location','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='rl_btn_reload' onClick={() => this.componentDidMount()} />
-    <AddButton key='rl_btn_add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />)} title='Add rack' />
+    <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
+    <AddButton key='add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />)} title='Add rack' />
    </ContentList>
    <ContentData key='rack_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 List.contextType = RimsContext;
@@ -131,21 +131,21 @@ export class Layout extends Component {
  createRack(id,content,sign){
   const rack = [];
   for (let i = 1; i < this.state.size+1; i++)
-   rack.push(<div key={id+'_left_'+i} className={styles.rackLeft} style={{gridRow:-i}}>{i}</div>,<div key={id+'_right_'+i} className={styles.rackRight} style={{gridRow:-i}}>{i}</div>)
-  content.forEach(dev => rack.push(<div key={'rd_' + dev.id} className={styles.rackItem} style={{gridRowStart:this.state.size+2-sign*dev.rack_unit, gridRowEnd:this.state.size+2-(sign*dev.rack_unit+dev.rack_size)}}><HrefButton key={'rd_btn_'+dev.id} style={{color:'var(--ui-txt-color)'}} onClick={() => this.changeContent(<DeviceInfo key='device_info' id={dev.id} />)} text={dev.hostname} /></div>))
+   rack.push(<div key={'left_'+i} className={styles.rackLeft} style={{gridRow:-i}}>{i}</div>,<div key={'right_'+i} className={styles.rackRight} style={{gridRow:-i}}>{i}</div>)
+  content.forEach(dev => rack.push(<div key={'dev_' + dev.id} className={styles.rackItem} style={{gridRowStart:this.state.size+2-sign*dev.rack_unit, gridRowEnd:this.state.size+2-(sign*dev.rack_unit+dev.rack_size)}}><HrefButton key={'rd_btn_'+dev.id} style={{color:'var(--ui-txt-color)'}} onClick={() => this.changeContent(<DeviceInfo key='device_info' id={dev.id} />)} text={dev.hostname} /></div>))
   return <div className={styles.rack} style={{grid:`repeat(${this.state.size-1}, 2vw)/2vw 25vw 2vw`}}>{rack}</div>
  }
 
  render(){
   if (this.state.size) {
-   return <Fragment>
+   return <>
     <InfoArticle key='rl_front' header='Front'>
      {this.createRack('front',this.state.front,1)}
     </InfoArticle>
     <InfoArticle key='rl_back' header='Back'>
      {this.createRack('back',this.state.back,-1)}
     </InfoArticle>
-   </Fragment>
+   </>
   } else
    return <Spinner />
  }
@@ -168,12 +168,12 @@ export class Infra extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='rinfra_cl' header={this.props.type} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='rinfra_btn_reload' onClick={() => this.componentDidMount()} />
+    <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
    </ContentList>
    <ContentData key='rinfra_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 Infra.contextType = RimsContext;

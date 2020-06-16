@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, Result } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
@@ -16,22 +16,22 @@ export class List extends Component {
   post_call('api/master/user_list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.alias,row.name,<Fragment>
-   <ConfigureButton key={'ul_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)} title='Edit user' />
-   <DeleteButton key={'ul_btn_del_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete user' />
-  </Fragment>]
+ listItem = (row) => [row.id,row.alias,row.name,<>
+   <ConfigureButton key='config' onClick={() => this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)} title='Edit user' />
+   <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete user' />
+  </>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete user?') && post_call('api/master/user_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='ul_cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='ul_btn_reload' onClick={() => this.componentDidMount()} />
-    <AddButton key='ul_btn_add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />)} title='Add user' />
+    <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
+    <AddButton key='add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />)} title='Add user' />
    </ContentList>
    <ContentData key='ul_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 

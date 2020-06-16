@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Result, Spinner, StateLeds, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
@@ -21,22 +21,22 @@ export class Main extends Component {
 
  listItem = (row) => {
   const up =  (row.ip_state === 'up');
-  return [row.hostname,row.type_name,<Fragment>
-   <StateLeds state={row.ip_state} />
-   {up && row.type_functions === 'manage' && <InfoButton key={'hyp_btn_info_'+row.id} onClick={() => this.context.changeMain(<Manage key={'hypervisor_manage_'+row.id} device_id={row.id} type={row.type_name} />)} />}
-   {up && row.url && row.url.length > 0 && <UiButton key={'hyp_ btn_ui_'+row.id} onClick={() => window.open(row.url,'_blank') } />}
-   </Fragment>]
+  return [row.hostname,row.type_name,<>
+   <StateLeds key='state' state={row.ip_state} />
+   {up && row.type_functions === 'manage' && <InfoButton key='info' onClick={() => this.context.changeMain(<Manage key={'hypervisor_manage_'+row.id} device_id={row.id} type={row.type_name} />)} />}
+   {up && row.url && row.url.length > 0 && <UiButton key='ui' onClick={() => window.open(row.url,'_blank') } />}
+   </>]
  }
 
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','']} trows={this.state.data} listItem={this.listItem}>
-    <SyncButton key='hyp_btn_sync' onClick={() => this.changeContent(<Sync />) } />
+    <SyncButton key='sync' onClick={() => this.changeContent(<Sync />) } />
    </ContentList>
    <ContentData key='hyp_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 Main.contextType = RimsContext;
@@ -90,7 +90,7 @@ export class Manage extends Component {
  changeContent = (elem) => this.setState({content:elem})
 
  render(){
-  return  <Fragment>{this.state.content}</Fragment>
+  return <>{this.state.content}</>
  }
 }
 Manage.contextType = RimsContext;
@@ -121,14 +121,14 @@ export class Inventory extends Component{
 
  render(){
   if (this.state.data){
-   const thead = [<HeaderButton key='hl_btn_id' text='ID' highlight={(this.state.sort === 'id')} onClick={() => this.sortList('id')} />,<HeaderButton key='hl_btn_vm' text='VM' highlight={(this.state.sort === 'name')} onClick={() => this.sortList('name')} />,'Operations'];
-   return <Fragment>
+   const thead = [<HeaderButton key='id' text='ID' highlight={(this.state.sort === 'id')} onClick={() => this.sortList('id')} />,<HeaderButton key='vm' text='VM' highlight={(this.state.sort === 'name')} onClick={() => this.sortList('name')} />,'Operations'];
+   return <>
     <ContentList key='hl_cl' header='Inventory' thead={thead} trows={this.state.data} listItem={this.listItem}>
-     <ReloadButton key='hl_btn_reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
-     <LogButton key='hl_btn_logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
+     <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
+     <LogButton key='logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
     </ContentList>
     <ContentData key='hl_cd'>{this.state.content}</ContentData>
-   </Fragment>
+   </>
   } else
    return <Spinner />
  }
@@ -155,17 +155,17 @@ class Operation extends Component{
  render(){
    const on = (this.state.state === 'on');
    const off = (this.state.state === 'off');
-   return <Fragment>
-    <InfoButton key={'hyp_btn_info_'+this.props.vm_id} onClick={() => this.props.changeContent(<Info key={'hypervisor_info_'+this.props.vm_id} device_id={this.props.device_id} vm_id={this.props.vm_id} type={this.props.type} changeSelf={this.props.changeContent} />)} title='VM info' />
-    {(off || this.state.state === 'suspended')  && <StartButton key={'hyp_btn_start_'+this.props.vm_id} onClick={() => this.operation('on')} title={this.state.status} />}
-    {on && <StopButton key={'hyp_btn_stop_'+this.props.vm_id} onClick={() => this.operation('shutdown')} title={this.state.status} />}
-    {on && <ReloadButton key={'hyp_btn_reload_'+this.props.vm_id} onClick={() => this.operation('reboot')} title={this.state.status} />}
-    {on && <PauseButton key={'hyp_btn_suspend_'+this.props.vm_id} onClick={() => this.operation('suspend')} title={this.state.status} />}
-    {(on || this.state.state === 'suspended') && <ShutdownButton key={'hyp_btn_shutdown_'+this.props.vm_id} onClick={() => this.operation('off')} title={this.state.status} />}
-    {off && <SnapshotButton key={'hyp_btn_snapshot_'+this.props.vm_id} onClick={() => this.snapshot('create')} title='Take snapshot' />}
-    {off && <ItemsButton key={'hyp_btn_snapshots_'+this.props.vm_id} onClick={() => this.props.changeContent(<Snapshots key={'hypervisor_snapshots_'+this.props.vm_id} device_id={this.props.device_id} vm_id={this.props.vm_id} type={this.props.type} />)} title='Snapshot info' />}
+   return <>
+    <InfoButton key='info' onClick={() => this.props.changeContent(<Info key={'hypervisor_info_'+this.props.vm_id} device_id={this.props.device_id} vm_id={this.props.vm_id} type={this.props.type} changeSelf={this.props.changeContent} />)} title='VM info' />
+    {(off || this.state.state === 'suspended')  && <StartButton key='start' onClick={() => this.operation('on')} title={this.state.status} />}
+    {on && <StopButton key='stop' onClick={() => this.operation('shutdown')} title={this.state.status} />}
+    {on && <ReloadButton key='reload' onClick={() => this.operation('reboot')} title={this.state.status} />}
+    {on && <PauseButton key='suspend' onClick={() => this.operation('suspend')} title={this.state.status} />}
+    {(on || this.state.state === 'suspended') && <ShutdownButton key='shutdown' onClick={() => this.operation('off')} title={this.state.status} />}
+    {off && <SnapshotButton key='snapshot' onClick={() => this.snapshot('create')} title='Take snapshot' />}
+    {off && <ItemsButton key='snapshots' onClick={() => this.props.changeContent(<Snapshots key={'hypervisor_snapshots_'+this.props.vm_id} device_id={this.props.device_id} vm_id={this.props.vm_id} type={this.props.type} />)} title='Snapshot info' />}
     {this.state.wait}
-   </Fragment>
+   </>
  }
 }
 
@@ -210,26 +210,26 @@ class Info extends Component{
  render(){
   if (this.state.data) {
    const data = this.state.data;
-   return <Fragment>
+   return <>
     <InfoArticle key='hyp_article' header='VM info'>
      <InfoColumns key='hyp_ic' columns={3}>
-      <TextLine key='hyp_name' id='name' text={data.name} /><div />
-      <TextInput key='hyp_device_id' id='device_id' label='Device ID' value={data.device_id} onChange={this.onChange} /><div />
-      <TextLine key='hyp_device_name' id='device' label='Device Name' text={data.device_name} /><div />
-      <TextLine key='hyp_snmp' id='snmp_id' label='SNMP id' text={data.snmp_id} /><div />
-      <TextLine key='hyp_uuid' id='uuid' label='UUID' text={data.device_uuid} /><div />
-      <StateLine key='hyp_state' id='state' state={data.state} /><div />
-      <TextLine key='hyp_config' id='config' text={data.config} /><div />
-      {Object.entries(this.state.interfaces).map((row,idx) => <Fragment key={idx}><TextLine key={'hyp_intf_'+row[0]} id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row)}</Fragment>)}
+      <TextLine key='name' id='name' text={data.name} /><div />
+      <TextInput key='device_id' id='device_id' label='Device ID' value={data.device_id} onChange={this.onChange} /><div />
+      <TextLine key='device_name' id='device' label='Device Name' text={data.device_name} /><div />
+      <TextLine key='snmp' id='snmp_id' label='SNMP id' text={data.snmp_id} /><div />
+      <TextLine key='uuid' id='uuid' label='UUID' text={data.device_uuid} /><div />
+      <StateLine key='state' id='state' state={data.state} /><div />
+      <TextLine key='config' id='config' text={data.config} /><div />
+      {Object.entries(this.state.interfaces).map((row,idx) => <Fragment key={idx}><TextLine key='intf' id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row)}</Fragment>)}
      </InfoColumns>
-     <SaveButton key='hyp_btn_save' onClick={() => this.updateInfo()} title='Save mapping' />
-     <SyncButton key='hyp_btn_sync' onClick={() => this.syncDatabase()} title='Resync database with VM info' />
-     {data.device_id && <GoButton key='hyp_btn_device_vm_info' onClick={() => this.changeSelf(<DeviceInfo key='device_info' id={data.device_id} changeSelf={this.props.changeSelf} />)} title='VM device info' />}
-     <Result key='hyp_res' result={JSON.stringify(this.state.update)} />
+     <SaveButton key='save' onClick={() => this.updateInfo()} title='Save mapping' />
+     <SyncButton key='sync' onClick={() => this.syncDatabase()} title='Resync database with VM info' />
+     {data.device_id && <GoButton key='go' onClick={() => this.changeSelf(<DeviceInfo key='device_info' id={data.device_id} changeSelf={this.props.changeSelf} />)} title='VM device info' />}
+     <Result key='result' result={JSON.stringify(this.state.update)} />
     </InfoArticle>
     <NavBar />
     {this.state.content}
-   </Fragment>
+   </>
   } else
    return <Spinner />
  }
@@ -266,14 +266,14 @@ class Snapshots extends Component{
   }
  }
 
- listItem = (row) => [row.name,row.id,row.desc,row.created,row.state,<Fragment>
-  <RevertButton key={'hs_revert_'+row.id} onClick={() => this.snapshot('revert',row.id)} title='Revert to snapshot' />
-  <DeleteButton key={'hs_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete snapshot' />
- </Fragment>]
+ listItem = (row) => [row.name,row.id,row.desc,row.created,row.state,<>
+  <RevertButton key='revert' onClick={() => this.snapshot('revert',row.id)} title='Revert to snapshot' />
+  <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete snapshot' />
+ </>]
 
  render(){
   return <ContentReport key='hyp_snapshot_cr' header={`Snapshot (${this.props.vm_id}) Highest ID:${this.state.highest}`} thead={['Name','ID','Description','Created','State','']} trows={this.state.data} listItem={this.listItem}>
-   <ReloadButton key='hs_reload' onClick={() => this.snapshot('list',undefined)} title='Reload list' />
+   <ReloadButton key='reload' onClick={() => this.snapshot('list',undefined)} title='Reload list' />
    {this.state.wait}
   </ContentReport>
  }

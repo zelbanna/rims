@@ -1,4 +1,4 @@
-import React, { createContext, Component, Fragment, PureComponent, memo	} from 'react';
+import React, { createContext, Component, PureComponent, memo } from 'react';
 import { auth_call, post_call } from './Functions.js';
 import { CloseButton } from './Buttons.jsx';
 import { TextInput, TextLine, TextAreaInput, PasswordInput } from './Inputs.jsx';
@@ -129,7 +129,7 @@ class Theme extends Component {
  }
 
  render(){
-  return <Fragment />
+  return <React.Fragment />
  }
 }
 
@@ -184,8 +184,7 @@ export class Portal extends Component {
    <MenuButton key='user_info' title='User' onClick={() => this.changeContent({module:'user',function:'User', args:{id:this.context.settings.id}})} />,
    <MenuButton key='system' title='System' onClick={() => this.changeContent({module:'system',function:'Main'})} />)
 
-  return (
-   <Fragment>
+  return <>
     <Theme key='portal_theme' theme={this.context.settings.theme} />
     <Header key='portal_header' title={this.state.title} logOut={() => this.context.logOut()}>
      {buttons}
@@ -194,8 +193,7 @@ export class Portal extends Component {
     <ErrorBoundary key='portal_error'>
      <main className={uiStyles.main}>{this.state.content}</main>
     </ErrorBoundary>
-  </Fragment>
-  )
+  </>
  }
 }
 Portal.contextType = RimsContext;

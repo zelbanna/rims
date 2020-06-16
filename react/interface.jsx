@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react'
+import React, { Component } from 'react'
 import { post_call, rnd } from './infra/Functions.js';
 import { Spinner, StateLeds, Article, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
@@ -29,13 +29,13 @@ export class List extends Component{
 
  listItem = (row) => [row.snmp_index,row.name,row.mac,(row.ip) ? row.ip : '-',row.description,row.class,
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
-   <Fragment>
-    <StateLeds key={'il_if_state_' + row.interface_id} state={[row.if_state,row.ip_state]} />
-    <InfoButton key={'il_btn_info_' + row.interface_id} onClick={() => this.changeContent(<Info key={row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
-    {row.snmp_index && <HealthButton key={'il_btn_stats_' + row.interface_id} onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} />)} title='Interface stats' />}
-    <DeleteButton key={'il_btn_del_' + row.interface_id} onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
-    {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key={row.interface_id} onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
-   </Fragment>]
+   <>
+    <StateLeds key='state' state={[row.if_state,row.ip_state]} />
+    <InfoButton key='info' onClick={() => this.changeContent(<Info key={row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
+    {row.snmp_index && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} />)} title='Interface stats' />}
+    <DeleteButton key='del' onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
+    {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key='link' onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
+   </>]
 
  render(){
   if (this.state.data) {
@@ -165,16 +165,16 @@ export class Info extends Component {
        {ipam1 && <DeleteButton key='ii_btn_delete1' onClick={() => this.deleteIpam('ipam_id')} title='Delete IPAM entry' />}
        {!ipam1 && this.state.data.interface_id !== 'new' && <AddButton key='ii_btn_add1' onClick={() => this.stateIpam('ipam_id')} title='Create IPAM entry' />}
       </div>
-      {ipam1 && <Fragment key='ii_ipam1_frag'><TextLine key='ii_ipam1' id='IPAM ip'text={this.state.ip[ipam1]} /><div /></Fragment>}
+      {ipam1 && <><TextLine key='ii_ipam1' id='IPAM ip'text={this.state.ip[ipam1]} /><div /></>}
       <TextInput key='ii_ipam2_id' id='ipam_alt_id' label='IPAM alt id' value={this.state.data.ipam_alt_id} onChange={this.onChange} /><div>
        {ipam2 && <GoButton key='ii_btn_ipam2' onClick={() => this.changeIpam(ipam2)} title='Edit IPAM entry' />}
        {ipam2 && <RemoveButton key='ii_btn_remove2' onClick={() => this.clearIpam('ipam_alt_id')} title='Clear IPAM entry' />}
        {ipam2 && <DeleteButton key='ii_btn_delete2' onClick={() => this.deleteIpam('ipam_alt_id')} title='Delete IPAM entry' />}
        {!ipam2 && this.state.data.interface_id !== 'new' && <AddButton key='ii_btn_add2' onClick={() => this.stateIpam('ipam_alt_id')} title='Create IPAM entry' />}
       </div>
-      {ipam2 && <Fragment key='ii_ipam2_frag'><TextLine key='ii_ipam2' id='IPAM alt ip'text={this.state.ip[ipam2]} /><div /></Fragment>}
-      {peer && <Fragment key='ii_frag_peer_int'><TextLine key='ii_peer_int_id' id='peer_interface' label='Peer interface' text={this.state.peer.interface_id} /><UnlinkButton key='ii_peer_unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></Fragment>}
-      {peer && <Fragment key='ii_frag_peer_dev'><TextLine key='ii_peer_dev_id' id='peer_device' text={this.state.peer.device_id} /><div/></Fragment>}
+      {ipam2 && <><TextLine key='ii_ipam2' id='IPAM alt ip'text={this.state.ip[ipam2]} /><div /></>}
+      {peer && <><TextLine key='ii_peer_int_id' id='peer_interface' label='Peer interface' text={this.state.peer.interface_id} /><UnlinkButton key='ii_peer_unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></>}
+      {peer && <><TextLine key='ii_peer_dev_id' id='peer_device' text={this.state.peer.device_id} /><div/></>}
      </InfoColumns>
      {'changeSelf' in this.props && <ItemsButton key='ii_btn_list' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Interfaces' />}
      <ReloadButton key='ii_btn_reload' onClick={() => this.componentDidMount()} />
@@ -228,8 +228,9 @@ class Statistics extends Component {
 
  render(){
   return <Article key='is_art' header='Statistics'>
-   <RevertButton key='ae_btn_reset' onClick={() => this.gotoNow()} title='Go to now' />
-   <SelectInput key='ae_range' id='range' value={this.state.range} onChange={this.onChange}>
+   <ReloadButton key='reload' onClick={() => this.updateItems(this.state.range)} title='Reload' />
+   <RevertButton key='reset' onClick={() => this.gotoNow()} title='Go to now' />
+   <SelectInput key='range' id='range' value={this.state.range} onChange={this.onChange}>
     <option value='1'>1</option>
     <option value='4'>4</option>
     <option value='8'>8</option>

@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react'
+import React, { Component } from 'react'
 import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Spinner, LineArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, SearchInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
@@ -32,7 +32,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment>{this.state}</Fragment>
+  return <>{this.state}</>
  }
 }
 Main.contextType = RimsContext;
@@ -49,10 +49,10 @@ class List extends Component {
   post_call('api/inventory/list',this.props.args).then(result => this.setState(result))
  }
 
- listItem = (row) => [row.id,row.serial,row.model,<Fragment>
-   <InfoButton key={'inv_btn_info_'+row.id}  onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } title='View inventory item' />
-   <DeleteButton key={'inv_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete inventory item' />
-  </Fragment>]
+ listItem = (row) => [row.id,row.serial,row.model,<>
+   <InfoButton key='info' onClick={() => this.changeContent(<Info key={'inventory_'+row.id} id={row.id} />) } title='View inventory item' />
+   <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete inventory item' />
+  </>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete item') && post_call('api/inventory/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
@@ -62,14 +62,14 @@ class List extends Component {
    return <Spinner />
   else {
    const inv_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.model.includes(this.state.searchfield) || row.serial.includes(this.state.searchfield)));
-   return <Fragment>
+   return <>
     <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
-     <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
-     <AddButton key='inv_btn_add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
-     <SearchInput key='inv_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory (case sensitive)' />
+     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
+     <AddButton key='add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
+     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory (case sensitive)' />
     </ContentList>
     <ContentData key='inv_cd'>{this.state.content}</ContentData>
-   </Fragment>
+   </>
   }
  }
 }
@@ -157,10 +157,10 @@ class Vendor extends Component {
  listItem = (row) => [<HrefButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.changeContent(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} />)} />,row.count]
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='inv_cl' header='Vendors' thead={['Name','Count']} trows={this.state.data} listItem={this.listItem} />
    <ContentData key='inv_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 

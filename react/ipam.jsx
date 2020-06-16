@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react'
+import React, { Component } from 'react'
 import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
@@ -16,7 +16,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment>{this.state}</Fragment>
+  return  <>{this.state}</>
  }
 }
 
@@ -36,14 +36,14 @@ export class NetworkList extends Component {
    row.netasc,
    row.description,
    row.service,
-   <Fragment>
-    <ConfigureButton key={'net_btn_info_'+row.id} onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />)} title='Edit network properties' />
-    <ItemsButton key={'net_btn_items2_'+row.id} onClick={() => this.changeContent(<AddressList key={'address_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View addresses' />
-    {row.class === 'v4' && <ViewButton key={'net_btn_layout_'+row.id} onClick={() => this.changeContent(<Layout key={'address_layout_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View usage map' />}
-    {row.class === 'v4' && <CheckButton key={'net_btn_resv_'+row.id} onClick={() => this.changeContent(<ReservationList key={'resv_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='Reserved addresses for network' />}
-    <DeleteButton key={'net_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete network' />
-    <ReloadButton key={'net_btn_rset_'+row.id} onClick={() => this.resetStatus(row.id)} title='Reset state for network addresses' />
-  </Fragment>]
+   <>
+    <ConfigureButton key='conf' onClick={() => this.changeContent(<NetworkInfo key={'network_'+row.id} id={row.id} />)} title='Edit network properties' />
+    <ItemsButton key='items' onClick={() => this.changeContent(<AddressList key={'address_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View addresses' />
+    {row.class === 'v4' && <ViewButton key='layout' onClick={() => this.changeContent(<Layout key={'address_layout_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='View usage map' />}
+    {row.class === 'v4' && <CheckButton key='resv' onClick={() => this.changeContent(<ReservationList key={'resv_list_'+row.id} network_id={row.id} changeSelf={this.changeContent} />)} title='Reserved addresses for network' />}
+    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete network' />
+    <ReloadButton key='reset' onClick={() => this.resetStatus(row.id)} title='Reset state for network addresses' />
+  </>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete network') && post_call('api/ipam/network_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
@@ -51,14 +51,14 @@ export class NetworkList extends Component {
  resetStatus = (id) => post_call('api/ipam/clear',{network_id:id}).then(result => this.setState({result:result.count}))
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='nl_cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-    <ReloadButton key='nl_btn_reload'  onClick={() => this.componentDidMount() } />
-    <AddButton key='nl_btn_add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_'+rnd()} id='new' />)} title='Add network' />
-    <LogButton key='nl_btn_doc' onClick={() => this.changeContent(<Leases key='network_leases' />)} title='View IPAM/DHCP leases' />
+    <ReloadButton key='reload'  onClick={() => this.componentDidMount() } />
+    <AddButton key='add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_'+rnd()} id='new' />)} title='Add network' />
+    <LogButton key='leases' onClick={() => this.changeContent(<Leases key='network_leases' />)} title='View IPAM/DHCP leases' />
    </ContentList>
    <ContentData key='nl_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 
@@ -173,11 +173,11 @@ class AddressList extends Component{
 
  changeContent = (elem) => this.props.changeSelf(elem)
 
- listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<Fragment>
-   <StateLeds state={row.state} />
-   <ConfigureButton key={'al_btn_info_'+row.id} onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title='Edit address entry' />
-   <DeleteButton key={'al_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete address entry' />
-  </Fragment>]
+ listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<>
+   <StateLeds key='state' state={row.state} />
+   <ConfigureButton key='info' onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title='Edit address entry' />
+   <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete address entry' />
+  </>]
 
  deleteList = (id) => (window.confirm('Delete address?') && post_call('api/ipam/address_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id))})))
 

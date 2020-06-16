@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { Article, ContentData, ContentList, Result } from './infra/UI.jsx';
 import { BackButton, DeleteButton, EditButton, FixButton, ReloadButton, SaveButton, StartButton, StopButton, TextButton, NetworkButton } from './infra/Buttons.jsx';
@@ -16,7 +16,7 @@ export class Main extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment>{this.state}</Fragment>
+  return  <>{this.state}</>
  }
 }
 
@@ -33,22 +33,22 @@ export class List extends Component {
    .then((result) => { this.setState(result); })
  }
 
- listItem = (row) => [row.id,row.name,<Fragment>
-  <EditButton key={'vl_btn_edt_'+row.id} onClick={() => this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)} title='Show and edit map' />
-  <NetworkButton key={'vl_btn_net_'+row.id} onClick={() => window.open(`viz.html?id=${row.id}`,'_blank')} title='Show resulting map' />
-  <DeleteButton key={'vl_btn_del_'+row.id}  onClick={() => this.deleteList(row.id)} />
- </Fragment>]
+ listItem = (row) => [row.id,row.name,<>
+  <EditButton key='edit' onClick={() => this.changeContent(<Edit key={'viz_edit_'+row.id} id={row.id} changeSelf={this.changeContent} type='map' />)} title='Show and edit map' />
+  <NetworkButton key='net' onClick={() => window.open(`viz.html?id=${row.id}`,'_blank')} title='Show resulting map' />
+  <DeleteButton key='del' onClick={() => this.deleteList(row.id)} />
+ </>]
 
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Delete map?') && post_call('api/visualize/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='vl_cl' header='Maps' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='vl_btn_reload' onClick={() => this.componentDidMount() } />
+    <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
    </ContentList>
    <ContentData key='vl_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 

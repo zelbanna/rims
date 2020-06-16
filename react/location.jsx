@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react'
+import React, { Component } from 'react'
 import { post_call, rnd } from './infra/Functions.js';
 import { Spinner, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
@@ -19,20 +19,19 @@ constructor(props){
  changeContent = (elem) => this.setState({content:elem})
  deleteList = (id) => (window.confirm('Really delete location?') && post_call('api/location/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
 
- listItem = (row) => [row.id,row.name,<Fragment>
-   <ConfigureButton key={'loc_btn_info_'+row.id} onClick={() => this.changeContent(<Info key={'location_'+row.id} id={row.id} />)} title='Edit location' />
-   <DeleteButton key={'loc_btn_delete_'+row.id} onClick={() => this.deleteList(row.id)} title='Delete location' />
-   </Fragment>
-  ]
+ listItem = (row) => [row.id,row.name,<>
+   <ConfigureButton key='conf' onClick={() => this.changeContent(<Info key={'location_'+row.id} id={row.id} />)} title='Edit location' />
+   <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete location' />
+   </>]
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='loc_cl' header='Locations' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='loc_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='loc_btn_add' onClick={() => this.changeContent(<Info key={'location_new_' + rnd()} id='new' />)} title='Add location' />
+    <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='add' onClick={() => this.changeContent(<Info key={'location_new_' + rnd()} id='new' />)} title='Add location' />
    </ContentList>
    <ContentData key='loc_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 

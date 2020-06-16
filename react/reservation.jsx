@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Spinner, InfoArticle, InfoColumns, LineArticle, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
@@ -26,21 +26,21 @@ export class List extends Component {
 
  listItem = (row) => {
   const buttons = (this.context.settings.id === row.user_id || !row.valid);
-  return [row.alias,row.hostname,row.end,<Fragment>
-   {buttons && <InfoButton key={'rsv_btn_info_'+row.device_id} onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>}
-   {buttons && <AddButton  key={'rsv_btn_ext_'+row.device_id}  onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />}
-   {buttons && <DeleteButton key={'rsv_btn_del_'+row.device_id}  onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />}
-  </Fragment>]
+  return [row.alias,row.hostname,row.end,<>
+   {buttons && <InfoButton key='info' onClick={() => { this.changeContent(<Info key={'rsv_device_'+row.device_id} device_id={row.device_id} user_id={row.user_id} />) }} title='Info'/>}
+   {buttons && <AddButton  key='ext' onClick={() => { this.extendItem(row.device_id,row.user_id,14) }} title='Extend reservation' />}
+   {buttons && <DeleteButton key='del' onClick={() => { this.deleteItem(row.device_id,row.user_id) }} title='Remove reservation' />}
+  </>]
  }
 
  render(){
-  return <Fragment>
+  return <>
    <ContentList key='rsv_cl' header='Reservations' thead={['User','Device','Until','']} trows={this.state.data} listItem={this.listItem}>
-    <ReloadButton key='rsv_btn_reload' onClick={() => this.componentDidMount() } />
-    <AddButton key='rsv_btn_new' onClick={() => this.changeContent(<New key='rsv_new' />)} />
+    <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
+    <AddButton key='add' onClick={() => this.changeContent(<New key='rsv_new' />)} />
    </ContentList>
    <ContentData key='rsv_cd'>{this.state.content}</ContentData>
-  </Fragment>
+  </>
  }
 }
 List.contextType = RimsContext;

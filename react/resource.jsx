@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { NavBar, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 import { RimsContext } from './infra/UI.jsx';
@@ -41,7 +41,7 @@ export class Main extends Component {
  }
 
  render(){
-  return  <Fragment />
+  return <React.Fragment />
  }
 }
 Main.contextType = RimsContext;

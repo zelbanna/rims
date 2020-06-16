@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, Result } from './infra/UI.jsx';
 import { TextInput, TextLine } from './infra/Inputs.jsx';
@@ -22,7 +22,7 @@ export class Manage extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment>{this.state}</Fragment>
+  return  <>{this.state}</>
  }
 }
 Manage.contextType = RimsContext;
@@ -77,16 +77,16 @@ export class Inventory extends Component{
 
  changeContent = (elem) => this.setState({content:elem})
 
- listItem = (row,idx) => [`${row.slotname}.${row.unit}`,<HrefButton key={'pdu_inv_btn_' + idx} onClick={() => this.changeContent(<Unit key={'pdu_unit_'+idx} device_id={this.props.device_id} type={this.props.type} {...row} />)} text={row.name} title='Edit port info' />,<Operation key={'pdu_state'+idx} idx={idx} device_id={this.props.device_id} type={this.props.type} {...row} />]
+ listItem = (row,idx) => [`${row.slotname}.${row.unit}`,<HrefButton key={'inv_' + idx} onClick={() => this.changeContent(<Unit key={'pdu_unit_'+idx} device_id={this.props.device_id} type={this.props.type} {...row} />)} text={row.name} title='Edit port info' />,<Operation key={'state_'+idx} idx={idx} device_id={this.props.device_id} type={this.props.type} {...row} />]
 
  render(){
   if (this.state.data){
-   return <Fragment>
+   return <>
     <ContentList key='pdu_cl' header='Inventory' thead={['Position','Device','State']} trows={this.state.data} listItem={this.listItem}>
-     <ReloadButton key='pdu_btn_reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
+     <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
     </ContentList>
     <ContentData key='pdu_cd'>{this.state.content}</ContentData>
-   </Fragment>
+   </>
   } else
    return <Spinner />
  }
@@ -107,12 +107,12 @@ class Operation extends Component{
 
  render(){
   const off = (this.state.state === 'off');
-  return <Fragment>
-   {off && <StartButton key={'pdu_btn_start_'+this.props.idx} onClick={() => this.operation('on')} title={this.state.status} />}
-   {!off && <StopButton key={'pdu_btn_stop_'+this.props.idx} onClick={() => this.operation('off')} title={this.state.status} />}
-   {!off && <ReloadButton key={'pdu_btn_reload_'+this.props.idx} onClick={() => this.operation('reboot')} title={this.state.status} />}
+  return <>
+   {off && <StartButton key='start' onClick={() => this.operation('on')} title={this.state.status} />}
+   {!off && <StopButton key='stop' onClick={() => this.operation('off')} title={this.state.status} />}
+   {!off && <ReloadButton key='reload' onClick={() => this.operation('reboot')} title={this.state.status} />}
    {this.state.wait}
-  </Fragment>
+  </>
  }
 }
 

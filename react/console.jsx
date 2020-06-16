@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, InfoArticle, InfoColumns, Spinner, ContentList, ContentData } from './infra/UI.jsx';
 import { TextInput } from './infra/Inputs.jsx';
@@ -22,7 +22,7 @@ export class Manage extends Component {
  changeContent = (elem) => this.setState(elem)
 
  render(){
-  return  <Fragment>{this.state}</Fragment>
+  return <>{this.state}</>
  }
 }
 Manage.contextType = RimsContext;
@@ -82,12 +82,12 @@ export class Inventory extends Component{
 
  render(){
   if (this.state.data){
-   return <Fragment>
-    <ContentList key='con_cl' header='Inventory' thead={['Port','Device','']} trows={this.state.data} listItem={this.listItem}>
-     <ReloadButton key='con_btn_reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
+   return <>
+    <ContentList key='cl' header='Inventory' thead={['Port','Device','']} trows={this.state.data} listItem={this.listItem}>
+     <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
     </ContentList>
-    <ContentData key='con_cd'>{this.state.content}</ContentData>
-   </Fragment>
+    <ContentData key='cd'>{this.state.content}</ContentData>
+   </>
   } else
    return <Spinner />
  }
