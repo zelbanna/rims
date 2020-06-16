@@ -194,22 +194,31 @@ export class Info extends Component {
 class Statistics extends Component {
  constructor(props){
   super(props)
-  this.state = {}
+  this.state = {range:1}
   this.canvas = React.createRef()
-  this.graph = null
+  this.graph = null;
+  this.vis = null;
  }
 
  componentDidMount(){
-  import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:6}).then(result => {
-   if (result.data.length > 0){
-    const groups = new vis.DataSet([{id:'in',  content:'In', options: { shaded: { orientation: 'bottom' }}},{id:'out', content:'Out' }]);
-    const data = result.data.flatMap(({time, in8s, out8s}) => [{x:new Date(time*1000), y:in8s, group:'in'},{x:new Date(time*1000), y:out8s, group:'out'}]);
-    const dataset = new vis.DataSet(data);
-    const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ left:{ title:{ text:'kbps' } } } };
-    this.graph = new vis.Graph2d(this.canvas.current, dataset, groups, options);
-   } else
-    this.canvas.current.innerHTML = 'no stats';
-  }))
+  import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => {
+   this.vis = vis;
+   const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ left:{ title:{ text:'kbps' } } } };
+   const groups = new vis.DataSet([{id:'in',  content:'In', options: { shaded: { orientation: 'bottom' }}},{id:'out', content:'Out' }]);
+   this.graph = new vis.Graph2d(this.canvas.current, [], groups, options);
+   this.updateItems();
+  })
+ }
+
+ updateItems = () => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:this.state.range}).then(result => {
+  const data = result.data.flatMap(({time, in8s, out8s}) => [{x:new Date(time*1000), y:in8s, group:'in'},{x:new Date(time*1000), y:out8s, group:'out'}]);
+  this.graph.setItems(data);
+  this.graph.fit();
+ });
+
+ onChange = (e) => {
+  this.setState({[e.target.name]:e.target.value})
+  this.updateItems();
  }
 
  gotoNow = () => {
@@ -219,8 +228,14 @@ class Statistics extends Component {
 
  render(){
   return <Article key='is_art' header='Statistics'>
-   <div className={styles.graphs} ref={this.canvas} />
    <RevertButton key='ae_btn_reset' onClick={() => this.gotoNow()} title='Go to now' />
+   <SelectInput key='ae_range' id='range' value={this.state.range} onChange={this.onChange}>
+    <option value='1'>1</option>
+    <option value='4'>4</option>
+    <option value='8'>8</option>
+    <option value='24'>24</option>
+   </SelectInput>hours
+   <div className={styles.graphs} ref={this.canvas} />
   </Article>
  }
 }

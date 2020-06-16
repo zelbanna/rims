@@ -261,7 +261,7 @@ export class Info extends Component {
     </InfoArticle>
     <NavBar key='di_navigation' id='di_navigation'>
      {this.state.navconf && <NavButton key='di_nav_management' title='Management' onClick={() => this.changeContent(<ManagementInfo key='device_configure' id={this.props.id} />)} />}
-     {this.state.navconf && <NavButton key='di_nav_interfaces' title='Interfaces' onClick={() => this.changeInterfaces()} />}
+     {!this.state.navconf && <NavButton key='di_nav_interfaces' title='Interfaces' onClick={() => this.changeInterfaces()} />}
      {!this.state.navconf && type.base === 'network' && has_ip && <NavButton key='di_nav_fdb' title='FDB' onClick={() => this.changeContent(<FdbDevice key='fdb_device' id={this.props.id} ip={extra.interface_ip} type={type.name} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
      {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='di_nav_pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
