@@ -46,7 +46,6 @@ def sync(aCTX, aArgs):
  users = aArgs['users'] if aArgs.get('users') else aCTX.tokens.values()
  try:
   for usr in users:
-   print('authenticating: %s'%usr)
    aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, 7200, usr['ip'], usr['alias'],"</role><role>".join(settings['roles'])))
    ret['added'] = usr['alias']
  except Exception as e:
