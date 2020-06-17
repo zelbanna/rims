@@ -46,6 +46,7 @@ def sync(aCTX, aArgs):
  users = aArgs['users'] if aArgs.get('users') else aCTX.tokens.values()
  try:
   for usr in users:
+   print('authenticating: %s'%usr)
    aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, 7200, usr['ip'], usr['alias'],"</role><role>".join(settings['roles'])))
    ret['added'] = usr['alias']
  except Exception as e:
@@ -86,9 +87,11 @@ def authenticate(aCTX, aArgs):
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logon</operation><timeout>%s</timeout><IP>%s</IP><domain>global</domain><user>%s</user><role-list><role>%s</role></role-list><posture>healthy</posture></userfw-entry></userfw-entries>'
- try: ret = aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs.get('timeout',7200), aArgs['ip'], aArgs['alias'],"</role><role>".join(settings['roles'])))
+ try: aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs.get('timeout',7200), aArgs['ip'], aArgs['alias'],"</role><role>".join(settings['roles'])))
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
+ else:
+  ret = {'status':'OK'}
  return ret
 
 #
@@ -106,9 +109,11 @@ def invalidate(aCTX, aArgs):
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logoff</operation><IP>%s</IP></userfw-entry></userfw-entries>'
- try: ret = aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs['ip']))
+ try: aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs['ip']))
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
+ else:
+  ret = {'status':'OK'}
  return ret
 
 #

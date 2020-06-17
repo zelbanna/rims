@@ -235,14 +235,25 @@ class Context(object):
   """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
   ret = {}
   now = datetime.now(timezone.utc)
+  # Token management
   expired = []
+  remain = []
   for k,v in self.tokens.items():
    if now > v['expires']:
     expired.append(k)
+   else:
+    remain.append(v)
   ret['expired'] = len(expired)
   for t in expired:
    self.tokens.pop(t,None)
-  ret['auth'] = self.auth_sync()
+  # Authentication management
+  with self.db as db:
+   db.query("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in remain]))
+   alias = {x['id']:x['alias'] for x in db.get_rows()}
+  users = [{'ip':v['ip'],'alias':alias[v['id']],'timeout':min(int((v['expires']-now).total_seconds()),7200)} for v in remain]
+  for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
+   self.node_function(infra['node'], "services.%s"%infra['service'], 'sync')(aArgs = {'id':infra['id'],'users':users})
+  ret['auth'] = len(users)
   ret['collected'] = garbage_collect()
   return ret
 
@@ -329,21 +340,10 @@ class Context(object):
 
  ################# AUTHENTICATION ################
  #
- def auth_sync(self):
-  """ Synchronizes external services auth entries with user tokens """
-  with self.db as db:
-   db.query("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in self.tokens.values()]))
-   alias = {x['id']:x['alias'] for x in db.get_rows()}
-  users = [{'ip':v['ip'],'alias':alias[v['id']]} for v in self.tokens.values()]
-  for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
-   self.node_function(infra['node'], "services.%s"%infra['service'], 'sync')(aArgs = {'id':infra['id'],'users':users})
-  return len(users)
-
- #
  def auth_exec(self, aAlias, aIP, aOP):
-  """ 'authenticate' or 'invalidate' alias and ip with external services, use 4 hours as a timeout and rely on house_keeping/auth_sync to update regularly """
+  """ 'authenticate' or 'invalidate' alias and ip with external services, use 2 hours as a timeout and rely on house_keeping to update regularly """
   for infra in [{'service':v['service'],'node':v['node']} for v in self.services.values() if v['type'] == 'AUTHENTICATION']:
-   res = self.node_function(infra['node'], "services.%s"%infra['service'], aOP)(aArgs = {'alias':aAlias, 'ip': aIP, 'timeout':14400})
+   res = self.node_function(infra['node'], "services.%s"%infra['service'], aOP)(aArgs = {'alias':aAlias, 'ip': aIP, 'timeout':7200})
    self.log("Authentication service for '%s' (%s %s@%s) => %s (%s)"%(aAlias, aOP, infra['service'], infra['node'], res['status'], res.get('info','N/A')))
   return True
 
