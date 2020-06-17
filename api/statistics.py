@@ -17,16 +17,12 @@ def query_interface(aCTX, aArgs):
  """
  db = aCTX.config['influxdb']
  unit = {'b':1,'k':1024,'m':1048576}.get(aArgs.get('unit','k'))
- args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8/%s, non_negative_derivative(mean(out8s), 1s)*8/%s FROM interface WHERE host_id = '%s' AND if_id = '%s' AND time >= now() - %sh GROUP BY time(1m) fill(null)"%(unit,unit,aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
+ args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8/{0}, non_negative_derivative(mean(out8s), 1s)*8/{0}, non_negative_derivative(mean(inUPs), 1s), non_negative_derivative(mean(outUPs), 1s) FROM interface WHERE host_id = '{1}' AND if_id = '{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(null)".format(unit,aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
  try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
  else:
-  if 'series' in res:
-   ret = {'data':[{'time':x[0],'in8s':x[1],'out8s':x[2]} for x in res['series'][0]['values']]}
-  else:
-   ret = {'data':[]}
-  return ret
+  return {'data':[{'time':x[0],'in8s':x[1],'out8s':x[2],'inUPs':x[3],'outUPs':x[4]} for x in res['series'][0]['values']] if 'series' in res else []}
 
 ################################## Device Data Points ###################################
 #

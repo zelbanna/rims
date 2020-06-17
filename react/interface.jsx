@@ -203,15 +203,15 @@ class Statistics extends Component {
  componentDidMount(){
   import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => {
    this.vis = vis;
-   const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ left:{ title:{ text:'kbps' } } } };
-   const groups = new vis.DataSet([{id:'in',  content:'In', options: { shaded: { orientation: 'bottom' }}},{id:'out', content:'Out' }]);
+   const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ left:{ title:{ text:'kbps' } }, right:{ title:{ text:'pps' } } } };
+   const groups = new vis.DataSet([{id:'ib',  content:'In', options: { shaded: { orientation: 'bottom' }}},{id:'ob', content:'Out' }, {id:'ip',  content:'In', options: { shaded: { orientation: 'bottom' }, yAxisOrientation: 'right'}},{id:'op', content:'Out', options: { yAxisOrientation: 'right'}}]);
    this.graph = new vis.Graph2d(this.canvas.current, [], groups, options);
    this.updateItems(this.state.range);
   })
  }
 
  updateItems = (range) => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:range}).then(result => {
-  const data = result.data.flatMap(({time, in8s, out8s}) => [{x:new Date(time*1000), y:in8s, group:'in'},{x:new Date(time*1000), y:out8s, group:'out'}]);
+  const data = result.data.flatMap(({time, in8s, out8s, inUPs, outUPs}) => [{x:new Date(time*1000), y:in8s, group:'ib'},{x:new Date(time*1000), y:out8s, group:'ob'}, {x:new Date(time*1000), y:inUPs, group:'ip'},{x:new Date(time*1000), y:outUPs, group:'op'}]);
   this.graph.setItems(data);
   this.graph.fit();
  });
