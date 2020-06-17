@@ -7,11 +7,10 @@ __author__ = "Zacharias El Banna"
 from sys import path as syspath, argv, exit, stdout
 from os import path as ospath, getcwd
 from json import load
-from argparse import ArgumentParser
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 from rims.api import mysql
 from rims.core.engine import Context
-
+from argparse import ArgumentParser
 parser = ArgumentParser(prog='mysql_tools', description = 'MySQL interworking tool')
 parser.add_argument('config', help = 'RIMS config file')
 parser.add_argument('-d','--diff',    help = 'Compare database schema with schema file', required = False, nargs = 1)

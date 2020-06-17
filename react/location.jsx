@@ -51,7 +51,7 @@ export class Info extends Component {
 
  componentDidUpdate(prevProps,prevState){
   if (prevProps !== this.props){
-   post_call('api/location/info',{id:this.props.id}).then(result => this.setState(result))
+   this.componentDidMount()
   }
  }
 

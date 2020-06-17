@@ -76,20 +76,21 @@ class Info extends Component {
   if (!this.state.found)
    return <InfoArticle key='si_art_nf'>Server with id: {this.props.id} removed</InfoArticle>
   else if (this.state.data){
-   const old = (this.state.data.id !== 'new');
+   const id = this.state.data.id;
+   const old = (id !== 'new');
    return <>
     <InfoArticle key='ia' header='Server'>
      <InfoColumns key='ic'>
-      <TextLine key='server' id='server' label='ID' text={this.state.data.id} />
+      <TextLine key='server' id='server' label='ID' text={id} />
       <SelectInput key='node' id='node' value={this.state.data.node} onChange={this.onChange}>{this.state.nodes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
       <SelectInput key='type_id' id='type_id' label='Service' value={this.state.data.type_id} onChange={this.onChange}>{this.state.services.map(row => <option key={row.id} value={row.id}>{`${row.service} (${row.type})`}</option>)}</SelectInput>
       <UrlInput key='ui' id='ui' label='UI' value={this.state.data.ui} onChange={this.onChange} />
      </InfoColumns>
      <SaveButton key='save' onClick={() => this.updateInfo()} title='Save' />
-     {old && <SyncButton key='sync' onClick={() => this.changeContent(<Operation key={'srv_op_sync'} id={this.state.data.id} operation='sync' />)} title='Sync service' />}
-     {old && <ReloadButton key='restart' onClick={() => this.changeContent(<Operation key={'srv_op_rst'}  id={this.state.data.id} operation='restart' />)} title='Restart service' />}
-     {old && <SearchButton key='status' onClick={() => this.changeContent(<Operation key={'srv_op_stat'} id={this.state.data.id} operation='status' />)} title='Service status' />}
-     {old && <CheckButton key='params' onClick={() => this.changeContent(<Operation key={'srv_op_params'} id={this.state.data.id} operation='parameters' />)} title='Service parameters' />}
+     {old && <SyncButton key='sync' onClick={() => this.changeContent(<Operation key='srv_op_sync' id={id} operation='sync' />)} title='Sync service' />}
+     {old && <ReloadButton key='restart' onClick={() => this.changeContent(<Operation key='srv_op_rst'  id={id} operation='restart' />)} title='Restart service' />}
+     {old && <SearchButton key='status' onClick={() => this.changeContent(<Operation key='srv_op_stat' id={id} operation='status' />)} title='Service status' />}
+     {old && <CheckButton key='params' onClick={() => this.changeContent(<Operation key='srv_op_params' id={id} operation='parameters' />)} title='Service parameters' />}
     </InfoArticle>
     <NavBar key='server_navigation' id='server_navigation' />
     {this.state.content}
@@ -102,11 +103,22 @@ class Info extends Component {
 // *************** Operation ***************
 //
 class Operation extends Component {
+ constructor(props){
+  super(props)
+  this.state = {wait:true}
+ }
  componentDidMount(){
-  post_call('api/master/server_operation',{op:this.props.operation,id:this.props.id}).then(result => this.setState(result))
+  post_call('api/master/server_operation',{op:this.props.operation,id:this.props.id}).then(result => this.setState({result:result, wait:false}))
+ }
+
+ componentDidUpdate(prevProps){
+  if (prevProps !== this.props){
+   this.setState({wait:true})
+   this.componentDidMount();
+  }
  }
 
  render(){
-  return (this.state) ? <CodeArticle key='srv_operation'>{JSON.stringify(this.state,null,2)}</CodeArticle> : <Spinner />
+  return (this.state.wait) ? <Spinner /> : <CodeArticle key='srv_operation'>{JSON.stringify(this.state.result,null,2)}</CodeArticle>
  }
 }

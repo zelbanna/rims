@@ -39,12 +39,12 @@
  ],
  "powerdns": {
   "recursor": {
-   "url":"http://172.18.0.4:8082/api/v1",
+   "url":"http://172.18.0.4:8082",
    "key":"CHANGEME",
    "reload": "/usr/bin/docker restart pdns-recursor"
   },
   "server": {
-   "url":"http://172.18.0.5:8081/api/v1",
+   "url":"http://172.18.0.5:8081",
    "key":"CHANGEME",
    "nameserver": "server.local.",
    "endpoint": "172.18.0.5:53",

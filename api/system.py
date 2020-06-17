@@ -272,7 +272,7 @@ def logs_clear(aCTX, aArgs):
 
  Output:
  """
- ret = {'node':aCTX.node,'file':{}}
+ ret = {'node':aCTX.node,'file':{},'status':'OK'}
  for name,v in aCTX.config['logging'].items():
   if type(v) == dict and v.get('enabled') == True and aArgs.get('name',name) == name:
    try:
@@ -281,6 +281,7 @@ def logs_clear(aCTX, aArgs):
     aCTX.log("Emptied log [%s]"%name)
    except Exception as err:
     ret['file'][name] = 'ERROR: %s'%(repr(err))
+    ret['status'] = 'NOT_OK'
  return ret
 
 #

@@ -116,8 +116,10 @@ def restart(aCTX, aArgs):
   ret['output'] = check_output(aCTX.config['iscdhcp']['reload'].split()).decode()
  except CalledProcessError as c:
   ret['code'] = c.returncode
-  ret['output'] = c.output
- ret['status'] = 'NOT_OK' if ret['output'] else 'OK'
+  ret['output'] = c.output.decode()
+  ret['status'] = 'NOT_OK'
+ else:
+  ret['status'] = 'OK'
  return ret
 
 #

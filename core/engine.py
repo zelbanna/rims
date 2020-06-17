@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.7"
-__build__ = 361
+__build__ = 363
 __all__ = ['Context']
 
 from crypt import crypt
@@ -341,9 +341,9 @@ class Context(object):
 
  #
  def auth_exec(self, aAlias, aIP, aOP):
-  """ 'authenticate' or 'invalidate' alias and ip with external services"""
+  """ 'authenticate' or 'invalidate' alias and ip with external services, use 4 hours as a timeout and rely on house_keeping/auth_sync to update regularly """
   for infra in [{'service':v['service'],'node':v['node']} for v in self.services.values() if v['type'] == 'AUTHENTICATION']:
-   res = self.node_function(infra['node'], "services.%s"%infra['service'], aOP)(aArgs = {'alias':aAlias, 'ip': aIP})
+   res = self.node_function(infra['node'], "services.%s"%infra['service'], aOP)(aArgs = {'alias':aAlias, 'ip': aIP, 'timeout':14400})
    self.log("Authentication service for '%s' (%s %s@%s) => %s (%s)"%(aAlias, aOP, infra['service'], infra['node'], res['status'], res.get('info','N/A')))
   return True
 

@@ -88,7 +88,7 @@ def record_list(aCTX, aArgs):
 
  Output:
  """
- ret = {}
+ ret = {'status':'OK'}
  select = []
  with aCTX.db as db:
   if 'domain_id' in aArgs:

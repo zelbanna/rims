@@ -97,8 +97,8 @@ class ErrorBoundary extends React.Component {
      <CloseButton key='close' onClick={() => this.setState({hasError: false, error: undefined, info:[]})} />
      <h1 className={uiStyles.title}>UI Error</h1>
      <InfoColumns key='ic'>
-      <TextLine key='type' id='type' text={this.state.error} />
-      <TextAreaInput key='text' id='info' value={this.state.info.join('\n')} />
+      <TextLine key='type' id='type' text={this.state.error} onChange={()=>{}} />
+      <TextAreaInput key='text' id='info' value={this.state.info.join('\n')} onChange={() => {}} />
      </InfoColumns>
     </article>
    </div>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { post_call, rnd } from './infra/Functions.js';
-import { Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
+import { post_call } from './infra/Functions.js';
+import { Flex, Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport, Result } from './infra/UI.jsx';
 import { TextLine, SelectInput, TextInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HealthButton, ItemsButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
 
@@ -42,7 +42,7 @@ export class DomainList extends Component {
 
  listItem = (row) => [row.id,row.name,row.service,<>
    <ConfigureButton key='info' onClick={() => this.changeContent(<DomainInfo key='domain_info' id={row.id} />) } title='Edit domain information' />
-   <ItemsButton key='items' onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key={'items_'+row.id} domain_id={row.id} />) } title='View domain records' />
+   <ItemsButton key='items' onClick={() => this.changeContent(<RecordList changeSelf={this.changeContent} key='record_list' domain_id={row.id} />) } title='View domain records' />
    <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete domain' />
   </>]
 
@@ -146,6 +146,11 @@ class RecordList extends Component {
   this.state = {}
  }
 
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.componentDidMount();
+ }
+
  componentDidMount(){
   post_call('api/dns/record_list',{domain_id:this.props.domain_id}).then(result => this.setState(result))
  }
@@ -153,17 +158,24 @@ class RecordList extends Component {
  changeContent = (elem) => this.props.changeSelf(elem);
 
  listItem = (row,idx) => [row.name,row.content,row.type,row.ttl,<>
-   <ConfigureButton key='info' onClick={() => this.changeContent(<RecordInfo key={'record_info_'+idx} domain_id={this.props.domain_id} op='info' {...row} />)} title='Configure record' />
+   <ConfigureButton key='info' onClick={() => this.changeContent(<RecordInfo key='record_info' domain_id={this.props.domain_id} op='info' {...row} />)} title='Configure record' />
    {['A','AAAA','CNAME','PTR'].includes(row.type) && <DeleteButton key='del' onClick={() => this.deleteList(row.name,row.type)} title='Delete record' />}
   </>]
 
  deleteList = (name,type) => (window.confirm('Delete record?') && post_call('api/dns/record_delete', {domain_id:this.props.domain_id,name:name,type:type}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => !(row.name === name && row.type === type))})))
 
  render(){
-  return <ContentReport key='rl_cr' header='Records' thead={['Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
-   <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
-   <AddButton key='add' onClick={() => this.changeContent(<RecordInfo key={'record_new_' + rnd()} domain_id={this.props.domain_id} name='new' op='new' />)} title='Add DNS record' />
-  </ContentReport>
+  const status = this.state.status;
+  if (status)
+   if (status === 'OK'){
+    return <ContentReport key='rl_cr' header='Records' thead={['Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
+     <AddButton key='add' onClick={() => this.changeContent(<RecordInfo key='record_info' domain_id={this.props.domain_id} name='new' op='new' />)} title='Add DNS record' />
+    </ContentReport>
+   } else
+    return <CodeArticle key='ca_rl'>Error retrieving record list: {JSON.stringify(this.state.info)}</CodeArticle>
+  else
+   return <Spinner />
  }
 }
 
