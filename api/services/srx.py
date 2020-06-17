@@ -3,7 +3,7 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "AUTHENTICATION"
 
-from rims.core.common import base_auth
+from rims.core.common import basic_auth
 from datetime import datetime
 #
 # Junos configuration:
