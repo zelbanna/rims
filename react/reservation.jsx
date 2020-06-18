@@ -102,7 +102,7 @@ class New extends Component {
 
  render(){
   return <LineArticle key='rsv_art' header='New reservation'>
-   <TextInput key='device' id='device' label='search device' onChange={this.onChange} value={this.state.device} placeholder='search' /> found <TextLine key='matching' id='matching device' text={this.state.matching} />
+   <TextInput key='device' id='device' label='Search device' onChange={this.onChange} value={this.state.device} placeholder='search' /> found <TextLine key='matching' id='matching device' text={this.state.matching} />
    {this.state.device && <SearchButton key='rsv_btn_search' onClick={() => this.findDevice()} title='Find device' />}
    {this.state.device_id && <AddButton key='rsv_btn_new' onClick={() => this.reserveDevice()} title='Reserve device' />}
    </LineArticle>

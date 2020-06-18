@@ -274,7 +274,7 @@ componentDidMount(){
    if (result.count > 0){
     const events = result.events.map(({state, time}) => ({content:state, start:time, style:(state === 'up') ? 'background-color:#26CB20;' : 'background-color:#CB2026;', title:time}));
     const dataset = new vis.DataSet(events);
-    this.timeline = new vis.Timeline(this.canvas.current, dataset, { min:events[events.length - 1].start, align:'left', width:'100%', height:150, zoomMin:60000, zoomMax:1209600000, clickToUse:true});
+    this.timeline = new vis.Timeline(this.canvas.current, dataset, { locale:'en', min:events[events.length - 1].start, align:'left', width:'100%', height:150, zoomMin:60000, zoomMax:1209600000, clickToUse:true});
    } else
     this.canvas.current.innerHTML = 'no events';
   }))

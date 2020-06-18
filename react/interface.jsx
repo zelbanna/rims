@@ -194,7 +194,7 @@ export class Info extends Component {
 class Statistics extends Component {
  constructor(props){
   super(props)
-  this.state = {range:1}
+  this.state = {range:1, visibility: {ib:true, ob:true, ip:true, op:true}}
   this.canvas = React.createRef()
   this.graph = null;
   this.vis = null;
@@ -203,22 +203,28 @@ class Statistics extends Component {
  componentDidMount(){
   import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => {
    this.vis = vis;
-   const options = { width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ left:{ title:{ text:'kbps' } }, right:{ title:{ text:'pps' } } } };
-   const groups = new vis.DataSet([{id:'ib',  content:'In', options: { shaded: { orientation: 'bottom' }}},{id:'ob', content:'Out' }, {id:'ip',  content:'In', options: { shaded: { orientation: 'bottom' }, yAxisOrientation: 'right'}},{id:'op', content:'Out', options: { yAxisOrientation: 'right'}}]);
-   this.graph = new vis.Graph2d(this.canvas.current, [], groups, options);
+   const options = { locale:'en', width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ icons:true, left:{ range:{ min:0 }, title:{ text:'kbps' } }, right:{ range:{ min:0 }, title:{ text:'packets per second' } } } };
+   const groups = new this.vis.DataSet([{id:'ib', content:'In'}, {id:'ob', content:'Out' }, {id:'ip', content:'In', options: { yAxisOrientation: 'right'}},{id:'op', content:'Out', options: { yAxisOrientation: 'right'}}]);
+   this.graph = new this.vis.Graph2d(this.canvas.current, [], groups, options);
    this.updateItems(this.state.range);
   })
  }
 
  updateItems = (range) => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:range}).then(result => {
   const data = result.data.flatMap(({time, in8s, out8s, inUPs, outUPs}) => [{x:new Date(time*1000), y:in8s, group:'ib'},{x:new Date(time*1000), y:out8s, group:'ob'}, {x:new Date(time*1000), y:inUPs, group:'ip'},{x:new Date(time*1000), y:outUPs, group:'op'}]);
-  this.graph.setItems(data);
+  const ds = new this.vis.DataSet(data);
+  this.graph.setItems(ds);
   this.graph.fit();
  });
 
- onChange = (e) => {
+ rangeChange = (e) => {
   this.setState({[e.target.name]:e.target.value})
   this.updateItems(e.target.value);
+ }
+
+ checkChange = (e) => {
+  this.setState({visibility:{...this.state.visibility, [e.target.name]:e.target.checked}});
+  this.graph.setOptions({groups:{visibility:{[e.target.name]:e.target.checked}}})
  }
 
  gotoNow = () => {
@@ -227,15 +233,20 @@ class Statistics extends Component {
  }
 
  render(){
+  const v = this.state.visibility;
   return <Article key='is_art' header='Statistics'>
    <ReloadButton key='reload' onClick={() => this.updateItems(this.state.range)} title='Reload' />
    <RevertButton key='reset' onClick={() => this.gotoNow()} title='Go to now' />
-   <SelectInput key='range' id='range' value={this.state.range} onChange={this.onChange}>
-    <option value='1'>1</option>
-    <option value='4'>4</option>
-    <option value='8'>8</option>
-    <option value='24'>24</option>
-   </SelectInput>hours
+   <SelectInput key='range' id='range' value={this.state.range} onChange={this.rangeChange}>
+    <option value='1'>1h</option>
+    <option value='4'>4h</option>
+    <option value='8'>8h</option>
+    <option value='24'>24h</option>
+   </SelectInput>
+   <CheckboxInput key='ib' id='ib' label='In bps' value={v.ib} onChange={this.checkChange} />
+   <CheckboxInput key='ob' id='ob' label='Out bps' value={v.ob} onChange={this.checkChange} />
+   <CheckboxInput key='ip' id='ip' label='In pps' value={v.ip} onChange={this.checkChange} />
+   <CheckboxInput key='op' id='op' label='Out pps' value={v.op} onChange={this.checkChange} />
    <div className={styles.graphs} ref={this.canvas} />
   </Article>
  }

@@ -4,8 +4,8 @@ import styles from './input.module.css';
 
 const auto_label = (props) => (props.label) ? props.label : props.id;
 
-const input_template = (type,props) => <><label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label><input className={styles.input} type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} size={props.size} /></>
-const line_template = (content,props) => <><label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label>{content}</>
+const input_template = (type,props) => <><label htmlFor={props.id} title={props.title} className={(props.label) ? styles.fixed : styles.auto}>{auto_label(props)}:</label><input className={styles.input} type={type} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} size={props.size} /></>
+const line_template = (content,props) => <><label htmlFor={props.id} title={props.title} className={(props.label) ? styles.fixed : styles.auto}>{auto_label(props)}:</label>{content}</>
 
 //
 // Display Only
@@ -23,11 +23,11 @@ export const PasswordInput = (props) => input_template('password',props);
 export const DateInput = (props) => input_template('date',props);
 export const TimeInput = (props) => input_template('time',props);
 
-export const TextAreaInput = (props) => <><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><textarea id={props.id} name={props.id} onChange={props.onChange} className={styles.textarea} value={props.value} /></>
+export const TextAreaInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><textarea id={props.id} name={props.id} onChange={props.onChange} className={styles.textarea} value={props.value} /></>
 
-export const CheckboxInput = (props) => <><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} className={styles.checkbox} /></>
+export const CheckboxInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} className={styles.checkbox} /></>
 
-export const RadioInput = (props) => <><label htmlFor={props.id} className={styles.label} title={props.title}>{auto_label(props)}:</label><div>{
+export const RadioInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><div>{
   props.options.map((opt,idx) => <Fragment key={idx}>
    <label htmlFor={'ri_'+props.id+'_'+idx}>{opt.text}</label>
    <input type='radio' id={'ri_'+props.id+'_'+idx} name={props.id} onChange={props.onChange} value={opt.value} checked={(props.value.toString() === opt.value.toString()) ? 'checked' : ''}/>
@@ -35,7 +35,7 @@ export const RadioInput = (props) => <><label htmlFor={props.id} className={styl
  }</div></>
 
 export const SelectInput = (props) => <>
-  <label htmlFor={props.id} title={props.title} className={styles.label}>{auto_label(props)}:</label>
+  <label htmlFor={props.id} title={props.title} className={(props.label) ? styles.fixed : styles.auto}>{auto_label(props)}:</label>
   <select name={props.id} onChange={props.onChange} value={(props.value !== null && props.value !== undefined) ? props.value : 'NULL'} className={styles.input}>
   {(props.value === null || props.value === undefined) && props.children.find(child => child.props.value === 'NULL') === undefined && <option value='NULL'>{'<Empty>'}</option>}
   {props.children}

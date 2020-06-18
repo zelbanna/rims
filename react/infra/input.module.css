@@ -6,8 +6,11 @@
 TODO: input-color: transparent
 */
 
-.label { color:var(--std-txt-color); font-weight:bold; padding:2px; text-transform:capitalize; }
-.label[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
+.auto { color:var(--std-txt-color); font-weight:bold; padding:2px; text-transform:capitalize; }
+.auto[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
+.fixed { color:var(--std-txt-color); font-weight:bold; padding:2px; }
+.fixed[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
+
 
 .input { -webkit-appearance:none; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; border-radius:2px; font-size:1rem; overflow:visible }
 .input:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0 0 6px -2px var(--high-color), 0 0 3px -1px var(--high-color) inset;}
