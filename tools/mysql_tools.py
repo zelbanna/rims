@@ -12,16 +12,16 @@ from rims.api import mysql
 from rims.core.engine import Context
 from argparse import ArgumentParser
 parser = ArgumentParser(prog='mysql_tools', description = 'MySQL interworking tool')
-parser.add_argument('config', help = 'RIMS config file')
 parser.add_argument('-d','--diff',    help = 'Compare database schema with schema file', required = False, nargs = 1)
 parser.add_argument('-b','--backup',  help = 'Dumps full database',   required = False, action = 'store_true')
 parser.add_argument('-s','--schema',  help = 'Dumps database schema', required = False, action = 'store_true')
 parser.add_argument('-v','--values',  help = 'Dumps database values', required = False, action = 'store_true')
 parser.add_argument('-r','--restore', help = 'Restore with schema and/or values from restore_file', required = False, nargs = 1)
 parser.add_argument('-p','--patch',   help = 'Patch database schema with new schema file', required = False, nargs = 1)
+parser.add_argument('-c','--config',  help = 'Config file unless config.json', default='../config.json')
 input = parser.parse_args()
-with open(input.config,'r') as file:
- config = load(file)
+with open(ospath.abspath(ospath.join(ospath.dirname(__file__), input.config))) as f:
+ config = load(f)
 ctx = Context(config)
 
 if   input.diff:
