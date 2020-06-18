@@ -68,6 +68,8 @@ def vm_info(aCTX, aArgs):
         vm_if.pop('pos',None)
     if aArgs.get('op') == 'update' or vm != ret['data']['name']:
      ret['update'] = (db.execute("UPDATE device_vm_uuid SET vm = '%s', config = '%s', snmp_id = '%s' WHERE device_uuid = '%s'"%(ret['data']['name'], ret['data']['config'], aArgs['vm_id'],  ret['data']['device_uuid'])) == 1)
+   else:
+    ret['data']['device_id'] = None
  return ret
 
 #
@@ -87,11 +89,7 @@ def vm_map(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   try:
-    aArgs['device_id'] = int(aArgs['device_id'])
-    aArgs['host_id'] = int(aArgs['host_id'])
-   except: pass
-   else:   ret['update'] = (db.execute("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
+   ret['update'] = (db.execute("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
   ret['data'] = db.get_val('device_id') if (db.query("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs) > 0) else ''
  return ret
 

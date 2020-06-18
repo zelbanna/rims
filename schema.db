@@ -140,7 +140,7 @@ CREATE TABLE `device_vm_uuid` (
   UNIQUE KEY `device_id` (`device_id`),
   KEY `host_id` (`host_id`),
   CONSTRAINT `device_vm_uuid_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `device_vm_uuid_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `device_vm_uuid_ibfk_2` FOREIGN KEY (`host_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

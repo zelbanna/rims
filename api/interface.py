@@ -75,12 +75,12 @@ def info(aCTX, aArgs):
      ret['info'] = "Could not update interface, check unique SNMP or IPAM id"
    else:
     aArgs['manual'] = 1
-    try: ret['insert'] = db.insert_dict('interfaces',aArgs)
+    try: ret['update'] = (db.insert_dict('interfaces',aArgs) > 0)
     except Exception as e:
      ret['status'] = 'NOT_OK'
      ret['exception'] = repr(e)
      ret['info'] = "Could not insert interface, check unique SNMP or IPAM id"
-    else: iid = db.get_last_id() if ret['insert'] > 0 else 'new'
+    else: iid = db.get_last_id() if ret['update'] > 0 else 'new'
 
   elif iid == 'new':
    pass
@@ -137,6 +137,9 @@ def info(aCTX, aArgs):
     ret['peer'] = db.get_row()
   else:
    ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':None,'name':aArgs.get('name','Unknown'),'description':'Unknown','class':aArgs.get('class','wired')}
+   ret['peer'] = None
+   if 'ip' in extra:
+    ret['alternatives'] = []
  return ret
 
 #

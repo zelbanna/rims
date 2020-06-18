@@ -183,10 +183,12 @@ class Info extends Component{
 
  changeContent = (elem) => this.setState({content:elem});
 
- changeImport = (intf) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key={'interface_info_'+intf[0]} device_id={this.state.data.device_id} class='virtual' mac={intf[1].mac} name={intf[1].name} interface_id={intf[1].interface_id} changeSelf={this.changeContent} />}))
-
  componentDidMount(){
-  post_call('api/devices/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => this.setState(result))
+  post_call('api/devices/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => {
+   if (result.data.device_id === null)
+    result.data.device_id = '';
+   this.setState(result);
+  })
  }
 
  syncDatabase(){
@@ -197,12 +199,14 @@ class Info extends Component{
   post_call('api/devices/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
  }
 
- interfaceButton(intf){
+ changeImport = (iif) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key='interface_info' device_id={this.state.data.device_id} class='virtual' mac={iif.mac} name={iif.name} interface_id={iif.interface_id} changeSelf={this.changeContent} />}))
+
+ interfaceButton(vm_if,iif){
   if(this.state.data.device_id){
-   if (intf[1].interface_id)
-    return <InfoButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport([intf[0],{interface_id:intf[1].interface_id}])} />
+   if (iif.interface_id)
+    return <InfoButton key='info' onClick={() => this.changeImport({interface_id:iif.interface_id})} />
    else
-    return <AddButton key={'hyp_if_btn_'+intf[0]} onClick={() => this.changeImport({...intf,interface_id:'new'})} />
+    return <AddButton key='add' onClick={() => this.changeImport({...iif, interface_id:'new'})} />
   } else
    return <div />
  }
@@ -220,8 +224,9 @@ class Info extends Component{
       <TextLine key='uuid' id='uuid' label='UUID' text={data.device_uuid} /><div />
       <StateLine key='state' id='state' state={data.state} /><div />
       <TextLine key='config' id='config' text={data.config} /><div />
-      {Object.entries(this.state.interfaces).map((row,idx) => <Fragment key={idx}><TextLine key='intf' id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row)}</Fragment>)}
+      {Object.entries(this.state.interfaces).map(row => <Fragment key={row[0]}><TextLine key='interface' id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row[0],row[1])}</Fragment>)}
      </InfoColumns>
+     <ReloadButton key='reload' onClick={() => this.componentDidMount()} title='Reload' />
      <SaveButton key='save' onClick={() => this.updateInfo()} title='Save mapping' />
      <SyncButton key='sync' onClick={() => this.syncDatabase()} title='Resync database with VM info' />
      {data.device_id && <GoButton key='go' onClick={() => this.changeSelf(<DeviceInfo key='device_info' id={data.device_id} changeSelf={this.props.changeSelf} />)} title='VM device info' />}

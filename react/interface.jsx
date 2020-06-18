@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react'
-import { post_call, rnd } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { Spinner, StateLeds, Article, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, HealthButton, InfoButton, ItemsButton, LinkButton, ReloadButton, RemoveButton, RevertButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
@@ -41,7 +41,7 @@ export class List extends Component{
   if (this.state.data) {
    return <ContentReport key='il_cl' header='Interfaces' thead={['SNMP','Name','MAC','IP Address','Description','Type','Link','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='il_btn_reload' onClick={() => this.componentDidMount()} />
-    <AddButton key='il_btn_add' onClick={() => this.changeContent(<Info key={'interface_info_' + rnd()} device_id={this.props.device_id} interface_id='new' changeSelf={this.props.changeSelf} />) } title='Add interface' />
+    <AddButton key='il_btn_add' onClick={() => this.changeContent(<Info key='interface_info' device_id={this.props.device_id} interface_id='new' changeSelf={this.props.changeSelf} />) } title='Add interface' />
     <TextButton key='il_btn_rset' onClick={() => this.resetStatus()} title='Reset interface state manually' text='Reset' />
     <TextButton key='il_btn_disc' onClick={() => this.discoverInterfaces()} title='Discover device interfaces' text='Discover' />
     <TextButton key='il_btn_lldp' onClick={() => this.changeContent(<LLDP key='interface_lldp' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />) } title='Map interface connections' text='LLDP' />
@@ -64,7 +64,12 @@ export class Info extends Component {
  changeContent = (elem) => this.props.changeSelf(elem);
 
  componentDidMount(){
-  post_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, device_id:this.props.device_id, class:this.props.class, extra:['classes','ip']}).then(result => this.setState(result));
+  post_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, device_id:this.props.device_id, class:this.props.class, extra:['classes','ip']}).then(result => this.setState({...result, update:undefined}));
+ }
+
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.componentDidMount();
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
@@ -138,10 +143,9 @@ export class Info extends Component {
      return <div>Intermediate interface operation state</div>
    } else {
     const primary = (this.state.data.ipam_id);
+    const old = (this.state.data.interface_id !== 'new');
     const peer = this.state.peer;
-    let opresult = '';
-    if (this.state.update !== undefined)
-     opresult = 'Updated: ' + JSON.stringify(this.state.update);
+    const opresult = (this.state.update === undefined) ? '' : 'Updated: ' + JSON.stringify(this.state.update)
     return (<InfoArticle key='ia_interface_info' header='Interface'>
      <InfoColumns key='ic' columns={3}>
       <TextLine key='id' id='id' label='Local ID' text={this.state.data.interface_id} /><div />
@@ -156,10 +160,10 @@ export class Info extends Component {
       {peer && <><TextLine key='peer_dev_id' id='peer_device' label='Peer Device' text={peer.device_id} /><div/></>}
      </InfoColumns>
      {'changeSelf' in this.props && <ItemsButton key='list' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Interfaces' />}
-     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
+     {this.props.interface_id !== 'new' && <ReloadButton key='reload' onClick={() => this.componentDidMount()} />}
      <SaveButton key='save' onClick={() => this.updateInfo()} title='Save interface information' />
-     {!peer && this.state.data.interface_id !== 'new' && ['wired','optical'].includes(this.state.data.class) && <LinkButton key='connect' onClick={() => this.setState({op:'connect_device'})} title='Connect peer interface' />}
-     <AddButton key='add' onClick={() => this.stateIpam()} title='Add IP' />
+     {old && !peer && ['wired','optical'].includes(this.state.data.class) && <LinkButton key='connect' onClick={() => this.setState({op:'connect_device'})} title='Connect peer interface' />}
+     {old && <AddButton key='add' onClick={() => this.stateIpam()} title='Add IP' />}
      <Result key='result' result={opresult} />
     </InfoArticle>)
    }
