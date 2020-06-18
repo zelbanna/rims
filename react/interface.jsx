@@ -152,8 +152,8 @@ export class Info extends Component {
       <TextInput key='mac' id='mac' value={this.state.data.mac} onChange={this.onChange} /><div />
       {primary && <><TextLine key='ip' id='ip' label='Primary IP' text={this.state.primary.ip} /><div><GoButton key='go' onClick={() => this.changeIpam(this.state.primary.id)} title='Edit IPAM entry' /><RemoveButton key='remove' onClick={() => this.ipamClear(this.state.primary.id)} title='Clear IPAM entry' /><DeleteButton key='delete' onClick={() => this.ipamDelete(this.state.primary.id)} title='Delete IPAM entry' /></div></>}
       {this.state.alternatives.map(row => <Fragment key={row.ip}><TextLine key='ip' id={row.ip} label='Alternative IP' text={row.ip} /><div><GoButton key='go' onClick={() => this.changeIpam(row.id)} title='Edit IPAM entry' /><SyncButton key='primary' onClick={() => this.ipamPrimary(row.id)} title='Make primary' /><DeleteButton key='delete' onClick={() => this.ipamDelete(row.id)} title='Delete IPAM entry' /></div></Fragment>)}
-      {peer && <><TextLine key='peer_int_id' id='peer_interface' label='Peer interface' text={this.state.peer.interface_id} /><UnlinkButton key='ii_peer_unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></>}
-      {peer && <><TextLine key='peer_dev_id' id='peer_device' text={this.state.peer.device_id} /><div/></>}
+      {peer && <><TextLine key='peer_int_id' id='peer_interface' label='Peer Interface' text={peer.interface_id} /><UnlinkButton key='unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></>}
+      {peer && <><TextLine key='peer_dev_id' id='peer_device' label='Peer Device' text={peer.device_id} /><div/></>}
      </InfoColumns>
      {'changeSelf' in this.props && <ItemsButton key='list' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.state.data.device_id} changeSelf={this.props.changeSelf} />)} title='Interfaces' />}
      <ReloadButton key='reload' onClick={() => this.componentDidMount()} />

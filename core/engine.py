@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "6.7"
-__build__ = 365
+__build__ = 366
 __all__ = ['Context']
 
 from crypt import crypt
@@ -102,7 +102,7 @@ class Context(object):
    env['version'] = __version__
    env['build'] = __build__
   else:
-   env = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__}, aDataOnly = True)
+   env = self.rest_call("%s/internal/system/environment"%self.config['master'], aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__})
    env['nodes']['master']['url'] = self.config['master']
    for k,v in env['tokens'].items():
     v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=timezone.utc)
@@ -233,7 +233,6 @@ class Context(object):
  #
  def house_keeping(self):
   """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
-  ret = {}
   now = datetime.now(timezone.utc)
   # Token management
   expired = []
@@ -243,7 +242,6 @@ class Context(object):
     expired.append(k)
    else:
     remain.append(v)
-  ret['expired'] = len(expired)
   for t in expired:
    self.tokens.pop(t,None)
   # Authentication management
@@ -253,16 +251,15 @@ class Context(object):
   users = [{'ip':v['ip'],'alias':alias[v['id']],'timeout':min(int((v['expires']-now).total_seconds()),7200)} for v in remain]
   for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
    self.node_function(infra['node'], "services.%s"%infra['service'], 'sync')(aArgs = {'id':infra['id'],'users':users})
-  ret['auth'] = len(users)
-  ret['collected'] = garbage_collect()
-  return ret
+  garbage_collect()
+  return {'function':'house_keeping','status':'OK'}
 
  ################# API AND INTERNAL FUNCTIONS ##############
  #
  def node_function(self, aNode, aModule, aFunction, **kwargs):
   """
   Node function freezes a function (or convert to a REST call at node) with enough info so that the returned lambda can be used multiple times AND interchangably.
-  For this to work the argument to the function will have to be keyworded/**kwargs because if using REST then rest_call function picks everything from kwargs
+  For interchangably to work the argument to the function will have to be keyworded/**kwargs because if using REST then rest_call function picks everything from kwargs
   """
   if self.node != aNode:
    kwargs['aDataOnly'] = True
