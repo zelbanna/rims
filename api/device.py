@@ -431,7 +431,7 @@ def new(aCTX, aArgs):
  with aCTX.db as db:
   if aArgs.get('ipam_network_id') and __is_ip(aArgs.get('ip')):
    from rims.api.ipam import address_info, address_sanitize
-   res = address_info(aCTX, {'op':'insert','ip':aArgs['ip'],'network_id':aArgs['ipam_network_id'],'hostname':'me-%s'%aArgs['hostname'],'a_domain_id':aArgs.get('if_domain_id')})
+   res = address_info(aCTX, {'op':'insert','ip':aArgs['ip'],'network_id':aArgs['ipam_network_id'],'hostname':'%s-me'%aArgs['hostname'],'a_domain_id':aArgs.get('if_domain_id')})
    if not res['status'] == 'OK':
     ret['info'] = res['info']
     return ret
@@ -447,13 +447,13 @@ def new(aCTX, aArgs):
   data['id']= db.get_last_id()
   if data['mac'] > 0 or data['ipam']:
    from rims.api.dns import record_info
-   data['interface'] = (db.execute("INSERT INTO interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me-%(id)s','auto_created')"%data) > 0)
+   data['interface'] = (db.execute("INSERT INTO interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me','auto_created')"%data) > 0)
    data['management_id'] = db.get_last_id()
    db.execute("UPDATE devices SET management_id = %(management_id)s WHERE id = %(id)s"%data)
    if data['ipam'] and not aArgs.get('a_domain_id','NULL') == 'NULL' and not aArgs.get('if_domain_id','NULL') == 'NULL':
     db.query("SELECT id, name FROM domains WHERE id IN (%s,%s)"%(aArgs['a_domain_id'],aArgs['if_domain_id']))
     domains = db.get_dict('id')
-    data['dns'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(aArgs['hostname'],domains[int(aArgs['a_domain_id'])]['name']), 'type':'CNAME', 'content':'me-%s.%s.'%(aArgs['hostname'],domains[int(aArgs['if_domain_id'])]['name']) ,'op':'insert'})['status']
+    data['dns'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(aArgs['hostname'],domains[int(aArgs['a_domain_id'])]['name']), 'type':'CNAME', 'content':'%s-me.%s.'%(aArgs['hostname'],domains[int(aArgs['if_domain_id'])]['name']) ,'op':'insert'})['status']
 
  ret['status'] = 'OK'
  return ret
@@ -472,7 +472,9 @@ def delete(aCTX, aArgs):
  with aCTX.db as db:
   if (db.query("SELECT interface_id FROM interfaces WHERE device_id = %s"%aArgs['id']) > 0):
    from rims.api.interface import delete as interface_delete
-   ret['interfaces'] = interface_delete(aCTX, {'interfaces':[x['interface_id'] for x in db.get_rows()]})
+   ret['interfaces'] = db.get_rows()
+   for x in ret['interfaces']:
+    x['res'] = interface_delete(aCTX, x)
   if (db.query("SELECT dt.base FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = %s"%aArgs['id']) > 0) and (db.get_val('base') == 'pdu'):
    ret['pems'] = db.execute("UPDATE device_pems SET pdu_id = NULL WHERE pdu_id = %s"%aArgs['id'])
   if (db.query("SELECT a_domain_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_domain_id WHERE devices.id = %s"%aArgs['id']) == 1):
@@ -536,17 +538,17 @@ def discover(aCTX, aArgs):
    for ip_str,entry in ip_addresses.items():
     ip = ip_address(ip_str)
     ip_int = int(ip)
-    ipam = address_info(aCTX, {'op':'insert','ip':ip_str,'network_id':aArgs['network_id'],'a_domain_id':aArgs['if_domain_id'],'hostname':'me-%s'%ip_int})
+    ipam = address_info(aCTX, {'op':'insert','ip':ip_str,'network_id':aArgs['network_id'],'a_domain_id':aArgs['if_domain_id'],'hostname':'host-%s-me'%ip_int})
     if ipam['status'] == 'OK':
      entry['type_id'] = devtypes[entry.pop('type','generic')] if entry else devtypes['generic']
      entry['hostname'] = 'host-%s'%ip_int
      entry['a_domain_id'] = aArgs['a_domain_id']
      if (db.insert_dict('devices',entry) == 1):
       dev_id = db.get_last_id()
-      if (db.execute("INSERT INTO interfaces (device_id,ipam_id,name,description) VALUES(%s,%s,'me-%s','auto_created')"%(dev_id, ipam['data']['id'], ip_int)) > 0):
+      if (db.execute("INSERT INTO interfaces (device_id,ipam_id,name,description) VALUES(%s,%s,'me','auto_created')"%(dev_id, ipam['data']['id'])) > 0):
        db.execute("UPDATE devices SET management_id = %s WHERE id = %s"%(db.get_last_id(), dev_id))
        if aArgs['if_domain_id'] and aArgs['a_domain_id']:
-        record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(entry['hostname'],domains[int(aArgs['a_domain_id'])]), 'type':'CNAME', 'content':'%s.%s.'%('me-%s'%ip_int,domains[int(aArgs['if_domain_id'])]) ,'op':'insert'})
+        record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':'host-%s.%s'%(ip_int,domains[int(aArgs['a_domain_id'])]), 'type':'CNAME', 'content':'host-%s-me.%s.'%(ip_int,domains[int(aArgs['if_domain_id'])]) ,'op':'insert'})
      else:
       address_delete(aCTX,{'id':ipam['data']['id']})
  ret['time'] = int(time()) - start_time

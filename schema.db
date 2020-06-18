@@ -202,12 +202,22 @@ CREATE TABLE `fdb` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `interface_alternatives`;
+CREATE TABLE `interface_alternatives` (
+  `interface_id` int(10) unsigned NOT NULL,
+  `ipam_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`ipam_id`),
+  KEY `interface_id` (`interface_id`),
+  CONSTRAINT `interface_alternatives_ibfk_1` FOREIGN KEY (`interface_id`) REFERENCES `interfaces` (`interface_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `interface_alternatives_ibfk_2` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `interfaces`;
 CREATE TABLE `interfaces` (
   `interface_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `device_id` int(10) unsigned NOT NULL,
   `ipam_id` int(10) unsigned DEFAULT NULL,
-  `ipam_alt_id` int(10) unsigned DEFAULT NULL,
   `manual` tinyint(1) unsigned DEFAULT 0,
   `mac` bigint(20) DEFAULT 0,
   `snmp_index` int(10) unsigned DEFAULT NULL,
@@ -219,12 +229,10 @@ CREATE TABLE `interfaces` (
   PRIMARY KEY (`interface_id`),
   UNIQUE KEY `device_index` (`device_id`,`snmp_index`),
   UNIQUE KEY `ipam_id` (`ipam_id`),
-  UNIQUE KEY `ipam_alt_id` (`ipam_alt_id`),
   KEY `connection_id` (`connection_id`),
   CONSTRAINT `interfaces_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `interfaces_ibfk_2` FOREIGN KEY (`connection_id`) REFERENCES `connections` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `interfaces_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT `interfaces_ibfk_4` FOREIGN KEY (`ipam_alt_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `interfaces_ibfk_3` FOREIGN KEY (`ipam_id`) REFERENCES `ipam_addresses` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

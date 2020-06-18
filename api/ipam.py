@@ -153,22 +153,6 @@ def network_discover(aCTX, aArgs):
   ret['status'] = 'OK'
  return ret
 
-#
-#
-def network_discrepancy(aCTX, aArgs):
- """Function retrieves orphan entries with no matching device or other use
-
- Args:
-
- Output:
-  entries. list of ID and IP which are orphan
- """
- ret = {}
- with aCTX.db as db:
-  db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.id NOT IN (SELECT ipam_id FROM interfaces WHERE ipam_id IS NOT NULL UNION SELECT ipam_alt_id FROM interfaces WHERE ipam_alt_id IS NOT NULL) ORDER BY ia.ip")
-  ret['data'] = db.get_rows()
- return ret
-
 ################################## Addresses #############################
 #
 # Addresses contains types, IP (v4 for now)
@@ -370,8 +354,9 @@ def address_find(aCTX, aArgs):
    db.query("SELECT INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.network_id = %(network_id)s"%aArgs)
    existing = [x['ip'] for x in db.get_rows()]
    for addr in net.hosts():
-    if not addr in existing:
-     return {'status':'OK', 'ip':str(addr)}
+    ipstr = str(addr)
+    if not ipstr in existing:
+     return {'status':'OK', 'ip':ipstr}
   else:
    from random import randint
    return {'status':'OK','ip':str(ip_address(int.from_bytes(net.network_address.packed,byteorder='big') + randint(1,min(100000,net.num_addresses))))}
@@ -476,6 +461,8 @@ def clear(aCTX, aArgs):
 def check(aCTX, aArgs):
  """ Initiate a status check for all or a subset of IP:s that belongs to proper interfaces
 
+ TODO: check all alternatives, LEFT JOIN interface_alternatives AS iia ON iia.interface_id = di.interface_id .... OR iia.ipam_id = ia.id
+
  Args:
   - networks (optional). List of network ids to check
   - repeat (optional). If declared, it's an integer with frequency.. This is the way to keep status checks 'in-memory'
@@ -484,7 +471,7 @@ def check(aCTX, aArgs):
  with aCTX.db as db:
   db.query("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   networks = db.get_rows()
-  db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id OR di.ipam_alt_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
+  db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
   addresses = db.get_rows()
 
  if 'repeat' in aArgs:
@@ -583,6 +570,7 @@ def server_leases(aCTX, aArgs):
 def server_macs(aCTX, aArgs):
  """Function returns all MACs for ip addresses belonging to networks belonging to particular server.
 
+ TODO: interface_alternatives like 'check' function
  Args:
   - server_id (required)
 
@@ -590,7 +578,7 @@ def server_macs(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id OR di.ipam_alt_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'])
+  ret['count'] = db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'])
   ret['data']  = db.get_rows()
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])

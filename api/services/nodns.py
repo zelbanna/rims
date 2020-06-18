@@ -132,10 +132,15 @@ def record_info(aCTX, aArgs):
    if aArgs['name'][-1] == '.':
     aArgs['name'] = aArgs['name'][:-1]
    ret['data'] = aArgs
-   if op == 'insert':
-    ret['status'] = 'OK' if (db.execute("INSERT INTO records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0) else 'NOT_OK'
-   elif op == 'update':
-    ret['status'] = 'OK' if (db.execute("UPDATE records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0) else 'NOT_OK'
+   try:
+    if op == 'insert':
+     res = (db.execute("INSERT INTO records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0)
+    elif op == 'update':
+     res = (db.execute("UPDATE records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
+   except Exception as e:
+    ret.update({'status':'NOT_OK','info':str(e)})
+   else:
+    ret['status'] = 'OK' if res else 'NOT_OK'
  return ret
 
 #

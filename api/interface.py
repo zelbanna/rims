@@ -33,28 +33,20 @@ def list(aCTX, aArgs):
 def info(aCTX, aArgs):
  """Show or update a specific interface for a device
 
- TODO: interface_ipam table
-  - make interface_ipam table and keep all addresses there, primary ipam will remain in interface for management purposes
-  - with unique index
-  - remove swap and instead provide address_list with ipam_id/ip
-  - modify ipam_check so that it covers all interfaces for infra/oob devices
-
  Args:
   - interface_id (required) 'new'/<if-id>
   - device_id (required)
   - ipam_id (optional)
-  - ipam_alt_id (optional)
   - mac (optional)
   - connection_id
   - snmp_index (optional)
   - name (optional)
   - description (optional)
-  - op (optional), 'update','auto_insert','swap'
+  - op (optional), 'update','ipam_primary', 'ipam_create', 'ipam_clear'
 
   - extra (optional) list of extra data to pull, 'classes'/'ip'
 
-  - ipam_record (optional). IPAM record to create for ipam_id/ipam_alt_id
-  - entry (conditional). 'ipam_id'/'ipam_alt_id'.
+  - record (optional). IPAM record to create for ipam_id
 
  Output:
  """
@@ -63,55 +55,71 @@ def info(aCTX, aArgs):
  extra = aArgs.pop('extra',[])
  op = aArgs.pop('op',None)
  with aCTX.db as db:
-  if op == 'swap':
-   ret['update'] = (db.execute("UPDATE interfaces SET ipam_id=(@temp:=ipam_id), ipam_id = ipam_alt_id, ipam_alt_id = @temp WHERE interface_id = %s"%iid) > 0)
-   ret['status'] = 'OK' if ret['update'] else 'NOT_OK'
-  elif op in ['update','auto_insert']:
+  if op == 'update':
+   # IPAM_id has it's own ops
+   aArgs.pop('ipam_id',None)
    if 'mac' in aArgs:
     try:   aArgs['mac'] = int(aArgs['mac'].replace(':',""),16)
     except:aArgs['mac'] = 0
-   if 'ipam_record' in aArgs:
-    entry = aArgs.pop('entry','ipam_id')
-    args = aArgs.pop('ipam_record',None)
-    args.update({'op':'insert','id':'new'})
-    if 'hostname' in aArgs:
-     args['hostname'] = aArgs['hostname']
-    elif (db.query("SELECT name FROM interfaces WHERE interface_id = '%s'"%iid) > 0):
-     args['hostname'] = db.get_val('name')
-    else:
-     args['hostname'] = 'unknown'
-    from rims.api.ipam import address_info
-    ret['ipam'] = address_info(aCTX, args)
-    ret['status'] = ret['ipam'].pop('status','NOT_OK')
-    if ret['status'] == 'OK':
-     aArgs[entry] = ret['ipam']['data']['id']
-    else:
-     ret['info'] = ret['ipam'].pop('info','IPAM unknown error')
-   elif 'ipam_id' in aArgs:
-    try:    aArgs['ipam_id'] = int(aArgs['ipam_id'])
-    except: aArgs['ipam_id'] = None
    if 'snmp_index' in aArgs:
     try:    aArgs['snmp_index'] = int(aArgs['snmp_index'])
     except: aArgs['snmp_index'] = None
    if 'connection_id' in aArgs:
     try:    aArgs['connection_id'] = int(aArgs['connection_id'])
     except: aArgs['connection_id'] = None
+   if not iid == 'new':
+    try: ret['update'] = (db.update_dict('interfaces',aArgs,"interface_id=%s"%iid) == 1)
+    except Exception as e:
+     ret['status'] = 'NOT_OK'
+     ret['exception'] = repr(e)
+     ret['info'] = "Could not update interface, check unique SNMP or IPAM id"
+   else:
+    aArgs['manual'] = 1
+    try: ret['insert'] = db.insert_dict('interfaces',aArgs)
+    except Exception as e:
+     ret['status'] = 'NOT_OK'
+     ret['exception'] = repr(e)
+     ret['info'] = "Could not insert interface, check unique SNMP or IPAM id"
+    else: iid = db.get_last_id() if ret['insert'] > 0 else 'new'
 
+  elif iid == 'new':
+   pass
+
+  elif op == 'ipam_primary':
+   db.query("SELECT ipam_id FROM interfaces WHERE interface_id = %s"%iid)
+   primary = db.get_val('ipam_id')
+   ret['status'] = 'OK' if db.execute("UPDATE interfaces SET ipam_id = %s WHERE interface_id = %s"%(aArgs['ipam_id'], iid)) else 'NOT_OK'
+   if primary:
+    db.execute("UPDATE interface_alternatives SET ipam_id = %s WHERE ipam_id = %s AND interface_id = %s"%(primary, aArgs['ipam_id'], iid))
+    ret['result'] = 'swap'
+   else:
+    db.execute("DELETE FROM interface_alternatives WHERE ipam_id = %s AND interface_id = %s"%(aArgs['ipam_id'], iid))
+    ret['result'] = 'change'
+
+  elif op == 'ipam_clear':
+   if (db.execute("UPDATE interfaces SET ipam_id = NULL WHERE ipam_id = %s AND interface_id = %s"%(aArgs['ipam_id'],iid)) > 0):
+    ret['status'] = 'OK'
+   elif(db.execute("DELETE FROM interface_alternatives  WHERE ipam_id = %s AND interface_id = %s"%(aArgs['ipam_id'],iid)) > 0):
+    ret['status'] = 'OK'
+   else:
+    ret['status'] = 'NOT_OK'
+
+  elif op == 'ipam_create':
+   args = aArgs['record']
+   args.update({'op':'insert','id':'new'})
+   if 'hostname' in args:
+    args['hostname'] = args['hostname']
+   elif (db.query("SELECT CONCAT(devices.hostname,'-',di.name) AS hostname FROM interfaces AS di LEFT JOIN devices ON di.device_id = devices.id WHERE interface_id = '%s'"%iid) > 0):
+    args['hostname'] = db.get_val('hostname')
+   else:
+    args['hostname'] = 'unknown'
+   from rims.api.ipam import address_info
+   ret['ipam'] = address_info(aCTX, args)
+   ret['status'] = ret['ipam'].pop('status','NOT_OK')
    if ret['status'] == 'OK':
-    if not iid == 'new':
-     try:    ret['update'] = (db.update_dict('interfaces',aArgs,"interface_id=%s"%iid) == 1)
-     except Exception as e:
-      ret['status'] = 'NOT_OK'
-      ret['exception'] = repr(e)
-      ret['info'] = "Could not update interface, check unique SNMP or IPAM id"
-    else:
-     aArgs['manual'] = 0 if op == 'auto_insert' else 1
-     try:    ret['insert'] = db.insert_dict('interfaces',aArgs)
-     except Exception as e:
-      ret['status'] = 'NOT_OK'
-      ret['exception'] = repr(e)
-      ret['info'] = "Could not insert interface, check unique SNMP or IPAM id"
-     else:   iid = db.get_last_id() if ret['insert'] > 0 else 'new'
+    db.execute("INSERT INTO interface_alternatives SET interface_id = %s, ipam_id = %s"%(iid,ret['ipam']['data']['id']))
+   else:
+    ret['info'] = ret['ipam'].pop('info','IPAM unknown error')
 
   if 'classes' in extra:
    db.query("SHOW COLUMNS FROM interfaces LIKE 'class'")
@@ -121,41 +129,62 @@ def info(aCTX, aArgs):
    ret['data'] = db.get_row()
    ret['data']['mac'] = ':'.join(("%s%s"%x).upper() for x in zip(*[iter("{:012x}".format(ret['data']['mac']))]*2))
    ret['data'].pop('manual',None)
-   if 'ip' in extra and ret['data']['ipam_id']:
-    db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.id IN (%s)"%','.join([str(x) for x in [ret['data']['ipam_id'],ret['data']['ipam_alt_id']] if x]))
-    ret['ip'] = {x['id']:x['ip'] for x in db.get_rows()}
+   if 'ip' in extra or op[:4] == 'ipam':
+    ret['alternatives'] = db.get_rows() if (db.query("SELECT id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE id IN (SELECT ipam_id FROM interface_alternatives WHERE interface_id = %s)"%iid) > 0) else []
+    if ret['data']['ipam_id']:
+     ret['primary'] = db.get_row() if db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia WHERE ia.id = %s"%ret['data']['ipam_id']) > 0 else {}
    if ret['data']['connection_id'] and (db.query("SELECT interface_id,device_id FROM interfaces AS di WHERE connection_id = %(connection_id)s AND device_id <> %(device_id)s"%ret['data']) > 0):
     ret['peer'] = db.get_row()
   else:
-   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'ipam_alt_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':None,'name':aArgs.get('name','Unknown'),'description':'Unknown','class':aArgs.get('class','wired')}
+   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':None,'name':aArgs.get('name','Unknown'),'description':'Unknown','class':aArgs.get('class','wired')}
  return ret
 
 #
 #
 def delete(aCTX, aArgs):
- """Delete device interfaces using either id interface(s)
+ """Delete device interfaces using either id of interface or device (the latter where interfaces are not up or bound to ip addresses)
 
  Args:
-  - interface (optional required)
+  - interface_id (optional required)
   - device_id (optional_required)
 
  Output:
-  - interfaces. List of id:s of deleted interfaces
   - cleared. Number of cleared connections
   - deleted. Number of deleted interfaces
  """
- ret = {'interfaces':[],'cleared':0,'deleted':0}
+ ret = {}
  with aCTX.db as db:
   if 'device_id' in aArgs:
-   # ret['cleared'] = db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE device_id = %s)"%aArgs['device_id'])
-   ret['deleted'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND ipam_alt_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s)"%aArgs)
-  elif 'interfaces' in aArgs:
+   ret['deleted'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s) AND NOT EXISTS (SELECT 1 FROM interface_alternatives AS iia WHERE iia.interface_id = interfaces.interface_id) "%aArgs)
+  elif 'interface_id' in aArgs:
    from rims.api.ipam import address_delete
-   for id in aArgs['interfaces']:
-    ipam = address_delete(aCTX, {'id':db.get_val('ipam_id')})['status'] if (db.query("SELECT ipam_id FROM interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id) > 0) else "NO_IPAM"
-    ret['cleared'] += db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
-    ret['deleted'] += db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id)
-    ret['interfaces'].append({'id':id,'ipam':ipam})
+   id = aArgs['interface_id']
+   ret['primary'] = address_delete(aCTX, {'id':db.get_val('ipam_id')})['status'] if (db.query("SELECT ipam_id FROM interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id) > 0) else "NO_PRIMARY_IPAM"
+   if (db.query("SELECT ipam_id FROM interface_alternatives AS iia WHERE interface_id = %s"%id) > 0):
+    ret['alternatives'] = []
+    for ipam in db.get_rows():
+     ret['alternatives'].append({'id':ipam['ipam_id'], 'status':address_delete(aCTX, {'id':ipam['ipam_id']})['status']})
+   ret['cleared'] = db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
+   ret['deleted'] = (db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id) > 0)
+ return ret
+
+#
+#
+def addresses(aCTX, aArgs):
+ """Function returns all addresses associated with interface
+
+ Args:
+  - interface_id
+
+ Output:
+  - addresses
+  - primary
+
+ """
+ ret = {}
+ with aCTX.db as db:
+  ret['primary'] = db.get_row() if db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %s"%aArgs['interface_id']) > 0 else {}
+  ret['alternatives'] = db.get_rows() if db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN interface_alternatives AS iia ON iia.ipam_id = ia.id WHERE iia.interface_id = %s"%aArgs['interface_id']) > 0 else []
  return ret
 
 #

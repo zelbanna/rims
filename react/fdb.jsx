@@ -44,7 +44,7 @@ export class Device extends Component {
 
  syncFDB(){
   this.setState({wait:<Spinner />})
-  post_call('api/fdb/sync',{id:this.props.id, ip:this.props.ip, type:this.props.type}).then(result => this.setState({wait:null}));
+  post_call('api/fdb/sync',{id:this.props.id, ip:this.props.ip, type:this.props.type}).then(result => result.status === 'OK' && post_call('api/fdb/list',{field:"device_id",search:this.props.id, extra:['oui']}).then(result => this.setState({...result, wait:null})));
  }
 
  changeInterface = (interface_id) => import('./interface.jsx').then(lib => this.changeContent(<lib.Info key='interface_info' device_id={this.props.id} interface_id={interface_id} changeSelf={this.changeContent} />))
