@@ -32,7 +32,7 @@ export class List extends Component{
    <>
     <StateLeds key='state' state={[row.if_state,row.ip_state]} />
     <InfoButton key='info' onClick={() => this.changeContent(<Info key={row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
-    {row.snmp_index && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} />)} title='Interface stats' />}
+    {row.snmp_index && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} name={row.name} />)} title='Interface stats' />}
     <DeleteButton key='del' onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
     {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key='link' onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
    </>]
@@ -203,7 +203,7 @@ class Statistics extends Component {
  componentDidMount(){
   import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => {
    this.vis = vis;
-   const options = { locale:'en', width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ icons:true, left:{ range:{ min:0 }, title:{ text:'kbps' } }, right:{ range:{ min:0 }, title:{ text:'packets per second' } } } };
+   const options = { locale:'en', width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ alignZeros:false , icons:true, left:{ title:{ text:'kbps' } }, right:{ title:{ text:'packets per second' } } } };
    const groups = new this.vis.DataSet([{id:'ib', content:'In'}, {id:'ob', content:'Out' }, {id:'ip', content:'In', options: { yAxisOrientation: 'right'}},{id:'op', content:'Out', options: { yAxisOrientation: 'right'}}]);
    this.graph = new this.vis.Graph2d(this.canvas.current, [], groups, options);
    this.updateItems(this.state.range);
@@ -211,9 +211,8 @@ class Statistics extends Component {
  }
 
  updateItems = (range) => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:range}).then(result => {
-  const data = result.data.flatMap(({time, in8s, out8s, inUPs, outUPs}) => [{x:new Date(time*1000), y:in8s, group:'ib'},{x:new Date(time*1000), y:out8s, group:'ob'}, {x:new Date(time*1000), y:inUPs, group:'ip'},{x:new Date(time*1000), y:outUPs, group:'op'}]);
-  const ds = new this.vis.DataSet(data);
-  this.graph.setItems(ds);
+  const dataset = new this.vis.DataSet(result.data.flatMap(({time, in8s, out8s, inUPs, outUPs}) => [{x:new Date(time*1000), y:in8s, group:'ib'},{x:new Date(time*1000), y:out8s, group:'ob'}, {x:new Date(time*1000), y:inUPs, group:'ip'},{x:new Date(time*1000), y:outUPs, group:'op'}]));
+  this.graph.setItems(dataset);
   this.graph.fit();
  });
 
@@ -237,7 +236,10 @@ class Statistics extends Component {
   return <Article key='is_art' header='Statistics'>
    <ReloadButton key='reload' onClick={() => this.updateItems(this.state.range)} title='Reload' />
    <RevertButton key='reset' onClick={() => this.gotoNow()} title='Go to now' />
-   <SelectInput key='range' id='range' value={this.state.range} onChange={this.rangeChange}>
+   <br />
+   <TextLine key='name' id='name' label='Interface name' text={this.props.name} />
+   <br />
+   <SelectInput key='range' id='range' label='Time range' value={this.state.range} onChange={this.rangeChange}>
     <option value='1'>1h</option>
     <option value='4'>4h</option>
     <option value='8'>8h</option>
