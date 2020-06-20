@@ -329,7 +329,7 @@ def address_sanitize(aCTX, aArgs):
    if hostname[i].isalnum():
     special = False
     parsed.append(hostname[i])
-   elif hostname[i] in ['-',' '] and not special:
+   elif hostname[i] in ['-',' ',',','/'] and not special:
     parsed.append('-')
     special = True
   ret['sanitized'] = ''.join(parsed)

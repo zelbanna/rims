@@ -96,9 +96,9 @@ def info(aCTX, aArgs):
    # If this happens to be the management interface, and device has a domain too, check what is the new interface IP hostname and update the CNAME
    if data['management_id'] == iid and data['a_domain_id']:
     FWD = res.get('A',res.get('AAAA')) if res['status'] == 'OK' else {'create':'NOT_OK'}
-    args = {'domain_id':data['a_domain_id'], 'name':'%s-%s'%(data['hostname'],data['domain']),'type':'CNAME'}
+    args = {'domain_id':data['a_domain_id'], 'name':'%s.%s'%(data['hostname'],data['domain']),'type':'CNAME'}
     if FWD['create'] == 'OK':
-     args.update({'op':'update', 'content':FWD['fqdn']})
+     args.update({'op':'update', 'content':FWD['fqdn'] + '.'})
      ret['result'] = record_info(aCTX, args)
     else:
      ret['result'] = record_delete(aCTX, args)
