@@ -3,20 +3,23 @@
 """Dumps the existing database schema into an ERD in path infra/erd.pdf"""
 __author__ = "Zacharias El Banna"
 
-from sys import argv, stdout, path as syspath
+from sys import exit, stdout, path as syspath
 from json import load,dump,dumps
 from os import  path as ospath
 basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','..'))
 syspath.insert(1, basedir)
 res = {}
-
-if len(argv) < 2:
- print("Usage: %s </path/json file>\n"%argv[0])
+from argparse import ArgumentParser
+parser = ArgumentParser(prog='erd', description = 'Generate ERD diagram')
+parser.add_argument('-c','--config',  help = 'Config unless config.json', default='../config.json')
+input = parser.parse_args()
+try:
+ with open(ospath.abspath(ospath.join(ospath.dirname(__file__), input.config))) as f:
+  config = load(f)['database']
+ database,host,username,password = config['name'],config['host'],config['username'],config['password']
+except:
+ exit(1)
 else:
- with open(ospath.abspath(argv[1]),'r') as sfile:
-  config = load(sfile)
- database,host,username,password = config['database']['name'],config['database']['host'],config['database']['username'],config['database']['password']
-
  try:
   import eralchemy
  except ImportError:
