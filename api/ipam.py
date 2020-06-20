@@ -206,6 +206,7 @@ def address_info(aCTX, aArgs):
  Args:
   - id (required) <id>/'new'
   - op (optional) 'update'/'update_only'
+
   - ip (optional required)
   - network_id (optional required)
   - hostname (optional required)
@@ -234,8 +235,6 @@ def address_info(aCTX, aArgs):
    ret = {'status':'OK','info':None}
    # Save for DNS
    ip  = ip_address(aArgs.get('ip',old['ip']))
-
-   #
    aArgs['network_id'] = aArgs.get('network_id',old['network_id'])
    """ if valid in network range AND available => then go """
    # Fetch network here and use with PTR
@@ -252,7 +251,8 @@ def address_info(aCTX, aArgs):
 
    if ret['status'] == 'OK':
     # INTERNAL from rims.api.ipam import address_sanitize
-    aArgs['hostname'] = address_sanitize(aCTX, aArgs)['sanitized']
+    aArgs['hostname'] = address_sanitize(aCTX, {'hostname':aArgs.get('hostname',old['hostname'])})['sanitized']
+    aArgs['a_domain_id'] = aArgs.get('a_domain_id',old['a_domain_id'])
     if not id == 'new':
      try: ret['update'] = (db.execute("UPDATE ipam_addresses SET network_id = %s, a_domain_id = %s, hostname = '%s', ip = INET6_ATON('%s') WHERE id = %s"%(aArgs['network_id'],aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL', aArgs['hostname'], ip,id)) == 1)
      except:
@@ -284,6 +284,7 @@ def address_info(aCTX, aArgs):
      if not aArgs.get('a_domain_id') in ['NULL', None]:
       fqdn = '%s.%s'%(aArgs.get('hostname',old['hostname']),domains[int(aArgs['a_domain_id'])])
       ret[FWD]['create'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':fqdn, 'type':FWD, 'content':str(ip), 'op':'insert'})['status']
+      ret[FWD]['fqdn'] = fqdn
       # PTR: If there is a new ip/net combo, try that one, else try restore the old one (neither might work!)
       # PTR: .. could have saved a delete above but then we don't know if there anyway wasn't a record
       if ip.version == 4 and (network_db['mask'] >= 24 or ip in ip_network('%(network)s/24'%network_db)):

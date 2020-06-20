@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import { post_call } from './infra/Functions.js';
 import { Spinner, StateLeds, Article, LineArticle, InfoArticle, InfoColumns, Result, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, HealthButton, InfoButton, ItemsButton, LinkButton, ReloadButton, RemoveButton, RevertButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, DeleteButton,ForwardButton, GoButton, HealthButton, InfoButton, ItemsButton, LinkButton, ReloadButton, RevertButton, SaveButton, SearchButton, SyncButton, HrefButton, UnlinkButton, TextButton } from './infra/Buttons.jsx';
 import styles from './infra/ui.module.css';
 
 // *************** List ****************
@@ -21,7 +21,7 @@ export class List extends Component{
 
  deleteList = (interface_id,name) => (window.confirm('Really delete interface ' + name) && post_call('api/interface/delete', {interface_id:interface_id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.interface_id !== interface_id)),result:JSON.stringify(result.interfaces)})))
 
- cleanUp = () => (window.confirm('Clean up empty interfaces?') && post_call('api/interface/delete',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
+ cleanUp = () => (window.confirm('Clean up empty interfaces?') && post_call('api/interface/cleanup',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
  resetStatus = () => post_call('api/interface/clear',{device_id:this.props.device_id}).then(result => this.componentDidMount())
 
@@ -89,11 +89,10 @@ export class Info extends Component {
    post_call('api/ipam/address_find',{network_id:this.state.ipam.network_id}).then(result => this.setState({ipam:{...this.state.ipam, ip:result.ip}}))
  }
  ipamOnChange = (e) => this.setState({ipam:{...this.state.ipam, [e.target.name]:e.target.value}});
- // Table aware
  ipamCreate = () => post_call('api/interface/info',{op:'ipam_create',     interface_id:this.state.data.interface_id, record:this.state.ipam}).then(result => this.setState({...result,op:null}))
  ipamPrimary = (id) => post_call('api/interface/info',{op:'ipam_primary', interface_id:this.state.data.interface_id, ipam_id:id}).then(result => this.setState(result));
- ipamClear = (id) => post_call('api/interface/info',{op:'ipam_clear',     interface_id:this.state.data.interface_id, ipam_id:id}).then(result => this.setState(result));
  ipamDelete = (id) => (window.confirm('Delete IP Address?') && post_call('api/ipam/address_delete',{id:id}).then(result => this.componentDidMount()));
+ ipamDnsSync = () => post_call('api/interface/info',{op:'dns_sync',       interface_id:this.state.data.interface_id})
 
  // Connections
  connectDeviceChange = (e) => {
@@ -149,12 +148,13 @@ export class Info extends Component {
     return (<InfoArticle key='ia_interface_info' header='Interface'>
      <InfoColumns key='ic' columns={3}>
       <TextLine key='id' id='id' label='Local ID' text={this.state.data.interface_id} /><div />
-      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} /><div />
+      <TextInput key='name' id='name' value={this.state.data.name} onChange={this.onChange} />
+      {(primary) ? <SyncButton key='sync' onClick={() => this.ipamDnsSync()} title='sync interface name and IP hostname' /> : <div />}
       <SelectInput key='class' id='class' value={this.state.data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput><div />
       <TextInput key='description' id='description' value={this.state.data.description} onChange={this.onChange} /><div />
       <TextInput key='snmp_index' id='snmp_index' label='SNMP index' value={this.state.data.snmp_index} onChange={this.onChange} /><div />
       <TextInput key='mac' id='mac' value={this.state.data.mac} onChange={this.onChange} /><div />
-      {primary && <><TextLine key='ip' id='ip' label='Primary IP' text={this.state.primary.ip} /><div><GoButton key='go' onClick={() => this.changeIpam(this.state.primary.id)} title='Edit IPAM entry' /><RemoveButton key='remove' onClick={() => this.ipamClear(this.state.primary.id)} title='Clear IPAM entry' /><DeleteButton key='delete' onClick={() => this.ipamDelete(this.state.primary.id)} title='Delete IPAM entry' /></div></>}
+      {primary && <><TextLine key='ip' id='ip' label='Primary IP' text={this.state.primary.ip} /><div><GoButton key='go' onClick={() => this.changeIpam(this.state.primary.id)} title='Edit IPAM entry' /><DeleteButton key='delete' onClick={() => this.ipamDelete(this.state.primary.id)} title='Delete IPAM entry' /></div></>}
       {this.state.alternatives.map(row => <Fragment key={row.ip}><TextLine key='ip' id={row.ip} label='Alternative IP' text={row.ip} /><div><GoButton key='go' onClick={() => this.changeIpam(row.id)} title='Edit IPAM entry' /><SyncButton key='primary' onClick={() => this.ipamPrimary(row.id)} title='Make primary' /><DeleteButton key='delete' onClick={() => this.ipamDelete(row.id)} title='Delete IPAM entry' /></div></Fragment>)}
       {peer && <><TextLine key='peer_int_id' id='peer_interface' label='Peer Interface' text={peer.interface_id} /><UnlinkButton key='unlink' onClick={() => this.disconnectInterface()} title='Disconnect from peer' /></>}
       {peer && <><TextLine key='peer_dev_id' id='peer_device' label='Peer Device' text={peer.device_id} /><div/></>}

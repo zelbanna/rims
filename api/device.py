@@ -461,7 +461,7 @@ def new(aCTX, aArgs):
 #
 #
 def delete(aCTX, aArgs):
- """Function docstring for delete TBD
+ """Function deletes a device, first removing all dependeing interfaces (an IPs)
 
  Args:
   - id (required)
@@ -472,9 +472,7 @@ def delete(aCTX, aArgs):
  with aCTX.db as db:
   if (db.query("SELECT interface_id FROM interfaces WHERE device_id = %s"%aArgs['id']) > 0):
    from rims.api.interface import delete as interface_delete
-   ret['interfaces'] = db.get_rows()
-   for x in ret['interfaces']:
-    x['res'] = interface_delete(aCTX, x)
+   interface_delete(aCTX, {'interfaces':[x['interface_id'] for x in db.get_rows()]} )
   if (db.query("SELECT dt.base FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = %s"%aArgs['id']) > 0) and (db.get_val('base') == 'pdu'):
    ret['pems'] = db.execute("UPDATE device_pems SET pdu_id = NULL WHERE pdu_id = %s"%aArgs['id'])
   if (db.query("SELECT a_domain_id, CONCAT(hostname,'.',domains.name) AS fqdn FROM devices LEFT JOIN domains ON domains.id = devices.a_domain_id WHERE devices.id = %s"%aArgs['id']) == 1):

@@ -42,7 +42,7 @@ def info(aCTX, aArgs):
   - snmp_index (optional)
   - name (optional)
   - description (optional)
-  - op (optional), 'update','ipam_primary', 'ipam_create', 'ipam_clear'
+  - op (optional), 'update','ipam_primary', 'ipam_create', 'dns_sync'
 
   - extra (optional) list of extra data to pull, 'classes'/'ip'
 
@@ -85,24 +85,33 @@ def info(aCTX, aArgs):
   elif iid == 'new':
    pass
 
-  elif op == 'ipam_primary':
-   db.query("SELECT ipam_id FROM interfaces WHERE interface_id = %s"%iid)
-   primary = db.get_val('ipam_id')
-   ret['status'] = 'OK' if db.execute("UPDATE interfaces SET ipam_id = %s WHERE interface_id = %s"%(aArgs['ipam_id'], iid)) else 'NOT_OK'
-   if primary:
-    db.execute("UPDATE interface_alternatives SET ipam_id = %s WHERE ipam_id = %s AND interface_id = %s"%(primary, aArgs['ipam_id'], iid))
-    ret['result'] = 'swap'
+  elif op == 'dns_sync':
+   from rims.api.ipam import address_info, address_sanitize
+   from rims.api.dns import record_info, record_delete
+   db.query("SELECT devices.hostname, di.name, devices.management_id, devices.a_domain_id, di.ipam_id, domains.name AS domain FROM interfaces AS di LEFT JOIN devices ON di.device_id = devices.id LEFT JOIN domains ON domains.id = devices.a_domain_id WHERE interface_id = %s"%iid)
+   data = db.get_row()
+   data['hostname'] = address_sanitize(aCTX, {'hostname':data['hostname']})['sanitized']
+   # Update IP hostname and DNS with 'device-interface' name
+   res = address_info(aCTX, {'op':'update_only','id':data['ipam_id'],'hostname':'%s-%s'%(data['hostname'],data['name'])})
+   # If this happens to be the management interface, and device has a domain too, check what is the new interface IP hostname and update the CNAME
+   if data['management_id'] == iid and data['a_domain_id']:
+    FWD = res.get('A',res.get('AAAA')) if res['status'] == 'OK' else {'create':'NOT_OK'}
+    args = {'domain_id':data['a_domain_id'], 'name':'%s-%s'%(data['hostname'],data['domain']),'type':'CNAME'}
+    if FWD['create'] == 'OK':
+     args.update({'op':'update', 'content':FWD['fqdn']})
+     ret['result'] = record_info(aCTX, args)
+    else:
+     ret['result'] = record_delete(aCTX, args)
+    ret['status'] = ret['result'].get('status','OK')
    else:
-    db.execute("DELETE FROM interface_alternatives WHERE ipam_id = %s AND interface_id = %s"%(aArgs['ipam_id'], iid))
-    ret['result'] = 'change'
+    ret['status'] = res['status']
 
-  elif op == 'ipam_clear':
-   if (db.execute("UPDATE interfaces SET ipam_id = NULL WHERE ipam_id = %s AND interface_id = %s"%(aArgs['ipam_id'],iid)) > 0):
-    ret['status'] = 'OK'
-   elif(db.execute("DELETE FROM interface_alternatives  WHERE ipam_id = %s AND interface_id = %s"%(aArgs['ipam_id'],iid)) > 0):
-    ret['status'] = 'OK'
+  elif op == 'ipam_primary':
+   if (db.query("SELECT ipam_id FROM interfaces WHERE interface_id = %s and ipam_id IS NOT NULL"%iid) > 0):
+    ret['result'] = 'swap' if (db.execute("UPDATE interface_alternatives SET ipam_id = %s WHERE ipam_id = %s AND interface_id = %s"%(db.get_val('ipam_id'), aArgs['ipam_id'], iid)) > 0) else 'swap_failure'
    else:
-    ret['status'] = 'NOT_OK'
+    ret['result'] = 'change' if (db.execute("DELETE FROM interface_alternatives WHERE ipam_id = %s AND interface_id = %s"%(aArgs['ipam_id'], iid)) > 0) else 'change_failure'
+   ret['status'] = 'OK' if db.execute("UPDATE interfaces SET ipam_id = %s WHERE interface_id = %s"%(aArgs['ipam_id'], iid)) else 'NOT_OK'
 
   elif op == 'ipam_create':
    args = aArgs['record']
@@ -149,26 +158,40 @@ def delete(aCTX, aArgs):
 
  Args:
   - interface_id (optional required)
-  - device_id (optional_required)
+  - interfaces (optional required). List of ids
 
  Output:
   - cleared. Number of cleared connections
   - deleted. Number of deleted interfaces
  """
+ ret = {'deleted':0,'cleared':0}
+ with aCTX.db as db:
+  from rims.api.ipam import address_delete
+  interfaces = [aArgs['interface_id']] if 'interface_id' in aArgs else aArgs['interfaces']
+  for id in interfaces:
+   if (db.query("SELECT ipam_id FROM interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id) > 0):
+    address_delete(aCTX, {'id':db.get_val('ipam_id')})
+   if (db.query("SELECT ipam_id FROM interface_alternatives AS iia WHERE interface_id = %s"%id) > 0):
+    for ipam in db.get_rows():
+     address_delete(aCTX, {'id':ipam['ipam_id']})
+   ret['cleared'] += db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
+   ret['deleted'] += (db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id) > 0)
+ return ret
+
+#
+#
+def cleanup(aCTX, aArgs):
+ """Cleanup interfaces using id of device. Interfaces which doesn't have any associations
+
+ Args:
+  - device_id (required)
+
+ Output:
+  - deleted. Number of deleted interfaces
+ """
  ret = {}
  with aCTX.db as db:
-  if 'device_id' in aArgs:
-   ret['deleted'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s) AND NOT EXISTS (SELECT 1 FROM interface_alternatives AS iia WHERE iia.interface_id = interfaces.interface_id) "%aArgs)
-  elif 'interface_id' in aArgs:
-   from rims.api.ipam import address_delete
-   id = aArgs['interface_id']
-   ret['primary'] = address_delete(aCTX, {'id':db.get_val('ipam_id')})['status'] if (db.query("SELECT ipam_id FROM interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id) > 0) else "NO_PRIMARY_IPAM"
-   if (db.query("SELECT ipam_id FROM interface_alternatives AS iia WHERE interface_id = %s"%id) > 0):
-    ret['alternatives'] = []
-    for ipam in db.get_rows():
-     ret['alternatives'].append({'id':ipam['ipam_id'], 'status':address_delete(aCTX, {'id':ipam['ipam_id']})['status']})
-   ret['cleared'] = db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
-   ret['deleted'] = (db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id) > 0)
+  ret['deleted'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND interface_id NOT IN (SELECT management_id FROM devices WHERE id = %(device_id)s) AND NOT EXISTS (SELECT 1 FROM interface_alternatives AS iia WHERE iia.interface_id = interfaces.interface_id) "%aArgs)
  return ret
 
 #

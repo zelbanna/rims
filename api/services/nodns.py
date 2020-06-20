@@ -134,13 +134,13 @@ def record_info(aCTX, aArgs):
    ret['data'] = aArgs
    try:
     if op == 'insert':
-     res = (db.execute("INSERT INTO records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0)
+     ret['insert'] = (db.execute("INSERT INTO records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0)
     elif op == 'update':
-     res = (db.execute("UPDATE records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
+     ret['update'] = (db.execute("UPDATE records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
    except Exception as e:
     ret.update({'status':'NOT_OK','info':str(e)})
    else:
-    ret['status'] = 'OK' if res else 'NOT_OK'
+    ret['status'] = 'OK'
  return ret
 
 #
