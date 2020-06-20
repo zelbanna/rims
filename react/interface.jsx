@@ -92,7 +92,7 @@ export class Info extends Component {
  ipamCreate = () => post_call('api/interface/info',{op:'ipam_create',     interface_id:this.state.data.interface_id, record:this.state.ipam}).then(result => this.setState({...result,op:null}))
  ipamPrimary = (id) => post_call('api/interface/info',{op:'ipam_primary', interface_id:this.state.data.interface_id, ipam_id:id}).then(result => this.setState(result));
  ipamDelete = (id) => (window.confirm('Delete IP Address?') && post_call('api/ipam/address_delete',{id:id}).then(result => this.componentDidMount()));
- ipamDnsSync = () => post_call('api/interface/info',{op:'dns_sync',       interface_id:this.state.data.interface_id})
+ ipamDnsSync = () => post_call('api/interface/info',{op:'dns_sync',       interface_id:this.state.data.interface_id}).then(result => this.setState(result));
 
  // Connections
  connectDeviceChange = (e) => {

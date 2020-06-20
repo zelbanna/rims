@@ -86,25 +86,27 @@ def info(aCTX, aArgs):
    pass
 
   elif op == 'dns_sync':
-   from rims.api.ipam import address_info, address_sanitize
-   from rims.api.dns import record_info, record_delete
-   db.query("SELECT devices.hostname, di.name, devices.management_id, devices.a_domain_id, di.ipam_id, domains.name AS domain FROM interfaces AS di LEFT JOIN devices ON di.device_id = devices.id LEFT JOIN domains ON domains.id = devices.a_domain_id WHERE interface_id = %s"%iid)
-   data = db.get_row()
-   data['hostname'] = address_sanitize(aCTX, {'hostname':data['hostname']})['sanitized']
-   # Update IP hostname and DNS with 'device-interface' name
-   res = address_info(aCTX, {'op':'update_only','id':data['ipam_id'],'hostname':'%s-%s'%(data['hostname'],data['name'])})
-   # If this happens to be the management interface, and device has a domain too, check what is the new interface IP hostname and update the CNAME
-   if data['management_id'] == iid and data['a_domain_id']:
-    FWD = res.get('A',res.get('AAAA')) if res['status'] == 'OK' else {'create':'NOT_OK'}
-    args = {'domain_id':data['a_domain_id'], 'name':'%s.%s'%(data['hostname'],data['domain']),'type':'CNAME'}
-    if FWD['create'] == 'OK':
-     args.update({'op':'update', 'content':FWD['fqdn'] + '.'})
-     ret['result'] = record_info(aCTX, args)
-    else:
-     ret['result'] = record_delete(aCTX, args)
-    ret['status'] = ret['result'].get('status','OK')
-   else:
+   if (db.query("SELECT devices.hostname, di.name, devices.management_id, devices.a_domain_id, di.ipam_id, domains.name AS domain FROM interfaces AS di LEFT JOIN devices ON di.device_id = devices.id LEFT JOIN domains ON domains.id = devices.a_domain_id WHERE interface_id = %s AND di.ipam_id IS NOT NULL"%iid) > 0):
+    data = db.get_row()
+    from rims.api.ipam import address_info, address_sanitize
+    from rims.api.dns import record_info, record_delete
+    data['hostname'] = address_sanitize(aCTX, {'hostname':data['hostname']})['sanitized']
+    # Update IP hostname and DNS with 'device-interface' name
+    res = address_info(aCTX, {'op':'update_only','id':data['ipam_id'],'hostname':'%s-%s'%(data['hostname'],data['name'])})
+    # If this happens to be the management interface, and device has a domain too, check what is the new interface IP hostname and update the CNAME
+    if data['management_id'] == iid and data['a_domain_id']:
+     FWD = res.get('A',res.get('AAAA')) if res['status'] == 'OK' else {'create':'NOT_OK'}
+     args = {'domain_id':data['a_domain_id'], 'name':'%s.%s'%(data['hostname'],data['domain']),'type':'CNAME'}
+     if FWD['create'] == 'OK':
+      args.update({'op':'update', 'content':FWD['fqdn'] + '.'})
+      res = record_info(aCTX, args)
+      ret['cname'] = res['data']
+     else:
+      res = record_delete(aCTX, args)
     ret['status'] = res['status']
+    ret['update'] = ret['status'] == 'OK'
+   else:
+    ret.update({'update':False,'status':'NOT_OK','info':'no interface/ip found'})
 
   elif op == 'ipam_primary':
    if (db.query("SELECT ipam_id FROM interfaces WHERE interface_id = %s and ipam_id IS NOT NULL"%iid) > 0):
