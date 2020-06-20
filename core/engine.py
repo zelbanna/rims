@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "6.7"
-__build__ = 368
+__version__ = "6.8"
+__build__ = 369
 __all__ = ['Context']
 
 from crypt import crypt
@@ -227,8 +227,12 @@ class Context(object):
   """ Log a system message """
   syslog = self.config['logging']['system']
   if syslog['enabled']:
-   with open(syslog['file'], 'a') as f:
-    f.write(str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg)))
+   logstring = str("%s: %s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), aMsg))
+   if syslog['enabled'] == 'print':
+    stdout.write(logstring)
+   else:
+    with open(syslog['file'], 'a') as f:
+     f.write(logstring)
 
  #
  def house_keeping(self):
@@ -592,12 +596,13 @@ class SessionHandler(BaseHTTPRequestHandler):
     else: args = {}
    else:  args = {}
   except: args = {}
-  if self._ctx.config['logging']['rest']['enabled'] and self.headers.get('X-Log','true') == 'true':
+  restlog = self._ctx.config['logging']['rest']
+  if restlog['enabled'] and self.headers.get('X-Log','true') == 'true':
    logstring = str("%s: %s '%s' %s@%s\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), api, dumps(args) if api != "system/worker" else "N/A", id, self._headers['X-Route']))
-   if self._ctx.config['logging']['rest']['enabled'] == 'debug':
+   if restlog['enabled'] == 'print':
     stdout.write(logstring)
    else:
-    with open(self._ctx.config['logging']['rest']['file'], 'a') as f:
+    with open(restlog['file'], 'a') as f:
      f.write(logstring)
   try:
    self._ctx.analytics('modules',mod,fun)
