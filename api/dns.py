@@ -303,7 +303,7 @@ def sync_data(aCTX, aArgs):
    if domain['type'] == 'forward':
     db.query("SELECT CONCAT(ia.hostname,'.',domains.name,'.') AS name, INET6_NTOA(ia.ip) AS content, IF(IS_IPV4(INET6_NTOA(ine.network)),'A','AAAA') AS type FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.id = %s ORDER BY domains.foreign_id"%domain['id'])
     ret['data'] = db.get_rows()
-    db.query("SELECT CONCAT(devices.hostname,'.',domains.name,'.') AS name, CONCAT(ia.hostname,'.',ia_dom.name,'.') AS content, 'CNAME' AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE devices.a_domain_id = %s AND ia.id IS NOT NULL ORDER BY devices.a_domain_id"%domain['id'])
+    db.query("SELECT CONCAT(devices.hostname,'.',domains.name,'.') AS name, INET6_NTOA(ia.ip) AS content, IF(IS_IPV4(INET6_NTOA(ine.network)),'A','AAAA') AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE devices.a_domain_id = %s AND ia.id IS NOT NULL ORDER BY devices.a_domain_id"%domain['id'])
     ret['data'].extend(db.get_rows())
    else:
     from ipaddress import IPv4Address, IPv4Network

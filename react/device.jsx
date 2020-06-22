@@ -100,7 +100,7 @@ class Search extends Component {
      <option value='id'>ID</option>
      <option value='ip'>IP</option>
      <option value='mac'>MAC</option>
-     <option value='management_id'>Interface ID</option>
+     <option value='interface_id'>Interface ID</option>
     </optgroup>
     </SelectInput>
     <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
@@ -209,7 +209,7 @@ export class Info extends Component {
    const vm = (data.class === 'vm' && this.state.vm) ? this.state.vm : false;
    const rack = (this.state.rack && data.class !== 'vm') ? this.state.rack : false;
    const change_self = (this.props.changeSelf);
-   const has_ip = (extra.interface_ip);
+   const has_ip = (extra.ip);
    const function_strings = (extra.functions.length >0) ? extra.functions.split(',') : [];
    const type = this.state.types.find(tp => tp.id === parseInt(data.type_id));
    return <>
@@ -217,9 +217,8 @@ export class Info extends Component {
      <InfoColumns key='ic_info' style={{float:'left'}}>
       <TextLine key='hostname' id='hostname' text={data.hostname} />
       <TextInput key='mac' id='mac' label='MAC' value={data.mac} title='System MAC' onChange={this.onChange} />
-      {data.management_id && <TextLine key='if_mac' id='if_mac' label='Mgmt MAC' text={extra.interface_mac} title='Management Interface MAC' />}
-      {data.management_id && <TextLine key='if_ip' id='if_ip' label='Mgmt IP' text={extra.interface_ip} />}
-      {data.management_id && <StateLine key='state' id='state' state={[extra.if_state,extra.ip_state]} />}
+      {has_ip && <TextLine key='ip' id='ip' label='Mgmt IP' text={extra.ip} />}
+      {has_ip && <StateLine key='state' id='state' state={extra.state} />}
      </InfoColumns>
      <InfoColumns key='ic_extra' style={{float:'left'}}>
       <SelectInput key='class' id='class' value={data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
@@ -253,7 +252,7 @@ export class Info extends Component {
      {has_ip && <SearchButton key='search' onClick={() => this.lookupInfo()} title='Information lookup' />}
      {has_ip && <LogButton key='logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title='Logs' />}
      {function_strings.includes('manage') && <GoButton key='manage' onClick={() => this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{device_id:this.props.id, type:this.state.extra.type_name}})} title={'Manage ' + data.hostname} />}
-     {has_ip && <TermButton key='ssh' onClick={() => window.open(`ssh://${extra.username}@${extra.interface_ip}`,'_self')} title='SSH connection' />}
+     {has_ip && <TermButton key='ssh' onClick={() => window.open(`ssh://${extra.username}@${extra.ip}`,'_self')} title='SSH connection' />}
      {has_ip && <HealthButton key='health' onClick={() => this.changeIpam(this.state.extra.ipam_id)} title='IP health report' />}
      {rack && rack.console_url && <TermButton key='console' onClick={() => window.open(rack.console_url,'_self')} title='Serial Connection' /> }
      {data.url && <UiButton key='ui' onClick={() => window.open(data.url,'_blank')} title='Web UI' />}
@@ -262,7 +261,7 @@ export class Info extends Component {
     <NavBar key='device_navigation' id='di_navigation'>
      {this.state.navconf && <NavButton key='management' title='Management' onClick={() => this.changeContent(<ManagementInfo key='device_configure' id={this.props.id} />)} />}
      {!this.state.navconf && <NavButton key='interfaces' title='Interfaces' onClick={() => this.changeInterfaces()} />}
-     {!this.state.navconf && type.base === 'network' && has_ip && <NavButton key='fdb' title='FDB' onClick={() => this.changeContent(<FdbDevice key='fdb_device' id={this.props.id} ip={extra.interface_ip} type={type.name} changeSelf={this.changeContent} />)} />}
+     {!this.state.navconf && type.base === 'network' && has_ip && <NavButton key='fdb' title='FDB' onClick={() => this.changeContent(<FdbDevice key='fdb_device' id={this.props.id} ip={extra.ip} type={type.name} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
      {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && <NavButton key='stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='device_statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
@@ -300,7 +299,7 @@ class ManagementInfo extends Component {
     <InfoColumns key='d_conf_ic'>
      <TextInput key='d_conf_hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} />
      <SelectInput key='d_conf_a_domain_id' id='a_domain_id' label='Host Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
-     <SelectInput key='d_conf_management_id' id='management_id' label='Mgmt Interface' value={this.state.data.management_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={idx} value={row.interface_id}>{`${row.name} (${row.ip})`}</option>)}</SelectInput>
+     <SelectInput key='d_conf_ipam_id' id='ipam_id' label='Mgmt IP' value={this.state.data.ipam_id} onChange={this.onChange}>{this.state.interfaces.map((row,idx) => <option key={idx} value={row.ipam_id}>{`${row.ip} (${row.name})`}</option>)}</SelectInput>
      <TextLine key='id' id='id' label='Local ID'  text={this.props.id} title='Database ID' />
      <TextLine key='snmp' id='snmp' label='SNMP' text={this.state.data.snmp} />
      <TextLine key='d_conf_oid' id='oid' label='Priv OID' text={this.state.extra.oid} />

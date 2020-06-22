@@ -20,13 +20,12 @@ def network_list(aCTX, aArgs):
   -- description
   -- network
   -- mask
+  -- class
  """
  ret = {}
  with aCTX.db as db:
-  ret['count'] = db.query("SELECT ipam_networks.id, CONCAT(INET6_NTOA(network),'/',mask) AS netasc, INET6_NTOA(gateway) AS gateway, description, st.service, IS_IPV4(INET6_NTOA(network)) AS class FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id ORDER by network")
+  ret['count'] = db.query("SELECT ipam_networks.id, CONCAT(INET6_NTOA(network),'/',mask) AS netasc, INET6_NTOA(gateway) AS gateway, description, st.service, IF(IS_IPV4(INET6_NTOA(network)),'v4','v6') AS class FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id ORDER by network")
   ret['data'] = db.get_rows()
-  for row in ret['data']:
-   row['class'] = 'v4' if row['class'] else 'v6'
  return ret
 
 #
@@ -168,12 +167,11 @@ def address_list(aCTX, aArgs):
  Output:
  """
  with aCTX.db as db:
-  if (db.query("SELECT mask, INET6_NTOA(network) as network, INET6_NTOA(gateway) as gateway, IS_IPV4(INET6_NTOA(network)) AS class FROM ipam_networks WHERE id = %(network_id)s"%aArgs) == 1):
+  if (db.query("SELECT mask, INET6_NTOA(network) as network, INET6_NTOA(gateway) as gateway, IF(IS_IPV4(INET6_NTOA(network)),'v4','v6') AS class FROM ipam_networks WHERE id = %(network_id)s"%aArgs) == 1):
    ret = db.get_row()
    ret['status']  = 'OK'
    net = ip_network('%s/%s'%(ret['network'],ret['mask']))
    ret['size'] = net.num_addresses;
-   ret['class'] = 'v4' if ret['class'] else 'v6'
    fields = ['INET6_NTOA(ia.ip) AS ip','ia.id','ia.state']
    joins = ['ipam_addresses AS ia']
    extras = aArgs.get('extra')
@@ -225,9 +223,8 @@ def address_info(aCTX, aArgs):
  with aCTX.db as db:
   if op:
    if (id != 'new'):
-    if (db.query("SELECT INET6_NTOA(ia.ip) AS ip, network_id, a_domain_id, hostname, reverse_zone_id AS ptr_domain_id, IS_IPV4(INET6_NTOA(ine.network)) AS class FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) > 0):
+    if (db.query("SELECT INET6_NTOA(ia.ip) AS ip, network_id, a_domain_id, hostname, reverse_zone_id AS ptr_domain_id, IF(IS_IPV4(INET6_NTOA(ia.ip)),'v4','v6') AS class FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) > 0):
      old = db.get_row()
-     old['class'] = 'v4' if old['class'] else 'v6'
     else:
      return {'status':'NOT_OK', 'info':'Illegal id'}
    else:
@@ -294,6 +291,7 @@ def address_info(aCTX, aArgs):
 
   if op and op == 'update_only':
    ret['id'] = id
+   ret['ip'] = str(ip)
   elif not (id == 'new') and (db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state, network_id, INET6_NTOA(ine.network) AS network, a_domain_id, ine.reverse_zone_id AS ptr_domain_id, hostname FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) == 1):
    ret['data'] = db.get_row()
    ret['extra']= {'network':ret['data'].pop('network',None), 'ptr_domain_id': ret['data'].pop('ptr_domain_id',None)}
@@ -316,10 +314,9 @@ def address_sanitize(aCTX, aArgs):
   - hostname
 
  Output:
-  - status
   - santizie
  """
- ret = {'status':'OK'}
+ ret = {}
  hostname = aArgs['hostname'].lower()
  if hostname.isalnum():
   ret['sanitized'] = hostname

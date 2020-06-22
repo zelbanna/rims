@@ -109,7 +109,7 @@ def lookup(aCTX, aArgs):
  ret = {'inserts':0}
  from importlib import import_module
  with aCTX.db as db:
-  if (db.query("SELECT INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN interfaces AS di ON di.interface_id = devices.management_id LEFT JOIN ipam_addresses AS ia ON ia.id = di.ipam_id WHERE devices.id = %s"%id) > 0):
+  if (db.query("SELECT INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%id) > 0):
    info = db.get_row()
    try:
     module = import_module("rims.devices.%s"%info['type'])
@@ -144,7 +144,7 @@ def check(aCTX, aArgs):
 
  with aCTX.db as db:
   db.query("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
-  db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
+  db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
    if (db.query("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']) > 0):
     dev['data_points'] = []
@@ -164,6 +164,8 @@ def check(aCTX, aArgs):
    if any(i in dev for i in ['data_points','interfaces']):
     devices.append(dev)
 
+ if not devices:
+  return {'status':'OK','function':'statistics_check','info':'no devices'}
  if 'repeat' in aArgs:
   # INTERNAL from rims.api.statistics import process
   aCTX.schedule_api_periodic(process,'statistics_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())

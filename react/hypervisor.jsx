@@ -33,7 +33,7 @@ export class Main extends Component {
  render(){
   return <>
    <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','']} trows={this.state.data} listItem={this.listItem}>
-    <SyncButton key='sync' onClick={() => this.changeContent(<Sync />) } />
+    <SyncButton key='sync' onClick={() => this.changeContent(<Sync key='vm_sync' />) } />
    </ContentList>
    <ContentData key='hyp_cd'>{this.state.content}</ContentData>
   </>
@@ -50,7 +50,7 @@ class Sync extends Component{
  }
 
  componentDidMount(){
-  post_call('api/device/vm_mapping').then(result => {
+  post_call('api/device/vm_mapping',{device_id:this.props.device_id}).then(result => {
     let entries = [];
     ['existing','inventory','discovered','database'].forEach(type => {
      if (result.hasOwnProperty(type))
@@ -126,6 +126,7 @@ export class Inventory extends Component{
     <ContentList key='hl_cl' header='Inventory' thead={thead} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
      <LogButton key='logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
+     <SyncButton key='sync' onClick={() => this.changeContent(<Sync key='vm_sync' device_id={this.props.device_id}/>)} title='Map VMs' />
     </ContentList>
     <ContentData key='hl_cd'>{this.state.content}</ContentData>
    </>
@@ -199,7 +200,7 @@ class Info extends Component{
   post_call('api/devices/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
  }
 
- changeImport = (iif) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key='interface_info' device_id={this.state.data.device_id} class='virtual' mac={iif.mac} name={iif.name} interface_id={iif.interface_id} changeSelf={this.changeContent} />}))
+ changeImport = (iif) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key='interface_info' device_id={this.state.data.device_id} class='virtual' mac={iif.mac} name={iif.name} interface_id={iif.interface_id} description={iif.port} changeSelf={this.changeContent} />}))
 
  interfaceButton(vm_if,iif){
   if(this.state.data.device_id){

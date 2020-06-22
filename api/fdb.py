@@ -128,7 +128,7 @@ def check(aCTX, aArgs):
 
  with aCTX.db as db:
   ret['status'] = 'OK'
-  ret['count'] = db.query("SELECT devices.hostname, devices.id, INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE dt.base = 'network'")
+  ret['count'] = db.query("SELECT devices.hostname, devices.id, INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE dt.base = 'network'")
   if ret['count'] > 0:
    sema = aCTX.semaphore(20)
    for dev in db.get_rows():

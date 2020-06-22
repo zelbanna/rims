@@ -64,7 +64,7 @@ export class Info extends Component {
  changeContent = (elem) => this.props.changeSelf(elem);
 
  componentDidMount(){
-  post_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, device_id:this.props.device_id, class:this.props.class, extra:['classes','ip']}).then(result => this.setState({...result, update:undefined}));
+  post_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, description:this.props.description, device_id:this.props.device_id, class:this.props.class, extra:['classes','ip']}).then(result => this.setState({...result, update:undefined}));
  }
 
  componentDidUpdate(prevProps){

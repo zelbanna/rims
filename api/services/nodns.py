@@ -179,17 +179,12 @@ def sync(aCTX, aArgs):
   # Empty all
   db.execute("TRUNCATE records")
   # Auto insert all IPAM A records
-  ret['records'] =  db.execute("INSERT INTO records (domain_id, name, content, type, ttl) SELECT domains.foreign_id,  CONCAT(ia.hostname,'.',domains.name), INET6_NTOA(ia.ip), IF(IS_IPV4(INET6_NTOA(ine.network)),'A','AAAA'), 3600 FROM ipam_addresses AS ia LEFT JOIN domains ON domains.id = ia.a_domain_id AND ia.class = 'v4' WHERE domains.server_id = %s"%aArgs['id'])
+  ret['records'] =  db.execute("INSERT INTO records (domain_id, name, content, type, ttl) SELECT domains.foreign_id,  CONCAT(ia.hostname,'.',domains.name), INET6_NTOA(ia.ip), IF(IS_IPV4(INET6_NTOA(ine.network)),'A','AAAA'), 3600 FROM ipam_addresses AS ia LEFT JOIN domains ON domains.id = ia.a_domain_id WHERE domains.server_id = %s"%aArgs['id'])
   # Auto Insert all Hostname CNAMEs
-  ret['records'] += db.execute("INSERT INTO records (domain_id, name, content, type, ttl) SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name), CONCAT(ia.hostname,'.',ia_dom.name,'.'), 'CNAME', 3600 FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN domains AS ia_dom ON ia_dom.id = ia.a_domain_id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE domains.server_id = %s AND ia.id IS NOT NULL"%aArgs['id'])
+  ret['records'] += db.execute("INSERT INTO records (domain_id, name, content, type, ttl) SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name), INET6_NTOA(ia.ip), IF(IS_IPV4(INET6_NTOA(ine.network)),'A','AAAA'), 3600 FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN domains ON devices.a_domain_id = domains.id WHERE domains.server_id = %s AND devices.ipam_id IS NOT NULL"%aArgs['id'])
+  # Retrieve and parse all reverse records.
 
   # TODO: Retrive all reverse records, and their reverse_zone_id, parse like in sync_data
-
-  #db.query("SELECT INET6_NTOA(ip) AS ip, INET6_NTOA(ine.network) AS network, ine.mask, CONCAT(ia.hostname,'.',domains.name,'.') AS content FROM ipam_addresses AS ia RIGHT JOIN domains ON ia.a_domain_i
-  #  for addr in db.get_rows():
-  #   ip = IPv4Address(addr['ip'])
-  #   if addr['mask'] >= 24 or ip in IPv4Network('%s/24'%addr['network']):
-  #    ret['data'].append({'name':ip.reverse_pointer,'content':addr['content'],'type':'PTR'})
 
   # Write to local 'hosts' file or similar
   if aCTX.config.get('nodns',{}).get('file'):

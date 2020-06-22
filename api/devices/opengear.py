@@ -46,7 +46,7 @@ def info (aCTX, aArgs):
   if (db.query("SELECT * FROM console_info WHERE device_id = '%s'"%id) > 0):
    ret['data'] = db.get_row()
   else:
-   ip = db.get_val('ip') if (db.query("SELECT INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN interfaces AS di ON devices.management_id = di.interface_id LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE devices.id = '%s'"%id) == 1) else '0.0.0.0'
+   ip = db.get_val('ip') if (db.query("SELECT INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = '%s'"%id) == 1) else '0.0.0.0'
    db.execute("INSERT INTO console_info SET device_id = '%s', access_url = 'telnet://%s'"%(id,ip))
    ret['data'] = {'id':id, 'access_url':'telnet://%s'%ip, 'port':6000 }
  return ret
