@@ -643,7 +643,6 @@ def reservation_new(aCTX, aArgs):
      ip = ip_address(aArgs['start'])
      end = ip_address(aArgs['end'])
      while ip <= end:
-      print({'op':'update_only', 'id':'new', 'network_id':net, 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':dom})
       res = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':net, 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':dom})
       if not (res['status'] == 'OK' and (db.execute("INSERT INTO ipam_reservations (id, type) VALUES (%s, '%s')"%(res['id'], aArgs.get('type','dhcp'))) > 0)):
         ret['reserved'] = False
