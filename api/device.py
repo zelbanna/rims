@@ -86,7 +86,7 @@ def list(aCTX, aArgs):
    fields.append('devices.class')
 
  with aCTX.db as db:
-  ret['count'] = db.query("SELECT DISTINCT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort),True)
+  ret['count'] = db.query("SELECT DISTINCT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort))
   ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
   if extras and any(i in extras for i in ['mac','mgmtmac']):
    sys = 'mac' in extras
