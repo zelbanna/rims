@@ -88,8 +88,8 @@ class Context(object):
  #
  def environment(self,aNode):
   """ Function retrieves all central environment for a certain node, or itself if node is given"""
-  if len(aNode) == 0 or aNode is None:
-   env = {'nodes':self.nodes,'services':self.services,'config':self.config,'tasks':self.scheduler_status(),'site':(len(self.config['site']) > 0),'version':__version__,'build':__build__}
+  if not aNode:
+   env = {'nodes':self.nodes,'services':self.services,'tasks':self.scheduler_status(),'site':(len(self.config['site']) > 0),'version':__version__,'build':__build__}
   elif self.config.get('database'):
    env = {'tokens':{}}
    with self.db as db:

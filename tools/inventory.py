@@ -27,10 +27,10 @@ if __name__ == "__main__":
   with open(argv[2],'r', newline ='') as f:
    data = reader(f, delimiter=';', quotechar='"')
    for row in data:
-    if len(row[0]) > 0 and len(row[1]) > 0 and row[4][0:3] != 'S/N':
+    if row[0] and row[1] and row[4][0:3] != 'S/N':
      indata = {'description':row[0],'vendor':row[1],'model':row[2],'product':row[3],'purchase_order':row[9],'external_id':row[7],'receive_date':row[10],'comments':row[14],'license':0}
      indata['support_contract'] = 0 if row[5] == 'No' else 1
-     indata['serial'] = row[4] if len(row[4]) > 0 and row[4] != 'N/A' else 'NULL' 
+     indata['serial'] = row[4] if row[4] and row[4] != 'N/A' else 'NULL'
      try:
       db.insert_dict('inventory',indata)
      except Exception as err:

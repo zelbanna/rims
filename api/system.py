@@ -57,7 +57,7 @@ def external_ip(aCTX, aArgs):
 
  Output:
  """
- ret ={}
+ ret = {}
  from rims.core.genlib import external_ip
  try:  ret['ip'] = external_ip()
  except Exception as e:
@@ -72,6 +72,8 @@ def external_ip(aCTX, aArgs):
 def environment(aCTX, aArgs):
  """Function environment produces non-config environment for nodes
 
+ TODO: move this into a secured access framework (internal only)
+
  Args:
   - node (optinal)
   - build (optional)
@@ -81,7 +83,7 @@ def environment(aCTX, aArgs):
  if all(i in aArgs for i in ['node','build']):
   aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
  ret = aCTX.environment(aArgs.get('node',aCTX.node))
- for k,v in ret['tokens'].items():
+ for k,v in ret.get('tokens',{}).items():
   v['expires'] = v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 

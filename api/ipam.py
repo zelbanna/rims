@@ -555,7 +555,7 @@ def server_leases(aCTX, aArgs):
   if data:
    ret['data'].extend(data)
  oui_s = ",".join(set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']]))
- if len(oui_s) > 0:
+ if oui_s:
   with aCTX.db as db:
    db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui in (%s)"%oui_s)
    oui_d = {x['oui']:x['company'] for x in db.get_rows()}
