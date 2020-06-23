@@ -67,7 +67,7 @@ def info(aCTX, aArgs):
    if 'connection_id' in aArgs:
     try:    aArgs['connection_id'] = int(aArgs['connection_id'])
     except: aArgs['connection_id'] = None
-   if not iid == 'new':
+   if iid != 'new':
     try: ret['update'] = (db.update_dict('interfaces',aArgs,"interface_id=%s"%iid) == 1)
     except Exception as e:
      ret['status'] = 'NOT_OK'
@@ -137,7 +137,7 @@ def info(aCTX, aArgs):
    db.query("SHOW COLUMNS FROM interfaces LIKE 'class'")
    parts = (db.get_val('Type')).split("'")
    ret['classes'] = [parts[i] for i in range(1,len(parts),2)]
-  if not iid == 'new' and (db.query("SELECT di.* FROM interfaces AS di WHERE di.interface_id = '%s'"%iid) > 0):
+  if iid != 'new' and (db.query("SELECT di.* FROM interfaces AS di WHERE di.interface_id = '%s'"%iid) > 0):
    ret['data'] = db.get_row()
    ret['data']['mac'] = ':'.join(("%s%s"%x).upper() for x in zip(*[iter("{:012x}".format(ret['data']['mac']))]*2))
    ret['data'].pop('manual',None)
@@ -480,7 +480,7 @@ def check(aCTX, aArgs):
  devices = []
 
  with aCTX.db as db:
-  db.query("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
+  db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
 
