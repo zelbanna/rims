@@ -481,7 +481,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    path,_,query = unquote(self.path[1:]).rpartition('/')
    file,_,_ = query.partition('?')
    # split query in file and params
-   if not path[:5] == 'files':
+   if path[:5] != 'files':
     fullpath = ospath.join(self._ctx.site,path,file)
    elif path == 'files':
     fullpath = ospath.join(self._ctx.config['files'][file])
@@ -596,7 +596,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def api(self,api,id):
   """ API serves the REST functions x.y.z.a:<port>/api/module-path/function """
   (mod,_,fun) = api.rpartition('/')
-  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if not mod == 'master' else 'master')})
+  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if mod != 'master' else 'master')})
   try:
    length = int(self.headers.get('Content-Length',0))
    if length > 0:
@@ -695,7 +695,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     try:
      args['ip'] = self.client_address[0]
      output = self._ctx.rest_call("%s/auth"%(self._ctx.config['master']), aArgs = args, aDataOnly = True, aMethod = 'POST')
-     if not 'destroy' in args:
+     if 'destroy' not in args:
       self._ctx.tokens[output['token']] = {'id':output['id'],'alias':output['alias'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S %Z"),'ip':output['ip']}
       self._headers['X-Code'] = 200
      elif output['status'] == 'OK':
