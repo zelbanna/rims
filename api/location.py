@@ -36,13 +36,13 @@ def info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = db.update_dict('locations',aArgs,'id=%s'%id)
    else:
     ret['insert'] = db.insert_dict('locations',aArgs)
     id = db.get_last_id() if ret['insert'] > 0 else 'new'
 
-  ret['data'] = db.get_row() if  not id == 'new' and (db.query("SELECT id,name FROM locations WHERE id = '%s'"%id) > 0) else {'id':'new','name':''}
+  ret['data'] = db.get_row() if id != 'new' and (db.query("SELECT id,name FROM locations WHERE id = '%s'"%id) > 0) else {'id':'new','name':''}
  return ret
 
 #

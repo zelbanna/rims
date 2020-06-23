@@ -31,7 +31,7 @@ def list(aCTX, aArgs):
 
  with aCTX.db as db:
   ret['count'] = db.query("SELECT %s FROM %s WHERE %s %s"%(", ".join(fields),' LEFT JOIN '.join(tables),' AND '.join(filter),sort))
-  ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+  ret['data'] = db.get_rows() if 'dict' not in aArgs else db.get_dict(aArgs['dict'])
  return ret
 
 #
@@ -83,13 +83,13 @@ def info(aCTX, aArgs):
     if tp in aArgs and aArgs[tp] == '':
      aArgs.pop(tp,None)
 
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = db.update_dict('inventory',aArgs,'id=%s'%id)
    else:
     ret['update'] = db.insert_dict('inventory',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT * FROM inventory WHERE id = '%s'"%id) == 1)
    ret['data'] = db.get_row()
    ret['data']['receive_date'] = str(ret['data']['receive_date']) if ret['data']['receive_date'] else None
