@@ -2,10 +2,10 @@
 __author__ = "Zacharias El Banna"
 
 from base64 import b64encode
-from time import time, sleep, strftime, localtime
+from json import loads, dumps
 from sched import scheduler
 from threading import Thread, Lock, RLock, Event
-from json import loads, dumps
+from time import time, sleep
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from urllib.error import HTTPError
@@ -17,7 +17,7 @@ from ssl import create_default_context, CERT_NONE
 #
 #
 def basic_auth(aUsername,aPassword):
- return {'Authorization':'Basic %s'%(b64encode(("%s:%s"%(aUsername,aPassword)).encode('utf-8')).decode('utf-8')) }
+ return {'Authorization':'Basic %s'%(b64encode(f"{aUsername}:{aPassword}".encode('utf-8')).decode('utf-8')) }
 
 class RestException(Exception):
  pass
@@ -25,7 +25,7 @@ class RestException(Exception):
 def rest_call(aURL, **kwargs):
  """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
  try:
-  head = { 'Content-Type': 'application/%s'%kwargs.get('aApplication','json'),'Accept':'application/json' }
+  head = { 'Content-Type': f"application/{kwargs.get('aApplication','json')}",'Accept':'application/json' }
   head.update(kwargs.get('aHeader',{}))
   if   head['Content-Type'] == 'application/json':
    args = dumps(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
@@ -36,7 +36,7 @@ def rest_call(aURL, **kwargs):
   elif head['Content-Type'] == 'application/x-www-form-urlencoded':
    args = urlencode(kwargs['aArgs']).encode('utf-8') if kwargs.get('aArgs') else None
   else:
-   raise RestException("No recognized application type (%s)"%head['Content-Type'])
+   raise RestException(f"No recognized application type ({head['Content-Type']})")
   req = Request(aURL, headers = head, data = args)
   req.get_method = lambda: kwargs.get('aMethod','POST')
   if kwargs.get('aVerify',True):
@@ -46,14 +46,18 @@ def rest_call(aURL, **kwargs):
    ssl_ctx.check_hostname = False
    ssl_ctx.verify_mode = CERT_NONE
    sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
-  try:    data = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
-  except: data = None
+  try:
+   data = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
+  except:
+   data = None
   res = data if kwargs.get('aDataOnly',True) else {'info':dict(sock.info()), 'code':sock.code, 'data':data }
   sock.close()
  except HTTPError as h:
   exception = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}
-  try:    exception['data'] = loads(h.read().decode())
-  except: exception['data'] = None
+  try:
+   exception['data'] = loads(h.read().decode())
+  except:
+   exception['data'] = None
  except Exception as e:
   exception = { 'exception':type(e).__name__, 'code':600, 'info':{'error':repr(e)}, 'data':None}
  else:
@@ -85,7 +89,6 @@ class Scheduler(Thread):
   return self._internal.queue[aKey]
 
  def __execute(self, aEvent):
-  # print("Scheduler executing: %s"%aEvent['name'])
   self._queue.put(aEvent['task'])
   if aEvent.get('frequency',0) > 0:
    self._internal.enter(aEvent['frequency'], aEvent.get('prio',2), self.__execute, argument = (aEvent,))
@@ -108,9 +111,10 @@ class Scheduler(Thread):
   """ Using internals of scheduler event model to retrieve 'task' """
   return [(x[0],x[3][0]) for x in self._internal.queue]
 
- def periodic_delay(self, aFrequency):
+ @staticmethod
+ def periodic_delay(aFrequency):
   """ Function gives a basic estimate on when to start for periodic functions.. when they fit """
-  return (aFrequency - int(time())%aFrequency)
+  return aFrequency - int(time())%aFrequency
 
  def add_delayed(self, aTask, aName, aDelay, aFrequency = 0, aPrio = 2):
   """ Insert at 'aDelay' seconds from now with frequency 'aFrequency' """
@@ -127,7 +131,7 @@ class Scheduler(Thread):
 # - Current Thread can reenter (RLook)
 # - Other Threads will wait for resource
 #
-class DB(object):
+class DB():
 
  def __init__(self, aDB, aHost, aUser, aPass):
   from pymysql import connect
@@ -147,9 +151,6 @@ class DB(object):
  def __exit__(self, *ctx_info):
   self.close()
 
- def __str__(self):
-  return "Database(database=%s, host=%s, dirty=%s, count=%s)"%(self._db,self._host,self._dirty," ,".join("%s:%03d"%i for i in self.count.items()))
-
  def connect(self):
   with self._wait_lock:
    self._conn_waiting += 1
@@ -166,7 +167,7 @@ class DB(object):
   if self._dirty:
    self.commit()
   with self._wait_lock:
-   """ remove oneself and check if someone else is waiting """
+   # remove oneself and check if someone else is waiting
    self._conn_waiting -= 1
    self._conn_in_thread -= 1
    if self._conn_waiting == 0:
@@ -180,14 +181,14 @@ class DB(object):
  def query(self,aQuery, aLog = False):
   self.count['QUERY'] += 1
   if aLog:
-   print("SQL: %s;"%aQuery)
+   print(f"SQL: {aQuery};")
   return self._curs.execute(aQuery)
 
  def execute(self,aQuery, aLog = False):
   self.count['EXECUTE'] += 1
   self._dirty = True
   if aLog:
-   print("SQL: %s;"%aQuery)
+   print(f"SQL: {aQuery};")
   return self._curs.execute(aQuery)
 
  def commit(self):
@@ -197,11 +198,6 @@ class DB(object):
 
  def is_dirty(self):
   return self._dirty
-
- def ignore_warnings(self,aState):
-  old = self._curs._defer_warnings
-  self._curs._defer_warnings = aState
-  return old
 
  ################# Fetch info ##################
 
@@ -226,41 +222,42 @@ class DB(object):
  #
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
   self._dirty = True
-  return self._curs.execute("UPDATE %s SET %s WHERE %s"%(aTable,",".join("%s=%s"%(k,"'%s'"%v if not (v == 'NULL' or v is None) else 'NULL') for k,v in aDict.items()),aCondition))
+  return self._curs.execute(f"UPDATE {aTable} SET %s WHERE {aCondition}"%','.join(f"{k}='{v}'" if v not in ['NULL',None] else f"{k}=NULL" for k,v in aDict.items()))
 
  def insert_dict(self, aTable, aDict, aException = ""):
   self._dirty = True
-  return self._curs.execute("INSERT INTO %s(%s) VALUES(%s) %s"%(aTable,",".join(list(aDict.keys())),",".join("'%s'"%v if not (v == 'NULL' or v is None) else 'NULL' for v in aDict.values()),aException))
+  return self._curs.execute(f"INSERT INTO {aTable}({','.join(list(aDict.keys()))}) VALUES (%s) {aException}"%','.join(f"'{v}'" if v not in ['NULL',None] else 'NULL' for v in aDict.values()))
 
 ####################################### SNMP #########################################
 #
 class SnmpException(Exception):
  pass
 
-class VarBind(object):
+class VarBind():
  """ Match the model from netsnmp - at least (!) tag and iid should be supplied """
- def __init__(self, tag=None, iid=None, val=None, type=None):
+
+ def __init__(self, tag=None, iid=None, val=None, tp=None):
   self.tag = tag
   self.iid = iid
   self.val = val
-  self.type = type
+  self.type = tp
   # parse iid out of tag if needed, 'None' is not good and neither is '' for iid in client_intf
-  if iid == None and tag != None:
-   from re import compile
-   regex = compile(r'^((?:\.\d+)+|(?:\w+(?:[-:]*\w+)+))\.?(.*)$')
+  if iid is None and tag is not None:
+   from re import compile as re_compile
+   regex = re_compile(r'^((?:\.\d+)+|(?:\w+(?:[-:]*\w+)+))\.?(.*)$')
    match = regex.match(tag)
    if match:
     (self.tag, self.iid) = match.group(1,2)
 
  def __setattr__(self, name, val):
-  self.__dict__[name] = val if (name == 'val' or val == None) else str(val)
+  self.__dict__[name] = val if (name == 'val' or val is None) else str(val)
 
  def __str__(self):
-  return "VarBind(tag=%s, iid=%s, val=%s, type=%s)"%(self.tag, self.iid, self.val, self.type)
+  return f"VarBind(tag={self.tag}, iid={self.iid}, val={self.val}, type={self.type})"
 
 #
 #
-class VarList(object):
+class VarList():
 
  def __init__(self, *vs):
   """ If regular vars - i.e. strings are passed, wrap into a VarBind. This is the most common usage for Varlists """
@@ -290,8 +287,8 @@ class VarList(object):
  def __getslice__(self, i, j):
   return self.varbinds[i:j]
 
- def append(self, *vars):
-  for var in vars:
+ def append(self, *vrs):
+  for var in vrs:
    if isinstance(var, VarBind):
     self.varbinds.append(var)
    else:
@@ -299,7 +296,7 @@ class VarList(object):
 
 #
 #
-class Session(object):
+class Session():
 
  def __init__(self, **args):
   # client_intf is compiled from https://github.com/bluecmd/python3-netsnmp
@@ -395,7 +392,8 @@ class Session(object):
   return self._libmod.walk(self, varlist)
 
  def __del__(self):
-  try: return self._libmod.delete_session(self)
+  try:
+   return self._libmod.delete_session(self)
   except SystemError as e:
-   print("RIMS_SNMP_ERROR: %s"%repr(e))
+   print(f"RIMS_SNMP_ERROR: {e}")
    return None
