@@ -95,7 +95,7 @@ def record_list(aCTX, aArgs):
    select.append("domain_id = %s"%aArgs['domain_id'])
   if 'type' in aArgs:
    select.append("type = '%s'"%aArgs['type'].upper())
-  tune = " WHERE %s"%(" AND ".join(select)) if len(select) > 0 else ""
+  tune = " WHERE %s"%(" AND ".join(select)) if select else ""
   ret['count'] = db.query("SELECT domain_id, name, content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM records %s ORDER BY type, name ASC"%tune)
   ret['data'] = db.get_rows()
  return ret

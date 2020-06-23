@@ -530,7 +530,7 @@ def discover(aCTX, aArgs):
   sema.acquire()
 
  # We can now do inserts only (no update) as we skip existing :-)
- if len(ip_addresses) > 0:
+ if ip_addresses:
   from ipaddress import ip_address
   from rims.api.dns import record_info
   with aCTX.db as db:
@@ -669,7 +669,7 @@ def system_info_discover(aCTX, aArgs):
     ip = dev.pop('ip',None)
     if dev.get('type'):
      dev['type_id'] = types[dev.pop('type',None)]
-    if len(dev) > 0:
+    if dev:
      ret['updated'] += db.update_dict('devices',dev,'id = %s'%id)
     else:
      ret['empty'] += 1

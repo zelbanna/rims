@@ -96,4 +96,4 @@ def theme_info(aCTX, aArgs):
   "dark":{  "main":"#0A0A0A", "head":"#1A1A1A", "head-focus":"#666666", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#1A1A1A", "std-txt":"#9CA6B0", "ui":"#000000", "ui-txt":"#FFFFFF" }
  }
  theme = {"--%s-color"%k:v for k,v in themes.get(aArgs['theme'],aCTX.config.get('site',{}).get('theme',{}).get(aArgs['theme'],{})).items()}
- return {'status':"OK" if len(theme) > 0 else "NOT_OK", 'data':theme}
+ return {'status':"OK" if theme else "NOT_OK", 'data':theme}

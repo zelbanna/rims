@@ -51,7 +51,7 @@ def oui_fetch(aCTX, aArgs):
    if aArgs.get('clear') is True:
     db.execute("TRUNCATE oui")
    for line in data.split('\n'):
-    if len(line) > 0:
+    if line:
      parts = line.split()
      if len(parts) > 3 and parts[1] == '(base' and parts[2] == '16)':
       oui = int(parts[0].upper(),16)

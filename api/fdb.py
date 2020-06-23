@@ -24,7 +24,7 @@ def sync(aCTX, aArgs):
    fdb = ret.pop('FDB',[])
    with aCTX.db as db:
     ret['deleted'] = db.execute("DELETE FROM fdb WHERE device_id = %s"%aArgs['id'])
-    ret['insert']  = db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(aArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb)) if len(fdb) > 0 else 0
+    ret['insert']  = db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(aArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb)) if fdb else 0
  return ret
 
 #
@@ -122,7 +122,7 @@ def check(aCTX, aArgs):
     fdb = res.pop('FDB',[])
     with lCTX.db as db:
      db.execute("DELETE FROM fdb WHERE device_id = %s"%lArgs['id'])
-     if(len(fdb) > 0):
+     if fdb:
       db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(lArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb))
   return True
 

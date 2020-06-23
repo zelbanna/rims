@@ -165,7 +165,7 @@ def record_info(aCTX, aArgs):
  Output:
  """
  ret = {}
- if aArgs['domain_id'] is None or len(aArgs['name']) == 0 or len(aArgs['type']) == 0:
+ if not (aArgs['domain_id'] and aArgs['name'] and aArgs['type']):
   ret = {'status':'NOT_OK', 'data':None, 'info':'Not enough correct parameters (domain,name,type)'}
  elif aArgs['op'] == 'new':
   ret = {'status':'OK', 'data':{'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600'}}

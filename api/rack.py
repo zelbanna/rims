@@ -77,7 +77,7 @@ def inventory(aCTX, aArgs):
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
    ids = ",".join(str(x) for x in [ select['pdu_1'],select['pdu_2'],select['console']] if x)
-   if len(ids) > 0:
+   if ids:
     db.query(sqlbase%("devices.id IN(%s)"%ids))
     for item in db.get_rows():
      ret[item['base']].append(item)
