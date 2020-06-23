@@ -61,7 +61,7 @@ def execute(aIP, aSNMP, aBasic = False, aDecode = False):
       try: info['model'] = model_list[model_list.index('juniper') + 1]
       except: info['model'] = 'unknown'
       if (info['model']) in ['switch','internet','unknown','virtual']:
-       info['model'] = ("%s" if not info['model'] == 'virtual' else "%s (VC)")%infolist[3].lower()
+       info['model'] = ("%s" if info['model'] != 'virtual' else "%s (VC)")%infolist[3].lower()
      except: pass
      else:
       for tp in [ 'ex', 'srx', 'qfx', 'mx' ]:

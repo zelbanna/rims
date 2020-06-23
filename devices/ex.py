@@ -34,7 +34,7 @@ class Device(Junos):
     self._style = "ELS"
     for entry in swdata[0].iter("l2ng-mac-entry"):
      vlan = entry.find("l2ng-l2-mac-vlan-name").text
-     mac  = entry.find("l2ng-l2-mac-address").text     
+     mac  = entry.find("l2ng-l2-mac-address").text
      interface = entry.find("l2ng-l2-mac-logical-interface").text
      fdblist.append({'VLAN':vlan, 'MAC':mac, 'Interface':interface, 'Description':self.get_interface_name(interface)})
    elif swdata.tag == "ethernet-switching-table-information":
@@ -43,8 +43,8 @@ class Device(Junos):
      vlan = entry.find("mac-vlan").text
      mac  = entry.find("mac-address").text
      interface = entry.find(".//mac-interfaces").text
-     if not mac == "*" and not interface == "Router":
-      fdblist.append({'VLAN':vlan, 'MAC':mac, 'Interface':interface, 'Description':self.get_interface_name(interface)}) 
+     if mac != "*" and interface != "Router":
+      fdblist.append({'VLAN':vlan, 'MAC':mac, 'Interface':interface, 'Description':self.get_interface_name(interface)})
   except Exception as err:
    self.log("System Error - fetching FDB: " + str(err))
   return fdblist

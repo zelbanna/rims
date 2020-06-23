@@ -120,7 +120,7 @@ class Device(GenericDevice):
     session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
     uuidobj = VarList('.1.3.6.1.4.1.6876.2.1.1.10.%s'%aID)
     session.get(uuidobj)
-    if not uuidobj[0].val.decode() == aUUID:
+    if uuidobj[0].val.decode() !=  aUUID:
      raise Exception('UUID_NOT_MATCHING')
    if aOP in ['on','off','reboot','shutdown','suspend']:
     from time import sleep
