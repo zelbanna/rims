@@ -46,13 +46,13 @@ def info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = (db.update_dict('device_pems',aArgs,'id=%s'%id) > 0)
    else:
     ret['update'] = (db.insert_dict('device_pems',aArgs) > 0)
     id = db.get_last_id() if ret['update'] else 'new'
 
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT * FROM device_pems WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:

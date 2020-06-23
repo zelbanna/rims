@@ -35,12 +35,12 @@ def info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = (db.update_dict('racks',aArgs,'id=%s'%id) > 0)
    else:
     ret['update'] = (db.insert_dict('racks',aArgs) == 1)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT racks.* FROM racks WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:

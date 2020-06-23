@@ -155,7 +155,7 @@ def check_title(aCTX, aArgs):
 
   # Title date is prefix[0] - prefix[where we found season info]
   # ... but maybe there is more, like the idiots who named Modus who added a " - " instead of a "." or just " "
-  data['title'] = prefix[0:title_end] if not prefix[title_end-2:title_end+1] == " - " else prefix[0:title_end-2]
+  data['title'] = prefix[0:title_end] if prefix[title_end-2:title_end+1] != " - " else prefix[0:title_end-2]
 
   clean_search = search(r" (?:720|1080|Swesub).",prefix)
   if clean_search:

@@ -134,12 +134,12 @@ def node_info(aCTX, aArgs):
   aArgs['device_id'] = 'NULL'
  with aCTX.db as db:
   if op == 'update':
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = (db.update_dict('nodes',aArgs,'id=%s'%id) > 0)
    else:
     ret['update'] = (db.insert_dict('nodes',aArgs) > 0)
     id = db.get_last_id() if ret['update'] else 'new'
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT nodes.*, devices.hostname FROM nodes LEFT JOIN devices ON devices.id = nodes.device_id WHERE nodes.id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
    if ret['found'] and op == 'update':
@@ -246,15 +246,15 @@ def user_info(aCTX, aArgs):
     aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aCTX.config['salt']).split('$')[3]
    else:
     ret['password_check'] = 'OK' if (aArgs.pop('password',None) is None) else 'NOT_OK'
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = (db.update_dict('users',aArgs,"id=%s"%id) == 1)
    else:
-    if not 'password' in aArgs:
+    if 'password' not in aArgs:
      aArgs['password'] = crypt('changeme','$1$%s$'%aCTX.config['salt']).split('$')[3]
     ret['update'] = (db.insert_dict('users',aArgs) == 1)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT users.* FROM users WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
    ret['data'].pop('password',None)
@@ -312,12 +312,12 @@ def server_info(aCTX, aArgs):
   if op == 'update':
    if aArgs.get('ui') == 'None':
     aArgs['ui'] = 'NULL'
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = db.update_dict('servers',aArgs,"id=%s"%id)
    else:
     ret['update'] = db.insert_dict('servers',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT * FROM servers WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
    db.query("SELECT id, service, type FROM service_types WHERE type IN (SELECT st.type FROM service_types AS st JOIN servers ON st.id = servers.type_id WHERE servers.id = '%s')"%ret['data']['id'])
@@ -447,13 +447,13 @@ def activity_info(aCTX, aArgs):
   if op == 'update' and all(x in aArgs for x in ['user_id','type_id']):
    aArgs['date_time'] ="%s %s:00"%(aArgs.pop('date','1970-01-01'),aArgs.pop('time','00:01'))
 
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = (db.update_dict('activities',aArgs,'id = %s'%id) > 0)
    else:
     ret['update'] = (db.insert_dict('activities',aArgs) > 0)
     id = db.get_last_id() if ret['update'] else 'new'
 
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
@@ -508,13 +508,13 @@ def activity_type_info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = db.update_dict('activity_types',aArgs,"id=%s"%id)
    else:
     ret['update'] = db.insert_dict('activity_types',aArgs)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT * FROM activity_types WHERE id = '%s'"%id) > 0)
    ret['data'] = db.get_row()
   else:

@@ -74,7 +74,7 @@ def network_info(aCTX, aArgs):
     else:
      ret['update'] = (db.execute("UPDATE ipam_networks SET network = INET6_ATON('%s'), mask = %s, gateway = INET6_ATON('%s'), broadcast = INET6_ATON('%s'), description = '%s', vrf = '%s', server_id = %s, reverse_zone_id = %s WHERE id = %s"%(aArgs['network'],aArgs['mask'],aArgs['gateway'],broadcast, aArgs.get('description','N/A'), aArgs.get('vrf','default'), aArgs['server_id'] if aArgs.get('server_id') else 'NULL' ,aArgs['reverse_zone_id'] if aArgs.get('reverse_zone_id') else 'NULL',id)) == 1)
 
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT id, mask, description, INET6_NTOA(network) AS network, INET6_NTOA(gateway) AS gateway, reverse_zone_id, server_id FROM ipam_networks WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
@@ -139,7 +139,7 @@ def network_discover(aCTX, aArgs):
   try:
    sema = aCTX.semaphore(simultaneous)
    for ip in net.hosts():
-    if not ip in existing:
+    if ip not in existing:
      aCTX.queue_semaphore(__detect_thread,sema,ip,addresses)
    for i in range(simultaneous):
     sema.acquire()
@@ -191,7 +191,7 @@ def address_list(aCTX, aArgs):
      fields.append('ir.id AS resv_id')
      joins.append('ipam_reservations AS ir ON ir.id = ia.id')
    ret['count']   = db.query("SELECT %s FROM %s WHERE network_id = %s ORDER BY ia.ip"%(",".join(fields)," LEFT JOIN ".join(joins),aArgs['network_id']))
-   ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+   ret['data'] = db.get_rows() if 'dict' not in aArgs else db.get_dict(aArgs['dict'])
   else:
    ret = {'status':'NOT_OK'}
  return ret
@@ -250,7 +250,7 @@ def address_info(aCTX, aArgs):
     # INTERNAL from rims.api.ipam import address_sanitize
     aArgs['hostname'] = address_sanitize(aCTX, {'hostname':aArgs.get('hostname',old['hostname'])})['sanitized']
     aArgs['a_domain_id'] = aArgs.get('a_domain_id',old['a_domain_id'])
-    if not id == 'new':
+    if id != 'new':
      try: ret['update'] = (db.execute("UPDATE ipam_addresses SET network_id = %s, a_domain_id = %s, hostname = '%s', ip = INET6_ATON('%s') WHERE id = %s"%(aArgs['network_id'],aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL', aArgs['hostname'], ip,id)) == 1)
      except:
       ret['status'] = 'NOT_OK'
@@ -278,7 +278,7 @@ def address_info(aCTX, aArgs):
       ret['PTR']['delete'] = record_delete(aCTX, {'domain_id':old['ptr_domain_id'], 'name':ip.reverse_pointer, 'type':'PTR'})['status']
 
      # Create - let record_info handle errors, if we have a domain we can create both A and PTR otherwise none (!)
-     if not aArgs.get('a_domain_id') in ['NULL', None]:
+     if aArgs.get('a_domain_id') not in ['NULL', None]:
       fqdn = '%s.%s'%(aArgs.get('hostname',old['hostname']),domains[int(aArgs['a_domain_id'])])
       ret[FWD]['create'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':fqdn, 'type':FWD, 'content':str(ip), 'op':'insert'})['status']
       ret[FWD]['fqdn'] = fqdn
@@ -292,7 +292,7 @@ def address_info(aCTX, aArgs):
   if op and op == 'update_only':
    ret['id'] = id
    ret['ip'] = str(ip)
-  elif not (id == 'new') and (db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state, network_id, INET6_NTOA(ine.network) AS network, a_domain_id, ine.reverse_zone_id AS ptr_domain_id, hostname FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) == 1):
+  elif id != 'new' and (db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state, network_id, INET6_NTOA(ine.network) AS network, a_domain_id, ine.reverse_zone_id AS ptr_domain_id, hostname FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) == 1):
    ret['data'] = db.get_row()
    ret['extra']= {'network':ret['data'].pop('network',None), 'ptr_domain_id': ret['data'].pop('ptr_domain_id',None)}
   else:
@@ -353,7 +353,7 @@ def address_find(aCTX, aArgs):
    existing = [x['ip'] for x in db.get_rows()]
    for addr in net.hosts():
     ipstr = str(addr)
-    if not ipstr in existing:
+    if ipstr not in existing:
      return {'status':'OK', 'ip':ipstr}
   else:
    from random import randint
@@ -467,7 +467,7 @@ def check(aCTX, aArgs):
 
  """
  with aCTX.db as db:
-  db.query("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
+  db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   networks = db.get_rows()
   db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
   addresses = db.get_rows()

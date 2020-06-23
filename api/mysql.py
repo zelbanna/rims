@@ -43,7 +43,7 @@ def dump(aCTX, aArgs):
    line_number+=1
    if line[12:17] == "`oui`":
     continue
-   elif not line[:2] in [ '/*','--']:
+   elif line[:2] not in [ '/*','--']:
     if "AUTO_INCREMENT=" in line:
      parts = line.split();
      for indx, part in enumerate(parts):
@@ -121,7 +121,7 @@ def diff(aCTX, aArgs):
 #
 #
 def patch(aCTX, aArgs):
- """ Function patches current database schema with the supplied schema file. If not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
+ """ Function patches current database schema with the supplied schema file. If it is not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
 
  Args:
   - schema_file (required)
@@ -156,14 +156,14 @@ def patch(aCTX, aArgs):
   # INTERNAL from rims.api.mysql import restore
   res = restore(aCTX, args)
   ret['struct_install_result']= res['status']
-  if not res['status'] == 'OK':
+  if res['status'] != 'OK':
    ret['struct_install_error']= res['output']
   else:
    args['file'] = 'mysql.values'
    # INTERNAL from rims.api.mysql import restore
    res = restore(aCTX, args)
    ret['data_restore_result'] = res['status']
-   if not res['status'] == 'OK':
+   if res['status'] != 'OK':
     ret['data_restore_error'] = res['output']
     ret['data_restore_extra'] = "Warning - patch failed, trying to restore old data"
     args['file'] = 'mysql.backup'
