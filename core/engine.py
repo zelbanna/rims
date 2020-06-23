@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "6.8"
-__build__ = 369
+__version__ = "6.9"
+__build__ = 370
 __all__ = ['Context']
 
 from crypt import crypt
@@ -54,6 +54,7 @@ class Context(object):
   self.token = self.config.get('token')
   self.path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.site  = ospath.join(self.path,'site')
+  self.ipc = {}
   self.nodes = {}
   self.tokens = {}
   self.services = {}
@@ -114,7 +115,7 @@ class Context(object):
   try:
    env = self.environment(self.node)
   except Exception as e:
-   print("Load environment error: %s"%str(e))
+   print("Load environment error: %s"%e)
    return False
   else:
    self.log("______ Loading environment - version: %s debug: %s ______"%(__build__,self.config['debug']))
@@ -145,7 +146,7 @@ class Context(object):
    return (addr,sock)
 
   try:
-   self._workers = [QueueWorker(n, self._abort, self._queue, self) for n in range(self.config['workers'])]
+   self._workers = [QueueWorker(self, self._abort, n, self._queue) for n in range(self.config['workers'])]
    self._abort.clear()
    self._scheduler.start()
 
@@ -154,7 +155,7 @@ class Context(object):
     self.log("Starting HTTP server at: %s"%self.config['port'])
     addr,sock = create_socket(int(self.config['port']))
     self._sock = sock
-    self._servers.extend(ServerWorker(n,addr,sock,self) for n in range(servers,servers+4))
+    self._servers.extend(SocketServer(self, self._abort, n, addr, sock) for n in range(servers,servers+4))
     servers = 4
    if (self.config.get('ssl')):
     ssl_config = self.config['ssl']
@@ -163,12 +164,22 @@ class Context(object):
     context.load_cert_chain(ssl_config['certfile'], keyfile=ssl_config['keyfile'], password=ssl_config.get('password'))
     addr,ssock = create_socket(int(ssl_config['port']))
     self._ssock = context.wrap_socket(ssock, server_side=True)
-    self._servers.extend(ServerWorker(n,addr,self._ssock,self) for n in range(servers,servers+4))
+    self._servers.extend(SocketServer(self, self._abort, n, addr, self._ssock) for n in range(servers,servers+4))
+
+   if (self.config.get('servers')):
+    for srv,args in self.config['servers'].items():
+     try:
+      self.log("Starting server %s"%srv)
+      module = import_module("rims.servers.%s"%srv)
+      srvobj = getattr(module,'Server')
+      self._servers.append(PersistentServer(self, self._abort, srv, srvobj, args))
+     except Exception as e:
+      self.log("Starting server %s => failed (%s)"%(srv,e))
 
    for sig in [SIGINT, SIGUSR1, SIGUSR2]:
     signal(sig, self.signal_handler)
   except Exception as e:
-   print("Starting error - check IP and SSL settings: %s"%str(e))
+   print("Starting error - check IP and SSL settings: %s"%e)
    return False
   else:
    return True
@@ -271,8 +282,8 @@ class Context(object):
    kwargs['aHeader']['X-Token'] = self.token
    try: ret = partial(self.rest_call,"%s/internal/%s/%s"%(self.nodes[aNode]['url'],aModule.replace('.','/'),aFunction), **kwargs)
    except Exception as e:
-    self.log("Node Function REST failure: %s/%s@%s (%s) => %s"%(aModule,aFunction,aNode,dumps(kwargs),str(e)))
-    ret = {'status':'NOT_OK','info':'NODE_FUNCTION_FAILURE: %s'%str(e)}
+    self.log("Node Function REST failure: %s/%s@%s (%s) => %s"%(aModule,aFunction,aNode,dumps(kwargs),e))
+    ret = {'status':'NOT_OK','info':'NODE_FUNCTION_FAILURE: %s'%e}
   else:
    module = import_module("rims.api.%s"%aModule)
    fun = getattr(module,aFunction,lambda aCTX,aArgs: None)
@@ -488,7 +499,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      self.header(200,'OK',len(body))
      self.wfile.write(body)
     except:
-     self._headers.update({'X-Exception':str(e),'Content-type':'text/html; charset=utf-8'})
+     self._headers.update({'X-Exception':e,'Content-type':'text/html; charset=utf-8'})
      self.header(404,'Not Found',0)
    elif ospath.isfile(fullpath):
     _,_,ftype = file.rpartition('.')
@@ -700,7 +711,7 @@ class SessionHandler(BaseHTTPRequestHandler):
 #
 class QueueWorker(Thread):
 
- def __init__(self, aNumber, aAbort, aQueue, aContext):
+ def __init__(self, aContext, aAbort, aNumber, aQueue):
   Thread.__init__(self)
   self._n      = aNumber
   self.name    = "QueueWorker(%02d)"%aNumber
@@ -721,7 +732,7 @@ class QueueWorker(Thread):
     if output:
      self._ctx.log("%s - %s => %s"%(self.name,repr(func).split()[1],dumps(result)))
    except Exception as e:
-    self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),str(e)))
+    self._ctx.log("%s - ERROR: %s => %s"%(self.name,repr(func),e))
     if self._ctx.config['debug']:
      for n,v in enumerate(format_exc().split('\n')):
       self._ctx.log("%s - DEBUG-%02d => %s"%(self.name,n,v))
@@ -733,24 +744,43 @@ class QueueWorker(Thread):
 
 #
 #
-class ServerWorker(Thread):
+class SocketServer(Thread):
 
- def __init__(self, aNumber, aAddress, aSocket, aContext):
+ def __init__(self, aContext, aAbort, aName, aAddress, aSocket):
   Thread.__init__(self)
-  self.name    = "ServerWorker(%02d)"%aNumber
-  self.daemon  = True
-  httpd        = HTTPServer(aAddress, SessionHandler, False)
-  self._httpd  = httpd
+  self.name   = "SocketServer(%s)"%aName
+  self.daemon = True
+  self._abort = aAbort
+  httpd = HTTPServer(aAddress, SessionHandler, False)
+  self._httpd = httpd
   httpd.socket = aSocket
-  httpd._ctx = self._ctx = aContext.clone()
+  httpd.timeout = 0.5
+  httpd._ctx = aContext.clone()
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
 
  def run(self):
-  try: self._httpd.serve_forever()
-  except: pass
-  #except SSLError as e: print("SSLError: %s => %s"%(self.name,str(e)))
-  #except Exception as e: print("Error: %s => %s"%(self.name,str(e)))
+  while not self._abort.is_set():
+   try: self._httpd.handle_request()
+   except: pass
+   #except SSLError as e: print("SSLError: %s => %s"%(self.name,e))
+   #except Exception as e: print("Error: %s => %s"%(self.name,e))
 
- def shutdown(self):
-  self._httpd.shutdown()
+#
+#
+class PersistentServer(Thread):
+
+ def __init__(self, aContext, aAbort, aName, aRunObject, aArgs):
+  Thread.__init__(self)
+  self.name = "PersistentServer(%s)"%aName
+  self.daemon = True
+  self._abort = aAbort
+  context = aContext.clone()
+  context.ipc[aName] = {}
+  self._server = aRunObject(context, aAbort, aArgs)
+  self.start()
+
+ def run(self):
+  while not self._abort.is_set():
+   try: self._server.process()
+   except: pass
