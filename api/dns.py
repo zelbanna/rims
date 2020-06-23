@@ -25,7 +25,7 @@ def domain_list(aCTX, aArgs):
    # INTERNAL from rims.api.dns import sync_recursor, sync_nameserver
    ret['ns'] = sync_nameserver(aCTX, aArgs = {})
    ret['rec'] = sync_recursor(aCTX, aArgs = {})
-  ret['count'] = db.query("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if not 'filter' in aArgs else "domains.type = '%s'"%aArgs['filter']))
+  ret['count'] = db.query("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if 'filter' not in aArgs else "domains.type = '%s'"%aArgs['filter']))
   ret['data'] = db.get_rows()
  return ret
 

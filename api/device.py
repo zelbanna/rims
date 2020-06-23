@@ -69,7 +69,7 @@ def list(aCTX, aArgs):
     fields.append('dt.functions AS type_functions')
    if 'type' in extras:
     fields.append('dt.name AS type_name, dt.base AS type_base')
-   if not (aArgs.get('field') in ['type','base']):
+   if aArgs.get('field') not in ['type','base']:
     joins.append("device_types AS dt ON dt.id = devices.type_id")
   if 'url' in extras:
    fields.append('devices.url')
@@ -87,7 +87,7 @@ def list(aCTX, aArgs):
 
  with aCTX.db as db:
   ret['count'] = db.query("SELECT DISTINCT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort))
-  ret['data'] = db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
+  ret['data'] = db.get_rows() if 'dict' not in aArgs else db.get_dict(aArgs['dict'])
   if extras and any(i in extras for i in ['mac','mgmtmac']):
    sys = 'mac' in extras
    mgmt= 'mgmtmac' in extras
@@ -154,7 +154,7 @@ def info(aCTX, aArgs):
 
  Output:
  """
- if not 'id' in aArgs:
+ if 'id' not in aArgs:
   return {'found':False,'status':'NOT_OK','info':'device info requires id'}
 
  id = int(aArgs.pop('id',None))
@@ -182,7 +182,7 @@ def info(aCTX, aArgs):
      if type['name'] == type_name:
       args['type_id'] = type['id']
       break
-    if not 'types' in extra:
+    if 'types' not in extra:
      ret.pop('types',None)
     ret['update'] = (db.update_dict('devices',args,"id=%s"%id) == 1)
 
@@ -272,7 +272,7 @@ def extended(aCTX, aArgs):
 
    ret['update'] = (db.update_dict('devices',aArgs,"id = %s"%aArgs['id']) == 1)
 
-   if not aArgs.get('a_domain_id') in [None,'NULL'] and not aArgs['ipam_id'] in [None,'NULL'] and db.query("SELECT ia.hostname, ia.a_domain_id, INET6_NTOA(ia.ip) AS ip, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM ipam_addresses AS ia WHERE ia.id = %(ipam_id)s"%aArgs) > 0:
+   if aArgs.get('a_domain_id') not in [None,'NULL'] and aArgs['ipam_id'] not in [None,'NULL'] and db.query("SELECT ia.hostname, ia.a_domain_id, INET6_NTOA(ia.ip) AS ip, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM ipam_addresses AS ia WHERE ia.id = %(ipam_id)s"%aArgs) > 0:
     entry = db.get_row()
     if entry['a_domain_id']:
      ret['dns']['create'] = record_info(aCTX, {'op':'insert', 'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(aArgs['hostname'],domains[int(aArgs['a_domain_id'])]), 'type':entry['type'], 'content':entry['ip']})['status']
@@ -439,7 +439,7 @@ def new(aCTX, aArgs):
 
   if aArgs.get('ipam_network_id') and ip:
    res = address_info(aCTX, {'op':'insert','ip':str(ip),'network_id':aArgs['ipam_network_id'],'hostname':'%s-me'%hostname,'a_domain_id':aArgs.get('if_domain_id')})
-   if not res['status'] == 'OK':
+   if res['status'] != 'OK':
     return {'status':'NOT_OK','info':res['info']}
    else:
     data['ipam'] = res['data']['id']
@@ -455,7 +455,7 @@ def new(aCTX, aArgs):
 
   if data['ipam'] != 'NULL' or data['mac'] > 0:
    data['interface'] = (db.execute("INSERT INTO interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me','auto_created')"%data) > 0)
-   if not aArgs.get('a_domain_id') in [None,'NULL']:
+   if aArgs.get('a_domain_id') not in [None,'NULL']:
     from rims.api.dns import record_info
     db.query("SELECT name FROM domains WHERE id = %s"%aArgs['a_domain_id'])
     data['dns'] = record_info(aCTX, {'op':'insert', 'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(hostname,db.get_val('name')), 'type':'A' if ip.version == 4 else 'AAAA', 'content':str(ip)})['status']
