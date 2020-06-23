@@ -140,7 +140,7 @@ def network(aCTX, aArgs):
        # If not processed before add device to locally connected nodes and save interface
        if not to_node['processed']:
         # If first time seen, i.e. no connections. it's root connection is the current id and it should be added to nodes
-        if len(to_node['connected']) == 0:
+        if not to_node['connected']:
          nodes[to_id] = to_node
         to_node['connected'].append(current_id)
         local_nodes[to_id] = to_node

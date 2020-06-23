@@ -412,7 +412,7 @@ def lldp_mapping(aCTX, aArgs):
      else:
       v['status'] = "chassis_mapping_impossible_no_port"
       continue
-     args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%s'"%v['port_desc'] if len(v['port_desc']) > 0 else "FALSE"
+     args['desc'] = "di.description COLLATE UTF8_GENERAL_CI LIKE '%s'"%v['port_desc'] if v['port_desc'] else "FALSE"
      if (db.query("SELECT di.name, di.connection_id, di.mac, di.interface_id, di.description FROM %s WHERE %s AND (%s OR %s)"%(' LEFT JOIN '.join(tables),args['id'],args['port'],args['desc'])) > 0):
       local = interfaces[int(k)]
       remote = db.get_row()
@@ -513,7 +513,7 @@ def process(aCTX, aArgs):
  ret = {'status':'OK','function':'interface_process','changed':0}
 
  def __check_if(aDev):
-  if len(aDev['interfaces']) > 0:
+  if aDev['interfaces']:
    try:
     device = Device(aCTX, aDev['device_id'], aDev['ip'])
     probe  = device.interfaces_state()

@@ -290,13 +290,13 @@ def process(aCTX, aArgs):
    probe = check_content(aCTX, {'filepath':dest,'srt':srt.get('code')})['data']
 
    # if forced download or if there are subs to remove but no subs to add left
-   if len(probe['subtitle']['remove']) > 0:
-    data['changes']['subtitle'] = "--no-subtitles" if len(probe['subtitle']['add']) == 0 else "--stracks " + ",".join(map(str,probe['subtitle']['add']))
+   if probe['subtitle']['remove']:
+    data['changes']['subtitle'] = "--no-subtitles" if not probe['subtitle']['add'] else "--stracks " + ",".join(map(str,probe['subtitle']['add']))
 
-   if len(probe['audio']['remove']) and len(probe['audio']['add']) > 0:
+   if probe['audio']['remove'] and probe['audio']['add']:
     data['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
 
-   if (data['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or len(data['changes']['subtitle']) or len(data['changes']['audio']) or srt['code']):
+   if (data['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or data['changes']['subtitle'] or data['changes']['audio'] or srt['code']):
     FNULL = open(devnull, 'w')
 
     if data['rename']:
@@ -305,7 +305,7 @@ def process(aCTX, aArgs):
     if probe['video']['set_default']:
      call(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', dest], stdout=FNULL, stderr=FNULL)
 
-    if probe['audio']['add_aac'] or len(data['changes']['audio']) or len(data['changes']['subtitle']) or srt['code']:
+    if probe['audio']['add_aac'] or data['changes']['audio'] or data['changes']['subtitle'] or srt['code']:
      from tempfile import mkdtemp
      data['aac_probe'] = probe['audio']['add_aac']
      tmpfile = filename + ".process"

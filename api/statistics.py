@@ -151,10 +151,10 @@ def check(aCTX, aArgs):
     measurements = {}
     for ddp in db.get_rows():
      tobj = measurements.get(ddp['measurement'],{})
-     if len(tobj) == 0:
+     if not tobj:
       measurements[ddp['measurement']] = tobj
      vobj = tobj.get(ddp['tags'],[])
-     if len(vobj) == 0:
+     if not vobj:
       tobj[ddp['tags']] = vobj
      vobj.append({'name':ddp['name'],'oid':ddp['oid'],'value':None})
     for m,tags in measurements.items():

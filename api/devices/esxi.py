@@ -58,7 +58,7 @@ def vm_info(aCTX, aArgs):
      for intf in ret['device']:
        intf['mac'] = ':'.join(intf['mac'][i:i+2] for i in [0,2,4,6,8,10]) if intf.get('mac') else '00:00:00:00:00:00'
      for vm_if in ret['interfaces'].values():
-      if len(ret['device']) > 0:
+      if ret['device']:
        for i,dev_if in enumerate(ret['device']):
         if dev_if['mac'] == vm_if['mac']:
          vm_if.update({'interface_id':dev_if['interface_id'],'pos':i})
