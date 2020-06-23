@@ -4,11 +4,12 @@
 __author__ = "Zacharias El Banna"
 __version__ = "6.1"
 
-from sys import argv, stdout, path as syspath
-from json import load,dump,dumps
-from os import remove, chmod, listdir, path as ospath
+from sys import path as syspath, exit as sysexit
+from json import load,dumps
+from os import chmod, listdir, path as ospath
 from subprocess import check_call
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from pip._internal import main as pipmain
 pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
@@ -25,18 +26,18 @@ parser = ArgumentParser(prog='install',formatter_class=RawDescriptionHelpFormatt
 parser.add_argument('-c','--config', help = 'Config file',default = 'config.json', required=False)
 parser.add_argument('-s','--schema', help = 'Database Schema file',default = 'schema.db', required=False)
 parser.add_argument('-t','--startup', help = 'Startup template file',default = 'debian.init', required=False)
-input = parser.parse_args()
+parsedinput = parser.parse_args()
 
-if not input.config:
+if not parsedinput.config:
  parser.print_help()
- exit(0)
+ sysexit(0)
 
 ############################################### ALL #################################################
 #
 # load config
 #
 config = {}
-config_file = ospath.abspath(input.config)
+config_file = ospath.abspath(parsedinput.config)
 with open(config_file,'r') as sfile:
  config = load(sfile)
 config['config_file'] = config_file
@@ -46,45 +47,51 @@ config['salt'] = config.get('salt','WBEUAHfO')
 #
 # Write OS dependent startup file and call 'install' upon it
 #
-with open(ospath.abspath(ospath.join(pkgdir,'templates',input.startup)),'r') as f:
+with open(ospath.abspath(ospath.join(pkgdir,'templates',parsedinput.startup)),'r') as f:
  template = f.read()
 template = template.replace("%PKGDIR%",pkgdir)
 template = template.replace("%CFGFILE%",config_file)
-engine_run = ospath.abspath(ospath.join(pkgdir,input.startup))
+engine_run = ospath.abspath(ospath.join(pkgdir,parsedinput.startup))
 with open(engine_run,'w+') as f:
  f.write(template)
 chmod(engine_run,0o755)
-res['data']['engine']= {'startup':input.startup,'install':check_call([engine_run,"install"])}
+res['data']['engine']= {'startup':parsedinput.startup,'install':check_call([engine_run,"install"])}
 
 ############################################### ALL #################################################
 #
 # Modules
 #
-from pip._internal import main as pipmain
-try: import pymysql
+try:
+ import pymysql
 except ImportError as e:
- res['info']['pymysql'] = 'installing (%s)'%str(e)
+ res['info']['pymysql'] = f'installing ({e})'
  pipmain(["install", "-q","pymysql"])
-try: import dns
+try:
+ import dns
 except ImportError as e:
- res['info']['dns'] = 'installing (%s)'%str(e)
+ res['info']['dns'] = f'installing ({e})'
  pipmain(["install", "-q","dnspython"])
-try: import paramiko
+try:
+ import paramiko
 except ImportError as e:
- res['info']['ssh'] = 'installing (%s)'%str(e)
+ res['info']['ssh'] = f'installing ({e})'
  pipmain(["install", "-q","paramiko"])
-try: import pyVmomi
+try:
+ import pyVmomi
 except ImportError as e:
- res['info']['pyVmomi'] = 'installing (%s)'%str(e)
+ res['info']['pyVmomi'] = f'installing ({e})'
  pipmain(["install","-q","pyVmomi"])
-try: import netsnmp
+try:
+ import netsnmp
 except ImportError as e:
- res['info']['netsnmp'] = 'installing (%s)'%str(e)
+ res['info']['netsnmp'] = f'installing ({e})'
  pipmain(["install","-q","python3-netsnmp"])
-try: from jnpr import junos
+try:
+ from jnpr import junos
 except ImportError as e:
- res['info']['junos-eznc'] = 'installing (%s)'%str(e)
+ res['info']['junos-eznc'] = f'installing ({e})'
  pipmain(["install","-q","junos-eznc"])
+
 
 ############################################ MASTER ###########################################
 #
@@ -102,13 +109,13 @@ if config['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("rims.devices.%s"%(pyfile))
-    type = getattr(mod,'__type__',None)
+    mod = import_module(f'rims.devices.{pyfile}')
+    tp = getattr(mod,'__type__',None)
     icon = getattr(mod,'__icon__','viz-generic.png')
     oid = getattr(mod,'__oid__',0)
     dev = getattr(mod,'Device',None)
-    if type:
-     device_types.append({'name':pyfile, 'base':type, 'functions':",".join(dev.get_functions()),'icon':icon,'oid':oid })
+    if tp:
+     device_types.append({'name':pyfile, 'base':tp, 'functions':",".join(dev.get_functions()),'icon':icon,'oid':oid })
    except: pass
  res['data']['devices_found'] = len(device_types)
  res['data']['devices_new'] = 0
@@ -122,27 +129,28 @@ if config['id'] == 'master':
   pyfile = file[:-3]
   if file[-3:] == ".py" and pyfile[:2] != "__":
    try:
-    mod = import_module("rims.api.services.%s"%(pyfile))
-    type = getattr(mod,'__type__',None)
+    mod = import_module(f'rims.api.services.{pyfile}')
+    tp = getattr(mod,'__type__',None)
    except: pass
    else:
-    if type:
-     service_types.append({'service':pyfile, 'type':type})
+    if tp:
+     service_types.append({'service':pyfile, 'type':tp})
  res['data']['services_found'] = len(service_types)
  res['data']['services_new'] = 0
 
  #
  # Common config and user - for master...
  #
- from rims.api import mysql
+ from rims.api.mysql import diff, patch
  from crypt import crypt
  try:
-  database,host,username,password = config['database']['name'],config['database']['host'],config['database']['username'],config['database']['password']
-  database_args = {'host':host,'username':username,'password':password,'database':database,'schema_file':ospath.join(pkgdir,input.schema)}
+  settings = config['database']
+  database,host,username,password = settings['name'],settings['host'],settings['username'],settings['password']
+  database_args = {'host':host, 'username':username, 'password':password, 'database':database, 'schema_file':ospath.join(pkgdir,parsedinput.schema)}
   res['data']['database']= {}
-  res['data']['database']['diff'] = mysql.diff(None, database_args)
+  res['data']['database']['diff'] = diff(None, database_args)
   if res['data']['database']['diff']['diffs'] > 0:
-   res['data']['database']['patch'] = mysql.patch(None, database_args)
+   res['data']['database']['patch'] = patch(None, database_args)
    if res['data']['database']['patch']['status'] == 'NOT_OK':
     print("Database patching failed")
     if res['data']['database']['patch'].get('database_restore_result') == 'OK':
@@ -151,39 +159,39 @@ if config['id'] == 'master':
      print("Restore failed too!")
      print("- Restore manually case needed")
      print("- Make sure that configured user has access to database:")
-     print("CREATE USER '%s'@'localhost' IDENTIFIED BY '%s';"%(config['database']['username'],config['database']['password']))
-     print("GRANT ALL PRIVILEGES ON %s.* TO '%s'@'localhost';"%(config['database']['name'],config['database']['username']))
+     print(f"CREATE USER '{settings['username']}'@'localhost' IDENTIFIED BY '{settings['password']}';")
+     print(f"GRANT ALL PRIVILEGES ON {settings['name']}.* TO '{settings['username']}'@'localhost';")
      print("FLUSH PRIVILEGES;\n\n")
-    exit(1)
+    sysexit(1)
 
   db = DB(database,host,username,password)
   db.connect()
-  passcode = crypt('changeme', '$1$%s$'%config.get('salt','WBEUAHfO')).split('$')[3]
-  res['data']['create_admin_user'] = (db.execute("INSERT users (id,name,alias,password,class) VALUES(1,'Administrator','admin','%s','admin') ON DUPLICATE KEY UPDATE id = id, class='admin', password = '%s'"%(passcode,passcode)) > 0)
-  res['data']['create_master_node'] = (db.execute("INSERT nodes (node,url) VALUES('{0}','{1}') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)".format(config['id'],config['master'])) > 0)
+  passcode = crypt('changeme', f"$1${config.get('salt','WBEUAHfO')}$").split('$')[3]
+  res['data']['create_admin_user'] = (db.execute(f"INSERT users (id,name,alias,password,class) VALUES(1,'Administrator','admin','{passcode}','admin') ON DUPLICATE KEY UPDATE id = id, class='admin', password = '{passcode}'") > 0)
+  res['data']['create_master_node'] = (db.execute(f"INSERT nodes (node,url) VALUES('{config['id']}','{config['master']}') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['data']['master_node_id']  = db.get_last_id()
   res['data']['create_generic_device'] = (db.execute("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)
 
   sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','images/%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = 'images/%(icon)s', functions = '%(functions)s'"
-  for type in device_types:
-   try:    res['data']['devices_new'] += db.execute(sql%type)
+  for tp in device_types:
+   try:    res['data']['devices_new'] += db.execute(sql%tp)
    except Exception as err: res['info']['devices'] = str(err)
 
   sql = "INSERT service_types (service,type) VALUES ('%(service)s','%(type)s') ON DUPLICATE KEY UPDATE id = id"
-  for type in service_types:
-   try:   res['data']['services_new'] += db.execute(sql%type)
+  for tp in service_types:
+   try:   res['data']['services_new'] += db.execute(sql%tp)
    except Exception as err: res['info']['services'] = str(err)
 
   db.close()
 
  except Exception as e:
-  #from traceback import print_exc
-  # print_exc(5)
   print("Database error: %s"%str(e))
 
 else:
- try: res['data']['register'] = rest_call("%s/register"%config['master'], aHeader = {'X-Token':config.get('token')}, aArgs = {'id':config['id'],'port':config['port']}, aDataOnly = True)
- except Exception as e: res['info']['register'] = str(e)
+ try:
+  res['data']['register'] = rest_call("%s/register"%config['master'], aHeader = {'X-Token':config.get('token')}, aArgs = {'id':config['id'],'port':config['port']}, aDataOnly = True)
+ except Exception as e:
+  res['info']['register'] = str(e)
 
 res['status'] = 'OK' if not res['info'] else 'NOT_OK'
 ############################################### ALL #################################################
@@ -191,4 +199,4 @@ res['status'] = 'OK' if not res['info'] else 'NOT_OK'
 # End
 #
 print(dumps(res,indent=4,sort_keys=True))
-exit(0 if res.get('status') == 'OK' else 1)
+sysexit(0 if res.get('status') == 'OK' else 1)

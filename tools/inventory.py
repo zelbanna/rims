@@ -2,19 +2,18 @@
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
 
+from csv import reader
 from os   import path as ospath
-from sys  import path as syspath, argv, exit
+from sys  import path as syspath, argv, exit as sysexit
 from json import load
-syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
+syspath.insert(1,ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 from rims.core.common import DB
 
 if __name__ == "__main__":
  if len(argv) < 2:
   print(argv[0] + " <config-file> <inventory-file>")
-  exit(0)
+  sysexit(0)
 
- from csv import reader
- from json import loads, dumps
 
  with open(argv[1],'r') as config_file:
   config  = load(config_file)
@@ -37,4 +36,4 @@ if __name__ == "__main__":
       print("%s => %s"%(str(err),";".join(row)))
     else:
      print("suspicious line => %s"%(";".join(row)))
- exit(0)
+ sysexit(0)

@@ -2,7 +2,7 @@
 # Standalone server
 #
 
-apt-get install -y yarn graphviz graphviz-dev
+apt-get install -y yarn graphviz graphviz-dev pylint
 pip3 install graphviz
 
 cd /usr/local/sbin
