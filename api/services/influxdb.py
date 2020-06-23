@@ -42,7 +42,7 @@ def write_points(aCTX, aArgs):
  """
  ret = {}
  db = aCTX.config['influxdb']
- args = '%s,%s value=%s'%(aArgs['series'],"default" if not 'tags' in aArgs else ','.join(['%s=%s'%(x[0],x[1]) for x in aArgs['tags']]),aArgs['value'])
+ args = '%s,%s value=%s'%(aArgs['series'],"default" if 'tags' not in aArgs else ','.join(['%s=%s'%(x[0],x[1]) for x in aArgs['tags']]),aArgs['value'])
  try:  aCTX.rest_call("%s/write?db=%s&precision=%s"%(db['url'],db['database'],aArgs.get('precision','s')), aMethod = 'POST', aApplication = 'octet-stream', aArgs = args.encode())
  except Exception as e:
   ret['status'] = 'NOT_OK'
@@ -84,7 +84,7 @@ def sync(aCTX, aArgs):
  ret = {}
  db = aCTX.config['influxdb']
  # INTERNAL rims.api.influxdb
- if not db['database'] in database_list(aCTX, aArgs)['databases']:
+ if db['database'] not in database_list(aCTX, aArgs)['databases']:
   try:
    for line in ["CREATE DATABASE %s"%db['database'], "CREATE RETENTION POLICY one_week ON %s DURATION 1w REPLICATION 1 default"%db['database']]:
     res = aCTX.rest_call("%s/query"%(db['url']), aApplication = 'x-www-form-urlencoded', aArgs = {'q':line}, aDataOnly = False, aMethod = 'POST')

@@ -44,7 +44,7 @@ def domain_info(aCTX, aArgs):
  aArgs.pop('endpoint',None)
  with aCTX.db as db:
   if op == "update":
-   if not aArgs['id'] == 'new':
+   if aArgs['id'] != 'new':
     args = {}
     if 'type' in aArgs:
      args['kind'] = aArgs['type'].lower().capitalize()

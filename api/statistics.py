@@ -66,13 +66,13 @@ def info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if not id == 'new':
+   if id != 'new':
     ret['update'] = (db.update_dict('device_statistics',aArgs,'id=%s'%id) > 0)
    else:
     ret['update'] = (db.insert_dict('device_statistics',aArgs) > 0)
     id = db.get_last_id() if ret['update'] else 'new'
 
-  if not id == 'new':
+  if id != 'new':
    ret['found'] = (db.query("SELECT * FROM device_statistics WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
@@ -143,7 +143,7 @@ def check(aCTX, aArgs):
  devices = []
 
  with aCTX.db as db:
-  db.query("SELECT id FROM ipam_networks" if not 'networks' in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
+  db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
    if (db.query("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']) > 0):
