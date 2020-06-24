@@ -109,7 +109,7 @@ def lookup(aCTX, aArgs):
  ret = {'inserts':0}
  from importlib import import_module
  with aCTX.db as db:
-  if (db.query("SELECT INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%id) > 0):
+  if db.query("SELECT INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%id):
    info = db.get_row()
    try:
     module = import_module("rims.devices.%s"%info['type'])
@@ -146,20 +146,21 @@ def check(aCTX, aArgs):
   db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
-   if (db.query("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']) > 0):
+   if db.query("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']):
     dev['data_points'] = []
     measurements = {}
     for ddp in db.get_rows():
-     tobj = measurements.get(ddp['measurement'],{})
-     if not tobj:
-      measurements[ddp['measurement']] = tobj
+     try:
+      tobj = measurements[ddp['measurement']]
+     except:
+      measurements[ddp['measurement']] = tobj = {}
      vobj = tobj.get(ddp['tags'],[])
      if not vobj:
       tobj[ddp['tags']] = vobj
      vobj.append({'name':ddp['name'],'oid':ddp['oid'],'value':None})
     for m,tags in measurements.items():
      dev['data_points'].extend([{'measurement':m,'tags':t,'snmp':values} for t,values in tags.items()])
-   if (db.query("SELECT snmp_index,interface_id,name FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']) > 0):
+   if db.query("SELECT snmp_index,interface_id,name FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']):
     dev['interfaces'] = db.get_rows()
    if any(i in dev for i in ['data_points','interfaces']):
     devices.append(dev)

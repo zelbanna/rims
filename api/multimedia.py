@@ -44,15 +44,21 @@ def cleanup(aCTX, aArgs):
  ret = {'root':aCTX.config['multimedia']['torrent_directory'],'data':[]}
  for path,dirs,files in walk(ret['root']):
   for item in files:
-   try: remove(ospath.join(path,item))
-   except Exception as err: ret['data'].append({'type':'file','path':path,'item':item,'status':'NOT_OK','info':str(err)})
-   else: ret['data'].append({'type':'file','path':path,'item':item,'status':'OK'})
+   try:
+    remove(ospath.join(path,item))
+   except Exception as err:
+    ret['data'].append({'type':'file','path':path,'item':item,'status':'NOT_OK','info':str(err)})
+   else:
+    ret['data'].append({'type':'file','path':path,'item':item,'status':'OK'})
   for item in dirs:
    if item == '.':
     continue
-   try: rmdir(ospath.join(path,item))
-   except Exception as err: ret['data'].append({'type':'directory','path':path,'item':item,'status':'NOT_OK','info':str(err)})
-   else: ret['data'].append({'type':'directory','path':path,'item':item,'status':'OK'})
+   try:
+    rmdir(ospath.join(path,item))
+   except Exception as err:
+    ret['data'].append({'type':'directory','path':path,'item':item,'status':'NOT_OK','info':str(err)})
+   else:
+    ret['data'].append({'type':'directory','path':path,'item':item,'status':'OK'})
  return ret
 
 #
@@ -66,7 +72,8 @@ def delete(aCTX, aArgs):
 
  Output:
  """
- try: remove(ospath.join(aArgs['path'],aArgs['file']))
+ try:
+   remove(ospath.join(aArgs['path'],aArgs['file']))
  except Exception as err:
   ret = {'status':'NOT_OK','info':str(err),'deleted':False}
  else:
@@ -85,7 +92,8 @@ def transfer(aCTX, aArgs):
  Output:
  """
  from shutil import move
- try: move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(aCTX.config['multimedia']['media_directory'],aArgs['file']) )
+ try:
+  move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(aCTX.config['multimedia']['media_directory'],aArgs['file']) )
  except Exception as err:
   ret = {'status':'NOT_OK','info':str(err)}
  else:
@@ -197,7 +205,7 @@ def check_content(aCTX, aArgs):
 
  Output:
  """
- from subprocess import Popen, PIPE, STDOUT
+ from subprocess import Popen, PIPE
  data = {}
  ret = {'status':'NOT_OK','data':data}
 
@@ -216,7 +224,7 @@ def check_content(aCTX, aArgs):
   p2 = Popen(["sed","-n","s/.*Stream #[0-9]\\:\\([0-9]*\\)\(.*\\): \\([AVS][a-z]*\\)/\\3#\\1#\\2#/p"], stdin=p1.stderr, stdout=PIPE)
   entries = p2.communicate()[0].decode()
  except Exception as e:
-  ret['info'] = str(err)
+  ret['info'] = str(e)
  else:
   from re import sub
   for line in entries.split('\n'):
@@ -237,9 +245,10 @@ def check_content(aCTX, aArgs):
      else:
       data['audio']['remove'].append(slot)
     elif type == 'Subtitle':
-     if not lang: lang = 'eng'
+     if not lang:
+      lang = 'eng'
      # if sub with lang is there already or not a sought lang then remove
-     if lang in data['subtitle']['languages'] or not lang in ['eng','swe']:
+     if lang in data['subtitle']['languages'] or lang not in ['eng','swe']:
       data['subtitle']['remove'].append(slot)
      else:
       data['subtitle']['add'].append(slot)
@@ -257,7 +266,7 @@ def process(aCTX, aArgs):
   - path (cond optional)
   - file (cond optional)
   - name (optional)
-  - info (optional) 
+  - info (optional)
   - title (optional) - for mp4 series episode
   - episode (optional) - for mp4 series
 
@@ -277,9 +286,12 @@ def process(aCTX, aArgs):
 
  try:
   if filename != dest:
-   try:  rename(filename,dest)
-   except Exception as e: ret['info'] = str(e)
-   else: data['rename'] = True
+   try:
+    rename(filename,dest)
+   except Exception as e:
+    ret['info'] = str(e)
+   else:
+    data['rename'] = True
 
   if data['suffix'] == 'mkv' and not ret['info']:
    if srt['code']:
@@ -296,7 +308,7 @@ def process(aCTX, aArgs):
    if probe['audio']['remove'] and probe['audio']['add']:
     data['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
 
-   if (data['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or data['changes']['subtitle'] or data['changes']['audio'] or srt['code']):
+   if data['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or data['changes']['subtitle'] or data['changes']['audio'] or srt['code']:
     FNULL = open(devnull, 'w')
 
     if data['rename']:
@@ -318,7 +330,7 @@ def process(aCTX, aArgs):
       check_call(['normalize-audio', tempdir + '/audiofile.wav'], stdout=FNULL, stderr=FNULL)
       check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=FNULL, stderr=FNULL)
       data['changes']['aac'] = "--language 0:{} --default-track 0 {}/audiofile.aac".format(probe['video']['language'], tempdir)
-     
+
      call(["mkvmerge -o '{}' {} {} '{}' {} {}".format(dest,data['changes']['subtitle'],data['changes']['audio'],tmpfile, data['changes']['aac'], data['changes']['srt'])], stdout=FNULL, stderr=FNULL, shell=True)
      call(['rm','-fR',tempdir])
      remove(tmpfile)
@@ -366,7 +378,7 @@ def delay_set(aCTX, aArgs):
  Output:
  """
  from time import time
- from subprocess import Popen, PIPE, check_call, call, STDOUT
+ from subprocess import Popen, PIPE, check_call
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  ret = {'status':'NOT_OK','timestamp':int(time())}
 

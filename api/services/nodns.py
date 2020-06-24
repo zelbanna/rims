@@ -122,7 +122,7 @@ def record_info(aCTX, aArgs):
   if op == 'new':
    ret = {'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
   elif op == 'info':
-   if (db.query("SELECT domain_id,name,content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM records WHERE name = '%s' AND domain_id = %s AND type = '%s'"%(aArgs['name'],aArgs['domain_id'],aArgs['type'])) > 0):
+   if db.query("SELECT domain_id,name,content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM records WHERE name = '%s' AND domain_id = %s AND type = '%s'"%(aArgs['name'],aArgs['domain_id'],aArgs['type'])):
     ret = {'status':'OK','data':db.get_row()}
    else:
     ret = {'status':'NOT_OK','data':None}
@@ -159,8 +159,8 @@ def record_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.execute("DELETE FROM records WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
-  ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK';
+  ret['deleted'] = bool(db.execute("DELETE FROM records WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs))
+  ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 
 ############################### Tools #################################
@@ -173,9 +173,9 @@ def sync(aCTX, aArgs):
 
  Output:
  """
+ #from ipaddress import IPv4Address, IPv4Network
  ret = {'status':'OK'}
  with aCTX.db as db:
-  from ipaddress import IPv4Address, IPv4Network
   # Empty all
   db.execute("TRUNCATE records")
   # Auto insert all IPAM A records
@@ -192,7 +192,7 @@ def sync(aCTX, aArgs):
    try:
     with open(aCTX.config['nodns']['file'],'w+') as ndfile:
      db.query("SELECT name, content FROM records WHERE type = 'A'")
-     ndfile.write(linesep.join("%s\t%s"%(rec['content'],rec['name']) for rec in db.get_rows() ))
+     ndfile.write(linesep.join(f"{rec['content']}\t{rec['name']}" for rec in db.get_rows() ))
    except Exception as e:
     aCTX.log("Error writing NoDNS file: %s"%str(e))
  return ret

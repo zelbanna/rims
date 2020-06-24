@@ -59,7 +59,8 @@ def domain_info(aCTX, aArgs):
     args['kind'] = aArgs['type'].lower().capitalize()
    if 'master' in aArgs:
     args['masters'] = aArgs['master'].split(',')
-   try: res = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],id), aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDataOnly = False)
+   try:
+    aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],id), aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDataOnly = False)
    except Exception as e:
     ret = {'status':'NOT_OK','update':False,'info':e.args[0]['data']['error'] if e.args[0]['data'] else str(e)}
    else:
@@ -138,8 +139,10 @@ def record_info(aCTX, aArgs):
  if op == 'new':
   ret = { 'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
  elif op == 'info':
-  try: output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
-  except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data']}
+  try:
+   output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+  except Exception as e:
+   ret = {'status':'NOT_OK','info':e.args[0]['data']}
   else:
    for rrset in output['rrsets']:
     if rrset['name'] == aArgs['name'] and rrset['type'] == aArgs['type']:

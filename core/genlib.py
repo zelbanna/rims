@@ -59,7 +59,7 @@ def macToInt(aMAC):
 
 def ping_os(aIP):
  from os import system
- return system(f'ping -c 1 -w 1 {aIP} > /dev/null 2>&1') == 0
+ return not system(f'ping -c 1 -w 1 {aIP} > /dev/null 2>&1')
 
 def external_ip():
  from dns import resolver

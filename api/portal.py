@@ -12,7 +12,6 @@ def application(aCTX, aArgs):
 
  Output:
  """
- """ Default login information """
  ret = {'message':"Welcome to the Management Portal",'title':'Portal'}
  ret.update(aCTX.config['site'].get('portal'))
  return ret
@@ -95,5 +94,5 @@ def theme_info(aCTX, aArgs):
   "light":{ "main":"#F1F1F1", "head":"#1A1A1A", "head-focus":"#666666", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#FFFFFF", "std-txt":"#000000", "ui":"#000000", "ui-txt":"#FFFFFF" },
   "dark":{  "main":"#0A0A0A", "head":"#1A1A1A", "head-focus":"#666666", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#1A1A1A", "std-txt":"#9CA6B0", "ui":"#000000", "ui-txt":"#FFFFFF" }
  }
- theme = {"--%s-color"%k:v for k,v in themes.get(aArgs['theme'],aCTX.config.get('site',{}).get('theme',{}).get(aArgs['theme'],{})).items()}
+ theme = {f"--{k}-color":v for k,v in themes.get(aArgs['theme'],aCTX.config.get('site',{}).get('theme',{}).get(aArgs['theme'],{})).items()}
  return {'status':"OK" if theme else "NOT_OK", 'data':theme}

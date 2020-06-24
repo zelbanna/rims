@@ -38,15 +38,9 @@ def sleep(aCTX, aArgs):
  Output:
   status
  """
- from time import sleep
- sleep(int(aArgs.get('seconds',10)))
+ from time import sleep as time_sleep
+ time_sleep(int(aArgs.get('seconds',10)))
  return {'status':'OK'}
-
-#
-#
-def error(aCTX, aArgs):
- """ Function throws an error """
- return (test == 'error')
 
 #
 #
@@ -58,8 +52,9 @@ def external_ip(aCTX, aArgs):
  Output:
  """
  ret = {}
- from rims.core.genlib import external_ip
- try:  ret['ip'] = external_ip()
+ from rims.core.genlib import external_ip as GL_ext_ip
+ try:
+  ret['ip'] = GL_ext_ip()
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -83,7 +78,7 @@ def environment(aCTX, aArgs):
  if all(i in aArgs for i in ['node','build']):
   aCTX.log("Node '%(node)s' connected, running version: %(build)s"%aArgs)
  ret = aCTX.environment(aArgs.get('node',aCTX.node))
- for k,v in ret.get('tokens',{}).items():
+ for v in ret.get('tokens',{}).values():
   v['expires'] = v['expires'].strftime("%a, %d %b %Y %H:%M:%S GMT")
  return ret
 
@@ -110,24 +105,6 @@ def reload(aCTX, aArgs):
  """
  return {'node':aCTX.node, 'modules':aCTX.module_reload(),'status':'OK'}
 
-#
-#
-def shutdown(aCTX, aArgs):
- """ Function shuts down system (!!!)
-
- Args:
-
- Output:
- """
- from threading import Thread
- from time import sleep
- def __shutdown():
-  sleep(1)
-  aCTX.close()
- process = Thread(target=__shutdown, args=[])
- process.start()
- return {'status':'OK','state':'shutdown in progress'}
-
 ################################# AUTH #############################
 #
 #
@@ -139,7 +116,6 @@ def active_users(aCTX, aArgs):
  Output:
   - data
  """
- ret = {}
  with aCTX.db as db:
   db.query("SELECT id,alias FROM users WHERE id IN (%s)"%','.join([str(v['id']) for v in aCTX.tokens.values()]))
   alias = {x['id']:x['alias'] for x in db.get_rows()}
@@ -174,7 +150,8 @@ def rest_explore(aCTX, aArgs):
   try:
    module = import_module("rims.api.%s"%(aFile))
    data['functions'] = [item for item in dir(module) if item[0:2] != "__" and isinstance(getattr(module,item,None),function)]
-  except Exception as e: data['error'] = repr(e)
+  except Exception as e:
+   data['error'] = repr(e)
   return data
 
  ret = {'data':[]}
@@ -236,7 +213,7 @@ def service_info(aCTX, aArgs):
  from subprocess import check_output, CalledProcessError
  ret = {'state':None,'status':'OK'}
  if 'op' in aArgs:
-  from time import sleep
+  from time import sleep as time_sleep
   try:
    command = "sudo /etc/init.d/%(service)s %(op)s"%aArgs
    ret['result'] = check_output(command.split()).decode().strip()
@@ -244,7 +221,7 @@ def service_info(aCTX, aArgs):
    ret['info'] = c.output.strip()
    ret['status'] = 'NOT_OK'
   else:
-   sleep(2)
+   time_sleep(2)
 
  try:
   command = "sudo /etc/init.d/%(service)s status"%aArgs
@@ -276,7 +253,7 @@ def logs_clear(aCTX, aArgs):
  """
  ret = {'node':aCTX.node,'file':{},'status':'OK'}
  for name,v in aCTX.config['logging'].items():
-  if type(v) == dict and v.get('enabled') == True and aArgs.get('name',name) == name:
+  if isinstance(v,dict) and v.get('enabled') is True and aArgs.get('name',name) == name:
    try:
     open(v['file'],'w').close()
     ret['file'][name] = 'CLEARED'
@@ -300,7 +277,7 @@ def logs_get(aCTX, aArgs):
  ret = {}
  count = int(aArgs.get('count',15))
  for name,v in aCTX.config['logging'].items():
-  if type(v) == dict and v.get('enabled') == True and aArgs.get('name',name) == name:
+  if isinstance(v,dict) and v.get('enabled') is True and aArgs.get('name',name) == name:
    lines = ["\r" for i in range(count)]
    pos = 0
    try:

@@ -73,18 +73,18 @@ def inventory(aCTX, aArgs):
 
  with aCTX.db as db:
   if 'id' in aArgs:
-   res = db.query("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aArgs['id'])
+   db.query("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aArgs['id'])
    select = db.get_row()
    ret['name'] = select.pop('name',"Noname")
-   ids = ",".join(str(x) for x in [ select['pdu_1'],select['pdu_2'],select['console']] if x)
+   ids = [str(x) for x in [ select['pdu_1'],select['pdu_2'],select['console']] if x]
    if ids:
-    db.query(sqlbase%("devices.id IN(%s)"%ids))
+    db.query(sqlbase%f"devices.id IN({','.join(ids)})")
     for item in db.get_rows():
      ret[item['base']].append(item)
   else:
-   for type in ['console','pdu']:
-    db.query(sqlbase%("dt.base = '%s'"%type))
-    ret[type] = db.get_rows()
+   for tp in ['console','pdu']:
+    db.query(sqlbase%f"dt.base = '{tp}'")
+    ret[tp] = db.get_rows()
 
  return ret
 

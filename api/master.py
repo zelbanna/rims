@@ -57,8 +57,7 @@ def oui_fetch(aCTX, aArgs):
       oui = int(parts[0].upper(),16)
       company = (" ".join(parts[3:]).replace("'",''))[0:60]
       ret['new'] += db.execute("INSERT INTO oui(oui,company) VALUES(%d,'%s') ON DUPLICATE KEY UPDATE company = '%s'"%(oui,company,company))
-   else:
-    ret['status'] = 'OK'
+   ret['status'] = 'OK'
  return ret
 
 #
@@ -240,7 +239,7 @@ def user_info(aCTX, aArgs):
  with aCTX.db as db:
   if op == 'update':
    from crypt import crypt
-   """ Password at least 6 characters """
+   # Password at least 6 characters
    if len(aArgs.get('password','')) > 5:
     aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aCTX.config['salt']).split('$')[3]
    else:
@@ -361,9 +360,12 @@ def server_operation(aCTX, aArgs):
  Output:
  """
  infra = aCTX.services[int(aArgs['id'])]
- try:  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],aArgs['op'])(aArgs = {'id':aArgs['id']})
- except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
- else: ret['status'] = ret.get('status','NOT_OK')
+ try:
+  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],aArgs['op'])(aArgs = {'id':aArgs['id']})
+ except Exception as e:
+  ret = {'status':'NOT_OK','info':str(e)}
+ else:
+  ret['status'] = ret.get('status','NOT_OK')
  return ret
 
 ####################################### ACTIVITIES #######################################

@@ -45,8 +45,8 @@ def dump(aCTX, aArgs):
     continue
    elif line[:2] not in [ '/*','--']:
     if "AUTO_INCREMENT=" in line:
-     parts = line.split();
-     for indx, part in enumerate(parts):
+     parts = line.split()
+     for part in parts:
       if "AUTO_INCREMENT=" in part:
        parts.remove(part)
        break
@@ -110,7 +110,7 @@ def diff(aCTX, aArgs):
  # INTERNAL from rims.api.mysql import dump
  db = dump(aCTX, aArgs)
  ret['source'] = db['status']
- """ somehow now there is a now an extra line break... => [:-1] """
+ # somehow now there is a now an extra line break... => [:-1]
  ret['output'] = [line for line in unified_diff(db['output'],data.split('\n')[:-1],fromfile='database',tofile=aArgs['schema_file'])]
  ret['diffs'] = 0
  for line in ret['output']:
@@ -121,7 +121,9 @@ def diff(aCTX, aArgs):
 #
 #
 def patch(aCTX, aArgs):
- """ Function patches current database schema with the supplied schema file. If it is not successful it will try to restore entire old database. Intermediate files are mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring) 
+ """ Function patches current database schema with the supplied schema file.
+ If it is not successful it will try to restore entire old database.
+ Intermediate files are: mysql.backup (entire DB) and mysql.values (INSERTs only - used for restoring)
 
  Args:
   - schema_file (required)
