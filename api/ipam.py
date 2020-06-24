@@ -101,7 +101,7 @@ def network_delete(aCTX, aArgs):
   for id in db.get_rows():
     # INTERNAL from rims.api.ipam import address_delete
    address_delete(aCTX, id)
-  ret['deleted'] = db.execute("DELETE FROM ipam_networks WHERE id = %s"%aArgs['id'])
+  ret['deleted'] = bool(db.execute("DELETE FROM ipam_networks WHERE id = %s"%aArgs['id']))
  return ret
 
 #
@@ -384,7 +384,7 @@ def address_delete(aCTX, aArgs):
     ret[FWD] = record_delete(aCTX, {'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]), 'domain_id':old['a_domain_id'], 'type':FWD})['status']
    if old['ptr_domain_id'] and ip.version == 4:
     ret['PTR'] = record_delete(aCTX, {'name':ip.reverse_pointer, 'domain_id':old['ptr_domain_id'],'type':'PTR'})['status']
-  ret['deleted'] = (db.execute("DELETE FROM ipam_addresses WHERE id = %s"%aArgs['id']) == 1)
+  ret['deleted'] = bool(db.execute("DELETE FROM ipam_addresses WHERE id = %s"%aArgs['id']))
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 

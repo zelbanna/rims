@@ -10,20 +10,22 @@ Config section loopia:
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
+from xmlrpc import client as rpcclient
+
 ################################ LOOPIA DNS ###################################
 #
 # Change IP for a domain in loopia DNS
 #
 
 def set_ip(aCTX, aArgs):
- from xmlrpc import client
  ret = {}
+ settings = aCTX.config['loopia']
  try:
-  client = xmlrpc.client.ServerProxy(uri = aCTX.config['loopia']['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(aCTX.config['loopia']['username'], aCTX.config['loopia']['password'], aCTX.config['loopia']['domain'], aArgs['subdomain'])[0]
-  oldip = data['rdata']
+  client = rpcclient.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
+  # oldip = data['rdata']
   data['rdata'] = aArgs['newip']
-  ret['status'] = client.updateZoneRecord(aCTX.config['loopia']['username'], aCTX.config['loopia']['password'], aCTX.config['loopia']['domain'], aArgs['subdomain'], data)[0]
+  ret['status'] = client.updateZoneRecord(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'], data)[0]
  except Exception as exmlrpc:
   ret['error']  = repr(exmlrpc)
   ret['status'] = 'NOT_OK'
@@ -35,11 +37,11 @@ def set_ip(aCTX, aArgs):
 # Get Loopia info for subdomain
 #
 def get_ip(aCTX, aArgs):
- from xmlrpc import client
  ret = {}
+ settings = aCTX.config['loopia']
  try:
-  client = xmlrpc.client.ServerProxy(uri = aCTX.config['loopia']['rpc_server'], encoding = 'utf-8')
-  data = client.getZoneRecords(aCTX.config['loopia']['username'], aCTX.config['loopia']['password'], aCTX.config['loopia']['domain'], aArgs['subdomain'])[0]
+  client = rpcclient.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
+  data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
  except Exception as exmlrpc:
   ret['status'] = 'NOT_OK'
   ret['info']  = repr(exmlrpc)
@@ -51,4 +53,4 @@ def get_ip(aCTX, aArgs):
 #
 #
 def get_loopia_suffix(aCTX, aArgs):
- return {'suffix':".%s"%aCTX.config['loopia']['domain']}
+ return {'suffix':f".{aCTX.config['loopia']['domain']}"}

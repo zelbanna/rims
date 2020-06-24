@@ -2,12 +2,6 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
-def __is_ip(aIP):
- from ipaddress import ip_address
- try: ip_address(aIP)
- except: return False
- else: return True
-
 ############################################ Device Basics ###########################################
 #
 #
@@ -30,33 +24,33 @@ def list(aCTX, aArgs):
  joins = ['ipam_addresses AS ia ON devices.ipam_id = ia.id']
  where = ['TRUE']
  extras = aArgs.get('extra')
- search = aArgs.get('search')
+ srch = aArgs.get('search')
 
  if aArgs.get('rack_id'):
   joins.append("rack_info AS ri ON ri.device_id = devices.id")
   where.append("ri.rack_id = %(rack_id)s"%aArgs)
 
- if search:
+ if srch:
   sfield = aArgs['field']
   if   sfield == 'hostname':
-   where.append("devices.hostname LIKE '%%%s%%'"%search)
+   where.append("devices.hostname LIKE '%%%s%%'"%srch)
   elif sfield == 'ip':
-   where.append("ia.ip = INET6_ATON('%s')"%search)
+   where.append("ia.ip = INET6_ATON('%s')"%srch)
   elif sfield == 'type':
    joins.append("device_types AS dt ON dt.id = devices.type_id")
-   where.append("dt.name = '%s'"%search)
+   where.append("dt.name = '%s'"%srch)
   elif sfield == 'base':
    joins.append("device_types AS dt ON dt.id = devices.type_id")
-   where.append("dt.base = '%s'"%search)
+   where.append("dt.base = '%s'"%srch)
   elif sfield == 'mac':
-   try: mac = int(search.replace(':',""),16)
+   try: mac = int(srch.replace(':',""),16)
    except: where.append("devices.mac <> 0")
    else:
     where.append("devices.mac = %i OR di.mac = %i"%(mac,mac))
     joins.append("interfaces AS di ON di.device_id = devices.id")
   elif sfield == 'interface_id':
    joins.append("interfaces AS di ON di.device_id = devices.id")
-   where.append("di.interface_id = %s"%search)
+   where.append("di.interface_id = %s"%srch)
   else:
    where.append("devices.%(field)s IN (%(search)s)"%aArgs)
 
@@ -114,7 +108,7 @@ def management(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  if (db.query("SELECT INET6_NTOA(ia.ip) AS ip, devices.hostname, devices.url FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%aArgs['id']) == 1):
+  if db.query("SELECT INET6_NTOA(ia.ip) AS ip, devices.hostname, devices.url FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%aArgs['id']):
    ret['data'] = db.get_row()
    ret['data']['username'] = aCTX.config['netconf']['username']
    ret['status'] = 'OK'
@@ -135,7 +129,7 @@ def hostname(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  if (db.query("SELECT devices.hostname FROM devices WHERE devices.id = %s"%aArgs['id']) == 1):
+  if db.query("SELECT devices.hostname FROM devices WHERE devices.id = %s"%aArgs['id']):
    ret['data'] = db.get_val('hostname')
    ret['status'] = 'OK'
   else:
@@ -209,7 +203,7 @@ def info(aCTX, aArgs):
    # Rack infrastructure ?
    if ret['data']['class'] == 'vm' and (db.query("SELECT dvu.vm AS name, dvu.device_uuid, dvu.server_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %s"%id) == 1):
     ret['vm'] = db.get_row()
-   elif (db.query("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%id) == 1):
+   elif db.query("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%id):
     rack = db.get_row()
     ret['rack'] = rack
     infra_ids = [str(rack['console_id'])] if rack['console_id'] else []
@@ -229,7 +223,7 @@ def info(aCTX, aArgs):
      pdus = {}
     if rack['console_id']:
      rack['console_name'] = devices.get(rack['console_id'],{'hostname':None})['hostname']
-     if (db.query("SELECT CONCAT(access_url,':',port+%s) AS url FROM console_info WHERE device_id = '%s'"%(rack['console_port'],rack['console_id'])) > 0):
+     if db.query("SELECT CONCAT(access_url,':',port+%s) AS url FROM console_info WHERE device_id = '%s'"%(rack['console_port'],rack['console_id'])):
       rack['console_url'] = db.get_val('url')
     for pem in ret['pems']:
      pdu = pdus.get(pem['pdu_id'])
@@ -265,7 +259,7 @@ def extended(aCTX, aArgs):
   if op == 'update':
    from rims.api.dns import record_info, record_delete
    ret['dns'] = {}
-   if (db.query("SELECT devices.hostname, devices.a_domain_id, devices.ipam_id, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %(id)s"%aArgs) > 0):
+   if db.query("SELECT devices.hostname, devices.a_domain_id, devices.ipam_id, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %(id)s"%aArgs):
     entry = db.get_row()
     if entry['a_domain_id'] and entry['ipam_id']:
      ret['dns']['delete'] = record_delete(aCTX, {'domain_id':entry['a_domain_id'], 'name':'%s.%s'%(entry['hostname'],domains[entry['a_domain_id']]), 'type':entry['type']})['status']
@@ -307,19 +301,19 @@ def rack(aCTX, aArgs):
  op = aArgs.pop('op',None)
  ret ={'racks':[{'id':'NULL', 'name':'Not used'}]}
  with aCTX.db as db:
-  if (op == 'update'):
+  if op == 'update':
    if aArgs.get('rack_id') in (None,'NULL'):
-    ret['deleted'] = (db.execute("DELETE FROM rack_info WHERE device_id = %s"%id) > 0)
+    ret['deleted'] = bool(db.execute("DELETE FROM rack_info WHERE device_id = %s"%id))
    else:
-    ret['insert'] = (db.execute("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(id,aArgs['rack_id'])) > 0)
-    ret['update'] = (db.update_dict('rack_info',aArgs,'device_id=%s'%id) > 0)
+    ret['insert'] = bool(db.execute("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(id,aArgs['rack_id'])))
+    ret['update'] = bool(db.update_dict('rack_info',aArgs,'device_id=%s'%id))
   db.query("SELECT id, name FROM racks")
   ret['racks'].extend(db.get_rows())
   ret['data'] = db.get_row()
   db.query("SELECT devices.id, devices.hostname FROM devices INNER JOIN device_types ON devices.type_id = device_types.id WHERE device_types.base = 'console' ORDER BY devices.hostname")
   ret['consoles'] = db.get_rows()
   ret['consoles'].append({ 'id':'NULL', 'hostname':'No Console' })
-  if (db.query("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %s"%id) > 0):
+  if db.query("SELECT rack_info.* FROM rack_info WHERE rack_info.device_id = %s"%id):
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'device_id':id,'rack_id':None,'rack_size':1,'rack_unit':0,'console_id':None,'console_port':0}
@@ -475,17 +469,17 @@ def delete(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  if (db.query("SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name) AS fqdn, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN domains ON domains.id = devices.a_domain_id WHERE devices.id = %s"%aArgs['id']) == 1):
+  if db.query("SELECT devices.a_domain_id, CONCAT(devices.hostname,'.',domains.name) AS fqdn, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN domains ON domains.id = devices.a_domain_id WHERE devices.id = %s"%aArgs['id']):
    dns = db.get_row()
    if dns['a_domain_id'] and dns['fqdn'] and dns['type']:
     from rims.api.dns import record_delete
     ret['dns'] = record_delete(aCTX, {'domain_id':dns['a_domain_id'], 'name':dns['fqdn'], 'type':dns['type']})['status']
-  if (db.query("SELECT interface_id FROM interfaces WHERE device_id = %s"%aArgs['id']) > 0):
+  if db.query("SELECT interface_id FROM interfaces WHERE device_id = %s"%aArgs['id']):
    from rims.api.interface import delete as interface_delete
    interface_delete(aCTX, {'interfaces':[x['interface_id'] for x in db.get_rows()]} )
   if (db.query("SELECT dt.base FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = %s"%aArgs['id']) > 0) and (db.get_val('base') == 'pdu'):
    ret['pems'] = db.execute("UPDATE device_pems SET pdu_id = NULL WHERE pdu_id = %s"%aArgs['id'])
-  ret['deleted'] = (db.execute("DELETE FROM devices WHERE id = %s"%aArgs['id']) > 0)
+  ret['deleted'] = bool(db.execute("DELETE FROM devices WHERE id = %s"%aArgs['id']))
  return ret
 
 #
@@ -508,7 +502,7 @@ def discover(aCTX, aArgs):
  def __detect_thread(aIP, aDB, aCTX):
   res = detect_info(aIP, aCTX.config['snmp'])
   aDB[aIP] = res['data'] if res['status'] == 'OK' else {}
-  return (res['status'] == 'OK')
+  return res['status'] == 'OK'
 
  start_time = int(time())
  ipam = network_discover(aCTX, {'id':aArgs['network_id'],'internal':True})
@@ -547,7 +541,7 @@ def discover(aCTX, aArgs):
      entry['hostname'] = 'host-%s'%ip_int
      entry['a_domain_id'] = aArgs['a_domain_id']
      entry['ipam_id'] = ipam['data']['id']
-     if (db.insert_dict('devices',entry) == 1):
+     if db.insert_dict('devices',entry):
       dev_id = db.get_last_id()
       db.execute("INSERT INTO interfaces (device_id,ipam_id,name,description) VALUES(%s,%s,'me','auto_created')"%(dev_id, ipam['data']['id']))
       if aArgs['a_domain_id']:
@@ -782,7 +776,7 @@ def model_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.execute("DELETE FROM device_models WHERE id = %s"%aArgs['id']) > 0)
+  ret['deleted'] = bool(db.execute("DELETE FROM device_models WHERE id = %s"%aArgs['id']))
  return ret
 
 ################################################### VM ###################################################
@@ -920,7 +914,7 @@ def log_clear(aCTX, aArgs):
  ret = {}
  with aCTX.db as db:
   ret['count'] = db.execute("DELETE FROM device_logs WHERE %s"%("device_id = %s"%aArgs['id'] if aArgs.get('id') else "TRUE"))
-  ret['deleted'] = ret['count'] > 0
+  ret['deleted'] = bool(ret['count'])
  return ret
 
 #

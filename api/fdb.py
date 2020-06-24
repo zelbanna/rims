@@ -24,7 +24,7 @@ def sync(aCTX, aArgs):
   if ret['status'] == 'OK':
    fdb = ret.pop('FDB',[])
    with aCTX.db as db:
-    ret['deleted'] = db.execute(f"DELETE FROM fdb WHERE device_id = {aArgs['id']}")
+    ret['delete'] = db.execute(f"DELETE FROM fdb WHERE device_id = {aArgs['id']}")
     ret['insert']  = db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join(f"({aArgs['id']},{x['vlan']},{x['snmp']},{x['mac']})" for x in fdb)) if fdb else 0
  return ret
 

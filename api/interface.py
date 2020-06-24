@@ -178,7 +178,7 @@ def delete(aCTX, aArgs):
     for ipam in db.get_rows():
      address_delete(aCTX, {'id':ipam['ipam_id']})
    ret['cleared'] += db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
-   ret['deleted'] += (db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id) > 0)
+   ret['deleted'] += db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id)
  return ret
 
 #
@@ -190,11 +190,11 @@ def cleanup(aCTX, aArgs):
   - device_id (required)
 
  Output:
-  - deleted. Number of deleted interfaces
+  - delete. Number of deleted interfaces
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND NOT EXISTS (SELECT 1 FROM interface_alternatives AS iia WHERE iia.interface_id = interfaces.interface_id)"%aArgs)
+  ret['delete'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND NOT EXISTS (SELECT 1 FROM interface_alternatives AS iia WHERE iia.interface_id = interfaces.interface_id)"%aArgs)
  return ret
 
 #
@@ -237,7 +237,7 @@ def connect(aCTX, aArgs):
    id = db.get_last_id()
    ret['update'] = (db.execute("UPDATE interfaces SET connection_id = %s WHERE interface_id IN (%s,%s) AND class NOT IN ('logical','virtual')"%(id,aArgs['a_id'],aArgs['b_id'])) == 2)
    if not ret['update']:
-    ret['rollback'] = (db.execute("DELETE FROM connections WHERE id = %s"%id) == 1)
+    ret['rollback'] = bool(db.execute("DELETE FROM connections WHERE id = %s"%id))
  return ret
 
 #

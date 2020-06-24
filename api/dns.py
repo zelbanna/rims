@@ -51,15 +51,15 @@ def domain_info(aCTX, aArgs):
  else:
   with aCTX.db as db:
    if id == 'new':
-    infra = (db.query("SELECT servers.id, 'new' AS foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE servers.id = %s"%aArgs.pop('server_id','0')) > 0)
+    infra = bool(db.query("SELECT servers.id, 'new' AS foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE servers.id = %s"%aArgs.pop('server_id','0')))
    else:
-    infra = (db.query("SELECT servers.id,  foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id) > 0)
+    infra = bool(db.query("SELECT servers.id,  foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%id))
    if infra:
     ret['infra'] = db.get_row()
     aArgs['id']  = ret['infra']['foreign_id']
     ret.update(aCTX.node_function(ret['infra']['node'],"services.%s"%ret['infra']['service'],'domain_info')(aArgs = aArgs))
     if ret.get('insert'):
-     ret['cache'] = (db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']}) > 0)
+     ret['cache'] = bool(db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']}))
      ret['infra']['foreign_id'] = ret['data']['id']
      ret['data']['id'] = db.get_last_id()
     elif ret.get('data'):
@@ -84,7 +84,7 @@ def domain_delete(aCTX, aArgs):
   db.query("SELECT servers.id, foreign_id, domains.type, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
   ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
-  ret['cache'] = (db.execute("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id'])) > 0) if ret['deleted'] else False
+  ret['cache'] = bool(db.execute("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id']))) if ret['deleted'] else False
  return ret
 
 #
@@ -297,7 +297,7 @@ def sync_data(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  if (db.query("SELECT id,type FROM domains WHERE server_id = %(server_id)s AND foreign_id = '%(foreign_id)s'"%aArgs) == 1):
+  if db.query("SELECT id,type FROM domains WHERE server_id = %(server_id)s AND foreign_id = '%(foreign_id)s'"%aArgs):
    ret['status'] = 'OK'
    domain = db.get_row()
    if domain['type'] == 'forward':
