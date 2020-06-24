@@ -170,12 +170,12 @@ class DB():
    # remove oneself and check if someone else is waiting
    self._conn_waiting -= 1
    self._conn_in_thread -= 1
-   if self._conn_waiting == 0:
+   if not self._conn_waiting:
     self._curs.close()
     self._conn.close()
     self._curs = None
     self._conn = None
-  if self._conn_in_thread == 0:
+  if not self._conn_in_thread:
    self._conn_lock.release()
 
  def query(self,aQuery, aLog = False):

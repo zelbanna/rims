@@ -32,17 +32,17 @@ def info(aCTX, aArgs):
  Output:
  """
  ret = {}
- id = aArgs.pop('id','new')
+ lid = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   if id != 'new':
-    ret['update'] = db.update_dict('locations',aArgs,'id=%s'%id)
+   if lid != 'new':
+    ret['update'] = db.update_dict('locations',aArgs,f"id={lid}")
    else:
     ret['insert'] = db.insert_dict('locations',aArgs)
-    id = db.get_last_id() if ret['insert'] > 0 else 'new'
+    lid = db.get_last_id() if ret['insert'] > 0 else 'new'
 
-  ret['data'] = db.get_row() if id != 'new' and (db.query("SELECT id,name FROM locations WHERE id = '%s'"%id) > 0) else {'id':'new','name':''}
+  ret['data'] = db.get_row() if lid != 'new' and db.query("SELECT id,name FROM locations WHERE id = '%s'"%id) else {'id':'new','name':''}
  return ret
 
 #
@@ -58,6 +58,6 @@ def delete(aCTX, aArgs):
  ret = {}
  # Racks and inventory sets NULL anyway
  with aCTX.db as db:
-  ret['deleted'] = (db.execute("DELETE FROM locations WHERE id = %s"%aArgs['id']) == 1)
+  ret['deleted'] = bool(db.execute(f"DELETE FROM locations WHERE id = {aArgs['id']}"))
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
