@@ -8,7 +8,7 @@ from os   import path as ospath
 from sys  import path as syspath
 from time import time
 syspath.insert(1,ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-from rims.core.common import rest_call
+from rims.core.common import rest_call, RestException
 parser = ArgumentParser(prog='api', description = 'CLI API call program')
 parser.add_argument('api', metavar='module/function', help = 'API module/function')
 parser.add_argument('args', metavar='argument', help = 'API argument', nargs='?')
@@ -30,8 +30,10 @@ started=f"Executing:{parsedinput.api}({args})"
 print(started)
 try:
  res = rest_call(f"http://127.0.0.1:8080/internal/{parsedinput.api}", aArgs = args, aTimeout = 300, aDataOnly = False, aVerify = True, aHeader = header)
-except Exception as e:
+except RestException as e:
  output = e.args[0]
+except Exception as e:
+ output = {'generic_exception':str(e)}
 else:
  output = res['data']
  for k,v in res['info'].items():

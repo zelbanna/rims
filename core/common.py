@@ -222,10 +222,12 @@ class DB():
  #
  def update_dict(self, aTable, aDict, aCondition = "TRUE"):
   self._dirty = True
+  self.count['EXECUTE'] += 1
   return self._curs.execute(f"UPDATE {aTable} SET %s WHERE {aCondition}"%','.join(f"{k}='{v}'" if v not in ['NULL',None] else f"{k}=NULL" for k,v in aDict.items()))
 
  def insert_dict(self, aTable, aDict, aException = ""):
   self._dirty = True
+  self.count['EXECUTE'] += 1
   return self._curs.execute(f"INSERT INTO {aTable}({','.join(list(aDict.keys()))}) VALUES (%s) {aException}"%','.join(f"'{v}'" if v not in ['NULL',None] else 'NULL' for v in aDict.values()))
 
 ####################################### SNMP #########################################
