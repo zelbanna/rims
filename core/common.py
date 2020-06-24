@@ -20,7 +20,15 @@ def basic_auth(aUsername,aPassword):
  return {'Authorization':'Basic %s'%(b64encode(f"{aUsername}:{aPassword}".encode('utf-8')).decode('utf-8')) }
 
 class RestException(Exception):
- pass
+
+ def __init__(self, *args):
+  self.code = args[0]
+  self.exception = args[1]
+  self.info = args[2]
+  self.data = args[3]
+
+ def __str__(self):
+  return f"REST({self.code}): {self.exception} => {self.data}"
 
 def rest_call(aURL, **kwargs):
  """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
@@ -53,17 +61,17 @@ def rest_call(aURL, **kwargs):
   res = data if kwargs.get('aDataOnly',True) else {'info':dict(sock.info()), 'code':sock.code, 'data':data }
   sock.close()
  except HTTPError as h:
-  exception = { 'exception':'HTTPError', 'code':h.code, 'info':dict(h.info())}
+  ecode, etype, einfo = h.code, 'HTTPError', dict(h.info())
   try:
-   exception['data'] = loads(h.read().decode())
+   edata = loads(h.read().decode())
   except:
-   exception['data'] = None
+   edata = None
  except Exception as e:
-  exception = { 'exception':type(e).__name__, 'code':600, 'info':{'error':repr(e)}, 'data':None}
+  ecode, etype, einfo, edata = 600, type(e).__name__, {'exception_error':repr(e)}, None
  else:
-  exception = None
- if exception:
-  raise RestException(exception)
+  ecode = None
+ if ecode:
+  raise RestException(ecode,etype,einfo,edata)
  return res
 
 ######################################## Scheduler ######################################

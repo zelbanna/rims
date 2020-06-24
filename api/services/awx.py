@@ -1,4 +1,4 @@
-"""AWX REST module."""
+e"""AWX REST module."""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = 'PROVISIONING'
@@ -111,7 +111,7 @@ def inventory_list(aCTX, aArgs):
   controller.auth({'username':aCTX.config['awx']['username'],'password':aCTX.config['awx']['password'],'mode':'basic'})
   ret['inventories'] = controller.fetch_list("inventories/",('id','name','url'))
  except Exception as e:
-  ret = e.args[0]
+  ret = {'status':'NOT_OK','info':str(e)}
  return ret
 
 #

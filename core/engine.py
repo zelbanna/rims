@@ -25,7 +25,7 @@ from traceback import format_exc
 from types import ModuleType
 from urllib.parse import unquote, parse_qs
 from queue import Queue
-from rims.core.common import DB, rest_call, Scheduler
+from rims.core.common import DB, rest_call, Scheduler, RestException
 
 ##################################################### Context #######################################################
 #
@@ -649,11 +649,10 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
     self._body = self._ctx.rest_call(f"{self._ctx.nodes[self._headers['X-Route']]['url']}/internal/{api}", aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
+  except RestException as e:
+   self._headers.update({'X-Args':args, 'X-Exception':e.exception, 'X-Code':e.code, 'X-Info':e.info})
   except Exception as e:
-   if not (isinstance(e.args[0],dict) and e.args[0].get('code')):
-    self._headers.update({'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))})
-   else:
-    self._headers.update({'X-Args':args, 'X-Exception':e.args[0].get('exception'), 'X-Code':e.args[0]['code'], 'X-Info':e.args[0].get('info')})
+   self._headers.update({'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))})
    if self._ctx.config['debug']:
     for n,v in enumerate(format_exc().split('\n')):
      self._headers[f"X-Debug-{n:02}"] = v

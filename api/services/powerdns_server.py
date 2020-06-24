@@ -18,7 +18,7 @@ def domain_list(aCTX, aArgs):
  try: ret['data'] = aCTX.rest_call('%s/api/v1/servers/localhost/zones?dnssec=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret['status'] = 'NOT_OK'
-  ret['info'] = e.args[0]['data'] if e.args[0]['data'] else str(e)
+  ret['info'] = str(e)
  else:
   ret['status'] = 'OK'
   # Remove trailing dot, automaticall add below
@@ -49,7 +49,7 @@ def domain_info(aCTX, aArgs):
   # Fix name so that it ends with .
   try: output = aCTX.rest_call('%s/api/v1/servers/localhost/zones?rrsets=false'%(settings['url']), aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
   except Exception as e:
-   ret = {'status':'NOT_OK','insert':False,'found':False,'info':e.args[0]['data']['error'] if e.args[0]['data'] else str(e)}
+   ret = {'status':'NOT_OK','insert':False,'found':False,'info':str(e)}
   else:
    ret = {'status':'OK','insert':True,'found':True}
  else:
@@ -62,7 +62,7 @@ def domain_info(aCTX, aArgs):
    try:
     aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],id), aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDataOnly = False)
    except Exception as e:
-    ret = {'status':'NOT_OK','update':False,'info':e.args[0]['data']['error'] if e.args[0]['data'] else str(e)}
+    ret = {'status':'NOT_OK','update':False,'info':str(e)}
    else:
     ret = {'status':'OK','update':True}
   try: output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],id), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
@@ -88,8 +88,8 @@ def domain_delete(aCTX, aArgs):
  try: res = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['id']), aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']}, aDataOnly=False)
  except Exception as e:
   ret['status'] = 'NOT_OK'
-  ret['code'] = e.args[0]['code']
-  ret['info'] = e.args[0]['data']
+  ret['code'] = 0
+  ret['info'] = str(e)
  else:
   ret['status'] = 'OK' if res['code'] == 204 else 'NOT_OK'
  ret['deleted'] = (ret['status'] == 'OK')
@@ -110,7 +110,7 @@ def record_list(aCTX, aArgs):
  settings = aCTX.config['powerdns']['server']
  try: output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
-  ret = {'status':'NOT_OK','info':e.args[0]['data']}
+  ret = {'status':'NOT_OK','info':str(e)}
  else:
   data = []
   for rrset in output['rrsets']:
@@ -142,7 +142,7 @@ def record_info(aCTX, aArgs):
   try:
    output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
   except Exception as e:
-   ret = {'status':'NOT_OK','info':e.args[0]['data']}
+   ret = {'status':'NOT_OK','info':str(e)}
   else:
    for rrset in output['rrsets']:
     if rrset['name'] == aArgs['name'] and rrset['type'] == aArgs['type']:
@@ -155,7 +155,7 @@ def record_info(aCTX, aArgs):
   aArgs.update({'ttl':aArgs.get('ttl','3600'),'type':aArgs['type'].upper()})
   args = {'rrsets':[{'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','type':aArgs['type'],'ttl':aArgs['ttl'],'changetype':'REPLACE','records':[{'content':aArgs['content'],'disabled':False}],'comments':[]}]}
   try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
-  except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data']}
+  except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
   else: ret = {'status':'OK'}
   ret['data'] = aArgs
  return ret
@@ -177,7 +177,7 @@ def record_delete(aCTX, aArgs):
  settings = aCTX.config['powerdns']['server']
  args = {'rrsets':[{'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','type':aArgs['type'],'changetype':'DELETE','records':[],'comments':[]}]}
  try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
- except Exception as e: ret = {'deleted':False,'status':'NOT_OK','info':e.args[0]['data']}
+ except Exception as e: ret = {'deleted':False,'status':'NOT_OK','info':str(e)}
  else: ret = {'deleted':True,'status':'OK'}
  return ret
 
@@ -194,7 +194,7 @@ def sync(aCTX, aArgs):
  """
  settings = aCTX.config['powerdns']['server']
  try: domains = [x['name'] for x in aCTX.rest_call('%s/api/v1/servers/localhost/zones?dnssec=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})]
- except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data'] if e.args[0]['data'] else str(e)}
+ except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else:
   sync_data = aCTX.node_function('master','dns','sync_data')
   ret = {'status':'OK','records':0}
@@ -202,7 +202,7 @@ def sync(aCTX, aArgs):
    records = sync_data(aArgs = {'server_id':aArgs['id'],'foreign_id':dom})['data']
    args = {'rrsets':[{'name':x['name'],'type':x['type'],'ttl':'3600','changetype':'REPLACE','records':[{'content':x['content'],'disabled':False}],'comments':[]} for x in records]}
    try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],dom), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
-   except Exception as e: ret.update({'status':'NOT_OK',dom:e.args[0]['data']})
+   except Exception as e: ret.update({'status':'NOT_OK',dom:str(e)})
    else: ret['records'] += len(records)
  return ret
 
@@ -217,7 +217,7 @@ def status(aCTX, aArgs):
  """
  settings = aCTX.config['powerdns']['server']
  try: output = aCTX.rest_call('%s/api/v1/servers/localhost'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
- except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data']}
+ except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else: ret = {'status':'OK','server':output}
  return ret
 
@@ -232,7 +232,7 @@ def statistics(aCTX, aArgs):
  """
  settings = aCTX.config['powerdns']['server']
  try: output = aCTX.rest_call('%s/api/v1/servers/localhost/statistics?includerings=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
- except Exception as e: ret = {'status':'NOT_OK','info':e.args[0]['data']}
+ except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else: ret = {'status':'OK','statistics':{x['name']:x['type'] for x in output}}
  return ret
 

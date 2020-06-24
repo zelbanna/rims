@@ -20,7 +20,7 @@ def sync(aCTX, aArgs):
  try: servers = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret['status'] = 'NOT_OK'
-  ret['info'] = str(e.args[0]['data'])
+  ret['info'] = str(e)
  else:
   ret['status'] = 'OK'
   forwarders = [x for x in servers if x['servers']]
@@ -33,17 +33,17 @@ def sync(aCTX, aArgs):
    else:
     try: aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = {'id':dom['foreign_id'], 'name':dom['name'] + '.', 'type':'Zone', 'servers':[dom['endpoint']], 'kind':'Forwarded', 'url':dom['name'], 'recursion_desired':False })
     except Exception as e:
-     aCTX.log("PowerDNS Recursor sync (add): Error => %s"%e.args[0]['data'])
+     aCTX.log("PowerDNS Recursor sync (add): Error => %s"%e)
      ret['status'] = 'NOT_OK'
-     ret['info'] = str(e.args[0]['data'])
+     ret['info'] = str(e)
     else: ret['added'].append(dom)
   for f in forwarders:
    if not f.get('sync'):
     try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],f['id']), aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']})
     except Exception as e:
-     aCTX.log("PowerDNS Recursor sync (rem): Error => %s"%e.args[0]['data'])
+     aCTX.log("PowerDNS Recursor sync (rem): Error => %s"%e)
      ret['status'] = 'NOT_OK'
-     ret['info'] = str(e.args[0]['data'])
+     ret['info'] = str(e)
     else: ret['removed'].append(f)
  return ret
 
@@ -61,7 +61,7 @@ def status(aCTX, aArgs):
  ret = {}
  settings = aCTX.config['powerdns']['recursor']
  try: servers = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
- except Exception as e: ret.update({'status':'NOT_OK','info':str(e.args[0]['data'])})
+ except Exception as e: ret.update({'status':'NOT_OK','info':str(e)})
  else: ret.update({'status':'OK','zones':[x for x in servers if x['servers']]})
  return ret
 
@@ -77,11 +77,11 @@ def statistics(aCTX, aArgs):
  ret = {}
  settings = aCTX.config['powerdns']['recursor']
  try: entries = aCTX.rest_call('%s/jsonstat?command=get-query-ring&name=queries'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})['entries']
- except Exception as e: ret.update({'queries':[],'exception':str(e.args[0]['data'])})
+ except Exception as e: ret.update({'queries':[],'exception':str(e)})
  else: ret['queries'] = entries
 
  try: entries = aCTX.rest_call('%s/jsonstat?command=get-remote-ring&name=remotes'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})['entries']
- except Exception as e: ret.update({'remotes':[], 'exception':str(e.args[0]['data'])})
+ except Exception as e: ret.update({'remotes':[], 'exception':str(e)})
  else: ret['remotes'] = entries
  return ret
 
