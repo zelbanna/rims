@@ -203,10 +203,10 @@ class Context():
    pass
   finally:
    self._ssock = None
-  while self.workers_alive() > 0:
+  while self.workers_alive():
    for x in range(0,self.workers_alive() - self._queue.qsize()):
     self._queue.put((dummy,False,None,False,[],{}))
-   while not self._queue.empty() and self.workers_alive() > 0:
+   while not self._queue.empty() and self.workers_alive():
     sleep(0.1)
     self._workers = [x for x in self._workers if x.is_alive()]
   self._kill.set()
@@ -319,9 +319,12 @@ class Context():
  #
  def analytics(self, aType, aGroup, aItem):
   """ Function provides basic usage analytics """
-  tmp = self._analytics[aType].get(aGroup,{})
-  tmp[aItem] = tmp.get(aItem,0) + 1
-  self._analytics[aType][aGroup] = tmp
+  try:
+   tmp = self._analytics[aType][aGroup]
+  except:
+   self._analytics[aType][aGroup] = tmp = {}
+  finally:
+   tmp[aItem] = tmp.get(aItem,0) + 1
 
  #
  def report(self):
@@ -428,7 +431,7 @@ class Context():
    self.log(f"WorkerPool ERROR: adding task failed ({aModule}/{aFunction}")
    return False
   else:
-   if aFrequency > 0:
+   if aFrequency:
     self._scheduler.add_periodic((func, True, None, kwargs.get('output',False), kwargs.get('args',{}), None),f"{aModule}/{aFunction}",aFrequency)
    else:
     self._queue.put((func, True, None, kwargs.get('output',False), kwargs.get('args',{}), None))
@@ -574,7 +577,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
    try:
     length = int(self.headers.get('Content-Length',0))
-    args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+    args = loads(self.rfile.read(length).decode()) if length else {}
    except Exception as e:
     output = {'status':'NOT_OK','info':str(e)}
    else:
@@ -593,7 +596,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     self._headers.update({'Content-type':'application/json; charset=utf-8'})
     try:
      length = int(self.headers.get('Content-Length',0))
-     args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+     args = loads(self.rfile.read(length).decode()) if length else {}
      params = {'node':args['id'],'url':f"http://{self.client_address[0]}:{args['port']}"}
     except Exception as e:
      output = {'status':'NOT_OK','info':str(e)}
@@ -618,7 +621,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':tid, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if mod != 'master' else 'master')})
   try:
    length = int(self.headers.get('Content-Length',0))
-   if length > 0:
+   if length:
     raw = self.rfile.read(length).decode()
     header,_,_ = self.headers['Content-Type'].partition(';')
     if header == 'application/json':
@@ -663,7 +666,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   output = {'status':'NOT_OK'}
   try:
    length = int(self.headers.get('Content-Length',0))
-   args = loads(self.rfile.read(length).decode()) if length > 0 else {}
+   args = loads(self.rfile.read(length).decode()) if length else {}
    if args.get('verify'):
     token = args['verify']
    elif args.get('destroy'):
@@ -687,14 +690,14 @@ class SessionHandler(BaseHTTPRequestHandler):
      if info:
       self._ctx.queue_function(self._ctx.auth_exec, info['alias'], info['ip'], 'invalidate')
       with self._ctx.db as db:
-       if db.execute(f"DELETE FROM user_tokens WHERE token = '{token}'") == 0:
+       if not db.execute(f"DELETE FROM user_tokens WHERE token = '{token}'"):
         self._ctx.log(f"Authentication: destroying non-existent token requested from {self.client_address[0]}")
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     else:
      passcode = crypt(password, f"$1${self._ctx.config['salt']}$").split('$')[3]
      with self._ctx.db as db:
-      if db.query(f"SELECT id, class, theme FROM users WHERE alias = '{username}' and password = '{passcode}'") > 0:
+      if db.query(f"SELECT id, class, theme FROM users WHERE alias = '{username}' and password = '{passcode}'"):
        expires = datetime.now(timezone.utc) + timedelta(days=5)
        output.update(db.get_row())
        output.update({'alias':username,'ip':args.get('ip',self.client_address[0]),'expires':expires.strftime('%a, %d %b %Y %H:%M:%S %Z')})

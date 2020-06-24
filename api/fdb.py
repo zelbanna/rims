@@ -16,15 +16,16 @@ def sync(aCTX, aArgs):
  """
  from importlib import import_module
  try:
-  module = import_module("rims.devices.%s"%aArgs.get('type','generic'))
+  module = import_module(f"rims.devices.{aArgs.get('type','generic')}")
   ret = getattr(module,'Device',None)(aCTX,aArgs['id'],aArgs.get('ip')).fdb()
- except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
+ except Exception as e:
+  ret = {'status':'NOT_OK','info':str(e)}
  else:
   if ret['status'] == 'OK':
    fdb = ret.pop('FDB',[])
    with aCTX.db as db:
-    ret['deleted'] = db.execute("DELETE FROM fdb WHERE device_id = %s"%aArgs['id'])
-    ret['insert']  = db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(aArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb)) if fdb else 0
+    ret['deleted'] = db.execute(f"DELETE FROM fdb WHERE device_id = {aArgs['id']}")
+    ret['insert']  = db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join(f"({aArgs['id']},{x['vlan']},{x['snmp']},{x['mac']})" for x in fdb)) if fdb else 0
  return ret
 
 #
@@ -45,14 +46,16 @@ def list(aCTX, aArgs):
   joins = ['interfaces AS di ON di.device_id = fdb.device_id AND di.snmp_index = fdb.snmp_index']
   where = ['TRUE']
   extras = aArgs.get('extra')
-  search = aArgs.get('search')
-  if search:
+  srch = aArgs.get('search')
+  if srch:
    sfield = aArgs['field']
    if 'device_id' in sfield:
-    where.append('fdb.device_id = %s'%search)
+    where.append(f"fdb.device_id = {srch}")
    elif 'mac' in sfield:
-    try: where.append('fdb.mac = %i'%int(search.replace(':',""),16))
-    except: pass
+    try:
+     where.append(f"fdb.mac = {int(srch.replace(':',''),16)}")
+    except:
+     pass
 
   if extras:
    if 'device_id' in extras:
@@ -64,7 +67,7 @@ def list(aCTX, aArgs):
     fields.append('oui.company AS oui')
     joins.append('oui ON oui.oui = (fdb.mac >> 24)')
 
-  ret['count'] = db.query("SELECT %s FROM fdb LEFT JOIN %s WHERE %s"%(','.join(fields), ' LEFT JOIN '.join(joins), ' AND '.join(where)))
+  ret['count'] = db.query(f"SELECT {','.join(fields)} FROM fdb LEFT JOIN {' LEFT JOIN '.join(joins)} WHERE {' AND '.join(where)}")
   ret['data'] = db.get_rows()
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
@@ -82,20 +85,20 @@ def search(aCTX, aArgs):
   - data
  """
  ret = {}
- try: mac = int(aArgs['mac'].replace(':',""),16)
+ try:
+  mac = int(aArgs['mac'].replace(':',""),16)
  except:
   ret['status'] = 'NOT_OK'
   ret['info'] = 'Malformed MAC'
  else:
-  ret = {}
   with aCTX.db as db:
-   if (db.query("SELECT device_id, interface_id, name, description, oui.company AS oui FROM interfaces LEFT JOIN oui ON oui.oui = (%i >> 24) WHERE mac = %i ORDER BY snmp_index, name"%(mac,mac)) > 0):
+   if db.query(f"SELECT device_id, interface_id, name, description, oui.company AS oui FROM interfaces LEFT JOIN oui ON oui.oui = ({mac} >> 24) WHERE mac = {mac} ORDER BY snmp_index, name"):
     ret['interfaces'] = db.get_rows()
-    db.query("SELECT id, hostname FROM devices WHERE id = %i"%ret['interfaces'][0]['device_id'])
+    db.query(f"SELECT id, hostname FROM devices WHERE id = {ret['interfaces'][0]['device_id']}")
     ret['device'] = db.get_row()
     ret['status'] = 'OK'
    else:
-    ret['oui'] = db.get_val('company') if (db.query("SELECT company FROM oui WHERE oui.oui = (%i >> 24)"%mac) > 0) else 'N/A'
+    ret['oui'] = db.get_val('company') if db.query(f"SELECT company FROM oui WHERE oui.oui = ({mac} >> 24)") else 'N/A'
     ret['status'] = 'NOT_OK'
     ret['info'] = 'No device found'
  return ret
@@ -114,16 +117,17 @@ def check(aCTX, aArgs):
 
  def __fdb_check(lCTX,lArgs):
   try:
-   module = import_module("rims.devices.%s"%lArgs['type'])
+   module = import_module(f"rims.devices.{lArgs['type']}")
    res = getattr(module,'Device',None)(aCTX, lArgs['id'], lArgs['ip']).fdb()
-  except Exception as e: aCTX.log("FDB_CHECK_ERROR: %s (%s/%s)"%(str(e),lArgs['id'],lArgs['ip']))
+  except Exception as e:
+   aCTX.log(f"FDB_CHECK_ERROR: {e} ({lArgs['id']}/{lArgs['ip']})")
   else:
    if res['status'] == 'OK':
     fdb = res.pop('FDB',[])
     with lCTX.db as db:
-     db.execute("DELETE FROM fdb WHERE device_id = %s"%lArgs['id'])
+     db.execute(f"DELETE FROM fdb WHERE device_id = {lArgs['id']}")
      if fdb:
-      db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join("(%s,%s,%s,%s)"%(lArgs['id'],x['vlan'],x['snmp'],x['mac']) for x in fdb))
+      db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join(f"({lArgs['id']}.{x['vlan']},{x['snmp']},{x['mac']})" for x in fdb))
   return True
 
  with aCTX.db as db:
@@ -133,6 +137,6 @@ def check(aCTX, aArgs):
    sema = aCTX.semaphore(20)
    for dev in db.get_rows():
     aCTX.queue_api(__fdb_check,dev,sema)
-   for i in range(20):
+   for _ in range(20):
     sema.acquire()
  return ret

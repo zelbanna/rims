@@ -75,8 +75,7 @@ def oui_info(aCTX, aArgs):
  try:
   oui = int(aArgs['oui'].translate(str.maketrans({":":"","-":""}))[:6],16)
   with aCTX.db as db:
-   found = (db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) == 1)
-   ret['data']= db.get_row() if found else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
+   ret['data']= db.get_row() if db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
    ret['status'] = 'OK' if ret['data']['oui'] != 'NOT_FOUND' else 'NOT_FOUND'
  except Exception as e:
   ret = {'status':'NOT_OK','info':repr(e),'data':{'oui':None,'company':''}}
