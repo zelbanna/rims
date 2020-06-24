@@ -278,7 +278,7 @@ def address_info(aCTX, aArgs):
       ret['PTR']['delete'] = record_delete(aCTX, {'domain_id':old['ptr_domain_id'], 'name':ip.reverse_pointer, 'type':'PTR'})['status']
 
      # Create - let record_info handle errors, if we have a domain we can create both A and PTR otherwise none (!)
-     if aArgs.get('a_domain_id') not in ['NULL', None]:
+     if aArgs.get('a_domain_id') not in (None,'NULL'):
       fqdn = '%s.%s'%(aArgs.get('hostname',old['hostname']),domains[int(aArgs['a_domain_id'])])
       ret[FWD]['create'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':fqdn, 'type':FWD, 'content':str(ip), 'op':'insert'})['status']
       ret[FWD]['fqdn'] = fqdn

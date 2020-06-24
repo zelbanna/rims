@@ -58,7 +58,7 @@ def info(aCTX, aArgs):
   else:
    ret['data'] = {'id':'new','device_id':aArgs['device_id'], 'name':'PEM','pdu_id':None,'pdu_slot':0,'pdu_unit':0}
 
-  if ret.get('update') and not (ret['data']['pdu_id'] in [None,'NULL']):
+  if ret.get('update') and ret['data']['pdu_id'] not in (None,'NULL'):
    from importlib import import_module
    db.query("SELECT hostname FROM devices WHERE id = %s"%ret['data']['device_id'])
    hostname = db.get_val('hostname')

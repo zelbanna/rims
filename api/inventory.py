@@ -21,16 +21,16 @@ def list(aCTX, aArgs):
  sort = 'ORDER BY inv.%s'%aArgs.get('sort','serial')
  fields = ['inv.id','inv.model','inv.serial']
  tables = ['inventory AS inv']
- filter = ['TRUE']
+ flter = ['TRUE']
 
  if 'search' in aArgs:
-  filter.append("inv.%(field)s LIKE '%%%(search)s%%'"%aArgs)
+  flter.append("inv.%(field)s LIKE '%%%(search)s%%'"%aArgs)
 
  if 'extra' in aArgs:
   fields.extend(['inv.%s'%x for x in aArgs['extra']])
 
  with aCTX.db as db:
-  ret['count'] = db.query("SELECT %s FROM %s WHERE %s %s"%(", ".join(fields),' LEFT JOIN '.join(tables),' AND '.join(filter),sort))
+  ret['count'] = db.query("SELECT %s FROM %s WHERE %s %s"%(", ".join(fields),' LEFT JOIN '.join(tables),' AND '.join(flter),sort))
   ret['data'] = db.get_rows() if 'dict' not in aArgs else db.get_dict(aArgs['dict'])
  return ret
 
@@ -77,7 +77,7 @@ def info(aCTX, aArgs):
   if op == 'update':
    for tp in ['license','support_contract']:
     x = aArgs.get(tp,0)
-    aArgs[tp] = 1 if (x == True or x == '1' or x == 1) else 0
+    aArgs[tp] = 1 if x in (True, '1', 1) else 0
 
    for tp in ['receive_date','support_end_date']:
     if tp in aArgs and aArgs[tp] == '':

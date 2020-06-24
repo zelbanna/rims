@@ -272,7 +272,7 @@ def extended(aCTX, aArgs):
 
    ret['update'] = (db.update_dict('devices',aArgs,"id = %s"%aArgs['id']) == 1)
 
-   if aArgs.get('a_domain_id') not in [None,'NULL'] and aArgs['ipam_id'] not in [None,'NULL'] and db.query("SELECT ia.hostname, ia.a_domain_id, INET6_NTOA(ia.ip) AS ip, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM ipam_addresses AS ia WHERE ia.id = %(ipam_id)s"%aArgs) > 0:
+   if aArgs.get('a_domain_id') not in (None,'NULL') and aArgs['ipam_id'] not in (None,'NULL') and db.query("SELECT ia.hostname, ia.a_domain_id, INET6_NTOA(ia.ip) AS ip, IF(IS_IPV4(INET6_NTOA(ia.ip)),'A','AAAA') AS type FROM ipam_addresses AS ia WHERE ia.id = %(ipam_id)s"%aArgs) > 0:
     entry = db.get_row()
     if entry['a_domain_id']:
      ret['dns']['create'] = record_info(aCTX, {'op':'insert', 'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(aArgs['hostname'],domains[int(aArgs['a_domain_id'])]), 'type':entry['type'], 'content':entry['ip']})['status']
@@ -308,7 +308,7 @@ def rack(aCTX, aArgs):
  ret ={'racks':[{'id':'NULL', 'name':'Not used'}]}
  with aCTX.db as db:
   if (op == 'update'):
-   if aArgs.get('rack_id') in ['NULL',None]:
+   if aArgs.get('rack_id') in (None,'NULL'):
     ret['deleted'] = (db.execute("DELETE FROM rack_info WHERE device_id = %s"%id) > 0)
    else:
     ret['insert'] = (db.execute("INSERT INTO rack_info SET device_id = %s,rack_id=%s ON DUPLICATE KEY UPDATE rack_id = rack_id"%(id,aArgs['rack_id'])) > 0)
@@ -455,7 +455,7 @@ def new(aCTX, aArgs):
 
   if data['ipam'] != 'NULL' or data['mac'] > 0:
    data['interface'] = (db.execute("INSERT INTO interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me','auto_created')"%data) > 0)
-   if aArgs.get('a_domain_id') not in [None,'NULL']:
+   if aArgs.get('a_domain_id') not in (None,'NULL'):
     from rims.api.dns import record_info
     db.query("SELECT name FROM domains WHERE id = %s"%aArgs['a_domain_id'])
     data['dns'] = record_info(aCTX, {'op':'insert', 'domain_id':aArgs['a_domain_id'], 'name':'%s.%s'%(hostname,db.get_val('name')), 'type':'A' if ip.version == 4 else 'AAAA', 'content':str(ip)})['status']
