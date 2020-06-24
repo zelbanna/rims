@@ -43,8 +43,10 @@ def list(aCTX, aArgs):
    joins.append("device_types AS dt ON dt.id = devices.type_id")
    where.append("dt.base = '%s'"%srch)
   elif sfield == 'mac':
-   try: mac = int(srch.replace(':',""),16)
-   except: where.append("devices.mac <> 0")
+   try:
+    mac = int(srch.replace(':',""),16)
+   except:
+    where.append("devices.mac <> 0")
    else:
     where.append("devices.mac = %i OR di.mac = %i"%(mac,mac))
     joins.append("interfaces AS di ON di.device_id = devices.id")
@@ -166,8 +168,8 @@ def info(aCTX, aArgs):
    ret['classes'] = [parts[i] for i in range(1,len(parts),2)]
   if op == 'lookup':
    db.query("SELECT INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN devices ON devices.ipam_id = ia.id WHERE devices.id = '%s'"%id)
-   from rims.devices.detector import execute as detect_info
-   res = detect_info(db.get_val('ip'), aCTX.config['snmp'])
+   from rims.devices.detector import execute as execute_detect
+   res = execute_detect(db.get_val('ip'), aCTX.config['snmp'])
    ret['status'] = res['status']
    if res['status'] == 'OK':
     args = res['data']
@@ -427,8 +429,10 @@ def new(aCTX, aArgs):
  with aCTX.db as db:
   from rims.api.ipam import address_info, address_sanitize
   from ipaddress import ip_address
-  try: ip = ip_address(aArgs.get('ip'))
-  except: ip = None
+  try:
+   ip = ip_address(aArgs.get('ip'))
+  except:
+   ip = None
   hostname = address_sanitize(aCTX, {'hostname':aArgs['hostname']})['sanitized']
 
   if aArgs.get('ipam_network_id') and ip:
@@ -440,15 +444,17 @@ def new(aCTX, aArgs):
   else:
    data['ipam'] = "NULL"
 
-  try:    data['mac'] = int(aArgs['mac'].replace(':',""),16)
-  except: data['mac'] = 0
+  try:
+   data['mac'] = int(aArgs['mac'].replace(':',""),16)
+  except:
+   data['mac'] = 0
 
   # Insert ipam_id if existing
   db.execute("INSERT INTO devices (hostname,class,a_domain_id,type_id,ipam_id) SELECT '%s', '%s', %s, id AS type_id, %s FROM device_types WHERE name = 'generic'"%(aArgs['hostname'],aArgs.get('class','device'),aArgs.get('a_domain_id','NULL'),data['ipam']))
   data['id']= db.get_last_id()
 
-  if data['ipam'] != 'NULL' or data['mac'] > 0:
-   data['interface'] = (db.execute("INSERT INTO interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me','auto_created')"%data) > 0)
+  if data['ipam'] != 'NULL' or data['mac']:
+   data['interface'] = bool(db.execute("INSERT INTO interfaces (device_id,mac,ipam_id,name,description) VALUES(%(id)s,%(mac)s,%(ipam)s,'me','auto_created')"%data))
    if aArgs.get('a_domain_id') not in (None,'NULL'):
     from rims.api.dns import record_info
     db.query("SELECT name FROM domains WHERE id = %s"%aArgs['a_domain_id'])
@@ -495,12 +501,12 @@ def discover(aCTX, aArgs):
  Output:
  """
  from time import time
- from rims.devices.detector import execute as detect_info
+ from rims.devices.detector import execute as execute_detect
  from rims.api.ipam import network_discover, address_info, address_delete
  from rims.api.dns import record_info
 
  def __detect_thread(aIP, aDB, aCTX):
-  res = detect_info(aIP, aCTX.config['snmp'])
+  res = execute_detect(aIP, aCTX.config['snmp'])
   aDB[aIP] = res['data'] if res['status'] == 'OK' else {}
   return res['status'] == 'OK'
 
@@ -520,7 +526,7 @@ def discover(aCTX, aArgs):
  sema = aCTX.semaphore(20)
  for ip_str in ipam['addresses']:
   aCTX.queue_semaphore(__detect_thread, sema, ip_str, ip_addresses, aCTX)
- for i in range(20):
+ for _ in range(20):
   sema.acquire()
 
  # We can now do inserts only (no update) as we skip existing :-)
@@ -564,10 +570,9 @@ def oids(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  for type in ['devices','device_types']:
-   db.query("SELECT DISTINCT oid FROM %s"%type)
-   oids = db.get_rows()
-   ret[type] = [x['oid'] for x in oids]
+  for tp in ['devices','device_types']:
+   db.query(f"SELECT DISTINCT oid FROM {tp}")
+   ret[tp] = [x['oid'] for x in db.get_rows()]
  ret['unhandled'] = [x for x in ret['devices'] if x not in ret['device_types']]
  return ret
 
@@ -634,9 +639,9 @@ def system_info_discover(aCTX, aArgs):
 
  Output:
  """
- from rims.devices.detector import execute as detect_info
+ from rims.devices.detector import execute as execute_detect
  def __detect_thread(aCTX, aDev, aInfo):
-  res = detect_info(aDev['ip'], aCTX.config['snmp'], aBasic = aInfo)
+  res = execute_detect(aDev['ip'], aCTX.config['snmp'], aBasic = aInfo)
   if res['status'] == 'OK':
    aDev.update(res['data'])
   return True
@@ -656,15 +661,15 @@ def system_info_discover(aCTX, aArgs):
    sema = aCTX.semaphore(20)
    for dev in devices:
     aCTX.queue_semaphore(__detect_thread, sema, aCTX, dev, lookup != 'TRUE')
-   for i in range(20):
+   for _ in range(20):
     sema.acquire()
    for dev in devices:
     id = dev.pop('id',None)
-    ip = dev.pop('ip',None)
+    dev.pop('ip',None)
     if dev.get('type'):
      dev['type_id'] = types[dev.pop('type',None)]
     if dev:
-     ret['updated'] += db.update_dict('devices',dev,'id = %s'%id)
+     ret['updated'] += db.update_dict('devices',dev,f"id = {id}")
     else:
      ret['empty'] += 1
   if aArgs.get('lookup'):
@@ -725,7 +730,6 @@ def model_sync(aCTX, aArgs):
  Output:
  """
  ret = {}
- op = aArgs.pop('op',None)
  with aCTX.db as db:
   ret['status'] = "UPDATED" if (db.execute("INSERT INTO device_models (name, type_id) SELECT DISTINCT model AS name, type_id FROM devices ON DUPLICATE KEY UPDATE device_models.id=device_models.id") > 0) else "NO_NEW_MODELS"
  return ret
@@ -811,7 +815,8 @@ def vm_mapping(aCTX, aArgs):
    try:
     module    = import_module("rims.devices.%s"%row['type'])
     inventory = getattr(module,'Device',None)(aCTX,row['id'],row['ip']).get_inventory()
-   except: pass
+   except:
+    pass
    else:
     for id,vm in inventory.items():
      vm.update({'host_id':row['id'],'snmp_id':id})

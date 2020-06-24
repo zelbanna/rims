@@ -45,7 +45,7 @@ def domain_info(aCTX, aArgs):
  """
  ret = {}
  id = aArgs['id']
- if id  == 'new' and not (aArgs.get('op') == 'update'):
+ if id  == 'new' and aArgs.get('op') != 'update':
   ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']
   ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'Master', 'serial':0 }
  else:
