@@ -127,7 +127,7 @@ def check(aCTX, aArgs):
     with lCTX.db as db:
      db.execute(f"DELETE FROM fdb WHERE device_id = {lArgs['id']}")
      if fdb:
-      db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join(f"({lArgs['id']}.{x['vlan']},{x['snmp']},{x['mac']})" for x in fdb))
+      db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join(f"({lArgs['id']},{x['vlan']},{x['snmp']},{x['mac']})" for x in fdb))
   return True
 
  with aCTX.db as db:
