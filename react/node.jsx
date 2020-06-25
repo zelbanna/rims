@@ -9,8 +9,8 @@ import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButto
 //
 export class List extends Component {
  constructor(props){
-  super(props);
-  this.state = {};
+  super(props)
+  this.state = {}
  }
 
  componentDidMount(){
@@ -22,8 +22,11 @@ export class List extends Component {
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete node' />
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete node?') && post_call('api/master/node_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete node?') && post_call('api/master/node_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return <>
@@ -31,7 +34,7 @@ export class List extends Component {
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
     <AddButton key='add' onClick={() => this.changeContent(<Info key='node_info' id='new' />)} title='Add node' />
    </ContentList>
-   <ContentData key='cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }
@@ -41,7 +44,7 @@ export class List extends Component {
 class Info extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, found:true, content:null};
+  this.state = {data:null, found:true};
  }
 
  componentDidUpdate(prevProps){

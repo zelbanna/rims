@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { post_call } from './infra/Functions.js';
-import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport, MemoContentList } from './infra/UI.jsx';
+import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
@@ -113,14 +113,12 @@ class Search extends Component {
 class List extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, content:null, sort:(props.hasOwnProperty('sort')) ? props.sort : 'hostname', rack_id:this.props.rack_id, searchfield:'', field:this.props.field, search:this.props.search}
+  this.state = {data:null, sort:(props.hasOwnProperty('sort')) ? props.sort : 'hostname', rack_id:this.props.rack_id, searchfield:'', field:this.props.field, search:this.props.search}
  }
 
  componentDidMount(){
   post_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState(result));
  }
-
- changeContent = (elem) => this.setState({content:elem})
 
  sortList = (method) => {
   if (method === 'hostname')
@@ -139,29 +137,33 @@ class List extends Component {
   this.setState({sort:method});
  }
 
- listItem = (row) => [row.ip,<HrefButton key={'dl_btn_info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<>
+ listItem = (row) => [row.ip,<HrefButton key={'info_'+row.id} text={row.hostname} onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />,<>
   <StateLeds key='state' state={(row.ip_state) ? row.ip_state : row.if_state} />
   <InfoButton key='info' onClick={() => this.changeContent(<Info key={'di_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title={row.id} />
   <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete device' />
  </>]
 
- deleteList = (id) => (window.confirm('Really delete device '+id+'?') && post_call('api/device/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete device '+id+'?') && post_call('api/device/delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   if (this.state.data){
    const data = this.state.data
    const searchfield = this.state.searchfield.toLowerCase();
    const dev_list = (searchfield.length === 0) ? data : data.filter(row => (row.hostname.toLowerCase().includes(searchfield) || (row.ip && row.ip.includes(searchfield))));
-   const thead = [<HeaderButton key='dl_btn_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='dl_btn_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
+   const thead = [<HeaderButton key='sort_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='sort_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
    return <>
-    <MemoContentList key='mcl' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
+    <ContentList key='mcl' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
      <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
      <ItemsButton key='items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
      <AddButton key='add' onClick={() => this.changeContent(<New key='dn_new' ip='0.0.0.0' />)} title='Add device' />
      <SearchButton key='devices' onClick={() => this.changeContent(<Discover key='device_discover' />) } title='Discover new devices' />
      <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search devices' />
-    </MemoContentList>
-    <ContentData key='cd'>{this.state.content}</ContentData>
+    </ContentList>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   } else
    return <Spinner />
@@ -684,8 +686,6 @@ class TypeList extends Component {
   post_call('api/device/type_list').then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.setState({content:elem});
-
  changeSelf = (elem) => this.props.changeSelf(elem);
 
  listItem = (row) => [row.base,<HrefButton key={'tl_btn_' + row.name} text={row.name} onClick={() => this.changeSelf(<List key='device_list' field='type' search={row.name} />)} />,row.icon]
@@ -693,7 +693,7 @@ class TypeList extends Component {
  render(){
   return (this.state.data) ? <>
    <ContentList key='cl' header='Device Types' thead={['Class','Name','Icon']} trows={this.state.data} listItem={this.listItem} />
-   <ContentData key='cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </> : <Spinner />
  }
 }
@@ -717,8 +717,11 @@ class ModelList extends Component {
   <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete model' />
  </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete model?') && post_call('api/device/model_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete model?') && post_call('api/device/model_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return (this.state.data) ? <>
@@ -726,7 +729,7 @@ class ModelList extends Component {
     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
     <SyncButton key='sync' onClick={() => this.syncModels() } title='Resync models' />
    </ContentList>
-   <ContentData key='cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </> : <Spinner />
  }
 }

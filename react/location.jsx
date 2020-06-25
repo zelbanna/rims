@@ -16,8 +16,11 @@ constructor(props){
   post_call('api/location/list',).then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete location?') && post_call('api/location/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete location?') && post_call('api/location/delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  listItem = (row) => [row.id,row.name,<>
    <ConfigureButton key='conf' onClick={() => this.changeContent(<Info key='location' id={row.id} />)} title='Edit location' />
@@ -26,11 +29,11 @@ constructor(props){
 
  render(){
   return <>
-   <ContentList key='loc_cl' header='Locations' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Locations' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
     <AddButton key='add' onClick={() => this.changeContent(<Info key='location' id='new' />)} title='Add location' />
    </ContentList>
-   <ContentData key='loc_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }
@@ -44,8 +47,6 @@ export class Info extends Component {
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
-
- changeContent = (elem) => this.setState({content:elem})
 
  updateInfo = () => post_call('api/location/info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 

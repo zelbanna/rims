@@ -75,17 +75,15 @@ export class Inventory extends Component{
   post_call('api/devices/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.setState({content:elem})
-
  listItem = (row,idx) => [`${row.slotname}.${row.unit}`,<HrefButton key={'inv_' + idx} onClick={() => this.changeContent(<Unit key={'pdu_unit_'+idx} device_id={this.props.device_id} type={this.props.type} {...row} />)} text={row.name} title='Edit port info' />,<Operation key={'state_'+idx} idx={idx} device_id={this.props.device_id} type={this.props.type} {...row} />]
 
  render(){
   if (this.state.data){
    return <>
-    <ContentList key='pdu_cl' header='Inventory' thead={['Position','Device','State']} trows={this.state.data} listItem={this.listItem}>
+    <ContentList key='cl' header='Inventory' thead={['Position','Device','State']} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
     </ContentList>
-    <ContentData key='pdu_cd'>{this.state.content}</ContentData>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   } else
    return <Spinner />

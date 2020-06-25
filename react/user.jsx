@@ -21,16 +21,19 @@ export class List extends Component {
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete user' />
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete user?') && post_call('api/master/user_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete user?') && post_call('api/master/user_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return <>
-   <ContentList key='ul_cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
     <AddButton key='add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />)} title='Add user' />
    </ContentList>
-   <ContentData key='ul_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

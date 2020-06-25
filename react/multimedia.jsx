@@ -10,7 +10,7 @@ import { DocButton, DeleteButton, InfoButton, ReloadButton, SearchButton, StartB
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = {content:undefined,ip:undefined}
+  this.state = {ip:undefined}
  }
 
  componentDidMount(){
@@ -28,11 +28,13 @@ export class Main extends Component {
 
  compileNavItems = () => this.context.loadNavigation(<NavBar key='multimedia_navbar'><NavInfo key='mm_nav_ip' title={this.state.ip} /></NavBar>)
 
- changeContent = (elem) => this.setState({content:elem});
-
  reloadList = () => post_call('api/multimedia/list').then(result => this.setState(result));
 
- deleteList = (obj) => (window.confirm('Delete file '+obj.file+'?') && post_call('api/multimedia/delete',obj).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (!(row.path === obj.path && row.file === obj.file))),content:null})));
+ deleteList = (obj) => (window.confirm('Delete file '+obj.file+'?') && post_call('api/multimedia/delete',obj).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (!(row.path === obj.path && row.file === obj.file)))});
+   this.changeContent(null);
+  }}))
 
  listItem = (row,idx) => [row.file,<>
    <InfoButton key='info' onClick={() => this.changeContent(<Title key={'multimedia_title_'+idx} path={row.path} file={row.file} />)} title='Title info' />
@@ -44,11 +46,11 @@ export class Main extends Component {
  render(){
   if(this.state.data)
    return <>
-    <ContentList key='mm_cl' header='Media files' thead={['File','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+    <ContentList key='cl' header='Media files' thead={['File','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='reload' onClick={() => this.reloadList()} />
      <DeleteButton key='cleanup' onClick={() => (window.confirm('Really clean up files?') && this.changeContent(<Cleanup key={'multimedia_cleanup_'+rnd()} />))} title='Cleanup multimedia directory' />
     </ContentList>
-    <ContentData key='mm_cd'>{this.state.content}</ContentData>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   else
    return <Spinner />

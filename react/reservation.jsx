@@ -13,16 +13,18 @@ export class List extends Component {
  }
 
  componentDidMount(){
-  post_call('api/reservation/list').then(result => this.setState({content:null, ...result}))
+  post_call('api/reservation/list').then(result => this.setState(result))
  }
 
  extendItem = (device_id,user_id,days) => {
   post_call('api/reservation/extend',{device_id:device_id, user_id:user_id, days:days}).then(result => this.componentDidMount())
  }
 
- changeContent = (elem) => this.setState({content:elem})
-
- deleteItem = (dev,user) => (window.confirm('Remove reservation?') && post_call('api/reservation/delete',{device_id:dev, user_id:user}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => row.device_id !== dev),content:null})))
+ deleteItem = (dev,user) => (window.confirm('Remove reservation?') && post_call('api/reservation/delete',{device_id:dev, user_id:user}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.device_id !== dev))});
+   this.changeContent(null);
+  }}))
 
  listItem = (row) => {
   const buttons = (this.context.settings.id === row.user_id || !row.valid);
@@ -35,11 +37,11 @@ export class List extends Component {
 
  render(){
   return <>
-   <ContentList key='rsv_cl' header='Reservations' thead={['User','Device','Until','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Reservations' thead={['User','Device','Until','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
     <AddButton key='add' onClick={() => this.changeContent(<New key='rsv_new' />)} />
    </ContentList>
-   <ContentData key='rsv_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

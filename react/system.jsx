@@ -47,7 +47,7 @@ export class Main extends Component {
    <NavButton key='sys_nav_logs' title='Logs' onClick={() => this.changeImport('node','LogShow',{node:this.context.settings.node})} />
    {admin && <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />}
    {admin && this.state.services.length > 0 && <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavDropButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
-   <NavReload key='sys_nav_reload' onClick={() => this.setState({content:null})} />
+   <NavReload key='sys_nav_reload' onClick={() => this.changeContent(null)} />
    {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} />)}
   </NavBar>)
  }
@@ -103,14 +103,12 @@ class RestList extends Component {
    })
  }
 
- listItem = (row) => [row.api,<HrefButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key={`rest_info_${row.api}_${row.function}`} {...row} />)}} />]
-
- changeContent = (elem) => this.setState({content:elem})
+ listItem = (row) => [row.api,<HrefButton key={'rest_' + row.api} text={row.function} onClick={() => { this.changeContent(<RestInfo key='rest_info' {...row} />)}} />]
 
  render(){
   return <>
-   <ContentList key='rest_tp_cl' header='REST API' thead={['API','Function']} trows={this.state.data} listItem={this.listItem} />
-   <ContentData key='rest_tp_cd'>{this.state.content}</ContentData>
+   <ContentList key='cl' header='REST API' thead={['API','Function']} trows={this.state.data} listItem={this.listItem} />
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }
@@ -121,6 +119,12 @@ class RestInfo extends Component {
  constructor(props){
   super(props)
   this.state = {}
+ }
+
+ componentDidUpdate(prevProps) {
+  if (prevProps !== this.props){
+   post_call('api/system/rest_information',{api:this.props.api, function:this.props.function}).then(result => this.setState(result))
+  }
  }
 
  componentDidMount(){
@@ -173,14 +177,12 @@ class Controls extends Component {
   ]}
  }
 
- changeContent = (elem) => this.setState({content:elem})
-
- listItem = (row) => [<HrefButton key={'ctrl_' + row.api} text={row.text} onClick={() => { this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)}} />]
+ listItem = (row) => [<HrefButton key={'ctrl_' + row.api} text={row.text} onClick={() => this.changeContent(<RestExecute key={'rest_' + row.api} {...row} />)} />]
 
  render(){
   return <>
-   <ContentList key='ctl_cl' header='' thead={['API']} trows={this.state.data} listItem={this.listItem} />
-   <ContentData key='ctl_cd'>{this.state.content}</ContentData>
+   <ContentList key='cl' header='' thead={['API']} trows={this.state.data} listItem={this.listItem} />
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

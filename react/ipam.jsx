@@ -45,19 +45,22 @@ export class NetworkList extends Component {
     <ReloadButton key='reset' onClick={() => this.resetStatus(row.id)} title='Reset state for network addresses' />
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete network') && post_call('api/ipam/network_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete network') && post_call('api/ipam/network_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  resetStatus = (id) => post_call('api/ipam/clear',{network_id:id}).then(result => this.setState({result:result.count}))
 
  render(){
   return <>
-   <ContentList key='nl_cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+   <ContentList key='cl' header='Networks' thead={['ID','Network','Description','DHCP','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
     <ReloadButton key='reload'  onClick={() => this.componentDidMount() } />
     <AddButton key='add' onClick={() => this.changeContent(<NetworkInfo key={'network_new_'+rnd()} id='new' />)} title='Add network' />
     <LogButton key='leases' onClick={() => this.changeContent(<Leases key='network_leases' />)} title='View IPAM/DHCP leases' />
    </ContentList>
-   <ContentData key='nl_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

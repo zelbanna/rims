@@ -59,9 +59,12 @@ class List extends Component {
    <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete activity' />
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
 
- deleteList = (id) => (window.confirm('Delete activity') && post_call('api/master/activity_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Delete activity') && post_call('api/master/activity_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   if (this.state.data) {
@@ -72,7 +75,7 @@ class List extends Component {
      <AddButton key='add' onClick={() => this.changeContent(<Info key='activity_info' id='new' />) } title='Add activity' />
      <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search activities' />
     </ContentList>
-    <ContentData key='cd'>{this.state.content}</ContentData>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   } else
    return <Spinner />
@@ -227,8 +230,11 @@ class TypeList extends Component {
    <DeleteButton key='delete' onClick={() => this.deleteList(row.id) } title='Delete type' />
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete type?') && post_call('api/master/activity_type_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete type?') && post_call('api/master/activity_type_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return <>
@@ -236,7 +242,7 @@ class TypeList extends Component {
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
     <AddButton key='add' onClick={() => this.changeContent(<TypeInfo key='act_tp' id='new' />) } title='Add activity type' />
    </ContentList>
-   <ContentData key='cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

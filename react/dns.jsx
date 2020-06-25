@@ -47,7 +47,11 @@ export class DomainList extends Component {
   </>]
 
  changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete domain') && post_call('api/dns/domain_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete domain') && post_call('api/dns/domain_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return <>
@@ -57,7 +61,7 @@ export class DomainList extends Component {
     <SyncButton key='sync' onClick={() => this.syncDomains()} title='Sync external DNS servers with cache' />
     <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key='recursor_statistics' />)} title='View DNS statistics' />
    </ContentList>
-   <ContentData key='cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

@@ -71,7 +71,7 @@ export class Device extends Component {
 export class List extends Component {
  constructor(props){
   super(props)
-  this.state = {searchfield:'', content:null}
+  this.state = {searchfield:''}
  }
 
  componentDidUpdate(prevProps){
@@ -84,9 +84,9 @@ export class List extends Component {
   post_call('api/fdb/list',{search:this.props.search, field:this.props.field, extra:['device_id','hostname']}).then(result => this.setState(result))
  }
 
- changeSearch = (mac,idx) => this.setState({content:<Info key={'fi_'+idx} mac={mac} />});
+ changeSearch = (mac,idx) => this.changeContent(<Info key='fdb_info' mac={mac} />)
 
- changeVisualize = (device_id) => ('changeSelf' in this.props && import('./visualize.jsx').then(lib => this.setState({content:<lib.Edit key={'viz_id_' + device_id} type='device' changeSelf={this.props.changeSelf} id={device_id} />})));
+ changeVisualize = (device_id) => ('changeSelf' in this.props && import('./visualize.jsx').then(lib => this.changeContent(<lib.Edit key={'viz_id_' + device_id} type='device' changeSelf={this.props.changeSelf} id={device_id} />)));
 
  listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'intf_'+idx} text={row.mac} onClick={() => this.setState({searchfield:row.mac})} />,<>
    <InfoButton key='info' onClick={() => this.changeSearch(row.mac,idx)} title='Find interface(s)' />
@@ -102,7 +102,7 @@ export class List extends Component {
      <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
      <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' text={this.state.searchfield} />
     </ContentList>
-    <ContentData key='cd'>{this.state.content}</ContentData>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   } else
    return <Spinner />
@@ -115,6 +115,12 @@ class Info extends Component {
  constructor(props){
   super(props);
   this.state = {}
+ }
+
+ componentDidUpdate(prevProps){
+  if (prevProps !== this.props){
+   this.componentDidMount()
+  }
  }
 
  componentDidMount(){

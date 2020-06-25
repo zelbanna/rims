@@ -28,14 +28,12 @@ export class Main extends Component {
    </>]
  }
 
- changeContent = (elem) => this.setState({content:elem})
-
  render(){
   return <>
-   <ContentList key='hyp_cl' header='Hypervisor' thead={['Hostname','Type','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Hypervisor' thead={['Hostname','Type','']} trows={this.state.data} listItem={this.listItem}>
     <SyncButton key='sync' onClick={() => this.changeContent(<Sync key='vm_sync' />) } />
    </ContentList>
-   <ContentData key='hyp_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }
@@ -107,8 +105,6 @@ export class Inventory extends Component{
   post_call('api/devices/' + this.props.type + '/inventory',{device_id:this.props.device_id, sort: this.state.sort}).then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.setState({content:elem})
-
  sortList = (method) => {
   if (method === 'name')
    this.state.data.sort((a,b) => a.name.localeCompare(b.name));
@@ -117,18 +113,18 @@ export class Inventory extends Component{
   this.setState({sort:method})
  }
 
- listItem = (row) => [row.id,row.name,<Operation key={'hl_op_'+row.id} vm_id={row.id} device_id={this.props.device_id} type={this.props.type} changeContent={this.changeContent} state={row.state} />]
+ listItem = (row) => [row.id,row.name,<Operation key={'hl_op_'+row.id} vm_id={row.id} device_id={this.props.device_id} type={this.props.type} changeContent={(e) => this.changeContent(e)} state={row.state} />]
 
  render(){
   if (this.state.data){
    const thead = [<HeaderButton key='id' text='ID' highlight={(this.state.sort === 'id')} onClick={() => this.sortList('id')} />,<HeaderButton key='vm' text='VM' highlight={(this.state.sort === 'name')} onClick={() => this.sortList('name')} />,'Operations'];
    return <>
-    <ContentList key='hl_cl' header='Inventory' thead={thead} trows={this.state.data} listItem={this.listItem}>
+    <ContentList key='cl' header='Inventory' thead={thead} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
      <LogButton key='logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
      <SyncButton key='sync' onClick={() => this.changeContent(<Sync key='vm_sync' device_id={this.props.device_id}/>)} title='Map VMs' />
     </ContentList>
-    <ContentData key='hl_cd'>{this.state.content}</ContentData>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   } else
    return <Spinner />
@@ -157,7 +153,7 @@ class Operation extends Component{
    const on = (this.state.state === 'on');
    const off = (this.state.state === 'off');
    return <>
-    <InfoButton key='info' onClick={() => this.props.changeContent(<Info key={'hypervisor_info_'+this.props.vm_id} device_id={this.props.device_id} vm_id={this.props.vm_id} type={this.props.type} changeSelf={this.props.changeContent} />)} title='VM info' />
+    <InfoButton key='info' onClick={() => this.props.changeContent(<Info key='hypervisor_info' device_id={this.props.device_id} vm_id={this.props.vm_id} type={this.props.type} changeSelf={this.props.changeContent} />)} title='VM info' />
     {(off || this.state.state === 'suspended')  && <StartButton key='start' onClick={() => this.operation('on')} title={this.state.status} />}
     {on && <StopButton key='stop' onClick={() => this.operation('shutdown')} title={this.state.status} />}
     {on && <ReloadButton key='reload' onClick={() => this.operation('reboot')} title={this.state.status} />}
@@ -183,6 +179,12 @@ class Info extends Component{
  changeSelf = (elem) => this.props.changeSelf(elem);
 
  changeContent = (elem) => this.setState({content:elem});
+
+ componentDidUpdate(prevProps){
+  if (prevProps !== this.props){
+   this.componentDidMount()
+  }
+ }
 
  componentDidMount(){
   post_call('api/devices/'+this.props.type+'/vm_info',{device_id:this.props.device_id, vm_id:this.props.vm_id}).then(result => {

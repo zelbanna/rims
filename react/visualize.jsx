@@ -39,15 +39,18 @@ export class List extends Component {
   <DeleteButton key='del' onClick={() => this.deleteList(row.id)} />
  </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Delete map?') && post_call('api/visualize/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Delete map?') && post_call('api/visualize/delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return <>
-   <ContentList key='vl_cl' header='Maps' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Maps' thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
    </ContentList>
-   <ContentData key='vl_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }
@@ -62,6 +65,8 @@ export class Edit extends Component {
   this.canvas = React.createRef()
   this.edit = false;
  }
+
+ changeContent = (elem) => this.setState({content:elem})
 
  componentDidMount(){
   import('vis-network/standalone/esm/vis-network').then(vis => {
@@ -136,10 +141,10 @@ export class Edit extends Component {
     <PhysicsButton key='viz_physics' onClick={() => this.togglePhysics()} />
     <FixButton key='viz_fix' onClick={() => this.toggleFix()} />
     <SaveButton key='viz_save' onClick={() => this.updateInfo()} />
-    <NetworkButton key='viz_net' onClick={() => this.setState({content:'network'})} />
-    <TextButton key='viz_opt' text='Options' onClick={() => this.setState({content:'options'})} />
-    <TextButton key='viz_nodes' text='Nodes' onClick={() => this.setState({content:'nodes'})} />
-    <TextButton key='viz_edges' text='Edges' onClick={() => this.setState({content:'edges'})} />
+    <NetworkButton key='viz_net' onClick={() => this.changeContent('network')} />
+    <TextButton key='viz_opt' text='Options' onClick={() => this.changeContent('options')} />
+    <TextButton key='viz_nodes' text='Nodes' onClick={() => this.changeContent('nodes')} />
+    <TextButton key='viz_edges' text='Edges' onClick={() => this.changeContent('edges')} />
     <TextInput key='viz_name' id='name' value={this.state.data.name} onChange={this.onChange} />
     <Result key='viz_result' result={this.state.result} />
     <div className={styles.network} style={this.showDiv('network')} ref={this.canvas} />

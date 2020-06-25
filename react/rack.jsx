@@ -62,16 +62,19 @@ export class List extends Component {
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete rack' />
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete rack?') && post_call('api/rack/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete rack?') && post_call('api/rack/delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return <>
-   <ContentList key='rack_cl' header='Racks' thead={['Location','Name','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Racks' thead={['Location','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
     <AddButton key='add' onClick={() => this.changeContent(<Info key={'rack_new_' + rnd()} id='new' />)} title='Add rack' />
    </ContentList>
-   <ContentData key='rack_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }
@@ -163,16 +166,14 @@ export class Infra extends Component {
   post_call('api/device/list',{field:'base',search:this.props.type,extra:['type']}).then(result => this.setState(result))
  }
 
- listItem = (row) => [<HrefButton key={'rinfra_dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,row.hostname,<InfoButton key={'rinfra_btn_' + row.id} onClick={() => this.context.changeMain({module:row.type_base,function:'Manage',args:{device_id:row.id, type:row.type_name}})} title='Manage device' />]
-
- changeContent = (elem) => this.setState({content:elem})
+ listItem = (row) => [<HrefButton key={'dev_'+row.id} text={row.id} onClick={() => this.changeContent(<DeviceInfo key={'device_' + row.id} id={row.id} />)} title='Device info'/>,row.hostname,<InfoButton key={'rinfra_btn_' + row.id} onClick={() => this.context.changeMain({module:row.type_base,function:'Manage',args:{device_id:row.id, type:row.type_name}})} title='Manage device' />]
 
  render(){
   return <>
-   <ContentList key='rinfra_cl' header={this.props.type} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header={this.props.type} thead={['ID','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
    </ContentList>
-   <ContentData key='rinfra_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

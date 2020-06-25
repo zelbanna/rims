@@ -54,8 +54,11 @@ class List extends Component {
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete inventory item' />
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete item') && post_call('api/inventory/delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete item') && post_call('api/inventory/delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   if (!this.state.data)
@@ -63,12 +66,12 @@ class List extends Component {
   else {
    const inv_list = (this.state.searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.model.includes(this.state.searchfield) || row.serial.includes(this.state.searchfield)));
    return <>
-    <ContentList key='inv_cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
+    <ContentList key='cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
      <AddButton key='add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
      <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory (case sensitive)' />
     </ContentList>
-    <ContentData key='inv_cd'>{this.state.content}</ContentData>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   }
  }
@@ -152,14 +155,12 @@ class Vendor extends Component {
   post_call('api/inventory/vendor_list').then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.props.changeSelf(elem);
-
  listItem = (row) => [<HrefButton key={'search_' +row.vendor} text={row.vendor} onClick={() => this.changeContent(<List key='inventory_list' args={{field:'vendor', search:row.vendor}} />)} />,row.count]
 
  render(){
   return <>
-   <ContentList key='inv_cl' header='Vendors' thead={['Name','Count']} trows={this.state.data} listItem={this.listItem} />
-   <ContentData key='inv_cd'>{this.state.content}</ContentData>
+   <ContentList key='cl' header='Vendors' thead={['Name','Count']} trows={this.state.data} listItem={this.listItem} />
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }

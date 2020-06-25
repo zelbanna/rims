@@ -71,8 +71,6 @@ export class Inventory extends Component{
   post_call('api/devices/' + this.props.type + '/inventory',{device_id:this.props.device_id}).then(result => this.setState(result))
  }
 
- changeContent = (elem) => this.setState({content:elem})
-
  cnctFunction = (intf) => {
   const port = parseInt(intf) + parseInt(this.state.extra.port);
   window.open(`${this.state.extra.access_url}:${port}`,'_self');
@@ -86,7 +84,7 @@ export class Inventory extends Component{
     <ContentList key='cl' header='Inventory' thead={['Port','Device','']} trows={this.state.data} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
     </ContentList>
-    <ContentData key='cd'>{this.state.content}</ContentData>
+    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
   } else
    return <Spinner />

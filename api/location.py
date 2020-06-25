@@ -42,7 +42,7 @@ def info(aCTX, aArgs):
     ret['insert'] = db.insert_dict('locations',aArgs)
     lid = db.get_last_id() if ret['insert'] > 0 else 'new'
 
-  ret['data'] = db.get_row() if lid != 'new' and db.query("SELECT id,name FROM locations WHERE id = '%s'"%id) else {'id':'new','name':''}
+  ret['data'] = db.get_row() if lid != 'new' and db.query("SELECT id,name FROM locations WHERE id = '%s'"%lid) else {'id':'new','name':''}
  return ret
 
 #

@@ -28,16 +28,19 @@ export class List extends Component {
    {row.hasOwnProperty('ui') && row.ui.length > 0 && <UiButton key='ui' onClick={() =>  window.open(row.ui,'_blank')} title='Server UI' />}
   </>]
 
- changeContent = (elem) => this.setState({content:elem})
- deleteList = (id) => (window.confirm('Really delete service?') && post_call('api/master/server_delete', {id:id}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => (row.id !== id)),content:null})))
+ deleteList = (id) => (window.confirm('Really delete service?') && post_call('api/master/server_delete', {id:id}).then(result => {
+  if (result.deleted){
+   this.setState({data:this.state.data.filter(row => (row.id !== id))});
+   this.changeContent(null);
+  }}))
 
  render(){
   return <>
-   <ContentList key='sl_cl' header='Servers' thead={['Node','Service','Type','']} trows={this.state.data} listItem={this.listItem}>
+   <ContentList key='cl' header='Servers' thead={['Node','Service','Type','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
     <AddButton key='add' onClick={() => this.changeContent(<Info key='server_info' id='new' type={this.props.type} />)} title='Add service' />
    </ContentList>
-   <ContentData key='sl_cd'>{this.state.content}</ContentData>
+   <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
  }
 }
@@ -50,6 +53,7 @@ class Info extends Component {
   this.state = {data:null, found:true, content:null};
  }
 
+ changeContent = (elem) => this.setState({content:elem})
 
  componentDidUpdate(prevProps){
   if(prevProps !== this.props)
@@ -67,8 +71,6 @@ class Info extends Component {
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
-
- changeContent = (elem) => this.setState({content:elem})
 
  updateInfo = () => post_call('api/master/server_info',{op:'update', ...this.state.data}).then(result => this.setState(result))
 
