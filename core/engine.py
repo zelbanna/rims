@@ -175,7 +175,7 @@ class Context():
       srvobj = getattr(module,'Server')
       self._servers.append(PersistentServer(self, self._abort, srv, srvobj, args))
      except Exception as e:
-      self.log(f"Starting server {srv} => failed ({e})")
+      self.log(f"Starting '{srv}' server => failed ({e})")
 
    for sig in [SIGINT, SIGUSR1, SIGUSR2]:
     signal(sig, self.signal_handler)
@@ -188,8 +188,8 @@ class Context():
  #
  def close(self):
   """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough. Finally set kill to inform that we are done """
-  def dummy():
-   pass
+  def shutdown_dummy(n):
+   return False
   self._abort.set()
   try:
    self._sock.close()
@@ -204,14 +204,12 @@ class Context():
   finally:
    self._ssock = None
   while self.workers_alive():
-   for x in range(0,self.workers_alive() - self._queue.qsize()):
-    self._queue.put((dummy,False,None,False,[],{}))
-   while not self._queue.empty() and self.workers_alive():
+   # range is implicitly >= 0
+   for x in range(self.workers_alive() - self._queue.qsize()):
+    self._queue.put((shutdown_dummy,False,None,False,[x],{}))
+   while self.workers_alive() and not self._queue.empty():
     sleep(0.2)
     self._workers = [x for x in self._workers if x.is_alive()]
-    if self.debug:
-     for x in self._workers:
-      stdout.write(f"{x.name} still alive\n")
   self._kill.set()
 
  #
@@ -340,7 +338,7 @@ class Context():
    'Package path':self.path,
    'Python version':version.replace('\n',''),
    'Workers pool':self.workers_alive(),
-   'Workers idle':self.workers_idles(),
+   'Workers idle':self.workers_idle(),
    'Workers queue':self.queue_size(),
    'Servers':self.workers_servers(),
    'Active Tokens':len(self.tokens),
@@ -410,7 +408,7 @@ class Context():
  def workers_alive(self):
   return len([w for w in self._workers if w.is_alive()])
 
- def workers_idles(self):
+ def workers_idle(self):
   return len([w for w in self._workers if w.is_idle()])
 
  def workers_servers(self):
@@ -761,7 +759,7 @@ class QueueWorker(Thread):
     (func, api, sema, output, args, kwargs) = queue.get(True)
     idle.clear()
     if ctx.debug:
-     stdout.write(f"{self.name} - {repr(func).split()[1]} => starting\n")
+     stdout.write(f"{self.name} - {repr(func)} => starting\n")
     result = func(*args,**kwargs) if not api else func(ctx, args)
    except Exception as e:
     ctx.log(f"{self.name} - ERROR: {repr(func)} => {e}")
@@ -770,7 +768,8 @@ class QueueWorker(Thread):
       stdout.write(f"{self.name} - DEBUG-{n:02} => {v}\n")
    else:
     if output:
-     ctx.log(f"{self.name} - {repr(func).split()[1]} => {dumps(result)}")
+     parts = repr(func).split()
+     ctx.log(f"{self.name} - {parts[1] if parts[0] == '<function' else parts[2]} => {dumps(result)}")
    finally:
     queue.task_done()
     if sema:
@@ -798,9 +797,11 @@ class SocketServer(Thread):
   return self._ctx.db.count.items()
 
  def run(self):
-  while not self._abort.is_set():
+  abort = self._abort
+  httpd = self._httpd
+  while not abort.is_set():
    try:
-    self._httpd.handle_request()
+    httpd.handle_request()
    except:
     pass
    #except Exception as e: print(f"Error: {self.name} => {e}")
@@ -824,9 +825,12 @@ class PersistentServer(Thread):
   return self._ctx.db.count.items()
 
  def run(self):
-  while not self._abort.is_set():
+  abort = self._abort
+  server= self._server
+  yield
+  while not abort.is_set():
    try:
-    self._server.process()
+    server.process()
    except:
     pass
   return False

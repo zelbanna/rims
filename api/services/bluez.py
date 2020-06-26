@@ -15,7 +15,7 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
- return {'data':aCTX.ipc['bluez'], 'status':'OK' }
+ return {'data':aCTX.ipc['bluez'].get('data',{}), 'status':'OK' }
 
 #
 def sync(aCTX, aArgs):
