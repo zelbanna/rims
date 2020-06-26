@@ -153,14 +153,14 @@ class Context():
 
    servers = 0
    if self.config.get('port'):
-    self.log(f"Starting HTTP server at: {self.config['port']}")
+    self.log(f"Starting 'HTTP' server at: {self.config['port']}")
     addr,sock = create_socket(int(self.config['port']))
     self._sock = sock
     self._servers.extend(SocketServer(self, self._abort, n, addr, sock) for n in range(servers,servers+4))
     servers = 4
    if self.config.get('ssl'):
     ssl_config = self.config['ssl']
-    self.log(f"Starting HTTPS server at: {ssl_config['port']}")
+    self.log(f"Starting 'HTTPS' server at: {ssl_config['port']}")
     context = SSLContext(PROTOCOL_SSLv23)
     context.load_cert_chain(ssl_config['certfile'], keyfile=ssl_config['keyfile'], password=ssl_config.get('password'))
     addr,ssock = create_socket(int(ssl_config['port']))
@@ -170,7 +170,7 @@ class Context():
    if self.config.get('servers'):
     for srv,args in self.config['servers'].items():
      try:
-      self.log(f"Starting server {srv}")
+      self.log(f"Starting '{srv}' server ")
       module = import_module(f"rims.servers.{srv}")
       srvobj = getattr(module,'Server')
       self._servers.append(PersistentServer(self, self._abort, srv, srvobj, args))
