@@ -758,8 +758,8 @@ class QueueWorker(Thread):
     idle.set()
     (func, api, sema, output, args, kwargs) = queue.get(True)
     idle.clear()
-    if ctx.debug:
-     stdout.write(f"{self.name} - {repr(func)} => starting\n")
+    #if ctx.debug:
+    # stdout.write(f"{self.name} - {repr(func)} => starting\n")
     result = func(*args,**kwargs) if not api else func(ctx, args)
    except Exception as e:
     ctx.log(f"{self.name} - ERROR: {repr(func)} => {e}")
