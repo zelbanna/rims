@@ -118,7 +118,7 @@ class Context():
   try:
    env = self.environment(self.node)
   except Exception as e:
-   print(f"Load environment error: {e}")
+   stdout.write(f"Load environment error: {e}\n")
    return False
   else:
    self.log(f"______ Loading environment - version: {__build__} debug: {self.debug} ______")
@@ -180,7 +180,7 @@ class Context():
    for sig in [SIGINT, SIGUSR1, SIGUSR2]:
     signal(sig, self.signal_handler)
   except Exception as e:
-   print(f"Starting error - check IP and SSL settings: {e}")
+   stdout.write(f"Starting error - check IP and SSL settings: {e}\n")
    return False
   else:
    return True
@@ -207,8 +207,11 @@ class Context():
    for x in range(0,self.workers_alive() - self._queue.qsize()):
     self._queue.put((dummy,False,None,False,[],{}))
    while not self._queue.empty() and self.workers_alive():
-    sleep(0.1)
+    sleep(0.2)
     self._workers = [x for x in self._workers if x.is_alive()]
+    if self.debug:
+     for x in self._workers:
+      stdout.write(f"{x.name} still alive\n")
   self._kill.set()
 
  #
@@ -232,7 +235,7 @@ class Context():
    data.update(self.config)
    data['services'] = self.services
    data['tokens'] = {k:{'id':v['id'],'alias':v['alias'],'ip':v['ip'],'class':v['class'],'expires':v['expires'].strftime('%a, %d %b %Y %H:%M:%S %Z')} for k,v in self.tokens.items()}
-   print(f"System Info:\n_____________________________\n{dumps(data,indent=2, sort_keys=True)}\n_____________________________")
+   stdout.write(f"System Info:\n_____________________________\n{dumps(data,indent=2, sort_keys=True)}\n_____________________________\n")
 
  ######################## TOOLS #####################
  #
@@ -751,23 +754,27 @@ class QueueWorker(Thread):
   return self._idle.is_set()
 
  def run(self):
-  while not self._abort.is_set():
+  ctx, queue, abort, idle = self._ctx, self._queue, self._abort, self._idle
+  while not abort.is_set():
    try:
-    self._idle.set()
-    (func, api, sema, output, args, kwargs) = self._queue.get(True)
-    self._idle.clear()
-    result = func(*args,**kwargs) if not api else func(self._ctx, args)
-    if output:
-     self._ctx.log(f"{self.name} - {repr(func).split()[1]} => {dumps(result)}")
+    idle.set()
+    (func, api, sema, output, args, kwargs) = queue.get(True)
+    idle.clear()
+    if ctx.debug:
+     stdout.write(f"{self.name} - {repr(func).split()[1]} => starting\n")
+    result = func(*args,**kwargs) if not api else func(ctx, args)
    except Exception as e:
-    self._ctx.log(f"{self.name} - ERROR: {repr(func)} => {e}")
-    if self._ctx.debug:
+    ctx.log(f"{self.name} - ERROR: {repr(func)} => {e}")
+    if ctx.debug:
      for n,v in enumerate(format_exc().split('\n')):
-      self._ctx.log(f"{self.name} - DEBUG-{n:02} => {v}")
+      stdout.write(f"{self.name} - DEBUG-{n:02} => {v}\n")
+   else:
+    if output:
+     ctx.log(f"{self.name} - {repr(func).split()[1]} => {dumps(result)}")
    finally:
+    queue.task_done()
     if sema:
      sema.release()
-    self._queue.task_done()
   return False
 
 #
@@ -797,6 +804,7 @@ class SocketServer(Thread):
    except:
     pass
    #except Exception as e: print(f"Error: {self.name} => {e}")
+  return False
 
 #
 #
@@ -821,3 +829,4 @@ class PersistentServer(Thread):
     self._server.process()
    except:
     pass
+  return False
