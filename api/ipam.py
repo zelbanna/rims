@@ -473,7 +473,7 @@ def check(aCTX, aArgs):
 
  if 'repeat' in aArgs:
   # INTERNAL from rims.api.ipam import process
-  aCTX.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debugging())
+  aCTX.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debug)
   return {'status':'OK','function':'ipam_check','detach_frequency':aArgs['repeat']}
  else:
   # INTERNAL from rims.api.ipam import process

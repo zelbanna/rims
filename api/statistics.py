@@ -169,7 +169,7 @@ def check(aCTX, aArgs):
   return {'status':'OK','function':'statistics_check','info':'no devices'}
  if 'repeat' in aArgs:
   # INTERNAL from rims.api.statistics import process
-  aCTX.schedule_api_periodic(process,'statistics_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debugging())
+  aCTX.schedule_api_periodic(process,'statistics_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debug)
   return {'status':'OK','function':'statistics_check','detach_frequency':aArgs['repeat']}
  else:
   # INTERNAL from rims.api.statistics import process

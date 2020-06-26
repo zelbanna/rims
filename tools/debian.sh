@@ -12,6 +12,9 @@ alias rims_reload='/etc/init.d/rims restart'
 alias rims_clear='/etc/init.d/rims clear'
 alias rims_mysql='mysql -urims -prims rims'
 
+# BlueZ
+# apt-get install pkg-config libboost-python-dev libboost-thread-dev libbluetooth-dev libglib2.0-dev python-dev
+
 apt-get update
 apt-get upgrade
 apt-get install -y sudo nano net-tools git mariadb-client libsnmp-dev libxslt-dev apt-transport-https ca-certificates curl gnupg-agent software-properties-common

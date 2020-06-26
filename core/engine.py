@@ -33,7 +33,7 @@ from rims.core.common import DB, rest_call, Scheduler, RestException
 #
 class Context():
 
- def __init__(self,aConfig):
+ def __init__(self,aConfig, aDebug = False):
   """ Context init - create the infrastructure but populate later
   - Consume config file
   - Set node ID
@@ -58,13 +58,13 @@ class Context():
   self.token = self.config.get('token')
   self.path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.site  = ospath.join(self.path,'site')
+  self.debug = aDebug
   self.ipc = {}
   self.nodes = {}
   self.tokens = {}
   self.services = {}
   self.rest_call = rest_call
   self.config['salt'] = self.config.get('salt','WBEUAHfO')
-  self.config['debug'] = self.config.get('debug',False)
   self.config['workers'] = self.config.get('workers',20)
   self.config['logging'] = self.config.get('logging',{})
   self.config['logging']['rest']   = self.config['logging'].get('rest',{'enabled':False,'file':None})
@@ -121,7 +121,7 @@ class Context():
    print(f"Load environment error: {e}")
    return False
   else:
-   self.log(f"______ Loading environment - version: {__build__} debug: {self.config['debug']} ______")
+   self.log(f"______ Loading environment - version: {__build__} debug: {self.debug} ______")
    self.nodes.update(env['nodes'])
    self.services.update(env['services'])
    self.tokens.update(env.get('tokens',{}))
@@ -236,17 +236,12 @@ class Context():
 
  ######################## TOOLS #####################
  #
- def debugging(self):
-  """ Return debug status """
-  return self.config['debug']
-
- #
  def log(self,aMsg):
   """ Log a system message """
   syslog = self.config['logging']['system']
   if syslog['enabled']:
    logstring = f"{strftime('%Y-%m-%d %H:%M:%S', localtime())}: {aMsg}\n"
-   if syslog['enabled'] == 'print':
+   if self.debug:
     stdout.write(logstring)
    else:
     with open(syslog['file'], 'a') as f:
@@ -637,7 +632,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   restlog = self._ctx.config['logging']['rest']
   if restlog['enabled'] and self.headers.get('X-Log','true') == 'true':
    logstring = f"%s: {api} '%s' {tid}@{self._headers['X-Route']}\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), dumps(args) if api != "system/worker" else "N/A")
-   if restlog['enabled'] == 'print':
+   if self._ctx.debug:
     stdout.write(logstring)
    else:
     with open(restlog['file'], 'a') as f:
@@ -653,7 +648,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    self._headers.update({'X-Args':args, 'X-Exception':e.exception, 'X-Code':e.code, 'X-Info':e.info})
   except Exception as e:
    self._headers.update({'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))})
-   if self._ctx.config['debug']:
+   if self._ctx.debug:
     for n,v in enumerate(format_exc().split('\n')):
      self._headers[f"X-Debug-{n:02}"] = v
 
@@ -766,7 +761,7 @@ class QueueWorker(Thread):
      self._ctx.log(f"{self.name} - {repr(func).split()[1]} => {dumps(result)}")
    except Exception as e:
     self._ctx.log(f"{self.name} - ERROR: {repr(func)} => {e}")
-    if self._ctx.config['debug']:
+    if self._ctx.debug:
      for n,v in enumerate(format_exc().split('\n')):
       self._ctx.log(f"{self.name} - DEBUG-{n:02} => {v}")
    finally:
