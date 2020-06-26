@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { post_call, rnd } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, InfoArticle, InfoColumns, ContentList, ContentData, Result } from './infra/UI.jsx';
 import { AddButton, DeleteButton, ConfigureButton, ReloadButton, SaveButton } from './infra/Buttons.jsx';
 import { TextInput, TextLine, PasswordInput, SelectInput } from './infra/Inputs.jsx';
@@ -17,7 +17,7 @@ export class List extends Component {
  }
 
  listItem = (row) => [row.id,row.alias,row.name,<>
-   <ConfigureButton key='config' onClick={() => this.changeContent(<Info key={'user_info_'+row.id} id={row.id} />)} title='Edit user' />
+   <ConfigureButton key='config' onClick={() => this.changeContent(<Info key='user_info' id={row.id} />)} title='Edit user' />
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete user' />
   </>]
 
@@ -31,7 +31,7 @@ export class List extends Component {
   return <>
    <ContentList key='cl' header='Users' thead={['ID','Alias','Name','']} trows={this.state.data} listItem={this.listItem}>
     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
-    <AddButton key='add' onClick={() => this.changeContent(<Info key={'user_new_' + rnd()} id='new' />)} title='Add user' />
+    <AddButton key='add' onClick={() => this.changeContent(<Info key='user_info' id='new' />)} title='Add user' />
    </ContentList>
    <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
   </>
@@ -47,6 +47,12 @@ export class Info extends Component {
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
+
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props){
+   post_call('api/master/user_info',{id:this.props.id}).then(result => this.setState(result))
+  }
+ }
 
  componentDidMount(){
   post_call('api/portal/theme_list').then(result => this.setState({themes:result.data}))
@@ -87,6 +93,6 @@ Info.contextType = RimsContext;
 //
 export class User extends Component {
  render() {
-  return <Flex key='u_flex' style={{justifyContent:'space-evenly'}}><Info id={this.props.id} /></Flex>
+  return <Flex key='flex' style={{justifyContent:'space-evenly'}}><Info key='user_info' id={this.props.id} /></Flex>
  }
 }

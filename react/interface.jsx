@@ -285,7 +285,7 @@ class LLDP extends Component {
  render(){
   if(this.state.data)
    return <ContentReport key='il_cr' header='Interface' thead={['Chassis','Type','Name','Port ID','Type','Description','SNMP Index','SNMP Name','Conn','Status']} trows={this.state.data} listItem={this.listItem}>
-   <BackButton key='il_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.props.device_id} />)} title='Back' />
+   <BackButton key='il_btn_back' onClick={() => this.props.changeSelf(<List key='interface_list' device_id={this.props.device_id} changeSelf={this.props.changeSelf} />)} title='Back' />
    </ContentReport>
   else
    return <Spinner />
