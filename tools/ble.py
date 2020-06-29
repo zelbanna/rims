@@ -49,7 +49,7 @@ while True:
   for k in dn:
    data.pop(k,None)
   try:
-   res = rest_call(f"{parsedinput.url}/internal/services/ble/report", aArgs = {'up':up,'down':dn}, aTimeout = 5, aHeader = {'X-Token':token})
+   res = rest_call(f"{parsedinput.url}/internal/services/ble/report", aArgs = {'up':up,'down':dn}, aTimeout = 5, aHeader = {'X-Token':token, 'X-Log':False})
   except Exception as e:
    print(f"REST Error: {e}")
  finally:
