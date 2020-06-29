@@ -30,7 +30,7 @@ data = {}
 
 while True:
  try:
-  discovered = service.discover(parsedinput.timeout)
+  discovered = service.discover(int(parsedinput.timeout))
  except Exception as e:
   print(f"BLE discovery exception {e}")
  else:
@@ -51,6 +51,6 @@ while True:
   try:
    res = rest_call(f"{parsedinput.url}/internal/services/ble/report", aArgs = {'up':up,'down':dn}, aTimeout = 5, aHeader = {'X-Token':token})
   except Exception as e:
-   print(f"BLE Error: {e}")
+   print(f"REST Error: {e}")
  finally:
-  sleep(parsedinput.sleep)
+  sleep(int(parsedinput.sleep))

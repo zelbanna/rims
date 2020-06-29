@@ -60,6 +60,7 @@ class Context():
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
   self.ipc = {}
+  self.cache = {}
   self.nodes = {}
   self.tokens = {}
   self.services = {}

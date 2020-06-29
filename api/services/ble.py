@@ -14,19 +14,29 @@ def report(aCTX, aArgs):
 
  Output:
  """
+ if not aArgs['up'] and not aArgs['down']:
+  return {'status':'OK'}
+
  def macToInt(aMAC):
   try:
    return int(aMAC.replace(':',''),16)
   except:
    return 0
  ret = {'status':'OK'}
- up = [macToInt(x) for x in aArgs.get('up',[])]
- dn = [macToInt(x) for x in aArgs.get('down',[])]
- print(up)
- print(dn)
+ up = [str(macToInt(x)) for x in aArgs['up']]
+ dn = [str(macToInt(x)) for x in aArgs['down']]
+ try:
+  data = aCTX.cache['ble']
+ except Exception:
+  data = aCTX.cache['ble'] = {}
+ finally:
+  for v in data.values():
+   v+=1
+  for k in aArgs['up']:
+   data[k] = 0
  with aCTX.db as db:
-  ret['up'] = db.execute(f"UPDATED interfaces SET state = 'up' WHERE mac IN ({','.join(up)})")
-  ret['down'] = db.execute(f"UPDATED interfaces SET state = 'down' WHERE mac IN ({','.join(dn)})")
+  ret['up'] = db.execute(f"UPDATE interfaces SET state = 'up' WHERE mac IN ({','.join(up)})") if up else 0
+  ret['down'] = db.execute(f"UPDATE interfaces SET state = 'down' WHERE mac IN ({','.join(dn)})") if dn else 0
  return ret
 
 #
@@ -40,7 +50,7 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
- return {'status':'OK' }
+ return {'data':aCTX.cache.get('ble',{}), 'status':'OK' }
 
 #
 def sync(aCTX, aArgs):
