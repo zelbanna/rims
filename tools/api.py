@@ -12,8 +12,9 @@ from rims.core.common import rest_call, RestException
 parser = ArgumentParser(prog='api', description = 'CLI API call program')
 parser.add_argument('api', metavar='module/function', help = 'API module/function')
 parser.add_argument('args', metavar='argument', help = 'API argument', nargs='?')
-parser.add_argument('-n','--node',    help = 'Node unless local (X-Route)', required = False)
-parser.add_argument('-c','--config',  help = 'Config unless config.json', default='../config.json')
+parser.add_argument('-u','--url',    help = 'URL', required = False, default='http://127.0.0.1:8080')
+parser.add_argument('-n','--node',   help = 'Node unless local (X-Route)', required = False)
+parser.add_argument('-c','--config', help = 'Config unless config.json', default='../config.json')
 parsedinput = parser.parse_args()
 timestamp = int(time())
 try:
@@ -29,7 +30,7 @@ except:
 started=f"Executing:{parsedinput.api}({args})"
 print(started)
 try:
- res = rest_call(f"http://127.0.0.1:8080/internal/{parsedinput.api}", aArgs = args, aTimeout = 300, aDataOnly = False, aVerify = True, aHeader = header)
+ res = rest_call(f"{parsedinput.url}/internal/{parsedinput.api}", aArgs = args, aTimeout = 300, aDataOnly = False, aVerify = True, aHeader = header)
 except RestException as e:
  output = e.info
 except Exception as e:

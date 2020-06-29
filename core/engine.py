@@ -730,7 +730,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   output['node'] = self._ctx.node
   self._body = dumps(output).encode('utf-8')
 
-############################################## Workers ##############################################
+########################################### Servers/Workers ###########################################
 #
 class QueueWorker(Thread):
 
@@ -810,7 +810,8 @@ class SocketServer(Thread):
 #
 #
 class PersistentServer(Thread):
-
+ """Persistent server thread for continuous processes"""
+ 
  def __init__(self, aContext, aAbort, aName, aRunObject, aArgs):
   Thread.__init__(self)
   self.name = f"PersistentServer({aName})"
@@ -827,7 +828,7 @@ class PersistentServer(Thread):
  def run(self):
   abort = self._abort
   server= self._server
-  yield
+  sleep(5)
   while not abort.is_set():
    try:
     server.process()

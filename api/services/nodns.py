@@ -1,4 +1,4 @@
-"""NoDNS API module. Backend in case no nameserver is available, only on master node, records can be exported :-)"""
+"""NoDNS API module. Backend in case no nameserver is available, only on DB node, records can be exported :-)"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "NAMESERVER"
