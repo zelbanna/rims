@@ -3,7 +3,11 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 from ipaddress import ip_address, ip_network
+from subprocess import run, DEVNULL
 
+def __detect_state(aIP):
+ """ Ping 'IP' once to detect presence """
+ return run(['ping','-c','1','-w','1',aIP], stdout=DEVNULL).returncode == 0
 ##################################### Networks ####################################
 #
 #
@@ -116,10 +120,8 @@ def network_discover(aCTX, aArgs):
  Output:
   - addresses. list of ip:s (objects) that answer to ping
  """
- from os import system
-
  def __detect_thread(aIP,aIPs):
-  if system("ping -c 2 -w 2 %s > /dev/null 2>&1"%aIP) == 0:
+  if __detect_state(aIP) or __detect_state(aIP):
    aIPs.append(str(aIP))
   return True
 
@@ -491,13 +493,13 @@ def process(aCTX, aArgs):
  Output:
  """
  ret = {'status':'OK','function':'ipam_process'}
- from os import system
+
  report = aCTX.node_function('master','ipam','report', aHeader= {'X-Log':'false'})
 
  def __check_ip(aDev):
   aDev['old'] = aDev['state']
   try:
-   aDev['state'] = 'up' if not (system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip'])) and system("ping -c 1 -w 1 %s > /dev/null 2>&1"%(aDev['ip']))) else 'down'
+   aDev['state'] = 'up' if __detect_state(aDev['ip']) or __detect_state(aDev['ip']) else 'down'
   except:
    aDev['state'] = 'unknown'
   return True

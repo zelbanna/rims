@@ -58,8 +58,9 @@ def macToInt(aMAC):
   return 0
 
 def ping_os(aIP):
- from os import system
- return not system(f'ping -c 1 -w 1 {aIP} > /dev/null 2>&1')
+ from subprocess import run, DEVNULL
+ res = run(['ping','-c','1','-w','1',aIP], stdout=DEVNULL)
+ return res.returncode == 0
 
 def external_ip():
  from dns import resolver

@@ -20,16 +20,24 @@ def report(aCTX, aArgs):
  except Exception:
   cache = aCTX.cache['ble'] = {}
  finally:
+  up = []
+  dn = []
   for k in cache.keys():
-   cache[k] +=1
-  if aArgs['up'] or aArgs['down']:
-   up = [str(int(x.replace(':',''),16)) for x in aArgs['up']]
-   dn = [str(int(x.replace(':',''),16)) for x in aArgs['down']]
-   for k in aArgs['up']:
+   if aArgs['devices'].pop(k,False):
     cache[k] = 0
+   elif cache[k] < 5:
+    cache[k] += 1
+   else:
+    dn.append(k)
+  for k in aArgs['devices'].keys():
+   cache[k] = 0
+   up.append(k)
+  for k in dn:
+   cache.pop(k,None)
+  if up or dn:
    with aCTX.db as db:
-    ret['up'] = db.execute(f"UPDATE interfaces SET state = 'up' WHERE mac IN ({','.join(up)})") if up else 0
-    ret['down'] = db.execute(f"UPDATE interfaces SET state = 'down' WHERE mac IN ({','.join(dn)})") if dn else 0
+    ret['up'] = db.execute(f"UPDATE interfaces SET state = 'up' WHERE mac IN ({','.join(str(int(k.replace(':',''),16)) for k in up)})") if up else 0
+    ret['down'] = db.execute(f"UPDATE interfaces SET state = 'down' WHERE mac IN ({','.join(str(int(k.replace(':',''),16)) for k in dn)})") if dn else 0
  return ret
 
 #
