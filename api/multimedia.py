@@ -273,7 +273,7 @@ def process(aCTX, aArgs):
  Output:
  """
  from time import time
- from subprocess import check_call, call
+ from subprocess import check_call, call, run, DEVNULL
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  data = {'prefix':filename[:-4],'suffix':filename[-3:],'rename':False}
  ret = {'status':'NOT_OK','info':None,'data':data,'seconds':int(time())}
@@ -309,13 +309,12 @@ def process(aCTX, aArgs):
     data['changes']['audio'] = "--atracks " + ",".join(map(str,probe['audio']['add']))
 
    if data['rename'] or probe['video']['set_default'] or probe['audio']['add_aac'] or data['changes']['subtitle'] or data['changes']['audio'] or srt['code']:
-    FNULL = open(devnull, 'w')
 
     if data['rename']:
-     call(['mkvpropedit', '--set', "title=" + info['info'], dest], stdout=FNULL, stderr=FNULL)
+     run(['mkvpropedit', '--set', "title=" + info['info'], dest], stdout=DEVNULL, stderr=DEVNULL)
 
     if probe['video']['set_default']:
-     call(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', dest], stdout=FNULL, stderr=FNULL)
+     run(['mkvpropedit', '--edit', 'track:v1', '--set', 'language=eng', dest], stdout=DEVNULL, stderr=DEVNULL)
 
     if probe['audio']['add_aac'] or data['changes']['audio'] or data['changes']['subtitle'] or srt['code']:
      from tempfile import mkdtemp
@@ -326,30 +325,29 @@ def process(aCTX, aArgs):
      tempdir = mkdtemp(suffix = "",prefix = 'aac.',dir = tempd)
 
      if probe['audio']['add_aac']:
-      check_call(['avconv', '-i', tmpfile ,'-vn', '-acodec', 'pcm_s16le', '-ac', '2', tempdir + '/audiofile.wav'], stdout=FNULL, stderr=FNULL)
-      check_call(['normalize-audio', tempdir + '/audiofile.wav'], stdout=FNULL, stderr=FNULL)
-      check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=FNULL, stderr=FNULL)
+      check_call(['avconv', '-i', tmpfile ,'-vn', '-acodec', 'pcm_s16le', '-ac', '2', tempdir + '/audiofile.wav'], stdout=DEVNULL, stderr=DEVNULL)
+      check_call(['normalize-audio', tempdir + '/audiofile.wav'], stdout=DEVNULL, stderr=DEVNULL)
+      check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=DEVNULL, stderr=DEVNULL)
       data['changes']['aac'] = "--language 0:{} --default-track 0 {}/audiofile.aac".format(probe['video']['language'], tempdir)
 
-     call(["mkvmerge -o '{}' {} {} '{}' {} {}".format(dest,data['changes']['subtitle'],data['changes']['audio'],tmpfile, data['changes']['aac'], data['changes']['srt'])], stdout=FNULL, stderr=FNULL, shell=True)
-     call(['rm','-fR',tempdir])
+     run([f"mkvmerge -o '{dest}' {data['changes']['subtitle']} {data['changes']['audio']} '{tmpfile}' {data['changes']['aac']} {data['changes']['srt']}"], stdout=DEVNULL, stderr=DEVNULL, shell=True)
+     run(['rm','-fR',tempdir],stdout=DEVNULL, stderr=DEVNULL)
      remove(tmpfile)
 
     if srt['code']: rename(srtfile,srtfile + "ed")
 
   elif data['suffix'] == 'mp4' and data['rename'] and (srt['code'] or aArgs.get('modify')):
-   FNULL = open(devnull, 'w')
    if srt['code']:
     tmpfile = filename + ".process"
     rename(dest,tmpfile)
     chmod(srt['file'], 0o666)
     chmod(dest, 0o666)
-    call(['MP4Box -add {0}:hdlr=sbtl:lang={1}:name={2}:group=2:layer=-1:disable {3} -out {4}'.format( repr(srt['file']), srt['code'], srt['name'], repr(tmpfile), repr(dest))], shell=True, stdout=FNULL)
+    run([f"MP4Box -add {repr(srt['file'])}:hdlr=sbtl:lang={srt['code']}:name={srt['name']}:group=2:layer=-1:disable {repr(tmpfile)} -out {repr(dest)}"], shell=True, stdout=DEVNULL)
     rename(srt['file'],"%s.processed"%srt['file'])
     remove(tmpfile)
    if aArgs.get('modify'):
     if info['episode']:
-     call(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], dest], stdout=FNULL, stderr=FNULL)
+     run(['mp4tags', '-o', info['episode'], '-n', info['episode'][1:3], '-M', info['episode'][4:6], '-S', info['title'], '-m', info['info'], dest], stdout=DEVNULL, stderr=DEVNULL)
     else:
      ret['warn'] = "Movie modification not implemented"
 
@@ -378,7 +376,7 @@ def delay_set(aCTX, aArgs):
  Output:
  """
  from time import time
- from subprocess import Popen, PIPE, check_call
+ from subprocess import Popen, PIPE, run, DEVNULL
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  ret = {'status':'NOT_OK','timestamp':int(time())}
 
@@ -398,8 +396,8 @@ def delay_set(aCTX, aArgs):
     offset=slots[2][0:-1] + ":" + aArgs.get('offset',0)
     try:
      rename(absfile,tmpfile)
-     FNULL = open(devnull, 'w')
-     check_call(["mkvmerge -o "+ repr(absfile) + " -y " + offset + " " + repr(tmpfile)], stdout=FNULL, stderr=FNULL, shell=True)
+     res = run(["mkvmerge -o "+ repr(absfile) + " -y " + offset + " " + repr(tmpfile)], stdout=DEVNULL, stderr=DEVNULL, shell=True)
+     res.check_returncode()
      remove(tmpfile)
      chmod(absfile,0o666)
     except Exception as err:
