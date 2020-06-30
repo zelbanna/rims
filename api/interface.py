@@ -14,15 +14,21 @@ def list(aCTX, aArgs):
   - filter (optional), 'connected'
  Output:
  """
- ret = {'device_id':aArgs['device_id']}
+ ret = {}
 
  with aCTX.db as db:
-  sort = aArgs.get('sort','snmp_index')
-  flter = ['TRUE']
+  columns = ['di.interface_id', 'di.ipam_id', 'di.class', 'INET6_NTOA(ia.ip) AS ip', 'di.connection_id', 'LPAD(hex(di.mac),12,0) AS mac','di.state AS if_state', 'ia.state AS ip_state', 'di.snmp_index', 'di.name AS name', 'di.description']
+  tables = ['ipam_addresses AS ia ON di.ipam_id = ia.id']
+  if aArgs.get('device_id'):
+   flter = [f"device_id = {aArgs['device_id']}"]
+  else:
+   flter = ['TRUE']
+   columns.extend(['di.device_id','devices.hostname'])
+   tables.append('devices ON di.device_id = devices.id')
   if 'filter' in aArgs:
    if 'connected' in aArgs['filter']:
-    flter.append("di.connection_id IS NULL")
-  ret['count'] = db.query("SELECT interface_id, ipam_id, class, INET6_NTOA(ia.ip) AS ip, connection_id, LPAD(hex(mac),12,0) AS mac, di.state AS if_state, ia.state AS ip_state, snmp_index, di.name AS name, description FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE device_id = %s AND %s ORDER BY %s"%(ret['device_id']," AND ".join(flter),sort))
+    flter.append('di.connection_id IS NULL')
+  ret['count'] = db.query(f"SELECT {','.join(columns)} FROM interfaces AS di LEFT JOIN {' LEFT JOIN '.join(tables)} WHERE {' AND '.join(flter)} ORDER BY {aArgs.get('sort','snmp_index')}")
   ret['data'] = db.get_rows()
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])

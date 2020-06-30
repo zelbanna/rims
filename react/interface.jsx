@@ -53,6 +53,20 @@ export class List extends Component{
  }
 }
 
+// *************** Report ****************
+//
+export class Report extends Component {
+ componentDidMount(){
+  post_call('api/interface/list').then(result => this.setState(result))
+ }
+
+ listItem = (row) => [row.device_id,row.hostname,row.interface_id,row.class,row.ip,row.mac,row.name,row.description,<StateLeds key={'ir_'+row.id} state={[row.if_state,row.ip_state]} />]
+
+ render(){
+  return (!this.state) ? <Spinner /> : <ContentReport key='if_cr' header='Devices' thead={['Dev','Hostname','If','Class','IP','MAC','Name','Description','State']} trows={this.state.data} listItem={this.listItem} />
+ }
+}
+
 // *************** Info ****************
 //
 export class Info extends Component {
