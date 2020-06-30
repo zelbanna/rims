@@ -17,7 +17,7 @@ parser.add_argument('-c','--config', help = 'Config unless config.json', default
 parser.add_argument('-d','--device', help = 'Device', required = False, default='hci0')
 parser.add_argument('-u','--url',    help = 'RIMS URL', required = False, default='http://127.0.0.1:8080')
 parser.add_argument('-s','--sleep',  help = 'Sleeptime', required = False, default=40)
-parser.add_argument('-t','--timeout',  help = 'Sleeptime', required = False, default=40)
+parser.add_argument('-t','--timeout',  help = 'Sleeptime', required = False, default=20)
 args = parser.parse_args()
 print(f"Starting BLE discovery with: device:{args.device}, sleep:{args.sleep}, timeout:{args.timeout}, URL:{args.url}")
 try:
