@@ -73,6 +73,7 @@ case "$1" in
   rm -fR $PKGDIR/core/__pycache__
   rm -fR $PKGDIR/devices/__pycache__
   rm -fR $PKGDIR/tools/__pycache__
+  rm -fR $PKGDIR/servers/__pycache__
   clear;
   ;;
  install)

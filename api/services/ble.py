@@ -51,7 +51,7 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
- return {'data':aCTX.cache.get('ble',{}), 'status':'OK' }
+ return {'cache':aCTX.cache.get('ble',{}), 'status':'OK' }
 
 #
 def sync(aCTX, aArgs):
