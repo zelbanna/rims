@@ -273,7 +273,7 @@ def process(aCTX, aArgs):
  Output:
  """
  from time import time
- from subprocess import check_call, call, run, DEVNULL
+ from subprocess import run, DEVNULL
  filename = aArgs.get('filepath') if aArgs.get('filepath') else ospath.join(aArgs.get('path'),aArgs.get('file'))
  data = {'prefix':filename[:-4],'suffix':filename[-3:],'rename':False}
  ret = {'status':'NOT_OK','info':None,'data':data,'seconds':int(time())}
@@ -325,9 +325,12 @@ def process(aCTX, aArgs):
      tempdir = mkdtemp(suffix = "",prefix = 'aac.',dir = tempd)
 
      if probe['audio']['add_aac']:
-      check_call(['avconv', '-i', tmpfile ,'-vn', '-acodec', 'pcm_s16le', '-ac', '2', tempdir + '/audiofile.wav'], stdout=DEVNULL, stderr=DEVNULL)
-      check_call(['normalize-audio', tempdir + '/audiofile.wav'], stdout=DEVNULL, stderr=DEVNULL)
-      check_call(['faac', '-c', '48000', '-b', '160', '-q', '100', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=DEVNULL, stderr=DEVNULL)
+      res = run(['avconv', '-i', tmpfile ,'-vn', '-acodec', 'pcm_s16le', '-ac', '2', tempdir + '/audiofile.wav'], stdout=DEVNULL, stderr=DEVNULL)
+      res.check_returncode()
+      res = run(['normalize-audio', tempdir + '/audiofile.wav'], stdout=DEVNULL, stderr=DEVNULL)
+      res.check_returncode()
+      run(['faac', '-c', '48000', '-b', '160', '-q', '100', tempdir + '/audiofile.wav', '-o',tempdir + '/audiofile.aac'], stdout=DEVNULL, stderr=DEVNULL)
+      res.check_returncode()
       data['changes']['aac'] = "--language 0:{} --default-track 0 {}/audiofile.aac".format(probe['video']['language'], tempdir)
 
      run([f"mkvmerge -o '{dest}' {data['changes']['subtitle']} {data['changes']['audio']} '{tmpfile}' {data['changes']['aac']} {data['changes']['srt']}"], stdout=DEVNULL, stderr=DEVNULL, shell=True)
