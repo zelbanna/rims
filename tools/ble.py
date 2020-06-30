@@ -15,12 +15,11 @@ from rims.core.common import rest_call, RestException
 parser = ArgumentParser(prog='ble', description = 'BLE runtime program')
 parser.add_argument('-c','--config', help = 'Config unless config.json', default='../config.json')
 parser.add_argument('-d','--device', help = 'Device', required = False, default='hci0')
-parser.add_argument('-r','--report', help = 'Continuous reporting', required = False, action='store_true')
-parser.add_argument('-s','--sleep',  help = 'Sleeptime', required = False, default=40)
 parser.add_argument('-u','--url',    help = 'RIMS URL', required = False, default='http://127.0.0.1:8080')
-parser.add_argument('-x','--deadtime', help = 'Timeout before declaring dead', required = False, default=300)
+parser.add_argument('-s','--sleep',  help = 'Sleeptime', required = False, default=40)
+parser.add_argument('-t','--timeout',  help = 'Sleeptime', required = False, default=40)
 args = parser.parse_args()
-print(f"Starting BLE discovery with: device:{args.device}, report:{args.report}, sleep:{args.sleep}, timeout:{args.timeout}, deadtime: {args.deadtime}, URL:{args.url}")
+print(f"Starting BLE discovery with: device:{args.device}, sleep:{args.sleep}, timeout:{args.timeout}, URL:{args.url}")
 try:
  with open(ospath.abspath(ospath.join(ospath.dirname(__file__), args.config))) as f:
   token = load(f).get('token',None)
