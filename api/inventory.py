@@ -66,7 +66,8 @@ def info(aCTX, aArgs):
   - support_end_date (optional). Date
   - description    (optional)
   - purchase_order (optional)
-  - location text  (optional)
+  - location (optional)
+  - comments (optional)
 
  Output:
  """
@@ -98,7 +99,7 @@ def info(aCTX, aArgs):
     ret['data'][tp] = (ret['data'][tp] == 1)
   else:
    ret['found'] = True
-   ret['data'] = {'id':'new','vendor':'','serial':'','model':'','license':False,'license_key':'','support_contract':False,'support_end_date':'','description':'N/A','purchase_order':'','location_id':None,'receive_date':'','product':''}
+   ret['data'] = {'id':'new','vendor':'','serial':'','model':'','license':False,'license_key':'','support_contract':False,'support_end_date':'','description':'N/A','purchase_order':'','location_id':None,'receive_date':'','product':'','comments':''}
   db.query("SELECT id,name FROM locations")
   ret['locations'] = db.get_rows()
  return ret

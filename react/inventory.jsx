@@ -136,7 +136,7 @@ export class Info extends Component {
       <TextInput key='comments' id='comments' value={data.comments} onChange={this.onChange} />
      </InfoColumns>
      <ReloadButton key='inv_btn_reload' onClick={() => this.componentDidMount() } />
-     <SaveButton key='inv_btn_save' onClick={() => this.updateInfo()} title='Save' />
+     {data.serial && <SaveButton key='inv_btn_save' onClick={() => this.updateInfo()} title='Save' />}
     </InfoArticle>
   } else
    return <Spinner />
