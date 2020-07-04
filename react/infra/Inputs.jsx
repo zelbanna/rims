@@ -74,7 +74,7 @@ export class SearchInput extends PureComponent{
  }
 
  render(){
-  return <input type='text' className={styles.searchfield} onChange={(e) => this.setState({text:e.target.value})} value={this.state.text} placeholder={this.props.placeholder} autoFocus />
+  return <input type='search' results='5' className={styles.searchfield} onChange={(e) => this.setState({text:e.target.value})} value={this.state.text} placeholder={this.props.placeholder} autoFocus />
  }
 }
 
