@@ -161,7 +161,7 @@ class RecordList extends Component {
 
  changeContent = (elem) => this.props.changeSelf(elem);
 
- listItem = (row,idx) => [row.name,row.content,row.type,row.ttl,<>
+ listItem = (row) => [row.name,row.content,row.type,row.ttl,<>
    <ConfigureButton key='info' onClick={() => this.changeContent(<RecordInfo key='record_info' domain_id={this.props.domain_id} op='info' {...row} />)} title='Configure record' />
    {['A','AAAA','CNAME','PTR'].includes(row.type) && <DeleteButton key='del' onClick={() => this.deleteList(row.name,row.type)} title='Delete record' />}
   </>]
@@ -172,7 +172,8 @@ class RecordList extends Component {
   const status = this.state.status;
   if (status)
    if (status === 'OK'){
-    return <ContentReport key='rl_cr' header='Records' thead={['Name','Content','Type','TTL','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
+    const data = this.state.data;
+    return <ContentReport key='rl_cr' header='Records' thead={['Name','Content','Type','TTL','']} trows={data} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
      <AddButton key='add' onClick={() => this.changeContent(<RecordInfo key='record_info' domain_id={this.props.domain_id} name='new' op='new' />)} title='Add DNS record' />
     </ContentReport>
