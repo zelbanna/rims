@@ -1,8 +1,9 @@
+
 import React, { Component, Fragment } from 'react'
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Result, Spinner, StateLeds, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
-import { StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
+import { SearchInput, StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
 import { NavBar, NavInfo, NavButton } from './infra/Navigation.jsx';
 
 import { Info as DeviceInfo, Logs as DeviceLogs } from './device.jsx';
@@ -98,7 +99,7 @@ Manage.contextType = RimsContext;
 export class Inventory extends Component{
  constructor(props){
   super(props)
-  this.state = {sort:'name'}
+  this.state = {sort:'name', searchfield:''}
  }
 
  componentDidMount(){
@@ -106,10 +107,11 @@ export class Inventory extends Component{
  }
 
  sortList = (method) => {
+  const data = this.state.data;
   if (method === 'name')
-   this.state.data.sort((a,b) => a.name.localeCompare(b.name));
+   data.sort((a,b) => a.name.localeCompare(b.name));
   else
-   this.state.data.sort((a,b) => (a.id - b.id))
+   data.sort((a,b) => (a.id - b.id))
   this.setState({sort:method})
  }
 
@@ -117,12 +119,15 @@ export class Inventory extends Component{
 
  render(){
   if (this.state.data){
+   const searchfield = this.state.searchfield;
+   const data = (searchfield.length === 0) ? this.state.data : this.state.data.filter(row => (row.name.toLowerCase().includes(searchfield)));
    const thead = [<HeaderButton key='id' text='ID' highlight={(this.state.sort === 'id')} onClick={() => this.sortList('id')} />,<HeaderButton key='vm' text='VM' highlight={(this.state.sort === 'name')} onClick={() => this.sortList('name')} />,'Operations'];
    return <>
-    <ContentList key='cl' header='Inventory' thead={thead} trows={this.state.data} listItem={this.listItem}>
+    <ContentList key='cl' header='Inventory' thead={thead} trows={data} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
      <LogButton key='logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
      <SyncButton key='sync' onClick={() => this.changeContent(<Sync key='vm_sync' device_id={this.props.device_id}/>)} title='Map VMs' />
+     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory' />
     </ContentList>
     <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
