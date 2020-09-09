@@ -252,14 +252,11 @@ def file_list(aCTX, aArgs):
  from os import path as ospath, listdir
  ret = {'files':[]}
  try:
-  if 'fullpath' in aArgs:
-   directory = aArgs['fullpath']
-  elif 'directory' in aArgs:
+  if 'directory' in aArgs:
    ret['path'] = 'files/%s'%aArgs['directory']
    directory = aCTX.config['files'][aArgs['directory']]
-  else:
-   ret['path'] = 'images'
-   directory = 'public/images'
+  elif 'fullpath' in aArgs:
+   directory = aArgs['fullpath']
   for file in listdir(ospath.abspath(directory)):
    ret['files'].append(file)
  except Exception as e:
