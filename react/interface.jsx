@@ -32,7 +32,7 @@ export class List extends Component{
    <>
     <StateLeds key='state' state={[row.if_state,row.ip_state]} />
     <InfoButton key='info' onClick={() => this.changeContent(<Info key={row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
-    {row.snmp_index && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} name={row.name} />)} title='Interface stats' />}
+    {row.snmp_index > 0 && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} name={row.name} />)} title='Interface stats' />}
     <DeleteButton key='del' onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
     {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key='link' onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='connect_device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
    </>]
