@@ -3,7 +3,7 @@ import { post_call } from './infra/Functions.js';
 import { Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { SelectInput, TextLine, UrlInput } from './infra/Inputs.jsx';
-import { AddButton, CheckButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SyncButton, SearchButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, CheckButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SyncButton, SearchButton, StartButton, StopButton, UiButton } from './infra/Buttons.jsx';
 
 // ************** List **************
 //
@@ -50,7 +50,7 @@ export class List extends Component {
 class Info extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, found:true, content:null};
+  this.state = {data:null, found:true};
  }
 
  changeContent = (elem) => this.setState({content:elem})
@@ -66,7 +66,7 @@ class Info extends Component {
     result.data.node = result.nodes[0];
    if (!result.data.type_id)
     result.data.type_id = result.services[0].id;
-   this.setState(result);
+   this.setState({...result, content:null});
    })
  }
 
@@ -91,8 +91,10 @@ class Info extends Component {
      <SaveButton key='save' onClick={() => this.updateInfo()} title='Save' />
      {old && <SyncButton key='sync' onClick={() => this.changeContent(<Operation key='srv_op_sync' id={id} operation='sync' />)} title='Sync service' />}
      {old && <ReloadButton key='restart' onClick={() => this.changeContent(<Operation key='srv_op_rst'  id={id} operation='restart' />)} title='Restart service' />}
-     {old && <SearchButton key='status' onClick={() => this.changeContent(<Operation key='srv_op_stat' id={id} operation='status' />)} title='Service status' />}
      {old && <CheckButton key='params' onClick={() => this.changeContent(<Operation key='srv_op_params' id={id} operation='parameters' />)} title='Service parameters' />}
+     {old && <SearchButton key='status' onClick={() => this.changeContent(<Operation key='srv_op_stat' id={id} operation='status' />)} title='Service status' />}
+     {old && <StartButton key='start' onClick={() => this.changeContent(<Operation key='srv_op_start' id={id} operation='start' />)} title='Start service' />}
+     {old && <StopButton key='stop' onClick={() => this.changeContent(<Operation key='srv_op_stop' id={id} operation='stop' />)} title='Stop service' />}
     </InfoArticle>
     <NavBar key='server_navigation' id='server_navigation' />
     {this.state.content}

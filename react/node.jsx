@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import { post_call } from './infra/Functions.js';
-import {Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData } from './infra/UI.jsx';
+import {Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar } from './infra/Navigation.jsx';
 import { TextInput, UrlInput } from './infra/Inputs.jsx';
-import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButton, SearchButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, InfoButton, LogButton, ReloadButton, SaveButton, SearchButton, TimeButton } from './infra/Buttons.jsx';
 
 // ************** List **************
 //
@@ -53,7 +53,7 @@ class Info extends Component {
  }
 
  componentDidMount(){
-  post_call('api/master/node_info',{id:this.props.id}).then(result => this.setState(result))
+  post_call('api/master/node_info',{id:this.props.id}).then(result => this.setState({...result, content:null}))
  }
 
  searchInfo = () => post_call('api/device/search',{node:this.state.data.node}).then(result => result.found && this.setState({data:{...this.state.data, hostname:result.data.hostname, device_id:result.data.id}}))
@@ -81,6 +81,7 @@ class Info extends Component {
      {old && !this.state.data.hostname && <SearchButton key='search' onClick={this.searchInfo} title='Try to map node to device' />}
      {old && <ReloadButton key='reload' onClick={() => this.changeContent(<Reload key={'node_reload_'+id} node={this.state.data.node} />)} />}
      {old && <LogButton key='logs' onClick={() => this.changeContent(<LogShow key={'node_logs_'+id} node={this.state.data.node} />)} title='View node logs' />}
+     {old && <TimeButton key='tasks' onClick={() => this.changeContent(<TaskShow key={'node_tasks_'+id} node={this.state.data.node} />)} title='View node tasks' />}
      {old && <DeleteButton key='logc' onClick={() => this.changeContent(<LogClear key={'node_logc_'+id} node={this.state.data.node} />)} title='Clear logs' />}
     </InfoArticle>
     <NavBar key='node_navigation' id='node_navigation' />
@@ -132,7 +133,6 @@ export class LogShow extends Component {
  componentDidMount(){
   post_call('api/system/logs_get',{},{'X-Route':this.props.node}).then(result => {
    const args = (result) ? {logs:result} : {error:true}
-   console.log(args);
    this.setState(args);
   })
  }
@@ -142,6 +142,33 @@ export class LogShow extends Component {
    return <div>{Object.entries(this.state.logs).map((log,idx) => <CodeArticle key={idx} header={log[0]}>{log[1].join('\n')}</CodeArticle>)}</div>
   else if (this.state.error)
    return <CodeArticle>error retrieving logs (check REST call)</CodeArticle>
+  else
+   return <Spinner />
+ }
+}
+
+// *************** TaskShow ***************
+//
+export class TaskShow extends Component {
+ constructor(props){
+  super(props)
+  this.state = {}
+ }
+
+ componentDidMount(){
+  post_call('api/system/task_list',{},{'X-Route':this.props.node}).then(result => {
+   const args = (result) ? {tasks:result} : {error:true}
+   this.setState(args);
+  })
+ }
+
+ listItem = (row) => [row.module, row.function, row.frequency, JSON.stringify(row.output), JSON.stringify(row.args)]
+
+ render(){
+  if (this.state.tasks)
+   return <ContentReport key='cr_task_show' header='Tasks' thead={['Module','Function','Frequency','Output','Arguments']} trows={this.state.tasks.data} listItem={this.listItem} />
+  else if (this.state.error)
+   return <CodeArticle>error retrieving tasks (check REST call)</CodeArticle>
   else
    return <Spinner />
  }

@@ -247,3 +247,27 @@ def parameters(aCTX, aArgs):
  settings = aCTX.config.get('nodns',{})
  params = ['file']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
+
+#
+#
+def start(aCTX, aArgs):
+ """ Function provides start behavior
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}
+
+#
+#
+def stop(aCTX, aArgs):
+ """ Function provides stop behavior
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}

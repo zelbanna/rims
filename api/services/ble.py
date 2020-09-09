@@ -1,4 +1,4 @@
-"""BLE API module. Paired with a BLE reporter it Implements an interface to monitor bluetooth. Must be runnning on a DB node"""
+"""BLE API module. Paired with a BLE reporter it implements an interface to monitor bluetooth. Must be runnning on a DB node"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "BLUETOOTH"
@@ -95,3 +95,28 @@ def parameters(aCTX, aArgs):
  settings = aCTX.config.get('ble',{})
  params = []
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
+
+
+#
+#
+def start(aCTX, aArgs):
+ """ Function provides start behavior
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}
+
+#
+#
+def stop(aCTX, aArgs):
+ """ Function provides stop behavior
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}

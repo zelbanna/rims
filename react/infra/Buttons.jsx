@@ -43,6 +43,7 @@ export const StartButton = (props) => <button id={props.id} className={styles.in
 export const StopButton = (props) => <button id={props.id} className={styles.info} style={{backgroundColor:'#CB2026'}} onClick={props.onClick} title={props.title}><i className='fas fa-stop' /></button>;
 export const SyncButton = (props) => info_template('fas fa-exchange-alt',props);
 export const TermButton = (props) => info_template('fas fa-terminal',props);
+export const TimeButton = (props) => info_template('fas fa-clock',props);
 export const UiButton = (props) => info_template('fas fa-globe-americas',props);
 export const UnlinkButton = (props) => info_template('fas fa-unlink',props);
 export const ViewButton = (props) => info_template('fas fa-search-plus',props);

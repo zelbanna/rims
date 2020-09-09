@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import { post_call } from './infra/Functions.js';
-import { RimsContext, Title, Spinner, Article, CodeArticle, LineArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
-import { StartButton, StopButton, HrefButton } from './infra/Buttons.jsx';
+import { RimsContext, Title, Spinner, Article, CodeArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
+import { HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton, NavInfo, NavReload } from './infra/Navigation.jsx';
-import { TextLine } from './infra/Inputs.jsx'
 
 import styles from './infra/ui.module.css';
 
@@ -12,7 +11,7 @@ import styles from './infra/ui.module.css';
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = {navinfo:[], navitems:[], logs:[], services:[] }
+  this.state = {navinfo:[], navitems:[], logs:[] }
  }
 
  componentDidMount(){
@@ -47,7 +46,6 @@ export class Main extends Component {
    </NavDropDown>
    <NavButton key='sys_nav_logs' title='Logs' onClick={() => this.changeImport('node','LogShow',{node:this.context.settings.node})} />
    {admin && <NavButton key='sys_nav_rest' title='REST' onClick={() => this.changeContent(<RestList key='rest_list' />)} />}
-   {admin && this.state.services.length > 0 && <NavDropDown key='sys_nav_svcs' title='Services'>{this.state.services.map((row,idx) => <NavDropButton key={'sys_nav_svcs_'+idx} title={row.name} onClick={() => this.changeContent(<ServiceInfo key={row.name} {...row} /> )} />)}</NavDropDown>}
    <NavReload key='sys_nav_reload' onClick={() => this.changeContent(null)} />
    {this.state.navinfo.map((row,idx) => <NavInfo key={'sys_nav_ni_'+idx} title={row} />)}
   </NavBar>)
@@ -232,38 +230,5 @@ export class FileList extends Component {
 
  render() {
   return (!this.state.files) ? <Spinner /> : <ContentReport header={this.state.mode} thead={[]} trows={this.state.files} listItem={this.listItem} />
- }
-}
-
-// ************** Service Info **************
-//
-class ServiceInfo extends Component {
- constructor(props){
-  super(props)
-  this.state = {state:'inactive'}
- }
-
- componentDidMount(){
-  this.updateService({})
- }
-
- updateService(args){
-  // Always do a reset (so do a spinner)
-  this.setState({spinner:<Spinner />})
-  post_call('api/system/service_info',{service:this.props.service,...args}).then(result => {
-   if (result.status === 'OK')
-    this.setState({...result,spinner:null})
-   else
-    window.alert('Error retrieving service state:' + result.info);
-  })
- }
-
- render() {
-  const inactive = (this.state.state === 'inactive');
-  const Elem = (inactive) ? StartButton : StopButton;
-  return <LineArticle key='svc_art'>
-    <TextLine key='service_line' id='service' label={this.props.name} text={this.state.state + ' (' +this.state.extra +')'} /><Elem key={'state_change'} onClick={() => this.updateService({op:(inactive) ? 'start' : 'stop'})} title='Operate service' />
-    {this.state.spinner}
-   </LineArticle>
  }
 }

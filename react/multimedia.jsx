@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { post_call, rnd } from './infra/Functions.js';
+import { post_call } from './infra/Functions.js';
 import { RimsContext, Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextLine,TextInput } from './infra/Inputs.jsx';
 import { NavBar, NavInfo } from './infra/Navigation.jsx';
@@ -11,10 +11,11 @@ export class Main extends Component {
  constructor(props){
   super(props)
   this.state = {ip:undefined}
+  this.node = (this.props.node) ? this.props.node : this.context.settings.node;
  }
 
  componentDidMount(){
-  post_call('api/system/external_ip').then(result => {
+  post_call('api/system/external_ip', {}, {'X-Route':this.node}).then(result => {
    Object.assign(this.state,{ip:(result && result.status === 'OK') ? result.ip : '0.0.0.0'})
    this.compileNavItems()
   })
@@ -23,23 +24,24 @@ export class Main extends Component {
 
  componentDidUpdate(prevProps){
   if(prevProps !== this.props)
+   this.node = (this.props.node) ? this.props.node : this.context.settings.node;
    this.compileNavItems()
  }
 
  compileNavItems = () => this.context.loadNavigation(<NavBar key='multimedia_navbar'><NavInfo key='mm_nav_ip' title={this.state.ip} /></NavBar>)
 
- reloadList = () => post_call('api/multimedia/list').then(result => this.setState(result));
+ reloadList = () => post_call('api/multimedia/list', {}, {'X-Route':this.node}).then(result => this.setState(result));
 
- deleteList = (obj) => (window.confirm('Delete file '+obj.file+'?') && post_call('api/multimedia/delete',obj).then(result => {
+ deleteList = (obj) => (window.confirm('Delete file '+obj.file+'?') && post_call('api/multimedia/delete',obj, {'X-Route':this.node}).then(result => {
   if (result.deleted){
    this.setState({data:this.state.data.filter(row => (!(row.path === obj.path && row.file === obj.file)))});
    this.changeContent(null);
   }}))
 
  listItem = (row,idx) => [row.file,<>
-   <InfoButton key='info' onClick={() => this.changeContent(<Title key={'multimedia_title_'+idx} path={row.path} file={row.file} />)} title='Title info' />
-   <SearchButton key='lookup' onClick={() => this.changeContent(<Lookup key={'multimedia_lookup_'+idx} path={row.path} file={row.file} />)} title='Lookup info' />
-   <DocButton key='subs' onClick={() => this.changeContent(<Subtitles key={'multimedia_subs_'+idx} path={row.path} file={row.file} />)} title='Subtitles' />
+   <InfoButton key='info' onClick={() => this.changeContent(<Title key={'multimedia_title_'+idx} path={row.path} file={row.file} node={this.node} />)} title='Title info' />
+   <SearchButton key='lookup' onClick={() => this.changeContent(<Lookup key={'multimedia_lookup_'+idx} path={row.path} file={row.file} node={this.node} />)} title='Lookup info' />
+   <DocButton key='subs' onClick={() => this.changeContent(<Subtitles key={'multimedia_subs_'+idx} path={row.path} file={row.file} node={this.node} />)} title='Subtitles' />
    <DeleteButton key='del' onClick={() => this.deleteList(row)} title='Delete file' />
   </>]
 
@@ -48,7 +50,7 @@ export class Main extends Component {
    return <>
     <ContentList key='cl' header='Media files' thead={['File','']} trows={this.state.data} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='reload' onClick={() => this.reloadList()} />
-     <DeleteButton key='cleanup' onClick={() => (window.confirm('Really clean up files?') && this.changeContent(<Cleanup key={'multimedia_cleanup_'+rnd()} />))} title='Cleanup multimedia directory' />
+     <DeleteButton key='cleanup' onClick={() => (window.confirm('Really clean up files?') && this.changeContent(<Cleanup key='multimedia_cleanup' node={this.node} />))} title='Cleanup multimedia directory' />
     </ContentList>
     <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>
@@ -67,22 +69,22 @@ class Title extends Component {
  }
 
  componentDidMount(){
-  post_call('api/multimedia/check_title',{path:this.props.path,file:this.props.file}).then(result => this.setState(result));
+  post_call('api/multimedia/check_title',{path:this.props.path,file:this.props.file}, {'X-Route':this.props.node}).then(result => this.setState(result));
  }
 
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  threadChange = (e) => this.setState({[e.target.name]:e.target.checked});
 
- updateInfo = () => post_call('api/multimedia/check_titlt',{op:'update', ...this.state.data}).then(result => this.setState(result))
+ updateInfo = () => post_call('api/multimedia/check_title',{op:'update', ...this.state.data}, {'X-Route':this.props.node}).then(result => this.setState(result))
 
  transferFile = () => {
   if (window.confirm('Transfer file to repository?')){
    if(this.state.thread)
-    post_call('api/system/worker',{module:'multimedia',function:'transfer',output:true,args:{path:this.props.path,file:this.props.file}}).then(result => this.setState({op:'transfer',result:result}));
+    post_call('api/system/worker',{module:'multimedia',function:'transfer',output:true,args:{path:this.props.path,file:this.props.file}}, {'X-Route':this.props.node}).then(result => this.setState({op:'transfer',result:result}));
    else {
     this.setState({wait:<Spinner />})
-    post_call('api/multimedia/transfer',{path:this.props.path,file:this.props.file}).then(result => this.setState({op:'transfer',result:result,wait:null}));
+    post_call('api/multimedia/transfer',{path:this.props.path,file:this.props.file}, {'X-Route':this.props.node}).then(result => this.setState({op:'transfer',result:result,wait:null}));
    }
   }
  }
@@ -90,10 +92,10 @@ class Title extends Component {
  processFile = () => {
   if (window.confirm('Process file?')){
    if(this.state.thread)
-    post_call('api/system/worker',{module:'multimedia',function:'process',output:true,args:{path:this.props.path,file:this.props.file,...this.state.data}}).then(result => this.setState({op:'process',result:result}));
+    post_call('api/system/worker',{module:'multimedia',function:'process',output:true,args:{path:this.props.path,file:this.props.file,...this.state.data}}, {'X-Route':this.props.node}).then(result => this.setState({op:'process',result:result}));
    else {
     this.setState({wait:<Spinner />})
-    post_call('api/multimedia/process',{path:this.props.path,file:this.props.file,...this.state.data}).then(result => this.setState({op:'process',result:result,wait:null}));
+    post_call('api/multimedia/process',{path:this.props.path,file:this.props.file,...this.state.data}, {'X-Route':this.props.node}).then(result => this.setState({op:'process',result:result,wait:null}));
    }
   }
  }
@@ -155,7 +157,7 @@ class Lookup extends Component {
  }
 
  componentDidMount(){
-  post_call('api/multimedia/check_content',{path:this.props.path,file:this.props.file}).then(result => this.setState(result));
+  post_call('api/multimedia/check_content',{path:this.props.path,file:this.props.file}, {'X-Route':this.props.node}).then(result => this.setState(result));
  }
 
  render(){
@@ -190,7 +192,7 @@ class Subtitles extends Component {
  }
 
  componentDidMount(){
-  post_call('api/multimedia/check_srt',{path:this.props.path,file:this.props.file}).then(result => this.setState(result));
+  post_call('api/multimedia/check_srt',{path:this.props.path,file:this.props.file}, {'X-Route':this.props.node}).then(result => this.setState(result));
  }
 
  render(){
@@ -217,8 +219,13 @@ class Cleanup extends Component {
   this.state = {}
  }
 
+ componentDidUpdate(prevProps){
+  if(prevProps !== this.props)
+   this.componentDidMount();
+ }
+
  componentDidMount(){
-  post_call('api/multimedia/cleanup').then(result => this.setState(result));
+  post_call('api/multimedia/cleanup', {}, {'X-Route':this.props.node}).then(result => this.setState(result));
  }
 
  render(){

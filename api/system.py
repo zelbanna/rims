@@ -184,62 +184,6 @@ def rest_information(aCTX, aArgs):
  except:
   return {'status':'NOT_OK','info':'api and function arguments required'}
 
-############################### Services ################################
-#
-#
-def service_list(aCTX, aArgs):
- """Function service_list returns externally configured, non-RIMS services
-
- Args:
-
- Output:
- """
- return {'services':[{'name':x,'service':aCTX.config['services'][x]} for x in list(aCTX.config.get('services',{}).keys())]}
-
-#
-#
-def service_info(aCTX, aArgs):
- """Function docstring for service_info. TBD
-
- Args:
-  - service  (required)
-  - op (optional): 'start','stop'
-
- Output:
-  - status
-  - state
-  - code (operation return code)
- """
- from subprocess import check_output, CalledProcessError
- ret = {'state':None,'status':'OK'}
- if 'op' in aArgs:
-  from time import sleep as time_sleep
-  try:
-   command = "sudo /etc/init.d/%(service)s %(op)s"%aArgs
-   ret['result'] = check_output(command.split()).decode().strip()
-  except CalledProcessError as c:
-   ret['info'] = c.output.strip()
-   ret['status'] = 'NOT_OK'
-  else:
-   time_sleep(2)
-
- try:
-  command = "sudo /etc/init.d/%(service)s status"%aArgs
-  output = check_output(command.split())
-  ret['code'] = 0
- except CalledProcessError as c:
-  output = c.output
-  ret['code'] = c.returncode
-
- for line in output.decode().split('\n'):
-  line = line.lstrip()
-  if (line.lstrip())[0:7] == 'Active:':
-   state = line[7:].split()
-   ret['state'] = state[0]
-   ret['extra'] = state[1][1:-1]
-   break
- return ret
-
 ####################################### Logs #######################################
 #
 #
@@ -385,19 +329,30 @@ def worker(aCTX, aArgs):
  else:
   return {'status':'NOT_OK'}
 
+#
+#
+def task_list(aCTX, aArgs):
+ """ Function returns active task list
+
+ Args:
+
+ Output:
+  - data. List of tasks
+ """
+ return {'data':aCTX.config.get('tasks',[])}
+
 ############################## Site ###########################
 #
 #
 def inventory(aCTX, aArgs):
- """Function takes a user_id and produce an inventory for the node, for now until user id is checked outside using token
+ """Function takes a user_id and produce an inventory for the node, for now until user id passed into functions
 
  Args:
   - user_id (optional)
 
  Output:
  """
- ret = {'services':[{'name':x,'service':aCTX.config['services'][x]} for x in list(aCTX.config.get('services',{}).keys())]}
- ret.update(aCTX.node_function('master','master','inventory')(aArgs = {'node':aCTX.node,'user_id':aArgs.get('user_id',-1)}))
+ ret = aCTX.node_function('master','master','inventory')(aArgs = {'node':aCTX.node,'user_id':aArgs.get('user_id',-1)})
  # INTERNAL from rims.api.system import external_ip
  ext = external_ip(aCTX,None)
  ret['navinfo'].append(ext['ip'] if ext['status'] == 'OK' else 'IP N/A')
