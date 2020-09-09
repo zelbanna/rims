@@ -50,15 +50,15 @@ class RIMS extends Component {
 
  logOut = () => {
   auth_call({destroy:this.state.token,id:this.state.id})
-  document.cookie = "rims=; Path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC";
-  document.cookie = "rims_theme=; Path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+  document.cookie = "rims=; Path=/; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+  document.cookie = "rims_theme=; Path=/; SameSite=Strict; expires=Thu, 01 Jan 1970 00:00:00 UTC";
   document.documentElement.removeAttribute("style");
   this.setState({token:null})
  }
 
  logIn = (settings) => {
-  document.cookie = "rims=" + settings.token + "; expires=" + settings.expires + "; Path=/; SameSite=Lax";
-  document.cookie = "rims_theme="+ settings.theme + "; expires=" + settings.expires + "; Path=/; SameSite=Lax";
+  document.cookie = "rims=" + settings.token + "; expires=" + settings.expires + "; Path=/; SameSite=Strict";
+  document.cookie = "rims_theme="+ settings.theme + "; expires=" + settings.expires + "; Path=/; SameSite=Strict";
   this.setState(settings)
  }
 
