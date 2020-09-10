@@ -474,14 +474,14 @@ class Statistics extends Component {
   import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => {
    this.vis = vis;
    const options = { locale:'en', width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ alignZeros:false , icons: true, left:{ title:{ text:'value' } } } };
-   const groups = new this.vis.DataSet([{id:'value', content:this.props.name}]);
+   const groups = new this.vis.DataSet([{id:'data', content:this.props.name}]);
    this.graph = new this.vis.Graph2d(this.canvas.current, [], groups, options);
    this.updateItems(this.state.range);
   })
  }
 
  updateItems = (range) => post_call('api/statistics/query_device',{device_id:this.props.device_id, measurement:this.props.measurement, name:this.props.name, range:range}).then(result => {
-  const dataset = new this.vis.DataSet(result.data.flatMap(({time, value}) => [{x:new Date(time*1000), y:value}]));
+  const dataset = new this.vis.DataSet(result.data.flatMap(({time, value}) => [{x:new Date(time*1000), y:value, group:'data'}]));
   this.graph.setItems(dataset);
   this.graph.fit();
  });
