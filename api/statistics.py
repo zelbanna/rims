@@ -39,7 +39,6 @@ def query_device(aCTX, aArgs):
  """
  db = aCTX.config['influxdb']
  args = {'q':"SELECT distinct({0}) FROM {1} WHERE host_id = '{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(previous)".format(aArgs['name'],aArgs['measurement'],aArgs['device_id'],aArgs.get('range','1'))}
- print(args)
  try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
@@ -253,5 +252,6 @@ def report(aCTX, aArgs):
  except Exception as e:
   ret['info'] = str(e)
   aCTX.log("statistics_report_error: %s"%str(e))
- else:  ret['status'] = 'OK'
+ else:
+  ret['status'] = 'OK'
  return ret
