@@ -94,9 +94,9 @@ export class Info extends Component {
  stateIpam = () => {
   this.setState({op:(this.state.domains && this.state.networks) ? 'ipam' : 'wait', ipam:{ip:'<N/A>'}})
   if (!this.state.domains)
-   post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}));
+   post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data,op:(this.state.networks) ? 'ipam':'wait'}));
   if (!this.state.networks)
-   post_call('api/ipam/network_list').then(result => this.setState({networks:result.data,op:'ipam'}));
+   post_call('api/ipam/network_list').then(result => this.setState({networks:result.data,op:(this.state.domains) ? 'ipam':'wait'}));
  }
  ipamSearchIP = () => {
   if (this.state.ipam.network_id)
