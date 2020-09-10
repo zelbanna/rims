@@ -1,11 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import { post_call } from './infra/Functions.js';
-import { RimsContext, Flex, Spinner, StateLeds, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
+import { RimsContext, Flex, Spinner, StateLeds, Article, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, RevertButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as FdbList, Device as FdbDevice, Search as FdbSearch } from './fdb.jsx';
+import styles from './infra/ui.module.css';
+
 
 // **************** Main ****************
 //
@@ -263,10 +265,10 @@ export class Info extends Component {
     <NavBar key='device_navigation' id='di_navigation'>
      {this.state.navconf && <NavButton key='management' title='Management' onClick={() => this.changeContent(<ManagementInfo key='device_configure' id={this.props.id} />)} />}
      {!this.state.navconf && <NavButton key='interfaces' title='Interfaces' onClick={() => this.changeInterfaces()} />}
+     {!this.state.navconf && <NavButton key='stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {!this.state.navconf && type.base === 'network' && has_ip && <NavButton key='fdb' title='FDB' onClick={() => this.changeContent(<FdbDevice key='fdb_device' id={this.props.id} ip={extra.ip} type={type.name} changeSelf={this.changeContent} />)} />}
      {this.state.navconf && ['infrastructure','out-of-band'].includes(data.class) && <NavButton key='rack' title='Rack' onClick={() => this.changeContent(<RackInfo key='device_rack_info' device_id={this.props.id} />)} />}
      {this.state.navconf && ['device','infrastructure','out-of-band'].includes(data.class) && <NavButton key='pems' title='PEMs' onClick={() => this.changeContent(<PemList key='device_pem_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
-     {this.state.navconf && <NavButton key='stats' title='Statistics' onClick={() => this.changeContent(<StatisticsList key='device_statistics_list' device_id={this.props.id} changeSelf={this.changeContent} />)} />}
      {!this.state.navconf && function_strings.filter(fun => fun !== 'manage').map((op,idx) => <NavButton key={'nav_'+idx} title={op.replace('_',' ')} onClick={() => this.changeContent(<Function key={'dev_func_'+op} id={this.props.id} op={op} type={this.state.extra.type_name} />)} />)}
     </NavBar>
     {this.state.content}
@@ -442,6 +444,7 @@ class StatisticsList extends Component {
 
  listItem = (row) => [row.id,row.measurement,row.tags,row.name,row.oid,<>
   <InfoButton key='info' onClick={() => this.changeContent(<StatisticsInfo key={'statistics_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit data point' />
+  <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.id} device_id={this.props.device_id} measurement={row.measurement} name={row.name} />)} title='Stats for data point' />
   <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete data point' />
  </>]
 
@@ -452,6 +455,62 @@ class StatisticsList extends Component {
    <AddButton key='add' onClick={() => this.changeContent(<StatisticsInfo key={'stats_new_'} id='new' device_id={this.props.device_id} />)} title='Add statistics' />
   </ContentReport>
   : <Spinner />
+ }
+}
+
+
+// *************** Statistics ****************
+//
+class Statistics extends Component {
+ constructor(props){
+  super(props)
+  this.state = {range:1}
+  this.canvas = React.createRef()
+  this.graph = null;
+  this.vis = null;
+ }
+
+ componentDidMount(){
+  import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => {
+   this.vis = vis;
+   const options = { locale:'en', width:'100%', height:'100%', zoomMin:60000, zoomMax:1209600000, clickToUse:true, drawPoints: false, interpolation:false, legend:true, dataAxis:{ alignZeros:false , icons: true, left:{ title:{ text:'value' } } } };
+   const groups = new this.vis.DataSet([{id:'value', content:this.props.name}]);
+   this.graph = new this.vis.Graph2d(this.canvas.current, [], groups, options);
+   this.updateItems(this.state.range);
+  })
+ }
+
+ updateItems = (range) => post_call('api/statistics/query_device',{device_id:this.props.device_id, measurement:this.props.measurement, name:this.props.name, range:range}).then(result => {
+  const dataset = new this.vis.DataSet(result.data.flatMap(({time, value}) => [{x:new Date(time*1000), y:value}]));
+  this.graph.setItems(dataset);
+  this.graph.fit();
+ });
+
+ rangeChange = (e) => {
+  this.setState({[e.target.name]:e.target.value})
+  this.updateItems(e.target.value);
+ }
+
+ gotoNow = () => {
+  const today = new Date()
+  this.graph.moveTo(today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+' '+today.getHours()+':'+today.getMinutes());
+ }
+
+ render(){
+  return <Article key='ds_art' header='Statistics'>
+   <ReloadButton key='reload' onClick={() => this.updateItems(this.state.range)} title='Reload' />
+   <RevertButton key='reset' onClick={() => this.gotoNow()} title='Go to now' />
+   <br />
+   <TextLine key='name' id='name' label='Device Data Point' text={this.props.name} />
+   <br />
+   <SelectInput key='range' id='range' label='Time range' value={this.state.range} onChange={this.rangeChange}>
+    <option value='1'>1h</option>
+    <option value='4'>4h</option>
+    <option value='8'>8h</option>
+    <option value='24'>24h</option>
+   </SelectInput>
+   <div className={styles.graphs} ref={this.canvas} />
+  </Article>
  }
 }
 

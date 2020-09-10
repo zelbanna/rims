@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 #
 #
 def query_interface(aCTX, aArgs):
- """ Function retrieves/queries database for interface_statistics, formatted to Xbps
+ """ Function retrieves/queries database for interface statistics, formatted to Xbps
 
  Args:
   - device_id (required)
@@ -23,6 +23,27 @@ def query_interface(aCTX, aArgs):
   return {'status':'NOT_OK','info':str(e)}
  else:
   return {'data':[{'time':x[0],'in8s':x[1],'out8s':x[2],'inUPs':x[3],'outUPs':x[4]} for x in res['series'][0]['values']] if 'series' in res else []}
+
+#
+#
+def query_device(aCTX, aArgs):
+ """ Function retrieves/queries database for device (DDP) statistics
+
+ Args:
+  - device_id (required)
+  - measurement (required)
+  - name (required)
+  - range (optional). hours, default: 1
+
+ Output:
+ """
+ db = aCTX.config['influxdb']
+ args = {'q':"SELECT distinct('{0}') FROM '{1}' WHERE host_id = '{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(previous)".format(aArgs['name'],aArgs['measurement'],aArgs['device_id'],aArgs.get('range','1'))}
+ try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
+ except Exception as e:
+  return {'status':'NOT_OK','info':str(e)}
+ else:
+  return {'data':[{'time':x[0],'value':x[1]} for x in res['series'][0]['values']] if 'series' in res else []}
 
 ################################## Device Data Points ###################################
 #
