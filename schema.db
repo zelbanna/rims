@@ -106,11 +106,10 @@ CREATE TABLE `device_statistics` (
   `measurement` varchar(20) NOT NULL,
   `tags` varchar(40) NOT NULL DEFAULT '',
   `name` varchar(16) NOT NULL,
-  `oid` varchar(40) NOT NULL,
+  `oid` varchar(40) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `device_oid` (`device_id`,`oid`),
   KEY `device_id` (`device_id`),
-  CONSTRAINT `device_data_points_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `device_statistics_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

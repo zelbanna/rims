@@ -18,7 +18,7 @@ def query_interface(aCTX, aArgs):
  db = aCTX.config['influxdb']
  unit = {'b':1,'k':1024,'m':1048576}.get(aArgs.get('unit','k'))
  args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8/{0}, non_negative_derivative(mean(out8s), 1s)*8/{0}, non_negative_derivative(mean(inUPs), 1s), non_negative_derivative(mean(outUPs), 1s) FROM interface WHERE host_id = '{1}' AND if_id = '{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(null)".format(unit,aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
- try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
+ try: res = aCTX.rest_call(f'{db["url"]}/query?db={db["database"]}&epoch=s', aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
  else:
@@ -39,7 +39,7 @@ def query_device(aCTX, aArgs):
  """
  db = aCTX.config['influxdb']
  args = {'q':"SELECT distinct({0}) FROM {1} WHERE host_id = '{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(previous)".format(aArgs['name'],aArgs['measurement'],aArgs['device_id'],aArgs.get('range','1'))}
- try: res = aCTX.rest_call("%s/query?db=%s&epoch=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
+ try: res = aCTX.rest_call(f'{db["url"]}/query?db={db["database"]}&epoch=s', aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
  else:
@@ -87,14 +87,16 @@ def info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
+   # Reset OID to NULL if not set, treat as externally data
+   aArgs['oid'] = None if not aArgs['oid'] else aArgs['oid']
    if id != 'new':
-    ret['update'] = (db.update_dict('device_statistics',aArgs,'id=%s'%id) > 0)
+    ret['update'] = (db.update_dict('device_statistics',aArgs,f'id={id}') > 0)
    else:
     ret['update'] = (db.insert_dict('device_statistics',aArgs) > 0)
     id = db.get_last_id() if ret['update'] else 'new'
 
   if id != 'new':
-   ret['found'] = (db.query("SELECT * FROM device_statistics WHERE id = %s"%id) > 0)
+   ret['found'] = (db.query(f'SELECT * FROM device_statistics WHERE id = {id}') > 0)
    ret['data'] = db.get_row()
   else:
    ret['data'] = {'id':'new','device_id':aArgs['device_id'], 'measurement':"",'tags':"",'name':"",'oid':""}
@@ -112,7 +114,7 @@ def delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = (db.execute("DELETE FROM device_statistics WHERE id = %s"%aArgs['id']) == 1)
+  ret['deleted'] = (db.execute(f'DELETE FROM device_statistics WHERE id = {aArgs["id"]}') == 1)
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 
@@ -130,10 +132,10 @@ def lookup(aCTX, aArgs):
  ret = {'inserts':0}
  from importlib import import_module
  with aCTX.db as db:
-  if db.query("SELECT INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = %s"%id):
+  if db.query(f'SELECT INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE devices.id = {id}'):
    info = db.get_row()
    try:
-    module = import_module("rims.devices.%s"%info['type'])
+    module = import_module(f'rims.devices.{info["type"]}')
     device = getattr(module,'Device',None)(aCTX, id, info['ip'])
     for ddp in device.get_data_points():
      ret['inserts'] += db.execute("INSERT INTO device_statistics (device_id,measurement,tags,name,oid) VALUES(%i,'%s','%s','%s','%s') ON DUPLICATE KEY UPDATE id = id"%(int(id),ddp[0],ddp[1],ddp[2],ddp[3]))
@@ -142,7 +144,7 @@ def lookup(aCTX, aArgs):
     ret['info'] = str(e)
    else:
     ret['status'] = 'OK'
-    ret['result'] = '%s data points inserted'%ret['inserts']
+    ret['result'] = f'{ret["inserts"]} data points inserted'
   else:
    ret['status'] = 'NOT_OK'
    ret['info'] = 'device info not found'
@@ -167,7 +169,7 @@ def check(aCTX, aArgs):
   db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip, devices.hostname FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) AND ia.state = 'up' AND devices.class IN ('infrastructure','vm','out-of-band') ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
   for dev in db.get_rows():
-   if db.query("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s"%dev['device_id']):
+   if db.query("SELECT measurement,tags,name,oid FROM device_statistics WHERE device_id = %s AND oid IS NOT NULL"%dev['device_id']):
     dev['data_points'] = []
     measurements = {}
     for ddp in db.get_rows():

@@ -444,7 +444,7 @@ class StatisticsList extends Component {
 
  listItem = (row) => [row.id,row.measurement,row.tags,row.name,row.oid,<>
   <InfoButton key='info' onClick={() => this.changeContent(<StatisticsInfo key={'statistics_info_'+row.id} id={row.id} device_id={this.props.device_id} />)} title='Edit data point' />
-  <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.id} device_id={this.props.device_id} measurement={row.measurement} name={row.name} />)} title='Stats for data point' />
+  {row.measurement && row.name && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.id} device_id={this.props.device_id} measurement={row.measurement} name={row.name} />)} title='Stats for data point' />}
   <DeleteButton key='del' onClick={() => this.deleteList(row.id) } title='Delete data point' />
  </>]
 
