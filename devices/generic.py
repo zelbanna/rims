@@ -114,7 +114,7 @@ class Device(object):
  #
  def data_points(self, aGeneric, aInterfaces):
   """ Function processes and updates:
-   - a list of generic objects containing 'snmp' which is a list of objects containing (at least) 'oid' which is a complete
+   - a list of generic objects containing 'values' which is a list of objects containing (at least) 'oid' which is a complete
    - a list of objects containing 'snmp_index' and use IF-MIB to correlate
   """
   ret = {}
@@ -129,12 +129,12 @@ class Device(object):
      iif.update({'in8s':int(ifentry[0].val),'inUPs':int(ifentry[1].val),'out8s':int(ifentry[2].val),'outUPs':int(ifentry[3].val)})
    for measurement in aGeneric:
     # Wrap all data with the same tag into the same session object
-    objs = VarList(*[o['oid'] for o in measurement['snmp']])
+    objs = VarList(*[o['oid'] for o in measurement['values']])
     session.get(objs)
     if (session.ErrorInd != 0):
      raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
     else:
-     for i,o in enumerate(measurement['snmp']):
+     for i,o in enumerate(measurement['values']):
       o['value'] = objs[i].val.decode()
   except Exception as e:
    ret['status'] = 'NOT_OK'

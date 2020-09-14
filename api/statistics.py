@@ -1,4 +1,4 @@
-"""Statistics API module. Implements device statistics methods"""
+"""Statistics API module. Implements device statistics methods for influxDB """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
@@ -45,7 +45,7 @@ def query_device(aCTX, aArgs):
  else:
   return {'data':[{'time':x[0],'value':x[1]} for x in res['series'][0]['values']] if 'series' in res else []}
 
-################################## Device Data Points ###################################
+################################## Device Statistics ###################################
 #
 #
 def list(aCTX, aArgs):
@@ -182,7 +182,7 @@ def check(aCTX, aArgs):
       tobj[ddp['tags']] = vobj
      vobj.append({'name':ddp['name'],'oid':ddp['oid'],'value':None})
     for m,tags in measurements.items():
-     dev['data_points'].extend([{'measurement':m,'tags':t,'snmp':values} for t,values in tags.items()])
+     dev['data_points'].extend([{'measurement':m,'tags':t,'values':values} for t,values in tags.items()])
    if db.query("SELECT snmp_index,interface_id,name FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']):
     dev['interfaces'] = db.get_rows()
    if any(i in dev for i in ['data_points','interfaces']):
@@ -215,7 +215,7 @@ def process(aCTX, aArgs):
  def __check_sp(aDev):
   try:
    device = Device(aCTX, aDev['device_id'], aDev['ip'])
-   if device.data_points(aDev.get('data_points',[]), aDev['interfaces'])['status'] == 'OK':
+   if device.data_points(aDev.get('data_points',[]), aDev.get('interfaces',[]))['status'] == 'OK':
     report(aArgs = aDev)
     ret['reported'] += 1
   except Exception as e:
@@ -249,7 +249,7 @@ def report(aCTX, aArgs):
   args.extend([tmpl%(x['interface_id'],x['name'].replace(' ','\ ').encode(),x['in8s'],x['inUPs'],x['out8s'],x['outUPs']) for x in aArgs['interfaces']])
  if 'data_points' in aArgs:
   tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args.extend([tmpl%(m['measurement'].encode(),m['tags'].replace(' ','\ ').encode(),(','.join(["%(name)s=%(value)s"%x for x in m['snmp']])).encode()) for m in aArgs['data_points']])
+  args.extend([tmpl%(m['measurement'].encode(),m['tags'].replace(' ','\ ').encode(),(','.join(["%(name)s=%(value)s"%x for x in m['values']])).encode()) for m in aArgs['data_points']])
  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
  except Exception as e:
   ret['info'] = str(e)
