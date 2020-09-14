@@ -17,7 +17,7 @@ def query_interface(aCTX, aArgs):
  """
  db = aCTX.config['influxdb']
  unit = {'b':1,'k':1024,'m':1048576}.get(aArgs.get('unit','k'))
- args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8/{0}, non_negative_derivative(mean(out8s), 1s)*8/{0}, non_negative_derivative(mean(inUPs), 1s), non_negative_derivative(mean(outUPs), 1s) FROM interface WHERE host_id = '{1}' AND if_id = '{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(null)".format(unit,aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
+ args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8/{0}, non_negative_derivative(mean(out8s), 1s)*8/{0}, non_negative_derivative(mean(inUPs), 1s), non_negative_derivative(mean(outUPs), 1s) FROM interface WHERE host_id='{1}' AND if_id='{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(null)".format(unit,aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
  try: res = aCTX.rest_call(f'{db["url"]}/query?db={db["database"]}&epoch=s', aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
@@ -38,7 +38,7 @@ def query_device(aCTX, aArgs):
  Output:
  """
  db = aCTX.config['influxdb']
- args = {'q':"SELECT distinct({0}) FROM {1} WHERE host_id = '{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(previous)".format(aArgs['name'],aArgs['measurement'],aArgs['device_id'],aArgs.get('range','1'))}
+ args = {'q':"SELECT distinct(\"{0}\") FROM {1} WHERE host_id='{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(previous)".format(aArgs['name'], aArgs['measurement'],aArgs['device_id'],aArgs.get('range','1'))}
  try: res = aCTX.rest_call(f'{db["url"]}/query?db={db["database"]}&epoch=s', aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
@@ -246,14 +246,14 @@ def report(aCTX, aArgs):
  ts = int(datetime.now().timestamp())
  if 'interfaces' in aArgs:
   tmpl = ('interface,host_id={0},host_ip={1},if_id=%i,if_name=%b in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args.extend([tmpl%(x['interface_id'],x['name'].replace(' ','\ ').encode(),x['in8s'],x['inUPs'],x['out8s'],x['outUPs']) for x in aArgs['interfaces']])
+  args.extend([tmpl%(x['interface_id'], x['name'].replace(' ','\ ').encode(), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces']])
  if 'data_points' in aArgs:
   tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args.extend([tmpl%(m['measurement'].encode(),m['tags'].replace(' ','\ ').encode(),(','.join(["%(name)s=%(value)s"%x for x in m['values']])).encode()) for m in aArgs['data_points']])
+  args.extend([tmpl%(m['measurement'].encode(), m['tags'].replace(' ','\ ').encode(), (','.join(['%s=%s'%(x['name'].replace(' ','\ '),x['value']) for x in m['values']])).encode()) for m in aArgs['data_points']])
  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
  except Exception as e:
   ret['info'] = str(e)
-  aCTX.log("statistics_report_error: %s"%str(e))
+  aCTX.log(f'statistics_report_error: {str(e)}')
  else:
   ret['status'] = 'OK'
  return ret
