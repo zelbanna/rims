@@ -19,12 +19,12 @@ export const StateLine = (props) => line_template(StateLeds(props),props);
 export const TextInput = (props) => input_template('text',props);
 export const UrlInput = (props) => input_template('url',props);
 export const EmailInput = (props) => input_template('email',props);
-export const PasswordInput = (props) => input_template('password',props);
 export const DateInput = (props) => input_template('date',props);
 export const TimeInput = (props) => input_template('time',props);
 
+export const UsernameInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><input type='text' className={styles.input} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} size={props.size} autoComplete='username'/></>
+export const PasswordInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><input type='password' className={styles.input} id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} size={props.size} autoComplete='current-password'/></>
 export const TextAreaInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><textarea id={props.id} name={props.id} onChange={props.onChange} className={styles.textarea} value={props.value} /></>
-
 export const CheckboxInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><input type='checkbox' id={props.id} name={props.id} onChange={props.onChange} defaultChecked={props.value} placeholder={props.placeholder} title={props.extra} className={styles.checkbox} /></>
 
 export const RadioInput = (props) => <><label htmlFor={props.id} className={(props.label) ? styles.fixed : styles.auto} title={props.title}>{auto_label(props)}:</label><div>{

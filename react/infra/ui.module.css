@@ -70,6 +70,8 @@
 
 .columns { display:grid; margin:4px 0; align-items:center; grid-gap:1px; }
 
+.infoform { display:inline }
+
 .result { font-size:0.8rem; float:right; text-overflow:ellipsis; overflow:hidden; color:var(--std-txt-color); }
 
 .href { color:var(--std-txt-color); }

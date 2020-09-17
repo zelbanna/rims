@@ -1,7 +1,7 @@
 import React, { createContext, Component, PureComponent, useState } from 'react';
 import { auth_call, post_call } from './Functions.js';
 import { CloseButton } from './Buttons.jsx';
-import { TextInput, TextLine, TextAreaInput, PasswordInput } from './Inputs.jsx';
+import { TextLine, TextAreaInput, PasswordInput, UsernameInput } from './Inputs.jsx';
 import { Header, MenuButton, MenuSeparator } from './Header.jsx';
 import { NavBar } from './Navigation.jsx';
 import tableStyles from './table.module.css';
@@ -34,7 +34,7 @@ export const InfoColumns = (props) => {
  if (props.columns > 2)
   for (let i = 2; i < props.columns; i++)
    start.push((i % 2 === 0) ? 'max-content' :'auto');
- return <div className={uiStyles.columns} style={{gridTemplateColumns:start.join(' '),...props.style}}>{props.children}</div>
+ return <form className={uiStyles.infoform}><div className={uiStyles.columns} style={{gridTemplateColumns:start.join(' '),...props.style}}>{props.children}</div></form>
 }
 InfoColumns.defaultProps = {columns:2};
 
@@ -237,7 +237,7 @@ export class Login extends PureComponent {
     <article className={uiStyles.login}>
      <h1 className={uiStyles.title}>{this.state.message}</h1>
      <InfoColumns style={{float:'left'}}>
-      <TextInput key='username' id='username' onChange={this.onChange} />
+      <UsernameInput key='username' id='username' onChange={this.onChange} />
       <PasswordInput key='password' id='password' onChange={this.onChange} />
      </InfoColumns>
      <button className={uiStyles.button} onClick={this.handleSubmit} title='Login'><i className='fas fa-sign-in-alt' /></button>
