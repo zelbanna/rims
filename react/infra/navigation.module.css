@@ -29,8 +29,8 @@
 .info {  background-color:#00CC66; font-weight:bold; float:right }
 .info:hover, .info:focus { background-color:#00CC66; }
 
-.button {     color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; cursor:pointer; text-transform:capitalize; }
-.dropbutton { color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; cursor:pointer; text-transform:capitalize; width:100%; text-align:left; }
-.infobutton { color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; }
+.button {     color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; cursor:pointer; text-transform:capitalize; outline:none;}
+.dropbutton { color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; cursor:pointer; text-transform:capitalize; outline:none; width:100%; text-align:left; }
+.infobutton { color:var(--ui-txt-color); padding:0 8px 0 8px; border:none; background-color:transparent; height:3rem; outline:none }
 .button:hover, .dropbutton:hover, .button:focus, .dropbutton:focus{ color:var(--high-color); transition-duration:0.15s}
 .button:active, dropbutton:active { opacity:0.8; }
