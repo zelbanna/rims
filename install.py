@@ -14,7 +14,7 @@ pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
 from rims.core.common import DB, rest_call
-res = {'data':{},'info':{}}
+res = {'data':{},'info':{},'modules':{}}
 
 parser = ArgumentParser(prog='install',formatter_class=RawDescriptionHelpFormatter,description="""RIMS installation
 
@@ -68,7 +68,7 @@ if config.get('database'):
   res['info']['pymysql'] = f'installing ({e})'
   pipmain(["install", "-q","pymysql"])
  else:
-  res['data']['pymysql'] = 'Installed'
+  res['modules']['pymysql'] = 'Installed'
 
 if config.get('netconf') or config.get('esxi'):
  try:
@@ -77,7 +77,7 @@ if config.get('netconf') or config.get('esxi'):
   res['info']['ssh'] = f'installing ({e})'
   pipmain(["install", "-q","paramiko"])
  else:
-  res['data']['ssh'] = 'Installed'
+  res['modules']['ssh'] = 'Installed'
 
 if config.get('netconf'):
  try:
@@ -86,7 +86,7 @@ if config.get('netconf'):
   res['info']['junos-eznc'] = f'installing ({e})'
   pipmain(["install","-q","junos-eznc"])
  else:
-  res['data']['junos-eznc'] = 'Installed'
+  res['modules']['junos-eznc'] = 'Installed'
 
 if config.get('esxi'):
  try:
@@ -95,7 +95,7 @@ if config.get('esxi'):
   res['info']['pyVmomi'] = f'installing ({e})'
   pipmain(["install","-q","pyVmomi"])
  else:
-  res['data']['pyVmomi'] = 'Installed'
+  res['modules']['pyVmomi'] = 'Installed'
 
 if config.get('snmp'):
  try:
@@ -104,7 +104,7 @@ if config.get('snmp'):
   res['info']['netsnmp'] = f'installing ({e})'
   pipmain(["install","-q","python3-netsnmp"])
  else:
-  res['data']['netsnmp'] = 'Installed'
+  res['modules']['netsnmp'] = 'Installed'
 
 ############################################ MASTER ###########################################
 #

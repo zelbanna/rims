@@ -20,7 +20,6 @@ export class Main extends Component {
  componentDidUpdate(prevProps){
   if(prevProps !== this.props)
    this.node = (this.props.node) ? this.props.node : this.context.settings.node;
-   this.compileNavItems()
  }
 
  reloadList = () => post_call('api/multimedia/list', {}, {'X-Route':this.node}).then(result => this.setState(result));
