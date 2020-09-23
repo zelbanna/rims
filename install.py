@@ -61,37 +61,50 @@ res['data']['engine']= {'startup':parsedinput.startup,'install':check_call([engi
 #
 # Modules
 #
-try:
- import pymysql
-except ImportError as e:
- res['info']['pymysql'] = f'installing ({e})'
- pipmain(["install", "-q","pymysql"])
-try:
- import dns
-except ImportError as e:
- res['info']['dns'] = f'installing ({e})'
- pipmain(["install", "-q","dnspython"])
-try:
- import paramiko
-except ImportError as e:
- res['info']['ssh'] = f'installing ({e})'
- pipmain(["install", "-q","paramiko"])
-try:
- import pyVmomi
-except ImportError as e:
- res['info']['pyVmomi'] = f'installing ({e})'
- pipmain(["install","-q","pyVmomi"])
-try:
- import netsnmp
-except ImportError as e:
- res['info']['netsnmp'] = f'installing ({e})'
- pipmain(["install","-q","python3-netsnmp"])
-try:
- from jnpr import junos
-except ImportError as e:
- res['info']['junos-eznc'] = f'installing ({e})'
- pipmain(["install","-q","junos-eznc"])
+if config.get('database'):
+ try:
+  import pymysql
+ except ImportError as e:
+  res['info']['pymysql'] = f'installing ({e})'
+  pipmain(["install", "-q","pymysql"])
+ else:
+  res['data']['pymysql'] = 'Installed'
 
+if config.get('netconf') or config.get('esxi'):
+ try:
+  import paramiko
+ except ImportError as e:
+  res['info']['ssh'] = f'installing ({e})'
+  pipmain(["install", "-q","paramiko"])
+ else:
+  res['data']['ssh'] = 'Installed'
+
+if config.get('netconf'):
+ try:
+  from jnpr import junos
+ except ImportError as e:
+  res['info']['junos-eznc'] = f'installing ({e})'
+  pipmain(["install","-q","junos-eznc"])
+ else:
+  res['data']['junos-eznc'] = 'Installed'
+
+if config.get('esxi'):
+ try:
+  import pyVmomi
+ except ImportError as e:
+  res['info']['pyVmomi'] = f'installing ({e})'
+  pipmain(["install","-q","pyVmomi"])
+ else:
+  res['data']['pyVmomi'] = 'Installed'
+
+if config.get('snmp'):
+ try:
+  import netsnmp
+ except ImportError as e:
+  res['info']['netsnmp'] = f'installing ({e})'
+  pipmain(["install","-q","python3-netsnmp"])
+ else:
+  res['data']['netsnmp'] = 'Installed'
 
 ############################################ MASTER ###########################################
 #

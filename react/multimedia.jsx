@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Spinner, CodeArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { CheckboxInput, TextLine,TextInput } from './infra/Inputs.jsx';
-import { NavBar, NavInfo } from './infra/Navigation.jsx';
 import { DocButton, DeleteButton, InfoButton, ReloadButton, SearchButton, StartButton, SyncButton } from './infra/Buttons.jsx';
 
 // ************* Main ************
@@ -10,15 +9,11 @@ import { DocButton, DeleteButton, InfoButton, ReloadButton, SearchButton, StartB
 export class Main extends Component {
  constructor(props){
   super(props)
-  this.state = {ip:undefined}
+  this.state = {}
   this.node = (this.props.node) ? this.props.node : this.context.settings.node;
  }
 
  componentDidMount(){
-  post_call('api/system/external_ip', {}, {'X-Route':this.node}).then(result => {
-   Object.assign(this.state,{ip:(result && result.status === 'OK') ? result.ip : '0.0.0.0'})
-   this.compileNavItems()
-  })
   this.reloadList()
  }
 
@@ -27,8 +22,6 @@ export class Main extends Component {
    this.node = (this.props.node) ? this.props.node : this.context.settings.node;
    this.compileNavItems()
  }
-
- compileNavItems = () => this.context.loadNavigation(<NavBar key='multimedia_navbar'><NavInfo key='mm_nav_ip' title={this.state.ip} /></NavBar>)
 
  reloadList = () => post_call('api/multimedia/list', {}, {'X-Route':this.node}).then(result => this.setState(result));
 

@@ -44,26 +44,6 @@ def sleep(aCTX, aArgs):
 
 #
 #
-def external_ip(aCTX, aArgs):
- """Function provides the public IPv4 address of the system
-
- Args:
-
- Output:
- """
- ret = {}
- from rims.core.genlib import external_ip as GL_ext_ip
- try:
-  ret['ip'] = GL_ext_ip()
- except Exception as e:
-  ret['status'] = 'NOT_OK'
-  ret['info'] = str(e)
- else:
-  ret['status'] = 'OK'
- return ret
-
-#
-#
 def environment(aCTX, aArgs):
  """Function environment produces non-config environment for nodes
 
@@ -350,7 +330,4 @@ def inventory(aCTX, aArgs):
  Output:
  """
  ret = aCTX.node_function('master','master','inventory')(aArgs = {'node':aCTX.node,'user_id':aArgs.get('user_id',-1)})
- # INTERNAL from rims.api.system import external_ip
- ext = external_ip(aCTX,None)
- ret['navinfo'].append(ext['ip'] if ext['status'] == 'OK' else 'IP N/A')
  return ret

@@ -62,17 +62,6 @@ def ping_os(aIP):
  res = run(['ping','-c','1','-w','1',aIP], stdout=DEVNULL)
  return res.returncode == 0
 
-def external_ip():
- from dns import resolver
- from socket import gethostbyname
- try:
-  opendns  = resolver.Resolver()
-  opendns.nameservers = [gethostbyname('resolver1.opendns.com')]
-  res = str(opendns.query('myip.opendns.com','A').response.answer[0])
-  return res.split()[4]
- except:
-  return None
-
 def get_quote(aString):
  from urllib.parse import quote_plus
  return quote_plus(aString)
