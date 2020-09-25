@@ -202,7 +202,7 @@ export class Info extends Component {
   post_call('api/device/info',{id:this.props.id, op:'lookup'}).then(result => this.setState({...result,content:null}))
  }
 
- changeIpam = (id) => import('./ipam.jsx').then(lib => this.changeContent(<lib.AddressEvents key='address_eventes' id={id} changeSelf={this.changeContent} />))
+ changeIpam = (id) => import('./ipam.jsx').then(lib => this.changeContent(<lib.AddressEvents key='address_events' id={id} changeSelf={this.changeContent} />))
  changeInterfaces = () => import('./interface.jsx').then(lib => this.changeContent(<lib.List key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />))
  changeVisualize = () => import('./visualize.jsx').then(lib => this.changeSelf(<lib.Edit key={'viz_id_' + this.props.id} type='device' changeSelf={this.changeSelf} id={this.props.id} />))
 

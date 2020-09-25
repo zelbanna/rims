@@ -81,8 +81,8 @@ class Info extends Component {
      {old && !this.state.data.hostname && <SearchButton key='search' onClick={this.searchInfo} title='Try to map node to device' />}
      {old && <ReloadButton key='reload' onClick={() => this.changeContent(<Reload key={'node_reload_'+id} node={this.state.data.node} />)} />}
      {old && <LogButton key='logs' onClick={() => this.changeContent(<LogShow key={'node_logs_'+id} node={this.state.data.node} />)} title='View node logs' />}
-     {old && <TimeButton key='tasks' onClick={() => this.changeContent(<TaskShow key={'node_tasks_'+id} node={this.state.data.node} />)} title='View node tasks' />}
      {old && <DeleteButton key='logc' onClick={() => this.changeContent(<LogClear key={'node_logc_'+id} node={this.state.data.node} />)} title='Clear logs' />}
+     {old && <TimeButton key='tasks' onClick={() => this.changeContent(<TaskShow key={'node_tasks_'+id} node={this.state.data.node} />)} title='View node tasks' />}
     </InfoArticle>
     <NavBar key='node_navigation' id='node_navigation' />
     {this.state.content}

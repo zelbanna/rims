@@ -230,7 +230,7 @@ export class AddressInfo extends Component {
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_btn_save' onClick={() => this.updateInfo()} title='Save' />
-     {'changeSelf' in this.props && <HealthButton key='ip_btn_events' onClick={() => this.props.changeSelf(<AddressEvents key='address_events' id={this.state.data.id} />)} title='IPAM events - graphical' />}
+     {'changeSelf' in this.props && <HealthButton key='ip_btn_events' onClick={() => this.props.changeSelf(<AddressEvents key='address_events' id={this.state.data.id} changeSelf={this.props.changeSelf} />)} title='IPAM events - graphical' />}
      {'changeSelf' in this.props && <LogButton key={'ip_btn_logs'} onClick={() => this.props.changeSelf(<AddressLogs key='address_logs' id={this.state.data.id} />)} title='IPAM events - logs' />}
      <Result key='ip_operation' result={result} />
     </InfoArticle>
@@ -294,6 +294,7 @@ componentDidMount(){
   return <Article key='ae_art' header='Events'>
    <div className={styles.events} ref={this.canvas} />
    <RevertButton key='ae_btn_reset' onClick={() => this.gotoNow()} title='Go to now' />
+   {'changeSelf' in this.props && <ItemsButton key='ae_btn_list' onClick={() => this.props.changeSelf(<AddressLogs key='address_logs' id={this.props.id} />)} title='List' />}
    <DeleteButton key='ae_btn_clear' onClick={() => this.clearList()} title='clear logs' />
   </Article>
  }
