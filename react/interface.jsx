@@ -30,7 +30,7 @@ export class List extends Component{
  listItem = (row) => [row.snmp_index,row.name,row.mac,(row.ip) ? row.ip : '-',row.description,row.class,
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
    <>
-    <StateLeds key='state' state={[row.if_state,row.ip_state]} />
+    <StateLeds key='state' state={[row.if_state,row.ip_state]} title='interface and ip state' />
     <InfoButton key='info' onClick={() => this.changeContent(<Info key={row.interface_id} interface_id={row.interface_id} changeSelf={this.props.changeSelf} />)} title='Interface information' />
     {row.snmp_index > 0 && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} name={row.name} />)} title='Interface stats' />}
     <DeleteButton key='del' onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
@@ -60,7 +60,7 @@ export class Report extends Component {
   post_call('api/interface/list').then(result => this.setState(result))
  }
 
- listItem = (row) => [row.device_id,row.hostname,row.interface_id,row.class,row.ip,row.mac,row.name,row.description,<StateLeds key={'ir_'+row.id} state={[row.if_state,row.ip_state]} />]
+ listItem = (row) => [row.device_id,row.hostname,row.interface_id,row.class,row.ip,row.mac,row.name,row.description,<StateLeds key={'ir_'+row.id} state={[row.if_state,row.ip_state]} title='interface and ip state' />]
 
  render(){
   return (!this.state) ? <Spinner /> : <ContentReport key='if_cr' header='Devices' thead={['Dev','Hostname','If','Class','IP','MAC','Name','Description','State']} trows={this.state.data} listItem={this.listItem} />

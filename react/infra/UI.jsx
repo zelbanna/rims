@@ -17,7 +17,7 @@ export const Spinner = () => <div className={uiStyles.spinOverlay}><div classNam
 
 const Led = (props) => <div className={{on:uiStyles.stateGreen, off:uiStyles.stateRed, unknown:uiStyles.stateGrey, up:uiStyles.stateGreen, down:uiStyles.stateRed, undefined:uiStyles.stateOrange, null:uiStyles.stateOrange}[props.state] || uiStyles.stateOrange} title={props.state} />
 
-export const StateLeds = (props) => <div className={uiStyles.stateLeds}>{(Array.isArray(props.state)) ? props.state.map((val,idx) => <Led key={idx} state={val} />) : <Led key='led' state={props.state} />}</div>
+export const StateLeds = (props) => <div title={props.title} className={uiStyles.stateLeds}>{(Array.isArray(props.state)) ? props.state.map((val,idx) => <Led key={idx} state={val} />) : <Led key='led' state={props.state} />}</div>
 
 // ***************************** Info ********************************
 //
