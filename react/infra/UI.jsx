@@ -34,7 +34,7 @@ export const InfoColumns = (props) => {
  if (props.columns > 2)
   for (let i = 2; i < props.columns; i++)
    start.push((i % 2 === 0) ? 'max-content' :'auto');
- return <form className={uiStyles.infoform}><div className={uiStyles.columns} style={{gridTemplateColumns:start.join(' '),...props.style}}>{props.children}</div></form>
+ return <div className={uiStyles.columns} style={{gridTemplateColumns:start.join(' '),...props.style}}>{props.children}</div>
 }
 InfoColumns.defaultProps = {columns:2};
 
