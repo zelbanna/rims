@@ -470,7 +470,8 @@ def check(aCTX, aArgs):
  with aCTX.db as db:
   db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
   networks = db.get_rows()
-  db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
+  # db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
+  db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia WHERE network_id IN (%s)"%(','.join(str(x['id']) for x in networks)))
   addresses = db.get_rows()
 
  if 'repeat' in aArgs:
