@@ -86,7 +86,7 @@ export class List extends Component {
 
  changeSearch = (mac,idx) => this.changeContent(<Info key='fdb_info' mac={mac} />)
 
- changeVisualize = (device_id) => ('changeSelf' in this.props && import('./visualize.jsx').then(lib => this.changeContent(<lib.Edit key={'viz_id_' + device_id} type='device' changeSelf={this.props.changeSelf} id={device_id} />)));
+ changeVisualize = (device_id) => ('changeSelf' in this.props && import('./visualize.jsx').then(lib => this.changeContent(<lib.Edit key={'viz_id_' + device_id} type='device' id={device_id} />)));
 
  listItem = (row,idx) => [row.device_id,row.hostname,row.vlan,row.snmp_index,row.name,<HrefButton key={'intf_'+idx} text={row.mac} onClick={() => this.setState({searchfield:row.mac})} />,<>
    <InfoButton key='info' onClick={() => this.changeSearch(row.mac,idx)} title='Find interface(s)' />
