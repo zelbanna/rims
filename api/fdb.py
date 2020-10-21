@@ -118,9 +118,9 @@ def check(aCTX, aArgs):
  def __fdb_check(lCTX,lArgs):
   try:
    module = import_module(f"rims.devices.{lArgs['type']}")
-   res = getattr(module,'Device',None)(aCTX, lArgs['id'], lArgs['ip']).fdb()
+   res = getattr(module,'Device',None)(lCTX, lArgs['id'], lArgs['ip']).fdb()
   except Exception as e:
-   aCTX.log(f"FDB_CHECK_ERROR: {e} ({lArgs['id']}/{lArgs['ip']})")
+   lCTX.log(f"FDB_CHECK_ERROR: {e} ({lArgs['id']}/{lArgs['ip']})")
   else:
    if res['status'] == 'OK':
     fdb = res.pop('FDB',[])
