@@ -154,7 +154,7 @@ def lookup(aCTX, aArgs):
 #
 #
 def check(aCTX, aArgs):
- """ Initiate a status check for all or a subset of devices' interfaces
+ """ Initiate a statistics check for all or a subset of devices' interfaces and extra data points
 
  Args:
   - networks (optional). List of subnet_ids to check
@@ -215,11 +215,14 @@ def process(aCTX, aArgs):
  def __check_sp(aDev):
   try:
    device = Device(aCTX, aDev['device_id'], aDev['ip'])
-   if device.data_points(aDev.get('data_points',[]), aDev.get('interfaces',[]))['status'] == 'OK':
+   res = device.data_points(aDev.get('data_points',[]), aDev.get('interfaces',[]))
+   if res['status'] == 'OK':
     report(aArgs = aDev)
     ret['reported'] += 1
+   else:
+    aCTX.log(f"statistics_process_collection_failed for device: {aDev['device_id']} => {res['info']}")
   except Exception as e:
-   aCTX.log("statistics_process_failed for device: %s =>%s"%(aDev['device_id'],str(e)))
+   aCTX.log(f"statistics_process_report_failed for device: {aDev['device_id']} => {str(e)}")
    return False
   else:
    return True
@@ -253,7 +256,7 @@ def report(aCTX, aArgs):
  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
  except Exception as e:
   ret['info'] = str(e)
-  aCTX.log(f'statistics_report_error: {str(e)}')
+  aCTX.log(f'statistics_report_tsdb_error: {str(e)}')
  else:
   ret['status'] = 'OK'
  return ret

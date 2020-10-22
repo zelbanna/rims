@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "7.1"
-__build__ = 388
+__build__ = 389
 __all__ = ['Context']
 
 from copy import copy
@@ -122,7 +122,9 @@ class Context():
    stdout.write(f"Load environment error: {e}\n")
    return False
   else:
-   self.log(f"______ Loading environment - version: {__build__} debug: {self.debug} ______")
+   self.log("______ Loading system environment _____")
+   self.log(f"Version: {__build__}")
+   self.log(f"Debug: {self.debug}")
    self.nodes.update(env['nodes'])
    self.services.update(env['services'])
    self.tokens.update(env.get('tokens',{}))
