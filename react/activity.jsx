@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Result, InfoArticle, InfoColumns, Spinner, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { TextLine, TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchInput } from './infra/Inputs.jsx';
+import { TextLine, TextAreaInput, TextInput, SelectInput, DateInput, TimeInput, SearchField } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, ConfigureButton, HrefButton, InfoButton, ReloadButton, SaveButton, SyncButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 
@@ -73,7 +73,7 @@ class List extends Component {
     <ContentList key='cl' header='Activities' thead={['Date','Type','']} trows={act_list} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
      <AddButton key='add' onClick={() => this.changeContent(<Info key='activity_info' id='new' />) } title='Add activity' />
-     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search activities' />
+     <SearchField key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search activities' />
     </ContentList>
     <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>

@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { post_call, rnd } from './infra/Functions.js';
 import { RimsContext, Spinner, LineArticle, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { TextInput, SearchInput, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
+import { TextInput, SearchField, SelectInput, DateInput, CheckboxInput } from './infra/Inputs.jsx';
 import { AddButton, DeleteButton, InfoButton, ReloadButton, SaveButton, SearchButton, HrefButton } from './infra/Buttons.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx';
 
@@ -69,7 +69,7 @@ class List extends Component {
     <ContentList key='cl' header='Inventory' thead={['ID','Serial','Model','']} trows={inv_list} listItem={this.listItem} result={this.state.result}>
      <ReloadButton key='reload' onClick={() => this.componentDidMount() } />
      <AddButton key='add' onClick={() => this.changeContent(<Info key={'inventory_new_' + rnd()} id='new' />) } title='Add inventory item' />
-     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory (case sensitive)' />
+     <SearchField key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory (case sensitive)' />
     </ContentList>
     <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>

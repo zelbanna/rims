@@ -2,8 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, Article, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
-import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, RevertButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchField, SearchInput } from './infra/Inputs.jsx';
+import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, RevertButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as FdbList, Device as FdbDevice, Search as FdbSearch } from './fdb.jsx';
 import styles from './infra/ui.module.css';
@@ -36,8 +36,8 @@ export class Main extends Component {
   this.context.loadNavigation(<NavBar key='device_navbar'>
    <NavDropDown key='dev_nav_devs' title='Devices'>
     <NavDropButton key='dev_nav_list' title='List' onClick={() => this.changeContent(<List key='dl' rack_id={this.state.rack_id} />)} />
-    <NavDropButton key='dev_nav_new' title='New' onClick={() => this.changeContent(<New key='device_new' ip='0.0.0.0' />)} />
     <NavDropButton key='dev_nav_srch' title='Search' onClick={() => this.changeContent(<Search key='ds' changeSelf={this.changeContent} />)} />
+    <NavDropButton key='dev_nav_new' title='New' onClick={() => this.changeContent(<New key='dn' ip='0.0.0.0' />)} />
     <NavDropButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
    </NavDropDown>
@@ -87,8 +87,6 @@ class Search extends Component {
   this.state = {field:'ip',search:''}
  }
 
- changeContent = (elem) => this.props.changeSelf(elem);
-
  onChange = (e) => this.setState({[e.target.name]:e.target.value})
 
  render() {
@@ -105,18 +103,22 @@ class Search extends Component {
      <option value='interface_id'>Interface ID</option>
     </optgroup>
     </SelectInput>
-    <TextInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
-    <SearchButton key='ds_btn_search' onClick={() => this.changeContent(<List key='device_list' {...this.state} />)} title='Search devices' />
+    <SearchInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
+    <SearchButton key='ds_btn_search' onClick={() => this.props.changeSelf(<List key='device_list' {...this.state} />)} title='Search devices' />
    </LineArticle>
  }
 }
 // ************** List **************
 //
+// Uses mountUpdate withing ContentDate to do a late binding of changeContent to avoid re-render of entire list for each changeContent
+//
 class List extends Component {
  constructor(props){
   super(props);
-  this.state = {data:null, sort:(props.hasOwnProperty('sort')) ? props.sort : 'hostname', rack_id:this.props.rack_id, searchfield:'', field:this.props.field, search:this.props.search}
+  this.state = {data:null, sort:(props.hasOwnProperty('sort')) ? props.sort : 'hostname', rack_id:this.props.rack_id, searchfield:'', field:this.props.field ? this.props.field:'id', search:this.props.search ? this.props.search:''}
  }
+
+ onChange = (e) => this.setState({[e.target.name]:e.target.value})
 
  componentDidMount(){
   post_call('api/device/list', {sort:this.state.sort, rack_id:this.state.rack_id, field:this.state.field, search:this.state.search}).then(result => this.setState(result));
@@ -159,11 +161,25 @@ class List extends Component {
    const thead = [<HeaderButton key='sort_ip' text='IP' highlight={(this.state.sort === 'ip')} onClick={() => this.sortList('ip')} />,<HeaderButton key='sort_hostname' text='Hostname' highlight={(this.state.sort === 'hostname')} onClick={() => this.sortList('hostname')} />,''];
    return <>
     <ContentList key='mcl' header='Device List' thead={thead} listItem={this.listItem} trows={dev_list}>
-     <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
-     <ItemsButton key='items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:undefined,search:undefined}); this.componentDidMount(); }} title='List all items' />
+     <ItemsButton key='items' onClick={() => { Object.assign(this.state,{rack_id:undefined,field:'ip',search:''}); this.componentDidMount(); }} title='List all items' />
      <AddButton key='add' onClick={() => this.changeContent(<New key='dn_new' ip='0.0.0.0' />)} title='Add device' />
-     <SearchButton key='devices' onClick={() => this.changeContent(<Discover key='device_discover' />) } title='Discover new devices' />
-     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search devices' />
+     <DevicesButton key='devices' onClick={() => this.changeContent(<Discover key='device_discover' />) } title='Discover new devices' />
+     <br />
+     <SelectInput key='field' id='field' onChange={this.onChange} value={this.state.field}>
+      <optgroup label='Group'>
+       <option value='hostname'>Hostname</option>
+       <option value='type'>Type</option>
+      </optgroup>
+      <optgroup label='Unique'>
+       <option value='id'>ID</option>
+       <option value='ip'>IP</option>
+       <option value='mac'>MAC</option>
+       <option value='interface_id'>Interface ID</option>
+      </optgroup>
+     </SelectInput>
+     <SearchInput key='search' id='search' onChange={this.onChange} value={this.state.search} placeholder='search' />
+     <SearchButton key='reload' onClick={() => this.componentDidMount()} title='Search specific device' />
+     <SearchField key='filter' searchFire={(s) => this.setState({searchfield:s})} placeholder='Filter devices'/>
     </ContentList>
     <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>

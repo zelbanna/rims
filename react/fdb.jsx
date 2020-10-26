@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { post_call } from './infra/Functions.js';
 import { Spinner, LineArticle, ContentReport, ContentList, ContentData } from './infra/UI.jsx';
-import { TextInput, SearchInput, SelectInput } from './infra/Inputs.jsx';
+import { TextInput, SearchField, SelectInput } from './infra/Inputs.jsx';
 import { HrefButton, InfoButton, NetworkButton, ReloadButton, SearchButton, SyncButton } from './infra/Buttons.jsx';
 
 // ************** Search **************
@@ -58,7 +58,7 @@ export class Device extends Component {
    return <ContentReport key='fd_cr' header='FDB' thead={['VLAN','SNMP','Interface','MAC','OUI']} trows={data} listItem={this.listItem}>
     <ReloadButton key='fd_btn_reload' onClick={() => this.componentDidMount()} />
     <SyncButton key='fd_btn_sync' onClick={() => this.syncFDB() } title='Resync FDB' />
-    <SearchInput key='fd_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' />
+    <SearchField key='fd_search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' />
     {this.state.wait}
    </ContentReport>
   } else
@@ -100,7 +100,7 @@ export class List extends Component {
    return <>
     <ContentList key='cl' header='FDB' thead={['ID','Hostname','VLAN','SNMP','Interface','MAC','']} trows={data} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => this.componentDidMount()} />
-     <SearchInput key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' text={this.state.searchfield} />
+     <SearchField key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search MAC' text={this.state.searchfield} />
     </ContentList>
     <ContentData key='cda' mountUpdate={(fun) => this.changeContent = fun} />
    </>

@@ -16,6 +16,7 @@ export const StateLine = (props) => line_template(StateLeds(props),props);
 //
 // Inputs
 //
+export const SearchInput = (props) => <><label htmlFor={props.id} title={props.title} className={(props.label) ? styles.fixed : styles.auto}>{auto_label(props)}:</label><input className={styles.search} type='text' id={props.id} name={props.id} onChange={props.onChange} value={(props.value !== null) ? props.value : ''} placeholder={props.placeholder} title={props.extra} size={props.size} /></>
 export const TextInput = (props) => input_template('text',props);
 export const UrlInput = (props) => input_template('url',props);
 export const EmailInput = (props) => input_template('email',props);
@@ -43,11 +44,11 @@ export const SelectInput = (props) => <>
  </>
 
 //
-// SearchInput
+// SearchField
 // - property: function 'searchFire' which takes one argument that is the current value of the input
 // - text: text use in the searchfield. A means for external input
 //
-export class SearchInput extends PureComponent{
+export class SearchField extends PureComponent{
  constructor(props){
   super(props)
   this.state = {text:(this.props.text) ? this.props.text : ''}

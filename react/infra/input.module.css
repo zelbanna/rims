@@ -6,13 +6,13 @@
 TODO: input-color: transparent
 */
 
-.auto { color:var(--std-txt-color); font-weight:bold; padding:2px; text-transform:capitalize; }
+.auto { color:var(--std-txt-color); font-weight:bold; padding:2px; text-transform:capitalize; vertical-align:middle }
 .auto[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
-.fixed { color:var(--std-txt-color); font-weight:bold; padding:2px; }
+.fixed { color:var(--std-txt-color); font-weight:bold; padding:2px; vertical-align:middle }
 .fixed[title]{ text-decoration-line: underline; text-decoration-style:dashed; -webkit-text-decoration-line: underline; -webkit-text-decoration-style:dashed;}
 
 
-.input { -webkit-appearance:none; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; border-radius:2px; font-size:1rem; overflow:visible }
+.input { -webkit-appearance:none; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; border-radius:2px; font-size:1rem; overflow:visible; vertical-align:middle }
 .input:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0 0 6px -2px var(--high-color), 0 0 3px -1px var(--high-color) inset;}
 .input::-webkit-input-placeholder { color: #9CA6B0; }
 .input::-moz-placeholder { opacity:1; color: #9CA6B0; }
@@ -30,3 +30,9 @@ TODO: input-color: transparent
 .searchfield::-webkit-input-placeholder { color: #9CA6B0; }
 .searchfield::-moz-placeholder { opacity:1; color: #9CA6B0; }
 .searchfield::-webkit-search-cancel-button{ position:relative; }
+
+.search { -webkit-appearance:none; height:1.9rem; margin: 3px 0 3px 0; color:var(--std-txt-color); background-color: transparent; border-style:solid; border-width:1px; border-color:transparent; border-bottom-style:dotted; border-bottom-color:var(--main-color); outline:none; border-radius:2px; font-size:1rem; overflow:visible; vertical-align:middle }
+.search:focus { border-bottom-style:solid; border-color:var(--high-color)!important; box-shadow: 0 0 6px -2px var(--high-color), 0 0 3px -1px var(--high-color) inset;}
+.search::-webkit-input-placeholder { color: #9CA6B0; }
+.search::-moz-placeholder { opacity:1; color: #9CA6B0; }
+.search::-webkit-search-cancel-button{ position:relative; }
