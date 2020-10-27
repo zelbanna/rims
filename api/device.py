@@ -635,7 +635,7 @@ def system_info_discover(aCTX, aArgs):
 
  Args:
   - network_id (optional)
-  - lookup (optional). Bool, default False
+  - lookup (optional). Bool, default False. Will do extra update of device models based on learned info
 
  Output:
  """
