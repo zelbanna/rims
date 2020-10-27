@@ -40,6 +40,7 @@ export class Main extends Component {
     <NavDropButton key='dev_nav_new' title='New' onClick={() => this.changeContent(<New key='dn' ip='0.0.0.0' />)} />
     <NavDropButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
+    <NavDropButton key='dev_nav_logs' title='Logs' onClick={() => this.changeContent(<Logs key='dlogs' count='80'/>)} />
    </NavDropDown>
    <NavDropDown key='dev_nav_tools' title='Tools'>
     <NavDropButton key='dev_nav_fdbx' title='FDB Search' onClick={() => this.changeContent(<FdbSearch key='fdb_search' changeSelf={this.changeContent} />)} />
@@ -617,7 +618,7 @@ class Control extends Component {
 //
 export class Logs extends Component {
  componentDidMount(){
-  post_call('api/device/log_get',{id:this.props.id}).then(result => this.setState(result));
+  post_call('api/device/log_get',{id:this.props.id, count:this.props.count}).then(result => this.setState(result));
  }
 
  clearLog = () => post_call('api/device/log_clear',{id:this.props.id}).then(result => (result.deleted && this.setState({data:[]})));
