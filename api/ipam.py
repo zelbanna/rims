@@ -495,7 +495,7 @@ def process(aCTX, aArgs):
  """
  ret = {'status':'OK','function':'ipam_process'}
 
- report = aCTX.node_function('master','ipam','report', aHeader= {'X-Log':'false'})
+ report = aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
 
  def __check_ip(aDev):
   aDev['old'] = aDev['state']

@@ -510,7 +510,7 @@ def process(aCTX, aArgs):
  Output:
  """
  from rims.devices.generic import Device
- report = aCTX.node_function('master','interface','report', aHeader= {'X-Log':'false'})
+ report = aCTX.node_function(aCTX.node if aCTX.db else 'master','interface','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'interface_process','changed':0}
 
  def __check_if(aDev):

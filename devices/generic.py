@@ -19,7 +19,7 @@ class Device(object):
  def __init__(self, aCTX, aID, aIP = None):
   self._id = aID
   self._ctx = aCTX
-  self._ip = aIP if aIP else aCTX.node_function('master','device','management')({'id':aID})['data']['ip']
+  self._ip = aIP if aIP else aCTX.node_function(aCTX.node if aCTX.db else 'master','device','management')({'id':aID})['data']['ip']
   if self._ip is None:
    raise Exception('GenericDevice(%s) - No IP passed or could be found'%aID)
 
@@ -35,7 +35,7 @@ class Device(object):
 
  def __exit__(self, *ctx_info): pass
 
- def log(self, aMsg): self._ctx.node_function('master','device','log_put')(aArgs = {'message':aMsg[:96], 'id':self._id})
+ def log(self, aMsg): self._ctx.node_function(self._ctx.node if self._ctx.db else 'master','device','log_put')(aArgs = {'message':aMsg[:96], 'id':self._id})
 
  def get_ip(self): return self._ip
 
