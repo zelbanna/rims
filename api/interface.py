@@ -73,7 +73,7 @@ def info(aCTX, aArgs):
     try:
      aArgs['snmp_index'] = int(aArgs['snmp_index'])
     except:
-     aArgs['snmp_index'] = 0
+     aArgs['snmp_index'] = None
    if 'connection_id' in aArgs:
     try:
      aArgs['connection_id'] = int(aArgs['connection_id'])
@@ -163,7 +163,7 @@ def info(aCTX, aArgs):
    if ret['data']['connection_id'] and (db.query("SELECT interface_id,device_id FROM interfaces AS di WHERE connection_id = %(connection_id)s AND device_id <> %(device_id)s"%ret['data']) > 0):
     ret['peer'] = db.get_row()
   else:
-   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':0,'name':aArgs.get('name','Unknown'),'description':aArgs.get('description','Unknown'),'class':aArgs.get('class','wired')}
+   ret['data'] = {'interface_id':'new','device_id':int(aArgs['device_id']),'ipam_id':None,'connection_id':None,'mac':aArgs.get('mac','00:00:00:00:00:00'),'state':'unknown','snmp_index':None,'name':aArgs.get('name','Unknown'),'description':aArgs.get('description','Unknown'),'class':aArgs.get('class','wired')}
    ret['peer'] = None
    if 'ip' in extra:
     ret['alternatives'] = []
