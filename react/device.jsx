@@ -239,6 +239,7 @@ export class Info extends Component {
       <TextInput key='mac' id='mac' label='MAC' value={data.mac} title='System MAC' onChange={this.onChange} />
       {has_ip && <TextLine key='ip' id='ip' label='Mgmt IP' text={extra.ip} />}
       {has_ip && <StateLine key='state' id='state' state={extra.state} />}
+      <TextLine key='system_id' id='system_id' label='System ID' text={this.props.id} />
      </InfoColumns>
      <InfoColumns key='ic_extra' style={{float:'left'}}>
       <SelectInput key='class' id='class' value={data.class} onChange={this.onChange}>{this.state.classes.map(row => <option key={row} value={row}>{row}</option>)}</SelectInput>
