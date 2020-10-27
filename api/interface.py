@@ -75,7 +75,8 @@ def info(aCTX, aArgs):
     except:
      aArgs['snmp_index'] = None
     else:
-     aArgs['snmp_index'] = None if aArgs['snmp_index'] == 0
+     if aArgs['snmp_index'] == 0:
+      aArgs['snmp_index'] = None
    if 'connection_id' in aArgs:
     try:
      aArgs['connection_id'] = int(aArgs['connection_id'])
