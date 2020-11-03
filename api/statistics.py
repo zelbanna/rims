@@ -249,10 +249,10 @@ def report(aCTX, aArgs):
  ts = int(datetime.now().timestamp())
  if 'interfaces' in aArgs:
   tmpl = ('interface,host_id={0},host_ip={1},if_id=%i,if_name=%b in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args.extend([tmpl%(x['interface_id'], x['name'].replace(' ','\ ').encode(), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces']])
+  args.extend([tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ ').encode(), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces']])
  if 'data_points' in aArgs:
   tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args.extend([tmpl%(m['measurement'].encode(), m['tags'].replace(' ','\ ').encode(), (','.join(['%s=%s'%(x['name'].replace(' ','\ '),x['value']) for x in m['values']])).encode()) for m in aArgs['data_points']])
+  args.extend([tmpl%(m['measurement'].encode(), m['tags'].replace(' ','\ ').encode(), (','.join(['%s=%s'%(x['name'][:20].replace(' ','\ '),x['value']) for x in m['values']])).encode()) for m in aArgs['data_points']])
  try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
  except Exception as e:
   ret['info'] = str(e)

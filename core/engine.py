@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "7.2"
-__build__ = 390
+__build__ = 391
 __all__ = ['Context']
 
 from copy import copy
@@ -271,6 +271,7 @@ class Context():
     db.query(f"SELECT id,alias FROM users WHERE id IN ({','.join([str(v['id']) for v in remain])})")
     alias = {x['id']:x['alias'] for x in db.get_rows()}
    users = [{'ip':v['ip'],'alias':alias[v['id']],'timeout':min(int((v['expires']-now).total_seconds()),7200)} for v in remain]
+   self.log(f"Resyncing {len(users)} users")
    for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
     self.node_function(infra['node'], f"services.{infra['service']}", 'sync')(aArgs = {'id':infra['id'],'users':users})
   garbage_collect()

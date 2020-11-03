@@ -624,7 +624,7 @@ export class Logs extends Component {
  clearLog = () => post_call('api/device/log_clear',{id:this.props.id}).then(result => (result.deleted && this.setState({data:[]})));
 
  render() {
-  return (!this.state) ? <Spinner /> : <ContentReport key='dev_log_cr' header='Devices' thead={['Time','Message']} trows={this.state.data} listItem={(row) => [row.time,row.message]}>
+  return (!this.state) ? <Spinner /> : <ContentReport key='dev_log_cr' header='Logs' thead={['Time','Message']} trows={this.state.data} listItem={(row) => [row.time,row.message]}>
    <DeleteButton key='devlog_btn_delete' onClick={() => this.clearLog()} title='Clear device logs' />
   </ContentReport>
  }
