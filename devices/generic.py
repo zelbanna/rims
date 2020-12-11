@@ -130,6 +130,7 @@ class Device(object):
       iif.update({'in8s':int(ifentry[0].val),'inUPs':int(ifentry[1].val),'out8s':int(ifentry[2].val),'outUPs':int(ifentry[3].val)})
      except Exception as e:
       self.log(f"generic_data_point: convertion not ok for device: {self._id} and index {iif['snmp_index']}")
+      iif.update({'in8s':0,'inUPs':0,'out8s':0,'outUPs':0})
    for measurement in aGeneric:
     # Wrap all data with the same tag into the same session object
     objs = VarList(*[o['oid'] for o in measurement['values']])
