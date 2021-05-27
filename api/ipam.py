@@ -122,7 +122,7 @@ def network_discover(aCTX, aArgs):
  """
  def __detect_thread(aIP,aIPs):
   if __detect_state(aIP) or __detect_state(aIP):
-   aIPs.append(str(aIP))
+   aIPs.append(aIP)
   return True
 
  addresses = []
@@ -142,7 +142,7 @@ def network_discover(aCTX, aArgs):
    sema = aCTX.semaphore(simultaneous)
    for ip in net.hosts():
     if ip not in existing:
-     aCTX.queue_semaphore(__detect_thread,sema,ip,addresses)
+     aCTX.queue_semaphore(__detect_thread,sema,str(ip),addresses)
    for _ in range(simultaneous):
     sema.acquire()
   except Exception as err:

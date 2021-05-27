@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "7.2"
-__build__ = 391
+__version__ = "7.3"
+__build__ = 392
 __all__ = ['Context']
 
 from copy import copy
@@ -53,12 +53,21 @@ class Context():
   self._analytics = {'files':{},'modules':{}}
 
   database   = self.config.get('database')
-  self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
   self.node  = self.config['id']
   self.token = self.config.get('token')
   self.path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
+  self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
+  if self.config.get('influxdb') and self.config['influxdb'].get('version') == 2:
+   try:
+    from influxdb_client import InfluxDBClient
+    self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org'])
+    self.influxdb_writer = self.influxdb_client.write_api()
+    with self.influxdb_client.write_api() as write_api:
+     write_api.write(bucket="rims", record=f"engine,node={self.node} value=1")
+   except Exception as e:
+    self.log(f'Failed loading InfluxDB client - check install and settings ({e})')
   self.ipc = {}
   self.cache = {}
   self.nodes = {}
@@ -87,6 +96,14 @@ class Context():
   ctx_new = copy(self)
   database = self.config.get('database')
   ctx_new.db = DB(database['name'],database['host'],database['username'],database['password']) if database else None
+  if self.config.get('influxdb') and self.config['influxdb'].get('version') == 2:
+   try:
+    from influxdb_client import InfluxDBClient
+    from influxdb_client.client.write_api import SYNCHRONOUS
+    ctx_new.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org'])
+    ctx_new.influxdb_writer = ctx_new.influxdb_client.write_api(write_options=SYNCHRONOUS)
+   except:
+    pass
   return ctx_new
 
  #
@@ -275,6 +292,7 @@ class Context():
    for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
     self.node_function(infra['node'], f"services.{infra['service']}", 'sync')(aArgs = {'id':infra['id'],'users':users})
   garbage_collect()
+  self.log("House keeping => OK")
   return {'function':'house_keeping','status':'OK'}
 
  ################# API AND INTERNAL FUNCTIONS ##############

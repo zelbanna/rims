@@ -53,7 +53,7 @@ class Junos(GenericDevice):
    self.log("System Error - Unable to properly close router connection: " + str(err))
 
  def interfaces(self):
-  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla']}
+  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla','fxp']}
 
  #
  # Netconf shit

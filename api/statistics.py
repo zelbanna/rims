@@ -209,7 +209,7 @@ def process(aCTX, aArgs):
  Output:
  """
  from rims.devices.generic import Device
- nodes = [x['node'] for x in aCTX.services.values() if x['service'] == 'influxdb']
+ nodes = [x['node'] for x in aCTX.services.values() if x['type'] == 'TSDB']
  report = aCTX.node_function(nodes[0],'statistics','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'statistics_process','reported':0}
  def __check_sp(aDev):
@@ -233,7 +233,8 @@ def process(aCTX, aArgs):
 #
 #
 def report(aCTX, aArgs):
- """Function updates statistics for a particular devices to influxdb - service must be running on this node
+ """Function updates statistics for a particular devices to influxdb - service must be running on this node.
+ Line protocol uses nanosecond precision so we add 9 zeros for each write
 
  Args:
   - device_id (required). Device id
@@ -248,12 +249,14 @@ def report(aCTX, aArgs):
  db = aCTX.config['influxdb']
  ts = int(datetime.now().timestamp())
  if 'interfaces' in aArgs:
-  tmpl = ('interface,host_id={0},host_ip={1},if_id=%i,if_name=%b in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args.extend([tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ ').encode(), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces']])
+  tmpl = 'interface,host_id={0},host_ip={1},if_id=%i,if_name=%s in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}000000000'.format(aArgs['device_id'],aArgs['ip'],ts)
+  args.extend([tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ '), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces']])
  if 'data_points' in aArgs:
-  tmpl = ('%b,host_id={0},host_ip={1},%b %b {2}'.format(aArgs['device_id'],aArgs['ip'],ts)).encode()
-  args.extend([tmpl%(m['measurement'].encode(), m['tags'].replace(' ','\ ').encode(), (','.join(['%s=%s'%(x['name'][:20].replace(' ','\ '),x['value']) for x in m['values']])).encode()) for m in aArgs['data_points']])
- try:   aCTX.rest_call("%s/write?db=%s&precision=s"%(db['url'],db['database']), aMethod = 'POST', aApplication = 'octet-stream', aArgs = b'\n'.join(args))
+  tmpl = '%s,host_id={0},host_ip={1},%s %s {2}000000000'.format(aArgs['device_id'],aArgs['ip'],ts)
+  args.extend([tmpl%(m['measurement'], m['tags'].replace(' ','\ '), ','.join(['%s=%s'%(x['name'][:20].replace(' ','\ '),x['value']) for x in m['values']])) for m in aArgs['data_points']])
+ try:
+  with aCTX.influxdb_client.write_api() as write_api:
+   write_api.write(bucket='rims', record = args)
  except Exception as e:
   ret['info'] = str(e)
   aCTX.log(f'statistics_report_tsdb_error: {str(e)}')

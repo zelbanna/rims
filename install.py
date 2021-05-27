@@ -70,6 +70,15 @@ if config.get('database'):
  else:
   res['modules']['pymysql'] = 'Installed'
 
+if config.get('influxdb'):
+ try:
+  import influxdb_client
+ except ImportError as e:
+  res['info']['influxdb'] = f'installing ({e})'
+  pipmain(['install','-q','influxdb_client'])
+ else:
+  res['modules']['influxdb'] = 'Installed'
+
 if config.get('netconf') or config.get('esxi'):
  try:
   import paramiko

@@ -26,7 +26,8 @@ def database_list(aCTX, aArgs):
 ################################# Points ##############################
 #
 #
-def write_points(aCTX, aArgs):
+
+def write(aCTX, aArgs):
  """ Function writes data points to configured influxdb
 
  Args:
