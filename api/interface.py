@@ -302,10 +302,10 @@ def snmp(aCTX, aArgs):
      if entry:
       mac = mac2int(entry.get('mac','0'))
       if not ((entry['name'] == con['name']) and (entry['description'] == con['description']) and (mac == con['mac'])):
-       ret['update'] += db.execute("UPDATE interfaces SET name = '%s', description = '%s', mac = %s WHERE interface_id = %s"%(entry['name'][:24],entry['description'],mac,con['interface_id']))
+       ret['update'] += db.execute("UPDATE interfaces SET name = '%s', description = '%s', mac = %s WHERE interface_id = %s"%(entry['name'][:24],entry['description'][:24],mac,con['interface_id']))
     for key, entry in data.items():
      if entry['state'] == 'up':
-      ret['insert'] += db.execute("INSERT INTO interfaces (device_id,name,description,snmp_index,mac) VALUES (%s,'%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][:24],entry['description'],key,mac2int(entry['mac'])))
+      ret['insert'] += db.execute("INSERT INTO interfaces (device_id,name,description,snmp_index,mac) VALUES (%s,'%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][:24],entry['description'][:24],key,mac2int(entry['mac'])))
      else:
       ret['skip'] += 1
  return ret

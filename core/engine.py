@@ -25,6 +25,7 @@ from traceback import format_exc
 from types import ModuleType
 from urllib.parse import unquote, parse_qs
 from queue import Queue
+from ipaddress import ip_address
 from rims.core.common import DB, rest_call, Scheduler, RestException
 
 ##################################################### Context #######################################################
@@ -53,21 +54,18 @@ class Context():
   self._analytics = {'files':{},'modules':{}}
 
   database   = self.config.get('database')
+  self.ip    = None
   self.node  = self.config['id']
   self.token = self.config.get('token')
   self.path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
   self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('influxdb') and self.config['influxdb'].get('version') == 2:
-   try:
-    from influxdb_client import InfluxDBClient
-    self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org'])
-    self.influxdb_writer = self.influxdb_client.write_api()
-    with self.influxdb_client.write_api() as write_api:
-     write_api.write(bucket="rims", record=f"engine,node={self.node} value=1")
-   except Exception as e:
-    self.log(f'Failed loading InfluxDB client - check install and settings ({e})')
+  if self.config.get('influxdb'):
+   from influxdb_client import InfluxDBClient
+   self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
+   with self.influxdb_client.write_api() as write_api:
+    write_api.write(bucket="rims", record=f"engine,node={self.node} value=true")
   self.ipc = {}
   self.cache = {}
   self.nodes = {}
@@ -96,14 +94,9 @@ class Context():
   ctx_new = copy(self)
   database = self.config.get('database')
   ctx_new.db = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('influxdb') and self.config['influxdb'].get('version') == 2:
-   try:
-    from influxdb_client import InfluxDBClient
-    from influxdb_client.client.write_api import SYNCHRONOUS
-    ctx_new.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org'])
-    ctx_new.influxdb_writer = ctx_new.influxdb_client.write_api(write_options=SYNCHRONOUS)
-   except:
-    pass
+  if self.config.get('influxdb'):
+   from influxdb_client import InfluxDBClient
+   self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
   return ctx_new
 
  #
@@ -128,6 +121,10 @@ class Context():
    env['nodes']['master']['url'] = self.config['master']
    for v in env['tokens'].values():
     v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=timezone.utc)
+  try:
+   self.ip = ip_address(env['nodes'][self.node]['url'].split(':')[1][2:].split('/')[0])
+  except:
+   self.ip = None
   return env
 
  #

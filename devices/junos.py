@@ -53,7 +53,7 @@ class Junos(GenericDevice):
    self.log("System Error - Unable to properly close router connection: " + str(err))
 
  def interfaces(self):
-  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla','fxp']}
+  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla','fxp','em0','vme']}
 
  #
  # Netconf shit
@@ -123,6 +123,9 @@ class Junos(GenericDevice):
               '%s protocols lldp neighbour-port-info-display port-id'%base,
               '%s protocols lldp interface all'%base,
               '%s class-of-service host-outbound-traffic forwarding-class network-control'%base])
+
+  if self._ctx.ip:
+   ret.append('%s snmp community %s clients %s/%s'%(base,self._ctx.config['snmp']['read'],self._ctx.ip,self._ctx.ip.max_prefixlen))
 
   if self._ctx.config.get('tacplus'):
    pass

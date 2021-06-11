@@ -1,110 +1,77 @@
-"""InfluxDB API module. Implements influxdb interaction"""
+"""InfluxDB2 API module. Implements influxdb interaction"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TSDB"
 
-############################### Databases #############################
-#
-#
-def database_list(aCTX, aArgs):
- """Function list databases
-
- Args:
-  - id (required). Server id on master node
-
- Output:
- """
- ret = {}
- db = aCTX.config['influxdb']
- try: ret['databases'] = [x[0] for x in aCTX.rest_call("%s/query"%(db['url']), aMethod='POST', aApplication = 'x-www-form-urlencoded', aArgs = {'q':'show databases'})['results'][0]['series'][0]['values']]
- except Exception as e:
-  ret['status'] = 'NOT_OK'
-  ret['info'] = str(e)
- else: ret['status'] = 'OK'
- return ret
-
 ################################# Points ##############################
 #
 #
-
 def write(aCTX, aArgs):
- """ Function writes data points to configured influxdb
+ """ Function writes data points to configured influxdb2
 
  Args:
-  - id (required). Server id on master node
-  - series (required)
+  - measurement (required)
   - value (required)
   - tags (optional)
-  - precision (optional), (h,m,s,ms,u,ns), default to s
+  - bucket (optional), default to 'rims'
 
  Output:
   - status
 
  """
  ret = {}
- db = aCTX.config['influxdb']
- args = '%s,%s value=%s'%(aArgs['series'],"default" if 'tags' not in aArgs else ','.join(['%s=%s'%(x[0],x[1]) for x in aArgs['tags']]),aArgs['value'])
- try:  aCTX.rest_call("%s/write?db=%s&precision=%s"%(db['url'],db['database'],aArgs.get('precision','s')), aMethod = 'POST', aApplication = 'octet-stream', aArgs = args.encode())
+ args = '%s,%s value=%s'%(aArgs['measurement'],"default=default" if 'tags' not in aArgs else ','.join(['%s=%s'%(x[0],x[1]) for x in aArgs['tags']]),aArgs['value'])
+ try:
+  with aCTX.influxdb_client.write_api() as write_api:
+   write_api.write(bucket=aArgs.get('bucket','rims'), record=args)
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
  else: ret ['status'] = 'OK'
  return ret
 
-################################# Tools ###############################
 #
 #
-def stats(aCTX, aArgs):
- """Function shows live stats from node influxdb
+def query(aCTX, aArgs):
+ """ Query the flux database
 
  Args:
-  - seconds (optional).
+  - query, string
 
  Output:
+  - data
+  - status
+
  """
  ret = {}
  try:
-  to = int(aArgs.get('seconds',10))
-  ret['stats'] = aCTX.rest_call("%s/debug/requests?seconds=%i"%(aCTX.config['influxdb']['url'],to), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aTimeout = to + 5)
+  query_api = aCTX.influxdb_client.query_api()
+  res = query_api.query_csv(query = 'from(bucket: "rims") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "interface") |> filter(fn: (r) => r["_field"] == "in8s" or r["_field"] == "inUPs" or r["_field"] == "out8s" or r["_field"] == "outUPs") |> filter(fn: (r) => r["host_id"] == "14") |> filter(fn: (r) => r["if_name"] == "ge-0/0/0")')
+  for r in res:
+   print(r)
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
- else: ret['status'] = 'OK'
+ else:
+  ret ['status'] = 'OK'
  return ret
-
+################################# Tools ###############################
 #
 #
 def sync(aCTX, aArgs):
- """ Function creates database in case it does not exist
+ """ NO OP for the moment
 
  Args:
   - id (required). Server id on master node
 
  Output:
  """
- ret = {}
- db = aCTX.config['influxdb']
- # INTERNAL rims.api.influxdb
- if db['database'] not in database_list(aCTX, aArgs)['databases']:
-  try:
-   for line in ["CREATE DATABASE %s"%db['database'], "CREATE RETENTION POLICY one_week ON %s DURATION 1w REPLICATION 1 default"%db['database']]:
-    res = aCTX.rest_call("%s/query"%(db['url']), aApplication = 'x-www-form-urlencoded', aArgs = {'q':line}, aDataOnly = False, aMethod = 'POST')
-  except Exception as e:
-   ret['status'] = 'NOT_OK'
-   ret['info'] = str(e)
-  else:
-   ret['status'] = 'OK' if res['code'] == 200 else 'NOT_OK'
- else:
-  ret['status'] = 'OK'
-  ret['extra'] = 'existed'
- return ret
+ return {'status':'NO_OP'}
 
 #
 #
 def status(aCTX, aArgs):
- """Function shows stats form node influxdb...
-
- TODO++: Format nicer
+ """Function shows stats from node influxdb2...
 
  Args:
   - count (optional)
@@ -113,7 +80,7 @@ def status(aCTX, aArgs):
  """
  ret = {}
  try:
-  ret['stats'] = aCTX.rest_call("%s/query"%(aCTX.config['influxdb']['url']), aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = {'q':'SHOW STATS'})['results'][0]
+  ret['stats'] = aCTX.influxdb_client.health().to_dict()
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -139,7 +106,7 @@ def parameters(aCTX, aArgs):
   - parameters
  """
  settings = aCTX.config.get('influxdb',{})
- params = ['url','database']
+ params = ['url','org','version','token'] if settings.get('version',2) else ['url','version','username','password']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
@@ -166,3 +133,33 @@ def stop(aCTX, aArgs):
  """
  return {'status':'NO OP'}
 
+#
+#
+def sync(aCTX, aArgs):
+ """ Function creates database in case it does not exist, for v1
+
+ Args:
+  - id (required). Server id on master node
+
+ Output:
+ """
+ ret = {'status':'OK'}
+ db = aCTX.config['influxdb']
+ if db['version'] == 1:
+  try:
+   ret['databases'] = [x[0] for x in aCTX.rest_call("%s/query"%(db['url']), aMethod='POST', aApplication = 'x-www-form-urlencoded', aArgs = {'q':'show databases'})['results'][0]['series'][0]['values']]
+   if 'rims' not in ret['databases']:
+    try:
+     for line in ["CREATE DATABASE %s"%db['database'], "CREATE RETENTION POLICY one_week ON %s DURATION 1w REPLICATION 1 default"%db['database']]:
+      res = aCTX.rest_call("%s/query"%(db['url']), aApplication = 'x-www-form-urlencoded', aArgs = {'q':line}, aDataOnly = False, aMethod = 'POST')
+    except Exception as e:
+     ret['status'] = 'NOT_OK'
+     ret['info'] = str(e)
+    else:
+     ret['status'] = 'OK' if res['code'] == 200 else 'NOT_OK'
+   else:
+    ret['extra'] = 'existed'
+  except Exception as e:
+   ret['status'] = 'NOT_OK'
+   ret['info'] = str(e)
+ return ret
