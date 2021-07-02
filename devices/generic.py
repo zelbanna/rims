@@ -139,7 +139,7 @@ class Device(object):
      raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
     else:
      for i,o in enumerate(measurement['values']):
-      o['value'] = objs[i].val.decode()
+      o['value'] = objs[i].val.decode() if objs[i].val else None
   except Exception as e:
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)

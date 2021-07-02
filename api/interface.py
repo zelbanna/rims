@@ -516,7 +516,7 @@ def process(aCTX, aArgs):
  report = aCTX.node_function(aCTX.node if aCTX.db else 'master','interface','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'interface_process','changed':0}
 
- def __check_if(aDev):
+ def __check_IF(aDev):
   if aDev['interfaces']:
    try:
     device = Device(aCTX, aDev['device_id'], aDev['ip'])
@@ -532,7 +532,7 @@ def process(aCTX, aArgs):
      ret['changed'] += len(changed)
      report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
 
- aCTX.queue_block(__check_if,aArgs['devices'])
+ aCTX.queue_block(__check_IF,aArgs['devices'])
  return ret
 
 #

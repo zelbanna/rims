@@ -208,9 +208,14 @@ class Statistics extends Component {
  }
 
  updateItems = (range) => post_call('api/statistics/query_interface',{device_id:this.props.device_id, interface_id:this.props.interface_id, range:range}).then(result => {
-  const dataset = new this.vis.DataSet(result.data.flatMap(({time, in8s, out8s, inUPs, outUPs}) => [{x:new Date(time*1000), y:in8s, group:'ib'},{x:new Date(time*1000), y:out8s, group:'ob'}, {x:new Date(time*1000), y:inUPs, group:'ip'},{x:new Date(time*1000), y:outUPs, group:'op'}]));
-  this.graph.setItems(dataset);
-  this.graph.fit();
+  if (result.status === 'OK') {
+   const pos = {};
+   const names = {'in8s':'ib','out8s':'ob','inUPs':'ip','outUPs':'op'};
+   result.header.forEach((item,index) => pos[item] = index);
+   const dataset = new this.vis.DataSet(result.data.map(params => ({ x:params[pos['_time']], y:params[pos['_value']] * (params[pos['_field']].substr(-2) === '8s' ? 8/1024 : 1), group:names[params[pos['_field']]] })));
+   this.graph.setItems(dataset);
+   this.graph.fit();
+  }
  });
 
  rangeChange = (e) => {

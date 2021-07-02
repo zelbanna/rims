@@ -11,18 +11,27 @@ def query_interface(aCTX, aArgs):
   - device_id (required)
   - interface_id (required)
   - range (optional). hours, default: 1
-  - unit (optional). 'b','k','m', default: 'k' as kbps
 
  Output:
+  - header, list of column names as flux doesn't respect ordering
+  - data, list of rows according to 'header' layout.
  """
- db = aCTX.config['influxdb']
- unit = {'b':1,'k':1024,'m':1048576}.get(aArgs.get('unit','k'))
- args = {'q':"SELECT non_negative_derivative(mean(in8s), 1s)*8/{0}, non_negative_derivative(mean(out8s), 1s)*8/{0}, non_negative_derivative(mean(inUPs), 1s), non_negative_derivative(mean(outUPs), 1s) FROM interface WHERE host_id='{1}' AND if_id='{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(null)".format(unit,aArgs['device_id'],aArgs['interface_id'],aArgs.get('range','1'))}
- try: res = aCTX.rest_call(f'{db["url"]}/query?db={db["database"]}&epoch=s', aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
+ ret = {}
+ query = f'from(bucket: "rims") |> range(start: -{aArgs.get("range",1)}h) |> filter(fn: (r) => r.host_id == "{aArgs["device_id"]}" and r.if_id == "{aArgs["interface_id"]}") |> derivative(nonNegative: true, unit: 1s) |> keep(columns: ["_time","_field","_value"])'
+ try:
+  dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True}
+  res = aCTX.influxdb_client.query_api().query_csv(dialect=dialect, query = query)
+  print(res)
+  next(res)
+  ret['header'] = next(res)[3:]
+  ret['data'] = [r[3:] for r in res]
+  ret['data'].pop()
+  ret['status'] = 'OK'
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
  else:
-  return {'data':[{'time':x[0],'in8s':x[1],'out8s':x[2],'inUPs':x[3],'outUPs':x[4]} for x in res['series'][0]['values']] if 'series' in res else []}
+  return ret
+
 
 #
 #
@@ -33,7 +42,6 @@ def query_device(aCTX, aArgs):
   - device_id (required)
   - measurement (required)
   - name (required)
-  - range (optional). hours, default: 1
 
  Output:
  """
@@ -212,7 +220,7 @@ def process(aCTX, aArgs):
  nodes = [x['node'] for x in aCTX.services.values() if x['type'] == 'TSDB']
  report = aCTX.node_function(nodes[0],'statistics','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'statistics_process','reported':0}
- def __check_sp(aDev):
+ def __check_SP(aDev):
   try:
    device = Device(aCTX, aDev['device_id'], aDev['ip'])
    res = device.data_points(aDev.get('data_points',[]), aDev.get('interfaces',[]))
@@ -227,7 +235,7 @@ def process(aCTX, aArgs):
   else:
    return True
 
- aCTX.queue_block(__check_sp,aArgs['devices'])
+ aCTX.queue_block(__check_SP,aArgs['devices'])
  return ret
 
 #
@@ -249,14 +257,14 @@ def report(aCTX, aArgs):
  db = aCTX.config['influxdb']
  ts = int(datetime.now().timestamp())
  if 'interfaces' in aArgs:
-  tmpl = 'interface,host_id={0},host_ip={1},if_id=%i,if_name=%s in8s=%ii,inUPs=%ii,out8s=%ii,outUPs=%ii {2}000000000'.format(aArgs['device_id'],aArgs['ip'],ts)
-  args.extend([tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ '), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces']])
+  tmpl = 'interface,host_id={0},host_ip={1},if_id=%i,if_name=%s in8s=%iu,inUPs=%iu,out8s=%iu,outUPs=%iu {2}'.format(aArgs['device_id'],aArgs['ip'],ts)
+  args.extend(tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ '), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces'])
  if 'data_points' in aArgs:
-  tmpl = '%s,host_id={0},host_ip={1},%s %s {2}000000000'.format(aArgs['device_id'],aArgs['ip'],ts)
-  args.extend([tmpl%(m['measurement'], m['tags'].replace(' ','\ '), ','.join(['%s=%s'%(x['name'][:20].replace(' ','\ '),x['value']) for x in m['values']])) for m in aArgs['data_points']])
+  tmpl = '%s,host_id={0},host_ip={1},%s %s {2}'.format(aArgs['device_id'],aArgs['ip'],ts)
+  args.extend(tmpl%(m['measurement'], m['tags'].replace(' ','\ '), ','.join('%s=%s'%(x['name'][:20].replace(' ','\ '), x['value']) for x in m['values'] if x['value'] ) ) for m in aArgs['data_points'] if any(x['value'] for x in m['values']) )
  try:
-  with aCTX.influxdb_client.write_api() as write_api:
-   write_api.write(bucket='rims', record = args)
+  with aCTX.influxdb_client.write_api(write_options=aCTX.influxdb_synchronous) as write_api:
+   write_api.write(bucket='rims', write_precision = aCTX.influxdb_seconds, record = args)
  except Exception as e:
   ret['info'] = str(e)
   aCTX.log(f'statistics_report_tsdb_error: {str(e)}')

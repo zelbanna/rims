@@ -76,7 +76,7 @@ def rest_call(aURL, **kwargs):
 
 ######################################## Scheduler ######################################
 #
-# Single-thread scheduler for events happening withing X seconds or every X second. Uses RIMS QueueWorker for execution to maintain resource control
+# Single-thread scheduler for events happening withing X seconds or every X second. Uses RIMS Worker for execution to maintain resource control
 #
 # Uses:
 # - Abort (Event) as a mean to "stop the clock"

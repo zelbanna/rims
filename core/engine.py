@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "7.3"
-__build__ = 392
+__build__ = 393
 __all__ = ['Context']
 
 from copy import copy
@@ -20,7 +20,7 @@ from ssl import SSLContext, PROTOCOL_SSLv23
 from string import ascii_uppercase, digits
 from sys import stdout, modules as sys_modules, version
 from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
-from time import localtime, sleep, strftime
+from time import localtime, sleep, strftime, time
 from traceback import format_exc
 from types import ModuleType
 from urllib.parse import unquote, parse_qs
@@ -63,9 +63,13 @@ class Context():
   self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
   if self.config.get('influxdb'):
    from influxdb_client import InfluxDBClient
+   from influxdb_client.client.write_api import SYNCHRONOUS
+   from influxdb_client.domain.write_precision import WritePrecision
    self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
-   with self.influxdb_client.write_api() as write_api:
-    write_api.write(bucket="rims", record=f"engine,node={self.node} value=true")
+   self.influxdb_seconds = WritePrecision.S
+   self.influxdb_synchronous = SYNCHRONOUS
+   with self.influxdb_client.write_api(write_options=self.influxdb_synchronous) as write_api:
+    write_api.write(bucket="rims", write_precision = self.influxdb_seconds, record=f"engine,node={self.node} value=true")
   self.ipc = {}
   self.cache = {}
   self.nodes = {}
@@ -96,6 +100,7 @@ class Context():
   ctx_new.db = DB(database['name'],database['host'],database['username'],database['password']) if database else None
   if self.config.get('influxdb'):
    from influxdb_client import InfluxDBClient
+   from influxdb_client.client.write_api import SYNCHRONOUS
    self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
   return ctx_new
 
@@ -164,7 +169,7 @@ class Context():
    return (addr,sock)
 
   try:
-   self._workers = [QueueWorker(self, self._abort, n, self._queue) for n in range(self.config['workers'])]
+   self._workers = [Worker(self, self._abort, n, self._queue) for n in range(self.config['workers'])]
    self._abort.clear()
    self._scheduler.start()
 
@@ -239,12 +244,12 @@ class Context():
   """ Signal handler instantiate OS signalling mechanisms to override standard behavior
    - SIGINT: close system
    - SIGUSR1: reload system modules and cache files
-   - SIGUSR2: report system state through stdout print
+   - SIGUSR2: report system state through stdout
   """
   if   sig == SIGINT:
    self.close()
   elif sig == SIGUSR1:
-   print('\n'.join(self.module_reload()))
+   stdout.write('\n'.join(self.module_reload()))
   elif sig == SIGUSR2:
    data = self.report()
    data.update(self.config)
@@ -356,13 +361,14 @@ class Context():
    'Node URL':node_url,
    'Package path':self.path,
    'Python version':version.replace('\n',''),
-   'Workers pool':self.workers_alive(),
-   'Workers idle':self.workers_idle(),
-   'Workers queue':self.queue_size(),
+   'Worker pool':self.workers_alive(),
+   'Worker idle':self.workers_idle(),
+   'Worker queue':self.queue_size(),
    'Servers':self.workers_servers(),
    'Active Tokens':len(self.tokens),
    'Database':', '.join(f"{k.lower()}:{v}" for k,v in db_counter.items()),
    'OS pid':getpid()}
+  output.update(dict((w[0],f'{w[1]} / {w[2]}') for w in self.workers_active()))
   if self.config.get('database'):
    with self.db as db:
     oids = {}
@@ -424,6 +430,9 @@ class Context():
 
  ################## STATUS TOOLS ################
  #
+ def workers_active(self):
+  return [(w.name, w.func, w.runtime()) for w in self._workers if not w.is_idle()]
+
  def workers_alive(self):
   return len([w for w in self._workers if w.is_alive()])
 
@@ -523,7 +532,6 @@ class SessionHandler(BaseHTTPRequestHandler):
     param,_,rest = path[6:].partition('/')
     fullpath = ospath.join(self._ctx.config['files'][param],rest,file)
    self._ctx.analytics('files', path, file)
-   # print(f"FULLPATH:{fullpath}")
    if file == '' and ospath.isdir(fullpath):
     self._headers['Content-type']='text/html; charset=utf-8'
     try:
@@ -751,16 +759,18 @@ class SessionHandler(BaseHTTPRequestHandler):
 
 ########################################### Servers/Workers ###########################################
 #
-class QueueWorker(Thread):
+class Worker(Thread):
 
  def __init__(self, aContext, aAbort, aNumber, aQueue):
   Thread.__init__(self)
   self._n      = aNumber
-  self.name    = f"QueueWorker({aNumber:02})"
+  self.name    = f"Worker({aNumber:02})"
+  self.func    = None
   self._abort  = aAbort
   self._idle   = Event()
   self._queue  = aQueue
   self._ctx    = aContext.clone()
+  self._time   = None
   self.daemon  = True
   self.start()
 
@@ -770,29 +780,38 @@ class QueueWorker(Thread):
  def is_idle(self):
   return self._idle.is_set()
 
+ def runtime(self):
+  return int(time()) - self._time if self._ctx.debug and self._time else 0
+
  def run(self):
   ctx, queue, abort, idle = self._ctx, self._queue, self._abort, self._idle
   while not abort.is_set():
    try:
+    self.func = None
     idle.set()
     (func, api, sema, output, args, kwargs) = queue.get(True)
     idle.clear()
-    #if ctx.debug:
-    # stdout.write(f"{self.name} - {repr(func)} => starting\n")
+    self.func = repr(func)
+    if ctx.debug:
+     #stdout.write(f"{self.name} - {self.func} => starting\n")
+     self._time = int(time())
     result = func(*args,**kwargs) if not api else func(ctx, args)
    except Exception as e:
-    ctx.log(f"{self.name} - ERROR: {repr(func)} => {e}")
+    ctx.log(f"{self.name} - ERROR: {self.func} => {e}")
     if ctx.debug:
      for n,v in enumerate(format_exc().split('\n')):
       stdout.write(f"{self.name} - DEBUG-{n:02} => {v}\n")
    else:
     if output:
-     parts = repr(func).split()
+     parts = self.func.split()
      ctx.log(f"{self.name} - {parts[1] if parts[0] == '<function' else parts[2]} => {dumps(result)}")
    finally:
     queue.task_done()
     if sema:
      sema.release()
+    if ctx.debug:
+     #stdout.write(f"{self.name} - {self.func} => finished ({int(time()) - self._time}s)\n")
+     self._time = None
   return False
 
 #
@@ -823,14 +842,14 @@ class SocketServer(Thread):
     httpd.handle_request()
    except:
     pass
-   #except Exception as e: print(f"Error: {self.name} => {e}")
+   #except Exception as e: stdout.write(f"Error: {self.name} => {e}")
   return False
 
 #
 #
 class PersistentServer(Thread):
  """Persistent server thread for continuous processes"""
- 
+
  def __init__(self, aContext, aAbort, aName, aRunObject, aArgs):
   Thread.__init__(self)
   self.name = f"PersistentServer({aName})"

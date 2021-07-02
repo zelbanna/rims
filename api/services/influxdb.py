@@ -22,8 +22,8 @@ def write(aCTX, aArgs):
  ret = {}
  args = '%s,%s value=%s'%(aArgs['measurement'],"default=default" if 'tags' not in aArgs else ','.join(['%s=%s'%(x[0],x[1]) for x in aArgs['tags']]),aArgs['value'])
  try:
-  with aCTX.influxdb_client.write_api() as write_api:
-   write_api.write(bucket=aArgs.get('bucket','rims'), record=args)
+  with aCTX.influxdb_client.write_api(write_options=aCTX.influxdb_synchronous) as write_api:
+   write_api.write(bucket=aArgs.get('bucket','rims'),  write_precision = aCTX.influxdb_seconds, record=args)
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -46,9 +46,11 @@ def query(aCTX, aArgs):
  ret = {}
  try:
   query_api = aCTX.influxdb_client.query_api()
-  res = query_api.query_csv(query = 'from(bucket: "rims") |> range(start: -1h) |> filter(fn: (r) => r["_measurement"] == "interface") |> filter(fn: (r) => r["_field"] == "in8s" or r["_field"] == "inUPs" or r["_field"] == "out8s" or r["_field"] == "outUPs") |> filter(fn: (r) => r["host_id"] == "14") |> filter(fn: (r) => r["if_name"] == "ge-0/0/0")')
-  for r in res:
-   print(r)
+  dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True}
+  res = query_api.query_csv(dialect=dialect, query = 'from(bucket: "rims") |> range(start: -10m) |> filter(fn: (r) => r.host_id == "14" and r.if_name == "fxp0.0") |> derivative(nonNegative: true, unit: 1s) |> keep(columns: ["_time","_field","_value"])')
+  next(res)
+  ret['header'] = next(res)[3:]
+  ret['res'] = [r[3:] for r in res]
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)

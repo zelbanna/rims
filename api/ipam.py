@@ -497,7 +497,7 @@ def process(aCTX, aArgs):
 
  report = aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
 
- def __check_ip(aDev):
+ def __check_IP(aDev):
   aDev['old'] = aDev['state']
   try:
    aDev['state'] = 'up' if __detect_state(aDev['ip']) or __detect_state(aDev['ip']) else 'down'
@@ -505,7 +505,7 @@ def process(aCTX, aArgs):
    aDev['state'] = 'unknown'
   return True
 
- aCTX.queue_block(__check_ip,aArgs['addresses'])
+ aCTX.queue_block(__check_IP,aArgs['addresses'])
 
  changed = [dev for dev in aArgs['addresses'] if dev['state'] != dev['old']]
  if changed:

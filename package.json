@@ -4,26 +4,27 @@
   "proxy": "http://localhost:8080",
   "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.14.0",
+    "@fortawesome/fontawesome-free": "^5.15.3",
     "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.0.4",
-    "@testing-library/user-event": "^12.1.5",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
-    "react-scripts": "3.4.3",
-    "source-map-explorer": "^2.5.0",
-    "vis-network": "^8.3.2",
-    "vis-timeline": "^7.3.9"
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "vis-network": "^9.0.4",
+    "vis-timeline": "^7.4.9",
+    "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "analyze": "source-map-explorer 'build/static/js/*.js' --json",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app"
+    ]
   },
   "browserslist": {
     "production": [
