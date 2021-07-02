@@ -499,9 +499,13 @@ class Statistics extends Component {
  }
 
  updateItems = (range) => post_call('api/statistics/query_device',{device_id:this.props.device_id, measurement:this.props.measurement, name:this.props.name, range:range}).then(result => {
-  const dataset = new this.vis.DataSet(result.data.flatMap(({time, value}) => [{x:new Date(time*1000), y:value, group:'data'}]));
-  this.graph.setItems(dataset);
-  this.graph.fit();
+  if (result.status === 'OK') {
+   const pos = {};
+   result.header.forEach((item,index) => pos[item] = index);
+   const dataset = new this.vis.DataSet(result.data.map(params => ({ x:params[pos['_time']], y:params[pos['_value']], group:'data' })));
+   this.graph.setItems(dataset);
+   this.graph.fit();
+  }
  });
 
  rangeChange = (e) => {

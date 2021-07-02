@@ -17,16 +17,18 @@ def query_interface(aCTX, aArgs):
   - data, list of rows according to 'header' layout.
  """
  ret = {}
- query = f'from(bucket: "rims") |> range(start: -{aArgs.get("range",1)}h) |> filter(fn: (r) => r.host_id == "{aArgs["device_id"]}" and r.if_id == "{aArgs["interface_id"]}") |> derivative(nonNegative: true, unit: 1s) |> keep(columns: ["_time","_field","_value"])'
+ query = f'from(bucket: "rims") |> range(start: -{aArgs.get("range",1)}h) |> filter(fn: (r) => r.host_id == "{aArgs["device_id"]}" and r.if_id == "{aArgs["interface_id"]}") |> derivative(nonNegative: true, unit: 1s) |> group(columns: ["_field"]) |> keep(columns: ["_time","_field","_value"])'
  try:
   dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True}
   res = aCTX.influxdb_client.query_api().query_csv(dialect=dialect, query = query)
-  print(res)
-  next(res)
-  ret['header'] = next(res)[3:]
-  ret['data'] = [r[3:] for r in res]
-  ret['data'].pop()
-  ret['status'] = 'OK'
+  if any(res):
+   ret['header'] = next(res)[3:]
+   ret['data'] = [r[3:] for r in res]
+   ret['data'].pop()
+   ret['status'] = 'OK'
+  else:
+   ret['status'] = 'NOT_OK'
+   ret['info'] = 'empty'
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
  else:
@@ -42,16 +44,29 @@ def query_device(aCTX, aArgs):
   - device_id (required)
   - measurement (required)
   - name (required)
+  - range (optional). hours, default: 1
 
  Output:
+  - header, list of column names as flux doesn't respect ordering
+  - data, list of rows according to 'header' layout.
  """
- db = aCTX.config['influxdb']
- args = {'q':"SELECT distinct(\"{0}\") FROM {1} WHERE host_id='{2}' AND time >= now() - {3}h GROUP BY time(1m) fill(previous)".format(aArgs['name'], aArgs['measurement'],aArgs['device_id'],aArgs.get('range','1'))}
- try: res = aCTX.rest_call(f'{db["url"]}/query?db={db["database"]}&epoch=s', aMethod = 'POST', aApplication = 'x-www-form-urlencoded', aArgs = args)['results'][0]
+ ret = {}
+ query = f'from(bucket: "rims") |> range(start: -{aArgs.get("range",1)}h) |> filter(fn: (r) => r.host_id == "{aArgs["device_id"]}" and r._measurement == "{aArgs["measurement"]}" and r._field == "{aArgs["name"]}") |> group(columns: ["_field"]) |> keep(columns: ["_time","_field","_value"])'
+ try:
+  dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True}
+  res = aCTX.influxdb_client.query_api().query_csv(dialect=dialect, query = query)
+  if any(res):
+   ret['header'] = next(res)[3:]
+   ret['data'] = [r[3:] for r in res]
+   ret['data'].pop()
+   ret['status'] = 'OK'
+  else:
+   ret['status'] = 'NOT_OK'
+   ret['info'] = 'empty'
  except Exception as e:
   return {'status':'NOT_OK','info':str(e)}
  else:
-  return {'data':[{'time':x[0],'value':x[1]} for x in res['series'][0]['values']] if 'series' in res else []}
+  return ret
 
 ################################## Device Statistics ###################################
 #
