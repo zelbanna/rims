@@ -27,6 +27,38 @@ def memory_objects(aCTX, aArgs):
  """
  from gc import get_objects
  return {'objects':len(get_objects())}
+
+#
+#
+def state_queue(aCTX, aArgs):
+ """ Function process context workers and watch for locked processes
+
+  Args:
+   timeout. seconds to determine liveness, defaults to 10
+   log. whether or not to log each thread. Boolean defaults to False
+
+  Output:
+   data. list of workers that are locked
+ """
+ ret = {'data':[], 'status':'OK'}
+ for w in aCTX.workers_active():
+  if w[2] >= aArgs.get('timeout',10):
+   ret['data'].append(w)
+   if aArgs.get('log'):
+    aCTX.log(f'Worker {w[0]} stuck for {w[2]} seconds with {w[1]}')
+ return ret
+
+#
+#
+def state_ipc(aCTX, aArgs):
+ """ Function returns IPC content
+
+  Args:
+
+  Output:
+ """
+ return {'status':'OK', 'data':aCTX.ipc}
+
 #
 #
 def sleep(aCTX, aArgs):

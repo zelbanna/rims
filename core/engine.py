@@ -19,7 +19,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ssl import SSLContext, PROTOCOL_SSLv23
 from string import ascii_uppercase, digits
 from sys import stdout, modules as sys_modules, version
-from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
+from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate, get_ident as thread_ident
 from time import localtime, sleep, strftime, time
 from traceback import format_exc
 from types import ModuleType
@@ -150,7 +150,7 @@ class Context():
    for task in self.config.get('tasks',[]):
     self.log("Adding task: %(module)s/%(function)s"%task)
     self.schedule_api_task(task['module'],task['function'],int(task.get('frequency',0)), args = task.get('args',{}), output = task.get('output',False))
-   self.schedule_function(self.house_keeping, 'ctx_house_keeping', 10, 3600)
+   self.schedule_function(self.house_keeping, 'ctx_house_keeping', 10, 3600, 1)
    if __build__ != env['build']:
     self.log(f"Build mismatch between master and node: {__build__} != {env['build']}")
    return True
@@ -274,6 +274,12 @@ class Context():
  def house_keeping(self):
   """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
   now = datetime.now(timezone.utc)
+
+  # Worker monitoring
+  for w in self.workers_active():
+   if w[2] >= 60:
+    self.log(f'Worker {w[0]} stuck for {w[2]} seconds with {w[1]}')
+
   # Token management
   expired = []
   remain = []
@@ -284,6 +290,7 @@ class Context():
     remain.append(v)
   for t in expired:
    self.tokens.pop(t,None)
+
   # Authentication management, centralized
   if self.node == 'master' and remain:
    with self.db as db:
@@ -431,7 +438,8 @@ class Context():
  ################## STATUS TOOLS ################
  #
  def workers_active(self):
-  return [(w.name, w.func, w.runtime()) for w in self._workers if not w.is_idle()]
+  now = int(time())
+  return [(w.name, w.func, now - w.runtime()) for w in self._workers if not w.is_idle()]
 
  def workers_alive(self):
   return len([w for w in self._workers if w.is_alive()])
@@ -464,8 +472,8 @@ class Context():
  def schedule_api_periodic(self, aFunction, aName, aFrequency, **kwargs):
   self._scheduler.add_periodic((aFunction, True, None, kwargs.get('output',False), kwargs.get('args',{}), None), aName, aFrequency)
 
- def schedule_function(self, aFunction, aName, aDelay, aFrequency = 0, **kwargs):
-  self._scheduler.add_delayed((aFunction, False, None, kwargs.pop('output',False), kwargs.pop('args',{}), kwargs), aName, aDelay, aFrequency)
+ def schedule_function(self, aFunction, aName, aDelay, aFrequency = 0, aPrio = 2, **kwargs):
+  self._scheduler.add_delayed((aFunction, False, None, kwargs.pop('output',False), kwargs.pop('args',{}), kwargs), aName, aDelay, aFrequency, aPrio)
 
  def scheduler_status(self):
   return [(e[1]['name'],e[1]['frequency'],e[0]) for e in self._scheduler.events()]
@@ -780,8 +788,9 @@ class Worker(Thread):
  def is_idle(self):
   return self._idle.is_set()
 
+ # Returns starting epoch
  def runtime(self):
-  return int(time()) - self._time if self._ctx.debug and self._time else 0
+  return self._time if self._ctx.debug and self._time else 0
 
  def run(self):
   ctx, queue, abort, idle = self._ctx, self._queue, self._abort, self._idle
@@ -793,7 +802,7 @@ class Worker(Thread):
     idle.clear()
     self.func = repr(func)
     if ctx.debug:
-     #stdout.write(f"{self.name} - {self.func} => starting\n")
+     # stdout.write(f"{self.name} - {self.func} => starting\n")
      self._time = int(time())
     result = func(*args,**kwargs) if not api else func(ctx, args)
    except Exception as e:
@@ -810,7 +819,7 @@ class Worker(Thread):
     if sema:
      sema.release()
     if ctx.debug:
-     #stdout.write(f"{self.name} - {self.func} => finished ({int(time()) - self._time}s)\n")
+     # stdout.write(f"{self.name} - {self.func} => finished ({int(time()) - self._time}s)\n")
      self._time = None
   return False
 
@@ -852,7 +861,7 @@ class PersistentServer(Thread):
 
  def __init__(self, aContext, aAbort, aName, aRunObject, aArgs):
   Thread.__init__(self)
-  self.name = f"PersistentServer({aName})"
+  self.name = f'PersistentServer({aName})'
   self.daemon = True
   self._abort = aAbort
   self._ctx = aContext.clone()
@@ -872,4 +881,29 @@ class PersistentServer(Thread):
     server.process()
    except:
     pass
+  return False
+
+#
+# TODO: set up house keeping as it's own thread
+class HouseKeeping(Thread):
+ """Persistent thread for continuous house keeping"""
+
+ def __init__(self, aAbort, aContext):
+  Thread.__init__(self)
+  self.name = 'House Keeping'
+  self.daemon = True
+  self._abort = aAbort
+  self._ctx = aContext.clone()
+  self.start()
+
+ def run(self):
+  ctx = self._ctx
+  abort = self._abort
+  sleep(10)
+  while not abort.is_set():
+   try:
+    ctx.house_keeping()
+    sleep(1800)
+   except Exception as e:
+    stdout.write(f'House keeping error: {str(e)}')
   return False
