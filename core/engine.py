@@ -206,18 +206,6 @@ class Context():
   def shutdown_dummy(n):
    return False
   self._abort.set()
-  try:
-   self._sock.close()
-  except:
-   pass
-  finally:
-   self._sock = None
-  try:
-   self._ssock.close()
-  except:
-   pass
-  finally:
-   self._ssock = None
   #
   # TODO:
   # 1) Empty queue
@@ -233,6 +221,18 @@ class Context():
    while self.workers_alive() and not self._queue.empty():
     sleep(0.2)
     self._workers = [x for x in self._workers if x.is_alive()]
+  try:
+   self._sock.close()
+  except:
+   pass
+  finally:
+   self._sock = None
+  try:
+   self._ssock.close()
+  except:
+   pass
+  finally:
+   self._ssock = None
   self._kill.set()
 
  #
@@ -756,7 +756,6 @@ class Worker(Thread):
  def __init__(self, aContext, aAbort, aNumber, aQueue):
   Thread.__init__(self)
   self._n      = aNumber
-  self.name    = f"Worker({aNumber:02})"
   self.func    = None
   self._abort  = aAbort
   self._idle   = Event()
@@ -764,6 +763,7 @@ class Worker(Thread):
   self._ctx    = aContext.clone()
   self._time   = None
   self.daemon  = True
+  self.name    = f"Worker({aNumber:02})"
   self.start()
 
  def db_analytics(self):
