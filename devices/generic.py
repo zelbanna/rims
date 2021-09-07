@@ -108,8 +108,10 @@ class Device(object):
    objs = VarList('.1.3.6.1.2.1.2.2.1.8')
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(objs)
-  except: return {}
-  else: return {int(entry.iid):'up' if entry.val.decode() == '1' else 'down' for entry in objs if entry.iid} if (session.ErrorInd == 0) else {}
+  except:
+   return {}
+  else:
+   return {int(entry.iid):'up' if entry.val.decode() == '1' else 'down' for entry in objs if entry.iid} if (session.ErrorInd == 0) else {}
 
  #
  def data_points(self, aGeneric, aInterfaces):

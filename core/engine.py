@@ -14,14 +14,14 @@ from importlib import import_module, reload as reload_module
 from json import loads, dumps
 from os import path as ospath, getpid, walk, stat as osstat
 from random import choice
-from signal import signal, SIGINT, SIGUSR1, SIGUSR2
+from signal import signal, SIGINT, SIGUSR1, SIGUSR2, SIGTRAP
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ssl import SSLContext, PROTOCOL_SSLv23
 from string import ascii_uppercase, digits
-from sys import stdout, modules as sys_modules, version
-from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate, get_ident as thread_ident
+from sys import stdout, modules as sys_modules, version, _current_frames as current_frames
+from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
 from time import localtime, sleep, strftime, time
-from traceback import format_exc
+from traceback import format_exc, format_stack
 from types import ModuleType
 from urllib.parse import unquote, parse_qs
 from queue import Queue
@@ -50,6 +50,7 @@ class Context():
   self._ssock = None
   self._workers = []
   self._servers = []
+  self._house_keeping = None
   self._scheduler = Scheduler(self._abort,self._queue)
   self._analytics = {'files':{},'modules':{}}
 
@@ -142,6 +143,7 @@ class Context():
    return False
   else:
    self.log("______ Loading system environment _____")
+   self.log("Available signals: SIGINT, SIGUSR1, SIGUSR2, SIGTRAP")
    self.log(f"Version: {__build__}")
    self.log(f"Debug: {self.debug}")
    self.nodes.update(env['nodes'])
@@ -150,7 +152,7 @@ class Context():
    for task in self.config.get('tasks',[]):
     self.log("Adding task: %(module)s/%(function)s"%task)
     self.schedule_api_task(task['module'],task['function'],int(task.get('frequency',0)), args = task.get('args',{}), output = task.get('output',False))
-   self.schedule_function(self.house_keeping, 'ctx_house_keeping', 10, 3600, 1)
+
    if __build__ != env['build']:
     self.log(f"Build mismatch between master and node: {__build__} != {env['build']}")
    return True
@@ -170,6 +172,7 @@ class Context():
 
   try:
    self._workers = [Worker(self, self._abort, n, self._queue) for n in range(self.config['workers'])]
+   self._house_keeping = HouseKeeping(self, self._abort)
    self._abort.clear()
    self._scheduler.start()
 
@@ -189,17 +192,7 @@ class Context():
     self._ssock = context.wrap_socket(ssock, server_side=True)
     self._servers.extend(SocketServer(self, self._abort, n, addr, self._ssock) for n in range(servers,servers+4))
 
-   if self.config.get('servers'):
-    for srv,args in self.config['servers'].items():
-     try:
-      self.log(f"Starting '{srv}' server ")
-      module = import_module(f"rims.servers.{srv}")
-      srvobj = getattr(module,'Server')
-      self._servers.append(PersistentServer(self, self._abort, srv, srvobj, args))
-     except Exception as e:
-      self.log(f"Starting '{srv}' server => failed ({e})")
-
-   for sig in [SIGINT, SIGUSR1, SIGUSR2]:
+   for sig in [SIGINT, SIGTRAP, SIGUSR1, SIGUSR2]:
     signal(sig, self.signal_handler)
   except Exception as e:
    stdout.write(f"Starting error - check IP and SSL settings: {e}\n")
@@ -225,6 +218,14 @@ class Context():
    pass
   finally:
    self._ssock = None
+  #
+  # TODO:
+  # 1) Empty queue
+  # 2) Check if stuck workers and kill them if they been running for a long time
+  # 3) Let short lived jobs complete, if there are stuck worker, just forget them as we can't kill threads
+  #
+  #print(self._queue.unfinished_tasks)
+  #print(dir(self._queue))
   while self.workers_alive():
    # range is implicitly >= 0
    for x in range(self.workers_alive() - self._queue.qsize()):
@@ -243,11 +244,17 @@ class Context():
  def signal_handler(self, sig, frame):
   """ Signal handler instantiate OS signalling mechanisms to override standard behavior
    - SIGINT: close system
+   - SIGTRAP: traceback of threads
    - SIGUSR1: reload system modules and cache files
    - SIGUSR2: report system state through stdout
   """
   if   sig == SIGINT:
    self.close()
+  elif sig == SIGTRAP:
+   for tid,stack in current_frames().items():
+    stdout.write(f'Thread ID:{tid}\n')
+    stdout.write(''.join(format_stack(stack)))
+    stdout.write('\n')
   elif sig == SIGUSR1:
    stdout.write('\n'.join(self.module_reload()))
   elif sig == SIGUSR2:
@@ -269,40 +276,6 @@ class Context():
    else:
     with open(syslog['file'], 'a') as f:
      f.write(logstring)
-
- #
- def house_keeping(self):
-  """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
-  now = datetime.now(timezone.utc)
-
-  # Worker monitoring
-  for w in self.workers_active():
-   if w[2] >= 60:
-    self.log(f'Worker {w[0]} stuck for {w[2]} seconds with {w[1]}')
-
-  # Token management
-  expired = []
-  remain = []
-  for k,v in self.tokens.items():
-   if now > v['expires']:
-    expired.append(k)
-   else:
-    remain.append(v)
-  for t in expired:
-   self.tokens.pop(t,None)
-
-  # Authentication management, centralized
-  if self.node == 'master' and remain:
-   with self.db as db:
-    db.query(f"SELECT id,alias FROM users WHERE id IN ({','.join([str(v['id']) for v in remain])})")
-    alias = {x['id']:x['alias'] for x in db.get_rows()}
-   users = [{'ip':v['ip'],'alias':alias[v['id']],'timeout':min(int((v['expires']-now).total_seconds()),7200)} for v in remain]
-   self.log(f"Resyncing {len(users)} users")
-   for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in self.services.items() if v['type'] == 'AUTHENTICATION']:
-    self.node_function(infra['node'], f"services.{infra['service']}", 'sync')(aArgs = {'id':infra['id'],'users':users})
-  garbage_collect()
-  self.log("House keeping => OK")
-  return {'function':'house_keeping','status':'OK'}
 
  ################# API AND INTERNAL FUNCTIONS ##############
  #
@@ -439,7 +412,7 @@ class Context():
  #
  def workers_active(self):
   now = int(time())
-  return [(w.name, w.func, now - w.runtime()) for w in self._workers if not w.is_idle()]
+  return [(w.name, w.func, now - w.runtime(), w.ident) for w in self._workers if not w.is_idle()]
 
  def workers_alive(self):
   return len([w for w in self._workers if w.is_alive()])
@@ -765,7 +738,18 @@ class SessionHandler(BaseHTTPRequestHandler):
   output['node'] = self._ctx.node
   self._body = dumps(output).encode('utf-8')
 
-########################################### Servers/Workers ###########################################
+########################################### Threads ###########################################
+#
+#
+class TimeOutException(Exception):
+
+  def __init__(self, *args):
+   self.time = args[0]
+
+  def __str__(self):
+   return f"TimeOut({self.time})"
+
+#
 #
 class Worker(Thread):
 
@@ -854,41 +838,12 @@ class SocketServer(Thread):
    #except Exception as e: stdout.write(f"Error: {self.name} => {e}")
   return False
 
+########################################### House Keeping ###########################################
 #
-#
-class PersistentServer(Thread):
- """Persistent server thread for continuous processes"""
-
- def __init__(self, aContext, aAbort, aName, aRunObject, aArgs):
-  Thread.__init__(self)
-  self.name = f'PersistentServer({aName})'
-  self.daemon = True
-  self._abort = aAbort
-  self._ctx = aContext.clone()
-  self._ctx.ipc[aName] = {}
-  self._server = aRunObject(self._ctx, aAbort, aArgs)
-  self.start()
-
- def db_analytics(self):
-  return self._ctx.db.count.items()
-
- def run(self):
-  abort = self._abort
-  server= self._server
-  sleep(5)
-  while not abort.is_set():
-   try:
-    server.process()
-   except:
-    pass
-  return False
-
-#
-# TODO: set up house keeping as it's own thread
 class HouseKeeping(Thread):
  """Persistent thread for continuous house keeping"""
 
- def __init__(self, aAbort, aContext):
+ def __init__(self, aContext, aAbort):
   Thread.__init__(self)
   self.name = 'House Keeping'
   self.daemon = True
@@ -896,14 +851,51 @@ class HouseKeeping(Thread):
   self._ctx = aContext.clone()
   self.start()
 
+ #
  def run(self):
-  ctx = self._ctx
   abort = self._abort
   sleep(10)
   while not abort.is_set():
    try:
-    ctx.house_keeping()
-    sleep(1800)
+    self.house_keeping()
    except Exception as e:
     stdout.write(f'House keeping error: {str(e)}')
+   finally:
+    sleep(1800)
   return False
+
+ #
+ def house_keeping(self):
+  """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
+  ctx = self._ctx
+  now = datetime.now(timezone.utc)
+
+  # Worker monitoring
+  for w in ctx.workers_active():
+   if w[2] >= 60:
+    ctx.log(f'Worker {w[0]}/{w[3]} stuck for {w[2]} seconds with {w[1]}')
+
+  # Token management
+  expired = []
+  remain = []
+  for k,v in ctx.tokens.items():
+   if now > v['expires']:
+    expired.append(k)
+   else:
+    remain.append(v)
+  for t in expired:
+   ctx.tokens.pop(t,None)
+
+  # Authentication management, centralized
+  if ctx.node == 'master' and remain:
+   with ctx.db as db:
+    db.query(f"SELECT id,alias FROM users WHERE id IN ({','.join([str(v['id']) for v in remain])})")
+    alias = {x['id']:x['alias'] for x in db.get_rows()}
+   users = [{'ip':v['ip'],'alias':alias[v['id']],'timeout':min(int((v['expires']-now).total_seconds()),7200)} for v in remain]
+   ctx.log(f"Resyncing {len(users)} users")
+   for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in ctx.services.items() if v['type'] == 'AUTHENTICATION']:
+    ctx.node_function(infra['node'], f"services.{infra['service']}", 'sync')(aArgs = {'id':infra['id'],'users':users})
+  garbage_collect()
+  ctx.log("House keeping => OK")
+  return True
+

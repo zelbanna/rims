@@ -5,6 +5,13 @@ __add_globals__ = lambda x: globals().update(x)
 ############################### System #################################
 #
 #
+def traceback(aCTX, aArgs):
+ from traceback import format_stack
+ from sys import _current_frames as current_frames
+ return {tid:format_stack(stack) for tid,stack in current_frames().items()}
+
+#
+#
 def memory_usage(aCTX, aArgs):
  """Function memory usage retrieves currently used memory
 
