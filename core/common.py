@@ -1,6 +1,7 @@
 """Common functions module """
 __author__ = "Zacharias El Banna"
 
+from sys import stderr
 from base64 import b64encode
 from json import loads, dumps
 from sched import scheduler
@@ -149,7 +150,6 @@ class DB():
   self._conn, self._curs, self._dirty = None, None, False
   self._conn_lock, self._wait_lock = RLock(), Lock()
   self._conn_waiting = 0
-  self._conn_in_thread = 0
   self.count = {'COMMIT':0,'CONNECT':0,'CLOSE':0,'QUERY':0,'EXECUTE':0}
 
  def __enter__(self):
@@ -163,40 +163,33 @@ class DB():
   with self._wait_lock:
    self._conn_waiting += 1
   self._conn_lock.acquire()
-  self._conn_in_thread += 1
   self.count['CONNECT'] += 1
   if not self._conn:
    self._conn = self._mods[0](host=self._host, port=3306, user=self._user, passwd=self._pass, db=self._db, cursorclass=self._mods[1], charset='utf8')
    self._curs = self._conn.cursor()
 
  def close(self):
-  """ Close connection, audit, remove waiting threads and also remove current threads ownership in case of nested thread ownership """
+  """ Close connection, audit, remove waiting threads and also remove reentrant lock """
   self.count['CLOSE'] += 1
   if self._dirty:
    self.commit()
   with self._wait_lock:
    # remove oneself and check if someone else is waiting
    self._conn_waiting -= 1
-   self._conn_in_thread -= 1
    if not self._conn_waiting:
     self._curs.close()
     self._conn.close()
     self._curs = None
     self._conn = None
-  if not self._conn_in_thread:
    self._conn_lock.release()
 
- def query(self,aQuery, aLog = False):
+ def query(self,aQuery):
   self.count['QUERY'] += 1
-  if aLog:
-   print(f"SQL: {aQuery};")
   return self._curs.execute(aQuery)
 
- def execute(self,aQuery, aLog = False):
+ def execute(self,aQuery):
   self.count['EXECUTE'] += 1
   self._dirty = True
-  if aLog:
-   print(f"SQL: {aQuery};")
   return self._curs.execute(aQuery)
 
  def commit(self):
@@ -405,5 +398,5 @@ class Session():
   try:
    return self._libmod.delete_session(self)
   except SystemError as e:
-   print(f"RIMS_SNMP_ERROR: {e}")
+   stderr.write(f"RIMS_SNMP_ERROR: {e}")
    return None

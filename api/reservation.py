@@ -125,6 +125,6 @@ def expiration_status(aCTX, aArgs):
     message = 'Host %(hostname)s reservation expired (reserved by %(alias)s)'%host
    else:
     message = 'Host %(hostname)s reservation about to expire - remaining time: %(remaining)s (reserved by %(alias)s)'%host
-   db.execute("INSERT INTO device_logs (device_id,message) VALUES (%s,'%s')"%(host['id'],message))
+   aCTX.log(message)
 
  return ret

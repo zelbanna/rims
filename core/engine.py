@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "7.3"
-__build__ = 393
+__version__ = "7.4"
+__build__ = 394
 __all__ = ['Context']
 
 from copy import copy
@@ -53,6 +53,7 @@ class Context():
   self._house_keeping = None
   self._scheduler = Scheduler(self._abort,self._queue)
   self._analytics = {'files':{},'modules':{}}
+  self._start_time = int(time())
 
   database   = self.config.get('database')
   self.ip    = None
@@ -212,8 +213,6 @@ class Context():
   # 2) Check if stuck workers and kill them if they been running for a long time
   # 3) Let short lived jobs complete, if there are stuck worker, just forget them as we can't kill threads
   #
-  #print(self._queue.unfinished_tasks)
-  #print(dir(self._queue))
   while self.workers_alive():
    # range is implicitly >= 0
    for x in range(self.workers_alive() - self._queue.qsize()):
@@ -338,6 +337,7 @@ class Context():
    except:
     pass
   output = {
+   'Uptime': int(time()) - self._start_time,
    'Node URL':node_url,
    'Package path':self.path,
    'Python version':version.replace('\n',''),
@@ -873,7 +873,7 @@ class HouseKeeping(Thread):
   # Worker monitoring
   for w in ctx.workers_active():
    if w[2] >= 60:
-    ctx.log(f'Worker {w[0]}/{w[3]} stuck for {w[2]} seconds with {w[1]}')
+    ctx.log(f'{w[0]}/{w[3]} stuck for {w[2]} seconds with {w[1]}')
 
   # Token management
   expired = []

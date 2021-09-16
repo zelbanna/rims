@@ -27,6 +27,22 @@ export class List extends Component{
 
  discoverInterfaces = () => (window.confirm('Rediscover interfaces?') && post_call('api/interface/snmp',{device_id:this.props.device_id}).then(result => this.componentDidMount()))
 
+ unLink = (interface_id, connection_id) => (window.confirm('Really unlink?') && post_call('api/interface/disconnect', {connection_id:connection_id}).then(result => {
+  if (result.clear){
+   var data = this.state.data;
+   for (var iif of data){
+    if (iif.connection_id === connection_id){
+     iif.connection_id = null;
+     break;
+    }
+   }
+   this.setState({data:data,result:'OK'})
+  } else {
+   this.setState({result:'NOT_OK'})
+  }
+ }))
+
+ 
  listItem = (row) => [row.snmp_index,row.name,row.mac,(row.ip) ? row.ip : '-',row.description,row.class,
    (row.connection_id) ? <HrefButton key={'conn_btn_'+row.interface_id} text={row.connection_id} onClick={() => this.changeContent(<ConnectionInfo key={'connection_info_' + row.connection_id} id={row.connection_id} device_id={this.props.device_id} changeSelf={this.changeContent} />)} title='Connection information' /> : '-',
    <>
@@ -35,6 +51,7 @@ export class List extends Component{
     {row.snmp_index > 0 && <HealthButton key='stats' onClick={() => this.changeContent(<Statistics key={row.interface_id} device_id={this.props.device_id} interface_id={row.interface_id} name={row.name} />)} title='Interface stats' />}
     <DeleteButton key='del' onClick={() => this.deleteList(row.interface_id,row.name)} title='Delete interface' />
     {!row.connection_id && ['wired','optical'].includes(row.class) && <LinkButton key='link' onClick={() => this.changeContent(<Info key={'interface_info_' + row.interface_id} op='connect_device' interface_id={row.interface_id} name={row.name} changeSelf={this.props.changeSelf} />)} title='Connect interface' />}
+    {row.connection_id && <UnlinkButton key='unlink' onClick={() => this.unLink(row.interface_id,row.connection_id)} title='Delete Connection' />}
    </>]
 
  render(){

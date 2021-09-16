@@ -35,7 +35,7 @@ class Device(object):
 
  def __exit__(self, *ctx_info): pass
 
- def log(self, aMsg): self._ctx.node_function(self._ctx.node if self._ctx.db else 'master','device','log_put')(aArgs = {'message':aMsg[:96], 'id':self._id})
+ def log(self, aMsg): self._ctx.log(f'DEVICE_LOG({self._id}): {aMsg}')
 
  def get_ip(self): return self._ip
 
@@ -114,12 +114,15 @@ class Device(object):
    return {int(entry.iid):'up' if entry.val.decode() == '1' else 'down' for entry in objs if entry.iid} if (session.ErrorInd == 0) else {}
 
  #
- def data_points(self, aGeneric, aInterfaces):
+ def data_points(self, aGeneric, aInterfaces, aRemove = True):
   """ Function processes and updates:
    - a list of generic objects containing 'values' which is a list of objects containing (at least) 'oid' which is a complete
    - a list of objects containing 'snmp_index' and use IF-MIB to correlate
+
+   - Will remove unused entries from reporting
   """
   ret = {}
+  remove = []
   try:
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    for iif in aInterfaces:
@@ -131,8 +134,15 @@ class Device(object):
      try:
       iif.update({'in8s':int(ifentry[0].val),'inUPs':int(ifentry[1].val),'out8s':int(ifentry[2].val),'outUPs':int(ifentry[3].val)})
      except Exception as e:
-      self.log(f"generic_data_point: convertion not ok for device: {self._id} and index {iif['snmp_index']}")
+      if ifentry[0].type == 'NOSUCHINSTANCE':
+       self.log(f"generic_data_point => {iif['snmp_index']} scheduled for removal (NOSUCHINSTANCE)")
+       remove.append(iif)
+      else:
+       self.log(f"generic_data_point =>  convertion not ok for index {iif['snmp_index']}")
       iif.update({'in8s':0,'inUPs':0,'out8s':0,'outUPs':0})
+   if aRemove:
+    for iif in remove:
+     aInterfaces.remove(iif)
    for measurement in aGeneric:
     # Wrap all data with the same tag into the same session object
     objs = VarList(*[o['oid'] for o in measurement['values']])

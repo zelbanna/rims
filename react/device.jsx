@@ -3,7 +3,7 @@ import { post_call } from './infra/Functions.js';
 import { RimsContext, Flex, Spinner, StateLeds, Article, CodeArticle, InfoArticle, InfoColumns, LineArticle, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { NavBar, NavButton, NavDropDown, NavDropButton } from './infra/Navigation.jsx'
 import { TextAreaInput, TextInput, TextLine, StateLine, SelectInput, UrlInput, SearchField, SearchInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, LogButton, NetworkButton, ReloadButton, RevertButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, BackButton, CheckButton, ConfigureButton, DeleteButton, DevicesButton, GoButton, HeaderButton, HealthButton, HrefButton, InfoButton, ItemsButton, NetworkButton, ReloadButton, RevertButton, SaveButton, SearchButton, ShutdownButton, StartButton, SyncButton, TermButton, UiButton } from './infra/Buttons.jsx';
 
 import { List as FdbList, Device as FdbDevice, Search as FdbSearch } from './fdb.jsx';
 import styles from './infra/ui.module.css';
@@ -40,7 +40,6 @@ export class Main extends Component {
     <NavDropButton key='dev_nav_new' title='New' onClick={() => this.changeContent(<New key='dn' ip='0.0.0.0' />)} />
     <NavDropButton key='dev_nav_types' title='Types' onClick={() => this.changeContent(<TypeList key='dtl' changeSelf={this.changeContent} />)} />
     <NavDropButton key='dev_nav_model' title='Models' onClick={() => this.changeContent(<ModelList key='dml' />)} />
-    <NavDropButton key='dev_nav_logs' title='Logs' onClick={() => this.changeContent(<Logs key='dlogs' count='80'/>)} />
    </NavDropDown>
    <NavDropDown key='dev_nav_tools' title='Tools'>
     <NavDropButton key='dev_nav_fdbx' title='FDB Search' onClick={() => this.changeContent(<FdbSearch key='fdb_search' changeSelf={this.changeContent} />)} />
@@ -272,7 +271,6 @@ export class Info extends Component {
      <CheckButton key='conf' onClick={() => this.changeContent(<Template key='device_configure' id={this.props.id} />)} title='Configuration template' />
      {change_self && <NetworkButton key='netw' onClick={() => this.changeVisualize()} title='Connectivity map' />}
      {has_ip && <SearchButton key='search' onClick={() => this.lookupInfo()} title='Information lookup' />}
-     {has_ip && <LogButton key='logs' onClick={() => this.changeContent(<Logs key='device_logs' id={this.props.id} />)} title='Logs' />}
      {function_strings.includes('manage') && <GoButton key='manage' onClick={() => this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{device_id:this.props.id, type:this.state.extra.type_name}})} title={'Manage ' + data.hostname} />}
      {has_ip && <TermButton key='ssh' onClick={() => window.open(`ssh://${extra.username}@${extra.ip}`,'_self')} title='SSH connection' />}
      {has_ip && <HealthButton key='health' onClick={() => this.changeIpam(this.state.extra.ipam_id)} title='IP health report' />}
@@ -615,22 +613,6 @@ class Control extends Component {
     <Result key='result' result={JSON.stringify(this.state.result)} />
     {this.state.wait}
    </InfoArticle>)
- }
-}
-
-// ************** Logs **************
-//
-export class Logs extends Component {
- componentDidMount(){
-  post_call('api/device/log_get',{id:this.props.id, count:this.props.count}).then(result => this.setState(result));
- }
-
- clearLog = () => post_call('api/device/log_clear',{id:this.props.id}).then(result => (result.deleted && this.setState({data:[]})));
-
- render() {
-  return (!this.state) ? <Spinner /> : <ContentReport key='dev_log_cr' header='Logs' thead={['Time','Message']} trows={this.state.data} listItem={(row) => [row.time,row.message]}>
-   <DeleteButton key='devlog_btn_delete' onClick={() => this.clearLog()} title='Clear device logs' />
-  </ContentReport>
  }
 }
 

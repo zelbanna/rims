@@ -164,7 +164,6 @@ class Controls extends Component {
   super(props);
   this.state = {data:[
    {api:'ipam/address_events',text:'IPAM clear all status logs',args:{op:'clear'}},
-   {api:'device/log_clear',text:'Device clear all status logs'},
    {api:'ipam/check',text:'IPAM status check'},
    {api:'interface/check',text:'Interface status check'},
    {api:'device/system_info_discover',text:'Discover device system information (sysmac etc)'},

@@ -260,6 +260,22 @@ def connect(aCTX, aArgs):
 
 #
 #
+def disconnect(aCTX, aArgs):
+ """Function disconnects a connection
+
+ Args:
+  - connection_id (required)
+
+ Output:
+ """
+ ret = {}
+ with aCTX.db as db:
+  ret['clear'] = db.execute("DELETE FROM connections WHERE id = '%s'"%aArgs['connection_id'])
+ return ret
+
+
+#
+#
 def snmp(aCTX, aArgs):
  """ SNMP Discovery function for interfaces. Either provide info for a single interface or trying to detect new interfaces.
 
@@ -410,7 +426,7 @@ def lldp_mapping(aCTX, aArgs):
     for k,v in info.items():
      args = {}
      if not interfaces.get(int(k)):
-      db.execute("INSERT INTO device_logs (device_id,message) VALUES (%s,'%s')"%(aArgs['device_id'],"LLDP local interface index not in database: %s"%k))
+      aCTX.log(f"DEVICE_LOG({aArgs['device_id']}): LLDP local interface index not in database: {k}")
       v['status'] = 'no_local_interface'
       v['connection_id'] = None
       continue

@@ -1,11 +1,11 @@
 import React, { Component, Fragment } from 'react'
 import { post_call } from './infra/Functions.js';
 import { RimsContext, Result, Spinner, StateLeds, InfoArticle, InfoColumns, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, LogButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
+import { AddButton, DeleteButton, GoButton, HeaderButton, InfoButton, ItemsButton, PauseButton, RevertButton, ReloadButton, SaveButton, ShutdownButton, SnapshotButton, StartButton, StopButton, SyncButton, UiButton } from './infra/Buttons.jsx';
 import { SearchField, StateLine, TextInput, TextLine } from './infra/Inputs.jsx';
 import { NavBar, NavInfo, NavButton } from './infra/Navigation.jsx';
 
-import { Info as DeviceInfo, Logs as DeviceLogs } from './device.jsx';
+import { Info as DeviceInfo } from './device.jsx';
 
 // ************** Main **************
 //
@@ -77,7 +77,6 @@ export class Manage extends Component {
   post_call('api/device/management',{id:this.props.device_id}).then(result => {
    this.context.loadNavigation(<NavBar key='hypervisor_navbar'>
     <NavButton key='hyp_nav_inv' title='Inventory' onClick={() => this.changeContent(<Inventory key='hypervisor_inventory' device_id={this.props.device_id} type={this.props.type} />)} />
-    <NavButton key='hyp_nav_logs' title='Logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} />
     {result.data.url && (result.data.url.length > 0) && <NavButton key='hyp_nav_ui' title='UI' onClick={() => window.open(result.data.url,'_blank')} />}
     <NavInfo key='hyp_nav_name' title={result.data.hostname} />
    </NavBar>);
@@ -124,7 +123,6 @@ export class Inventory extends Component{
    return <>
     <ContentList key='cl' header='Inventory' thead={thead} trows={data} listItem={this.listItem}>
      <ReloadButton key='reload' onClick={() => {this.setState({data:undefined}); this.componentDidMount()} } />
-     <LogButton key='logs' onClick={() => this.changeContent(<DeviceLogs key='device_logs' id={this.props.device_id} />)} title='Device logs' />
      <SyncButton key='sync' onClick={() => this.changeContent(<Sync key='vm_sync' device_id={this.props.device_id}/>)} title='Map VMs' />
      <SearchField key='search' searchFire={(s) => this.setState({searchfield:s})} placeholder='Search inventory' />
     </ContentList>

@@ -865,63 +865,6 @@ def class_list(aCTX, aArgs):
   ret['data'] = [parts[i] for i in range(1,len(parts),2)]
  return ret
 
-##################################################### Logs #####################################################
-#
-#
-def log_put(aCTX, aArgs):
- """Function docstring for log_put. Insert device log
-
- Args:
-  - id (required)
-  - message (required)
-
- Output:
-  - status
- """
- ret = {}
- if aArgs['id'] > 0:
-  with aCTX.db as db:
-   ret['status'] = 'OK' if (db.execute("INSERT INTO device_logs (device_id,message) VALUES (%(id)s,'%(message)s')"%aArgs) == 1) else 'NOT_OK'
- else:
-  aCTX.log("Device logging: %s"%aArgs['message'])
-  ret['status'] = 'OK'
- return ret
-
-#
-#
-def log_get(aCTX, aArgs):
- """Function retrieves device logs
-
- Args:
-  - id (optional)
-  - count (optional)
-
- Output:
-  - data
- """
- ret = {}
- with aCTX.db as db:
-  ret['count'] = db.query("SELECT DATE_FORMAT(time,'%%Y-%%m-%%d %%H:%%i:%%s') AS time, message FROM device_logs WHERE %s ORDER BY id DESC LIMIT %s"%("device_id = %s"%aArgs['id'] if aArgs.get('id') else "TRUE", aArgs.get('count',30)))
-  ret['data'] = db.get_rows() # ["%(time)s: %(message)s"%(x) for x in db.get_rows()]
- return ret
-
-#
-#
-def log_clear(aCTX, aArgs):
- """Function clear device logs.
-
- Args:
-  - id (optional)
-
- Output:
-  - deleted
- """
- ret = {}
- with aCTX.db as db:
-  ret['count'] = db.execute("DELETE FROM device_logs WHERE %s"%("device_id = %s"%aArgs['id'] if aArgs.get('id') else "TRUE"))
-  ret['deleted'] = bool(ret['count'])
- return ret
-
 #
 #
 def detect_info(aCTX, aArgs):
