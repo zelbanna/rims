@@ -9,7 +9,8 @@ from json import load,dumps
 from os import chmod, listdir, path as ospath
 from subprocess import check_call
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from pip._internal import main as pipmain
+#from pip._internal import main as pipmain
+from pip import main as pipmain
 pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
 syspath.insert(1, basedir)
