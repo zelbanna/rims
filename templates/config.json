@@ -54,10 +54,10 @@
   "file":"/var/tmp/nodns.conf"
  },
  "influxdb": {
+  "version":2,
   "url":"http://172.18.0.3:8086",
-  "database":"rims",
-  "username":"",
-  "password":""
+  "org":"<ORG>",
+  "token":"<TOKEN>"
  },
  "esxi": {
   "password": "PASSWORD",

@@ -501,22 +501,22 @@ def check(aCTX, aArgs):
  devices = []
 
  with aCTX.db as db:
-  db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks'])))
-  db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows())))
-  for dev in db.get_rows():
-   if db.query("SELECT snmp_index,interface_id,state FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']):
-    dev['interfaces'] = db.get_rows()
-    devices.append(dev)
+  if db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))) and db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows()))):
+   for dev in db.get_rows():
+    if db.query("SELECT snmp_index,interface_id,state FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']):
+     dev['interfaces'] = db.get_rows()
+     devices.append(dev)
 
- if not devices:
-  return {'status':'OK','info':'no devices'}
- if 'repeat' in aArgs:
-  # INTERNAL from rims.api.interface import process
-  aCTX.schedule_api_periodic(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debug)
-  return {'status':'OK','info':'INTERFACE_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
+ if devices:
+  if 'repeat' in aArgs:
+   # INTERNAL from rims.api.interface import process
+   aCTX.schedule_api_periodic(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debug)
+   return {'status':'OK','info':'INTERFACE_MONITOR_CONTINUOUS_INITIATED_F%s'%aArgs['repeat']}
+  else:
+   # INTERNAL from rims.api.interface import process
+   return process(aCTX,{'devices':devices})
  else:
-  # INTERNAL from rims.api.interface import process
-  return process(aCTX,{'devices':devices})
+  return {'status':'OK','info':'no interfaces'}
 
 #
 #
