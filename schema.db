@@ -9,7 +9,7 @@ CREATE TABLE `activities` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `type_id` int(10) unsigned NOT NULL,
-  `event` text DEFAULT '',
+  `event` text DEFAULT NULL,
   `date_time` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `fk_user` (`user_id`),
@@ -57,18 +57,6 @@ CREATE TABLE `device_inventory` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `device_logs`;
-CREATE TABLE `device_logs` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `device_id` int(10) unsigned NOT NULL,
-  `time` timestamp NOT NULL DEFAULT current_timestamp(),
-  `message` varchar(96) DEFAULT 'empty',
-  PRIMARY KEY (`id`),
-  KEY `device_id` (`device_id`),
-  CONSTRAINT `device_logs_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
 DROP TABLE IF EXISTS `device_models`;
 CREATE TABLE `device_models` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -76,7 +64,7 @@ CREATE TABLE `device_models` (
   `name` varchar(30) NOT NULL,
   `defaults_file` varchar(60) DEFAULT '',
   `image_file` varchar(60) DEFAULT '',
-  `parameters` text DEFAULT '',
+  `parameters` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `model` (`type_id`,`name`),
   CONSTRAINT `device_models_type_ibfk_1` FOREIGN KEY (`type_id`) REFERENCES `device_types` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -157,7 +145,7 @@ CREATE TABLE `devices` (
   `url` varchar(60) DEFAULT '',
   `serial` varchar(20) DEFAULT '',
   `oid` int(10) DEFAULT 0,
-  `comment` text DEFAULT '',
+  `comment` text DEFAULT NULL,
   `ipam_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ipam_id` (`ipam_id`),
@@ -251,7 +239,7 @@ CREATE TABLE `inventory` (
   `receive_date` date DEFAULT NULL,
   `support_contract` tinyint(1) DEFAULT 0,
   `support_end_date` date DEFAULT NULL,
-  `comments` text DEFAULT '',
+  `comments` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `serial` (`serial`),
   KEY `location_id` (`location_id`),
@@ -294,7 +282,7 @@ CREATE TABLE `ipam_networks` (
   `gateway` varbinary(16) NOT NULL,
   `broadcast` varbinary(16) NOT NULL,
   `mask` tinyint(3) unsigned NOT NULL DEFAULT 24,
-  `description` text DEFAULT '',
+  `description` text DEFAULT NULL,
   `vrf` varchar(40) DEFAULT 'default',
   `reverse_zone_id` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
