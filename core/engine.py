@@ -70,8 +70,6 @@ class Context():
    self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
    self.influxdb_seconds = WritePrecision.S
    self.influxdb_synchronous = SYNCHRONOUS
-   with self.influxdb_client.write_api(write_options=self.influxdb_synchronous) as write_api:
-    write_api.write(bucket="rims", write_precision = self.influxdb_seconds, record=f"engine,node={self.node} value=true")
   self.ipc = {}
   self.cache = {}
   self.nodes = {}
@@ -854,7 +852,7 @@ class HouseKeeping(Thread):
  #
  def run(self):
   abort = self._abort
-  sleep(10)
+  sleep(int(self._ctx.config.get('startupdelay',10)))
   while not abort.is_set():
    try:
     self.house_keeping()

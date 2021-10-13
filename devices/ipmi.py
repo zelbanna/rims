@@ -21,7 +21,7 @@ class Device(GenericDevice):
   result = []
   readout = check_output("ipmitool -H " + self._ip + " -U " + self._ctx.config['ipmi']['username'] + " -P " + self._ctx.config['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True).decode()
   for fanline in readout.split('\n'):
-   if fanline is not "":
+   if fanline != "":
     fan = fanline.split()
     result.append(fan[0] + ":" + fan[3] + ":" + fan[4])
   return result
