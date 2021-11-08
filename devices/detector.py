@@ -2,10 +2,34 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
+from rims.core.common import VarList, Session
+
 ################################################### Hardware ###################################################
 #
 #
-def execute(aIP, aSNMP, aBasic = False, aDecode = False):
+def oid41112(aSession, aInfo, aDescription):
+ if aDescription[0][0:3] == 'UAP':
+  aInfo['type'] = 'unifi_ap'
+ else:
+  aInfo['type'] = 'unifi_switch'
+ try:
+  extobj = VarList('.1.3.6.1.4.1.41112.1.6.3.3.0','.1.3.6.1.4.1.41112.1.6.3.6.0')
+  aSession.get(extobj)
+  aInfo['model']  = extobj[0].val.decode() if extobj[0].val else aDescription[0]
+  if extobj[1].val:
+   aInfo['version'] = extobj[1].val.decode()
+  else:
+   for c,f in enumerate(aDescription):
+    if f == 'firmware':
+     aInfo['version'] = aDescription[c + 1]
+     break
+ except:
+  pass
+
+################################################### Hardware ###################################################
+#
+#
+def execute(aIP, aSNMP, aBasic = False):
  """ Function does detection and mapping
 
  Output:
@@ -13,7 +37,6 @@ def execute(aIP, aSNMP, aBasic = False, aDecode = False):
   - info (dependent)
   - data (dependent)
  """
- from rims.core.common import VarList, Session
  ret = {}
  try:
   session = Session(Version = 2, DestHost = aIP, Community = aSNMP['read'], UseNumeric = 1, Timeout = int(aSNMP.get('timeout',100000)), Retries = 2)
@@ -34,16 +57,24 @@ def execute(aIP, aSNMP, aBasic = False, aDecode = False):
   ret['status'] = 'OK'
   ret['data'] = info = {}
   if sysoid[0].val:
-   try: info['mac'] = int(sysoid[0].val.hex(),16) if not aDecode else ':'.join("%s%s"%x for x in zip(*[iter(sysoid[0].val.hex())]*2)).upper()
-   except: pass
+   try:
+    info['mac'] = int(sysoid[0].val.hex(),16)
+   except:
+    pass
+   # Unifi, but might be others as well encoding MAC as string instead of hex... :-(
+   if info['mac'] > 281474976710655:
+    try: info['mac'] = int(sysoid[0].val.decode().replace('-',""),16)
+    except: pass
   if sysoid[1].val:
-   try:    info['oid'] = int(sysoid[1].val.decode().split('.')[7])
-   except: pass
+   try:
+    info['oid'] = int(sysoid[1].val.decode().split('.')[7])
+   except:
+    pass
   #
   # Device dependendant lookups: devoid, sysoid as arguments, info should merge the result
   #
   if not aBasic:
-   info.update({'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':info.get('mac',0 if not aDecode else '00:00:00:00:00:00'),'oid':info.get('oid',0)})
+   info.update({'model':'unknown', 'snmp':'unknown','version':None,'serial':None,'mac':info.get('mac',0),'oid':info.get('oid',0)})
    if devoid[1].val.decode():
     info['snmp'] = devoid[1].val.decode().lower()
    if devoid[2].val.decode():
@@ -51,7 +82,11 @@ def execute(aIP, aSNMP, aBasic = False, aDecode = False):
     except: enterprise = 0
     infolist = devoid[0].val.decode().split()
     info['oid'] = enterprise
-    if enterprise == '2636':
+    if enterprise == '12325':
+     info['type'] = 'pfsense'
+     info['type'] = 'N/A'
+     info['version'] = infolist[2]
+    elif enterprise == '2636':
      # Juniper
      try:
       extobj = VarList('.1.3.6.1.4.1.2636.3.1.2.0','.1.3.6.1.4.1.2636.3.1.3.0')
@@ -97,34 +132,28 @@ def execute(aIP, aSNMP, aBasic = False, aDecode = False):
       info['model']  = extobj[0].val.decode()
       info['serial'] = extobj[1].val.decode()
      except: pass
+    elif enterprise == '41112':
+     # Unifi
+     oid41112(session, info, infolist)
     elif enterprise == '8072':
+     # Basic linux, could be any other device...
      info['model'] = ' '.join(infolist[0:4])
-     if info['snmp'] == 'ubnt' and info['model'][0:5] == 'Linux':
-      info['type'] = 'unifi_switch'
-      # Fucked up MAC, saved as string instead of hex
-      info['mac'] = sysoid[0].val.decode().replace('-',':') if aDecode else int(sysoid[0].val.decode().replace('-',""),16)
-     elif info['model'][0:3] == 'UAP':
-      info['type'] = 'unifi_ap'
-      try:
-       extobj = VarList('.1.3.6.1.4.1.41112.1.6.3.3.0','.1.3.6.1.4.1.41112.1.6.3.6.0')
-       session.get(extobj)
-       info['model']  = extobj[0].val.decode()
-       info['version'] = extobj[1].val.decode()
-      except: pass
+     print(devoid[2].val.decode())
+     if infolist[0][0:3] == 'UAP':
+      oid41112(session, info, infolist)
      else:
       os = {'8':'freebsd','10':'linux','13':'win32','16':'macosx'}.get(devoid[2].val.decode().split('.')[10],'unknown')
       info['type'] = os
     elif enterprise == '4413':
-     if infolist[0][0:3] == 'USW':
-      info['type'] = 'unifi_switch'
-      try:
-       extobj = VarList('.1.3.6.1.4.1.4413.1.1.1.1.1.2.0','.1.3.6.1.4.1.4413.1.1.1.1.1.13.0')
-       session.get(extobj)
-       info['model']  = extobj[0].val.decode()
-       info['version'] = extobj[1].val.decode()
-      except: pass
-     else:
-      info['model'] = ' '.join(infolist[0:4])
+     # Broadcom reference board...
+     info['type'] = 'broadcom'
+     try:
+      extobj = VarList('.1.3.6.1.4.1.4413.1.1.1.1.1.2.0','.1.3.6.1.4.1.4413.1.1.1.1.1.13.0')
+      session.get(extobj)
+      info['model']  = extobj[0].val.decode() if extobj[0].val else ' '.join(infolist[0:4])
+      info['version'] = extobj[1].val.decode()
+     except:
+      pass
     # Linux
     elif infolist[0] == 'Linux':
      info['model'] = 'debian' if 'Debian' in devoid[0].val.decode() else 'generic'

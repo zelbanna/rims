@@ -7,6 +7,10 @@ pip3 install graphviz
 
 cd /usr/local/sbin
 
+apt-get remove yarn cmdtest npm
+apt autoremove
+apt-get install nodejs yarn
+
 yarn create react-app rims-frontend
 cd /usr/local/sbin/rims-frontend/
 

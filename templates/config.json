@@ -9,10 +9,10 @@
   "password": ""
  },
  "database": {
-  "host": "127.0.0.1",
-  "name": "DATABASE",
-  "password": "PASSWORD",
-  "username": "USERNAME"
+  "host": "172.18.0.2",
+  "name": "rims",
+  "password": "CHANGEME",
+  "username": "rims"
  },
  "salt":"WBEUAHfO",
  "token": "INTERNALTOKEN",

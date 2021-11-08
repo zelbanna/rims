@@ -12,9 +12,6 @@ alias rims_reload='/etc/init.d/rims restart'
 alias rims_clear='/etc/init.d/rims clear'
 alias rims_mysql='mysql -urims -prims rims'
 
-# BlueZ
-# apt-get install pkg-config libboost-python-dev libboost-thread-dev libbluetooth-dev libglib2.0-dev python-dev
-
 apt-get update
 apt-get upgrade
 apt-get install -y sudo nano net-tools git mariadb-client libsnmp-dev libxslt-dev apt-transport-https ca-certificates curl gnupg-agent software-properties-common
@@ -36,14 +33,52 @@ echo ""
 echo " - press enter to continue - "
 read
 docker create --name=mariadb -e PUID=1000 -e PGID=1000 -e MYSQL_ROOT_PASSWORD=$mariadbpassword -e TZ=Europe/Stockholm -v mariadb:/config --net services --ip 172.18.0.2 --restart unless-stopped linuxserver/mariadb
-docker create --name=influxdb -v influxdb:/var/lib/influxdb --net services --ip 172.18.0.3 --restart unless-stopped influxdb:1.8
+docker start mariadb
 docker create --name=grafana -p 3000:3000 -v grafana:/var/lib/grafana --net services --ip 172.18.0.6 --restart unless-stopped grafana/grafana
+docker create --name=pdns-server -v pdns-server:/etc/powerdns  --net services --ip 172.18.0.5 --restart unless-stopped xddxdd/powerdns
 docker create --name=pdns-recursor -p 53:53 -p 53:53/udp -v pdns-recursor:/etc/powerdns  --net services --ip 172.18.0.4 --restart unless-stopped xddxdd/powerdns-recursor
-echo "PDNS recursor installed as container, if using regular install make sure that recursor user can write api-config-dir AND that the systemd service file doesn't sandbox the service (!!)"
+docker run --rm influxdb influxd print-config > /tmp/config.yml
+docker create --name=influxdb2 -p 8086:8086/tcp -v influxdb2:/var/lib/influxdb2 -v /var/lib/docker/volumes/influxdb2/config.yml:/etc/influxdb2/config.yml --net services --ip 172.18.0.3 --restart unless-stopped influxdb
+wget https://raw.githubusercontent.com/PowerDNS/pdns/rel/rec-4.4.x/modules/gmysqlbackend/schema.mysql.sql
+
+mysql -h 172.18.0.2 -uroot -p$mariadbpassword << `END`
+CREATE DATABASE rims;
+CREATE USER 'rims'@'172.18.0.1' IDENTIFIED BY 'rims';
+GRANT ALL PRIVILEGES ON rims.* TO 'rims'@'172.18.0.1';
+FLUSH PRIVILEGES;
+`END`
+
+mysql -h 172.18.0.2 -uroot -p$mariadbpassword << END
+CREATE DATABASE pdns;
+CREATE USER 'pdns'@'172.18.0.1' IDENTIFIED BY 'pdns';
+GRANT ALL PRIVILEGES ON pdns.* TO pdns@172.18.0.1;
+CREATE USER 'pdns'@'172.18.0.5' IDENTIFIED BY 'pdns';
+GRANT ALL PRIVILEGES ON pdns.* TO pdns@172.18.0.5;
+FLUSH PRIVILEGES;
+END
+
+echo "PDNS Server installation"
 echo ""
 echo " - press enter to continue - "
 read
-docker create --name=pdns-server -v pdns-server:/etc/powerdns  --net services --ip 172.18.0.5 --restart unless-stopped xddxdd/powerdns
+rm /var/lib/docker/volumes/pdns-server/_data/pdns.d/*
+
+cat schema.mysql.sql | mysql -h 172.18.0.2 -uroot -p$mariadbpassword pdns
+
+mysql -h 172.18.0.2 -uroot -p$mariadbpassword pdns << END
+ALTER TABLE records ADD CONSTRAINT records_domain_id_ibfk FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE comments ADD CONSTRAINT comments_domain_id_ibfk FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE domainmetadata ADD CONSTRAINT domainmetadata_domain_id_ibfk FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE cryptokeys ADD CONSTRAINT cryptokeys_domain_id_ibfk FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE CASCADE ON UPDATE CASCADE;
+END
+
+echo "Update"
+echo "cat >> /var/lib/docker/volumes/pdns-server/_data/pdns.conf"
+echo "api=yes"
+echo "api-key=CHANGEME"
+echo "webserver-address=172.18.0.3"
+echo "webserver-allow-from=172.18.0.0/24"
+
 echo "Create the following backend connection for PowerDNS volume (pdns-server):"
 echo " >> pdns.d/pdns.local.gmysql.conf"
 echo "launch+=gmysql"
@@ -57,8 +92,39 @@ echo ""
 echo " - press enter to continue - "
 read
 
-# pip3 install pymysql
-# pip3 install paramiko
+echo "Update PDNS recursor"
+echo "cat > /var/lib/docker/volumes/pdns-recursor/_data/recursor.conf"
+echo ""
+echo "api-config-dir=/etc/powerdns/recursor.d"
+echo "api-key=CHANGEME"
+echo "config-dir=/etc/powerdns"
+echo "forward-zones="
+echo "forward-zones-recurse="
+echo "hint-file=/usr/share/dns/root.hints"
+echo "include-dir=/etc/powerdns/recursor.d"
+echo "local-address=0.0.0.0"
+echo "lua-config-file=/etc/powerdns/recursor.lua"
+echo "public-suffix-list-file=/usr/share/publicsuffix/public_suffix_list.dat"
+echo "quiet=yes"
+echo "security-poll-suffix="
+echo "webserver=yes"
+echo "webserver-address=172.18.0.4"
+echo "webserver-allow-from=172.18.0.0/24"
+echo "webserver-loglevel=normal"
+echo "webserver-port=8082"
+echo ""
+echo " - press enter to continue - "
+read
+echo "Installing InfluxDB"
+echo " - run setup later to create a v1 DBRP"
+echo " - then create a token for RIMS API"
+echo ""
+echo "docker exec -it influxdb2 influx setup"
+echo ""
+echo "docker exec -it influxdb2 influx bucket list"
+echo "docker exec -it influxdb2 influx v1 dbrp create --db rims --rp autogen --default --bucket-id <bucket_id>"
+
+
 pip3 install python3-netsnmp
 pip3 install junos-eznc
 

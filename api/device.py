@@ -178,9 +178,13 @@ def info(aCTX, aArgs):
      if type['name'] == type_name:
       args['type_id'] = type['id']
       break
+    ret['update'] = (db.update_dict('devices',args,"id=%s"%id) == 1)
+   else:
+    ret['info'] = res.get('info','NO_INFO')
     if 'types' not in extra:
      ret.pop('types',None)
-    ret['update'] = (db.update_dict('devices',args,"id=%s"%id) == 1)
+   if 'types' not in extra:
+    ret.pop('types',None)
 
   elif op == 'update':
    aArgs.pop('ipam_id',None)
@@ -281,9 +285,8 @@ def extended(aCTX, aArgs):
    ret['data'] = db.get_row()
    ret['extra'] = {'oid':ret['data'].pop('oid',None),'oui':ret['data'].pop('oui',None)}
    db.query("SELECT di.ipam_id, di.interface_id, di.name, INET6_NTOA(ia.ip) AS ip FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE di.device_id = %(id)s AND di.ipam_id IS NOT NULL"%aArgs)
-   ret['interfaces'] = db.get_rows()
-   ret['interfaces'].append({'ipam_id':'NULL','interface_id':None, 'name':'N/A','ip':None})
-
+   ret['interfaces'] = {'ipam_id':'NULL','interface_id':None, 'name':'N/A','ip':None}
+   ret['interfaces'].extend(db.get_rows())
  return ret
 
 #
@@ -880,5 +883,9 @@ def detect_info(aCTX, aArgs):
   - info (dependent)
   - data (dependent)
  """
- from rims.devices.detector import execute
- return execute(aArgs['ip'],aCTX.config['snmp'], aArgs.get('basic',False), aArgs.get('decode',False))
+ from rims.devices.detector import execute as execute_detect
+ ret = execute_detect(aArgs['ip'],aCTX.config['snmp'], aArgs.get('basic',False))
+ if aArgs.get('decode',False):
+  try: ret['data']['mac'] = ':'.join(("%s%s"%x).upper() for x in zip(*[iter("{:012x}".format(ret['data']['mac']))]*2))
+  except: pass
+ return ret

@@ -471,7 +471,6 @@ def check(aCTX, aArgs):
  with aCTX.db as db:
   if db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))):
    networks = db.get_rows()
-   # db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE network_id IN (%s) AND di.class IN ('wired','optical','virtual','logical') ORDER BY ip"%(','.join(str(x['id']) for x in networks)))
    db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia WHERE network_id IN (%s)"%(','.join(str(x['id']) for x in networks)))
    addresses = db.get_rows()
 
@@ -576,7 +575,7 @@ def server_leases(aCTX, aArgs):
 def server_macs(aCTX, aArgs):
  """Function returns all MACs for ip addresses belonging to networks belonging to particular server.
 
- TODO: interface_alternatives like 'check' function
+ TODO:  optimize into one query?
  Args:
   - server_id (required)
 
@@ -584,8 +583,10 @@ def server_macs(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count'] = db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'])
-  ret['data']  = db.get_rows()
+  ret['count']  = db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'])
+  ret['data']   = db.get_rows()
+  ret['count'] += db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di JOIN interface_alternatives AS ifa ON di.interface_id = ifa.interface_id LEFT JOIN ipam_addresses AS ia ON ifa.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'])
+  ret['data'].extend(db.get_rows())
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
  return ret
