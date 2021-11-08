@@ -492,12 +492,12 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  def do_OPTIONS(self):
   self._headers.update({'Access-Control-Allow-Headers':'X-Token,Content-Type','Access-Control-Allow-Origin':'*'})
-  self.header('200','OK',0)
+  self.header(200,'OK',0)
 
  #
  def do_GET(self):
   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
-   self.header('304','Not Modified',0)
+   self.header(304,'Not Modified',0)
   elif self.path != '/':
    path,_,query = unquote(self.path[1:]).rpartition('/')
    file,_,_ = query.partition('?')
@@ -547,7 +547,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     self.header(404,'Not Found',0)
   else:
    self._headers.update({'Location':'index.html'})
-   self.header('301','Moved Permanently',0)
+   self.header(301,'Moved Permanently',0)
 
  #
  def do_POST(self):

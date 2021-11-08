@@ -257,7 +257,7 @@ def user_info(aCTX, aArgs):
    ret['data'] = db.get_row()
    ret['data'].pop('password',None)
   else:
-   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','class':'user','email':'Unknown','external_id':None,'theme':'blue'}
+   ret['data'] = {'id':'new','name':'Unknown','alias':'Unknown','class':'user','email':'Unknown','external_id':None,'theme':'light'}
   ret['classes'] = ['user','operator','admin']
  return ret
 
