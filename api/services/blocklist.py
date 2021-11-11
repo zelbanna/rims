@@ -68,7 +68,7 @@ def update(aCTX, aArgs):
      ret['count'] +=1
    ret['output'][url] = response.status
 
- blocklistfile = aArgs.get('file',aCTX.config['blocklist'].get('file','static/blocklist.txt'))
+ blocklistfile = aArgs.get('file',aCTX.config['blocklist'].get('file','site/blocklist.txt'))
  try:
   with open(blocklistfile,'w+') as f:
    for r in ip_addresses.keys():

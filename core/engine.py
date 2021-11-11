@@ -529,6 +529,8 @@ class SessionHandler(BaseHTTPRequestHandler):
     elif ftype == 'html':
      # self._headers['Content-type']='text/html; charset=utf-8'
      self._headers.update({'Content-type':'text/html; charset=utf-8','Cache-Control':'public, max-age=0','ETag':f'W/"{__build__}"'})
+    elif ftype == 'txt':
+     self._headers.update({'Content-type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=0','ETag':f'W/"{__build__}"'})
     else:
      self._headers.update({'Cache-Control':'public, max-age=0','ETag':f'W/"{__build__}"'})
     try:
