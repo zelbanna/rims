@@ -14,6 +14,12 @@
   "password": "CHANGEME",
   "username": "rims"
  },
+ "blocklist":{
+  "urls":[
+   "http://cinsscore.com/list/ci-badguys.txt",
+   "https://www.dan.me.uk/torlist/"
+  ]
+ },
  "salt":"WBEUAHfO",
  "token": "INTERNALTOKEN",
  "workers": 30,

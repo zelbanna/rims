@@ -31,7 +31,7 @@ def sync(aCTX, aArgs):
 #
 #
 def list(aCTX, aArgs):
- """ Function retrieves switch table cache
+ """ Function retrieves switch table entries from database
 
  Args:
   - field (optional)

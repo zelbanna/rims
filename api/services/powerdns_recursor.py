@@ -8,7 +8,7 @@ __type__ = "RECURSOR"
 #
 #
 def sync(aCTX, aArgs):
- """Function docstring for sync. Sync domain cache with recursor forwarder
+ """Function docstring for sync. Sync domain caching with recursor forwarder
 
  Args:
   - domains (optional)

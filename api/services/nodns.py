@@ -28,7 +28,7 @@ def domain_list(aCTX, aArgs):
 def domain_info(aCTX, aArgs):
  """ Function provide domain info and modification
 
- TODO++: Bypass dns API here and do the insert locally, return 'found' == true instead :-), do proper DB exchange for the domain cache then
+ TODO++: Bypass dns API here and do the insert locally, return 'found' == true instead :-), do proper DB exchange for the local domain table then
 
  Args:
   - id (required)
@@ -65,7 +65,7 @@ def domain_info(aCTX, aArgs):
 #
 #
 def domain_delete(aCTX, aArgs):
- """ Let cache management handle this, NO OP
+ """ Let local domain database management handle this, NO OP
 
  Args:
   - id (required)

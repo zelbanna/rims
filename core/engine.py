@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "7.4"
-__build__ = 394
+__build__ = 395
 __all__ = ['Context']
 
 from copy import copy
@@ -70,7 +70,6 @@ class Context():
    self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
    self.influxdb_seconds = WritePrecision.S
    self.influxdb_synchronous = SYNCHRONOUS
-  self.ipc = {}
   self.cache = {}
   self.nodes = {}
   self.tokens = {}

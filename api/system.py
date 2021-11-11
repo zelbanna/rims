@@ -57,17 +57,6 @@ def state_queue(aCTX, aArgs):
 
 #
 #
-def state_ipc(aCTX, aArgs):
- """ Function returns IPC content
-
-  Args:
-
-  Output:
- """
- return {'status':'OK', 'data':aCTX.ipc}
-
-#
-#
 def sleep(aCTX, aArgs):
  """ Function sleeps for X seconds
 

@@ -531,10 +531,8 @@ def process(aCTX, aArgs):
  from rims.devices.generic import Device
  report = aCTX.node_function(aCTX.node if aCTX.db else 'master','interface','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'interface_process','changed':0}
- aCTX.ipc['interface_process'] = {}
 
  def __check_IF(aDev):
-  aCTX.ipc['interface_process'][aDev['ip']] = True
   if aDev['interfaces']:
    try:
     device = Device(aCTX, aDev['device_id'], aDev['ip'])
@@ -550,10 +548,8 @@ def process(aCTX, aArgs):
      ret['changed'] += len(changed)
      # from rims.api.interface import report
      report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
-  aCTX.ipc['interface_process'][aDev['ip']] = False
 
  aCTX.queue_block(__check_IF,aArgs['devices'])
- aCTX.ipc['interface_process'] = None
  return ret
 
 #

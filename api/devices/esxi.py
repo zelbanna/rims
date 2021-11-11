@@ -34,7 +34,7 @@ def vm_info(aCTX, aArgs):
  Args:
   - device_id (required)
   - vm_id (required)
-  - op (optional). 'update' will update the cached information about the VM (mapping)
+  - op (optional). 'update' will update the local information about the VM (mapping)
 
  Output:
  """

@@ -72,7 +72,7 @@ def domain_info(aCTX, aArgs):
 #
 #
 def domain_delete(aCTX, aArgs):
- """Function domain_delete deletes a domain from local cache and remote nameserver. All records will have no domain
+ """Function domain_delete deletes a domain from local caching and remote nameserver. All records will have no domain
 
  Args:
   - id (required)
@@ -223,7 +223,7 @@ def statistics(aCTX, aArgs):
 #
 #
 def sync_nameserver(aCTX, aArgs):
- """ Function synchronizes nameservers with the cache
+ """ Function synchronizes nameservers with the local cached
 
  Args:
 

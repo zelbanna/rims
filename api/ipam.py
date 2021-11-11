@@ -578,15 +578,18 @@ def server_macs(aCTX, aArgs):
  TODO:  optimize into one query?
  Args:
   - server_id (required)
+  - alternatives (optional), default: False
 
  Output:
  """
+ tmpl = "ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM ipam_addresses AS ia JOIN ipam_networks AS ine ON ia.network_id = ine.id"
  ret = {'status':'OK'}
  with aCTX.db as db:
-  ret['count']  = db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di JOIN ipam_addresses AS ia ON di.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'])
+  ret['count']  = db.query("SELECT %s INNER JOIN interfaces AS di ON di.ipam_id = ia.id WHERE di.mac > 0 AND ine.server_id = %s"%(tmpl, aArgs['server_id']))
   ret['data']   = db.get_rows()
-  ret['count'] += db.query("SELECT ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM interfaces AS di JOIN interface_alternatives AS ifa ON di.interface_id = ifa.interface_id LEFT JOIN ipam_addresses AS ia ON ifa.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE di.mac > 0 AND ine.server_id = %s"%aArgs['server_id'])
-  ret['data'].extend(db.get_rows())
+  if aArgs.get('alternatives'):
+   ret['count'] += db.query("SELECT %s INNER JOIN interface_alternatives AS dia ON dia.ipam_id = ia.id INNER JOIN interfaces AS di ON di.interface_id = dia.interface_id WHERE di.mac > 0 AND ine.server_id = %s"%(tmpl, aArgs['server_id']))
+   ret['data'].extend(db.get_rows())
   for row in ret['data']:
    row['mac'] = ':'.join(row['mac'][i:i+2] for i in [0,2,4,6,8,10])
  return ret
