@@ -62,7 +62,7 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'server_id':aArgs['id']})
+ entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'server_id':aArgs['id'],'alternatives':True})
  __write_file(aCTX.config['iscdhcp']['static'],entries['data'])
  # INTERNAL from rims.api.iscdhcp import restart
  return restart(aCTX, None)
