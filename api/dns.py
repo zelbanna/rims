@@ -40,6 +40,7 @@ def domain_info(aCTX, aArgs):
   - master (required)
   - name (required)
   - server_id (optional)
+  - op (optional)
 
  Output:
  """
@@ -59,7 +60,7 @@ def domain_info(aCTX, aArgs):
     aArgs['id']  = ret['infra']['foreign_id']
     ret.update(aCTX.node_function(ret['infra']['node'],"services.%s"%ret['infra']['service'],'domain_info')(aArgs = aArgs))
     if ret.get('insert'):
-     ret['cache'] = bool(db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']}))
+     ret['cache'] = bool(db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'master':aArgs['master'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']}))
      ret['infra']['foreign_id'] = ret['data']['id']
      ret['data']['id'] = db.get_last_id()
     elif ret.get('data'):

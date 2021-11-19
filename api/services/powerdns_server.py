@@ -37,6 +37,7 @@ def domain_info(aCTX, aArgs):
   - master (required)
   - id (required)
   - name (required)
+  - op (optional)
 
  Output:
  """
@@ -50,9 +51,9 @@ def domain_info(aCTX, aArgs):
   # Fix name so that it ends with .
   try: output = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones?rrsets=false", aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
   except Exception as e:
-   ret = {'status':'NOT_OK','insert':False,'found':False,'info':str(e)}
+   ret = {'status':'NOT_OK','insert':False,'info':str(e)}
   else:
-   ret = {'status':'OK','insert':True,'found':True}
+   ret = {'status':'OK','insert':True,}
  else:
   if op == 'update':
    args = {}
@@ -69,9 +70,9 @@ def domain_info(aCTX, aArgs):
   try:
    output = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{id}", aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
   except:
-   ret['found'] = False
+   ret['status'] = 'NOT_OK'
   else:
-   ret['found'] = True
+   ret['status'] = 'OK'
  # Convert to suitable data format
  ret['data'] = {'id':output.get('id','new'),'name':output.get('name','.')[:-1], 'type':output.get('kind',""),'master':','.join(output.get('masters',[])),'serial':output.get('serial',0)}
  ret['endpoint'] = settings.get('endpoint','127.0.0.1:53')
@@ -227,9 +228,13 @@ def status(aCTX, aArgs):
  Output:
  """
  settings = aCTX.config['powerdns']['server']
- try: output = aCTX.rest_call('%s/api/v1/servers/localhost'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
- except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
- else: ret = {'status':'OK','server':output}
+ try:
+  server = aCTX.rest_call('%s/api/v1/servers/localhost'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+  zones  = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+ except Exception as e:
+  ret = {'status':'NOT_OK','info':str(e)}
+ else:
+  ret = {'status':'OK','server':server,'zones':zones}
  return ret
 
 #

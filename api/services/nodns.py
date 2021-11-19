@@ -28,8 +28,6 @@ def domain_list(aCTX, aArgs):
 def domain_info(aCTX, aArgs):
  """ Function provide domain info and modification
 
- TODO++: Bypass dns API here and do the insert locally, return 'found' == true instead :-), do proper DB exchange for the local domain table then
-
  Args:
   - id (required)
   - name (required)
@@ -39,27 +37,27 @@ def domain_info(aCTX, aArgs):
 
  Output:
  """
- ret = {'data':{'id':aArgs['id'],'name':aArgs.get('name','new_name'),'master':'127.0.0.1','type':'MASTER', 'serial':0 }}
+ id = aArgs['id']
  op = aArgs.pop('op',None)
  aArgs.pop('endpoint',None)
+ ret = {'endpoint':aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')}
  with aCTX.db as db:
   if op == "update":
-   if aArgs['id'] != 'new':
-    args = {}
+   ret['data'] = aArgs
+   if id != 'new':
+    args = {'name':aArgs['name']}
+    if aArgs.get('master'):
+     args['master'] = aArgs['master']
     if 'type' in aArgs:
-     args['kind'] = aArgs['type'].lower().capitalize()
-    if 'master' in aArgs:
-     args['master'] = aArgs['master'].upper()
-    ret['update'] = (db.update_dict('domains',aArgs,'id=%s'%id) == 1)
+     args['kind'] = aArgs['type']
+    ret['update'] = bool(db.update_dict('domains',args,"foreign_id='%s'"%id) == 1)
    else:
+    # Because we don't know our own server id we cannot insert here, assume max + 1 value is available :-)
     ret['insert'] = True
-    db.query("SELECT max(id) + 1 AS next FROM domains")
-    foreign_id = db.get_val('next')
-    ret['data']['id'] = foreign_id if foreign_id else 1
-  elif aArgs['id'] != 'new':
-   db.query("SELECT name FROM domains WHERE foreign_id = '%s'"%aArgs['id'])
-   ret['data']['name'] = db.get_val('name')
-  ret['endpoint'] = aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')
+    ret['data']['id'] = "nodns_" + str(db.get_val('next') if db.query("SELECT max(id) + 1 AS next FROM domains") else 1)
+  elif id != 'new':
+   db.query("SELECT foreign_id AS id, name, 'MASTER' AS type, DATE_FORMAT(serial, '%%Y%%m%%d') AS serial, master FROM domains WHERE foreign_id = '%s'"%id)
+   ret['data'] = db.get_row()
  return ret
 
 #
