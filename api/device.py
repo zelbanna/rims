@@ -284,7 +284,7 @@ def extended(aCTX, aArgs):
   if ret['found']:
    ret['data'] = db.get_row()
    ret['extra'] = {'oid':ret['data'].pop('oid',None),'oui':ret['data'].pop('oui',None)}
-   db.query("SELECT di.ipam_id, di.interface_id, di.name, INET6_NTOA(ia.ip) AS ip FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE di.device_id = %(id)s AND di.ipam_id IS NOT NULL"%aArgs,True)
+   db.query("SELECT di.ipam_id, di.interface_id, di.name, INET6_NTOA(ia.ip) AS ip FROM interfaces AS di LEFT JOIN ipam_addresses AS ia ON di.ipam_id = ia.id WHERE di.device_id = %(id)s AND di.ipam_id IS NOT NULL"%aArgs)
    ret['interfaces'] = [{'ipam_id':'NULL','interface_id':None, 'name':'N/A','ip':None}]
    ret['interfaces'].extend(db.get_rows())
  return ret
