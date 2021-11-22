@@ -183,13 +183,15 @@ class DB():
     self._conn = None
    self._conn_lock.release()
 
- def query(self,aQuery):
-  #print(f"SQL: {aQuery}")
+ def query(self,aQuery, aPrint = False):
+  if aPrint:
+   print(f"SQL: {aQuery}")
   self.count['QUERY'] += 1
   return self._curs.execute(aQuery)
 
- def execute(self,aQuery):
-  #print(f"SQL: {aQuery}")
+ def execute(self,aQuery, aPrint = False):
+  if aPrint:
+   print(f"SQL: {aQuery}")
   self.count['EXECUTE'] += 1
   self._dirty = True
   return self._curs.execute(aQuery)
