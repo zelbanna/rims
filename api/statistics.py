@@ -37,7 +37,7 @@ def query_interface(aCTX, aArgs):
 
 #
 #
-def query_device(aCTX, aArgs):
+def query_ddp(aCTX, aArgs):
  """ Function retrieves/queries database for device (DDP) statistics
 
  Args:

@@ -496,7 +496,7 @@ class Statistics extends Component {
   })
  }
 
- updateItems = (range) => post_call('api/statistics/query_device',{device_id:this.props.device_id, measurement:this.props.measurement, name:this.props.name, range:range}).then(result => {
+ updateItems = (range) => post_call('api/statistics/query_ddp',{device_id:this.props.device_id, measurement:this.props.measurement, name:this.props.name, range:range}).then(result => {
   if (result.status === 'OK') {
    const pos = {};
    result.header.forEach((item,index) => pos[item] = index);
