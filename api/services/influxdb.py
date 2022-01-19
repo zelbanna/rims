@@ -1,62 +1,8 @@
-"""InfluxDB2 API module. Implements influxdb interaction"""
+"""InfluxDB2 API module. Implements influxdb wrapper"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TSDB"
 
-################################# Points ##############################
-#
-#
-def write(aCTX, aArgs):
- """ Function writes data points to configured influxdb2
-
- Args:
-  - measurement (required)
-  - value (required)
-  - tags (optional)
-  - bucket (optional), default to 'rims'
-
- Output:
-  - status
-
- """
- ret = {}
- args = '%s,%s value=%s'%(aArgs['measurement'],"default=default" if 'tags' not in aArgs else ','.join(['%s=%s'%(x[0],x[1]) for x in aArgs['tags']]),aArgs['value'])
- try:
-  with aCTX.influxdb_client.write_api(write_options=aCTX.influxdb_synchronous) as write_api:
-   write_api.write(bucket=aArgs.get('bucket','rims'),  write_precision = aCTX.influxdb_seconds, record=args)
- except Exception as e:
-  ret['status'] = 'NOT_OK'
-  ret['info'] = str(e)
- else: ret ['status'] = 'OK'
- return ret
-
-#
-#
-def query(aCTX, aArgs):
- """ Query the flux database
-
- Args:
-  - query, string
-
- Output:
-  - data
-  - status
-
- """
- ret = {}
- try:
-  query_api = aCTX.influxdb_client.query_api()
-  dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True}
-  res = query_api.query_csv(dialect=dialect, query = 'from(bucket: "rims") |> range(start: -10m) |> filter(fn: (r) => r.host_id == "14" and r.if_name == "fxp0.0") |> derivative(nonNegative: true, unit: 1s) |> keep(columns: ["_time","_field","_value"])')
-  next(res)
-  ret['header'] = next(res)[3:]
-  ret['res'] = [r[3:] for r in res]
- except Exception as e:
-  ret['status'] = 'NOT_OK'
-  ret['info'] = str(e)
- else:
-  ret ['status'] = 'OK'
- return ret
 ################################# Tools ###############################
 #
 #
