@@ -63,11 +63,12 @@ class Context():
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
   self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('influxdb'):
+  if self.config.get('services',{}).get('influxdb'):
+   influxconfig = self.config['services']['influxdb']
    from influxdb_client import InfluxDBClient
    from influxdb_client.client.write_api import SYNCHRONOUS
    from influxdb_client.domain.write_precision import WritePrecision
-   self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
+   self.influxdb_client = InfluxDBClient(url=influxconfig['url'], token=influxconfig['token'], org=influxconfig['org']) if influxconfig.get('version') == 2 else InfluxDBClient(url=influxconfig['url'], token=f"{influxconfig['username']}:{influxconfig['password']}", org='-')
    self.influxdb_seconds = WritePrecision.S
    self.influxdb_synchronous = SYNCHRONOUS
   self.cache = {}
@@ -97,10 +98,11 @@ class Context():
   ctx_new = copy(self)
   database = self.config.get('database')
   ctx_new.db = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('influxdb'):
+  if self.config.get('services',{}).get('influxdb'):
+   influxconfig = self.config['services']['influxdb']
    from influxdb_client import InfluxDBClient
    from influxdb_client.client.write_api import SYNCHRONOUS
-   self.influxdb_client = InfluxDBClient(url=self.config['influxdb']['url'], token=self.config['influxdb']['token'], org=self.config['influxdb']['org']) if self.config['influxdb'].get('version') == 2 else InfluxDBClient(url=self.config['influxdb']['url'], token=f"{self.config['influxdb']['username']}:{self.config['influxdb']['password']}", org='-')
+   self.influxdb_client = InfluxDBClient(url=influxconfig['url'], token=influxconfig['token'], org=influxconfig['org']) if influxconfig.get('version') == 2 else InfluxDBClient(url=influxconfig['url'], token=f"{influxconfig['username']}:{influxconfig['password']}", org='-')
   return ctx_new
 
  #
@@ -427,7 +429,7 @@ class Context():
 
  def schedule_api_task(self, aModule, aFunction, aFrequency = 0, **kwargs):
   try:
-   mod = import_module(f"rims.api.{aModule}")
+   mod = import_module(f"rims.api.{aModule.replace('/','.')}")
    func = getattr(mod, aFunction, None)
   except:
    self.log(f"WorkerPool ERROR: adding task failed ({aModule}/{aFunction}")
