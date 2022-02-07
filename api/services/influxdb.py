@@ -32,7 +32,7 @@ def status(aCTX, aArgs):
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
-  ret['config'] = aCTX.config.get('influxdb')
+  ret['config'] = aCTX.config['services'].get('influxdb')
  else:
   ret['status'] = 'OK'
  return ret
@@ -53,7 +53,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('influxdb',{})
+ settings = aCTX.config['services'].get('influxdb',{})
  params = ['url','org','version','token'] if settings.get('version',2) else ['url','version','username','password']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
@@ -92,7 +92,7 @@ def sync(aCTX, aArgs):
  Output:
  """
  ret = {'status':'OK'}
- db = aCTX.config['influxdb']
+ db = aCTX.config['services']['influxdb']
  if db['version'] == 1:
   try:
    ret['databases'] = [x[0] for x in aCTX.rest_call("%s/query"%(db['url']), aMethod='POST', aApplication = 'x-www-form-urlencoded', aArgs = {'q':'show databases'})['results'][0]['series'][0]['values']]

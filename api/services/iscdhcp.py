@@ -30,7 +30,7 @@ def status(aCTX, aArgs):
  from ipaddress import ip_address
  result = []
  lease  = {}
- with open(aCTX.config['iscdhcp']['active'],'r') as leasefile:
+ with open(aCTX.config['services']['iscdhcp']['active'],'r') as leasefile:
   for line in leasefile:
    if line == '\n':
     continue
@@ -63,7 +63,7 @@ def sync(aCTX, aArgs):
  Output:
  """
  entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'server_id':aArgs['id'],'alternatives':True})
- __write_file(aCTX.config['iscdhcp']['static'],entries['data'])
+ __write_file(aCTX.config['services']['iscdhcp']['static'],entries['data'])
  # INTERNAL from rims.api.iscdhcp import restart
  return restart(aCTX, None)
 
@@ -82,7 +82,7 @@ def update(aCTX, aArgs):
  """
  devices = {}
 
- with open(aCTX.config['iscdhcp']['static'],'r') as config_file:
+ with open(aCTX.config['services']['iscdhcp']['static'],'r') as config_file:
   for line in config_file:
    if line[0] == '#':
     continue
@@ -91,7 +91,7 @@ def update(aCTX, aArgs):
    devices[id] = {'id':id,'mac':parts[5][:-1],'ip':parts[7][:-1],'network':parts[11]}
  if 'id' in aArgs:
   devices[aArgs['id']] = {'id':aArgs['id'],'mac':aArgs['mac'],'ip':aArgs['ip'],'network':aArgs['network']}
-  __write_file(aCTX.config['iscdhcp']['static'],devices.values())
+  __write_file(aCTX.config['services']['iscdhcp']['static'],devices.values())
   # INTERNAL from rims.api.iscdhcp import restart
   ret = restart(aCTX,None)
  else:
@@ -113,7 +113,7 @@ def restart(aCTX, aArgs):
  from subprocess import check_output, CalledProcessError
  ret = {}
  try:
-  ret['output'] = check_output(aCTX.config['iscdhcp']['reload'].split()).decode()
+  ret['output'] = check_output(aCTX.config['services']['iscdhcp']['reload'].split()).decode()
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output.decode()
@@ -133,7 +133,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('iscdhcp',{})
+ settings = aCTX.config['services'].get('iscdhcp',{})
  params = ['reload','active','static']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 

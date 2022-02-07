@@ -39,7 +39,7 @@ def sync(aCTX, aArgs):
  Output:
  """
  ret = {'added':[],'removed':[]}
- settings = aCTX.config['srx']
+ settings = aCTX.config['services']['srx']
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logon</operation><timeout>%s</timeout><IP>%s</IP><domain>global</domain><user>%s</user><role-list><role>%s</role></role-list><posture>healthy</posture></userfw-entry></userfw-entries>'
@@ -82,7 +82,7 @@ def authenticate(aCTX, aArgs):
  Output:
   - status
  """
- settings = aCTX.config['srx']
+ settings = aCTX.config['services']['srx']
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logon</operation><timeout>%s</timeout><IP>%s</IP><domain>global</domain><user>%s</user><role-list><role>%s</role></role-list><posture>healthy</posture></userfw-entry></userfw-entries>'
@@ -104,7 +104,7 @@ def invalidate(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['srx']
+ settings = aCTX.config['services']['srx']
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logoff</operation><IP>%s</IP></userfw-entry></userfw-entries>'
@@ -126,7 +126,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('srx',{})
+ settings = aCTX.config['services'].get('srx',{})
  params = ['url','username','password','roles']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 

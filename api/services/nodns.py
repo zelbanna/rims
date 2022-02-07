@@ -20,7 +20,7 @@ def domain_list(aCTX, aArgs):
  with aCTX.db as db:
   ret['count'] = db.query("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns'"%aCTX.node)
   ret['data'] = db.get_rows()
-  ret['endpoint'] = aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')
+  ret['endpoint'] = aCTX.config['services']['nodns'].get('endpoint','127.0.0.1:53')
  return ret
 
 #
@@ -40,7 +40,7 @@ def domain_info(aCTX, aArgs):
  id = aArgs['id']
  op = aArgs.pop('op',None)
  aArgs.pop('endpoint',None)
- ret = {'endpoint':aCTX.config.get('nodns',{}).get('endpoint','127.0.0.1:53')}
+ ret = {'endpoint':aCTX.config['services']['nodns'].get('endpoint','127.0.0.1:53')}
  with aCTX.db as db:
   if op == "update":
    ret['data'] = aArgs
@@ -185,10 +185,10 @@ def sync(aCTX, aArgs):
   # TODO: Retrive all reverse records, and their reverse_zone_id, parse like in sync_data
 
   # Write to local 'hosts' file or similar
-  if aCTX.config.get('nodns',{}).get('file'):
+  if aCTX.config['services']['nodns'].get('file'):
    from os import linesep
    try:
-    with open(aCTX.config['nodns']['file'],'w+') as ndfile:
+    with open(aCTX.config['services']['nodns']['file'],'w+') as ndfile:
      db.query("SELECT name, content FROM records WHERE type = 'A'")
      ndfile.write(linesep.join(f"{rec['content']}\t{rec['name']}" for rec in db.get_rows() ))
    except Exception as e:

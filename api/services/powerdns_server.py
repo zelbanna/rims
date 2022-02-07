@@ -14,7 +14,7 @@ def domain_list(aCTX, aArgs):
  Output:
  """
  ret = {}
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  try:
   ret['data'] = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones?dnssec=false", aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
@@ -45,7 +45,7 @@ def domain_info(aCTX, aArgs):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  output = {}
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  if op == 'update' and id == 'new':
   args = {'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','kind':aArgs.get('type','Master').lower().capitalize(),'dnssec':False,'soa-edit':'INCEPTION-INCREMENT','masters':aArgs.get('master','127.0.0.1').split(','),'nameservers':settings.get('nameservers','server.local.').split(',')}
   # Fix name so that it ends with .
@@ -89,7 +89,7 @@ def domain_delete(aCTX, aArgs):
  Output:
  """
  ret = {}
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  try: res = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{aArgs['id']}", aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']}, aDataOnly=False)
  except Exception as e:
   ret['status'] = 'NOT_OK'
@@ -112,7 +112,7 @@ def record_list(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  try: output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
@@ -140,7 +140,7 @@ def record_info(aCTX, aArgs):
  Output:
  """
  op = aArgs.pop('op',None)
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  if op == 'new':
   ret = { 'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
  elif op == 'info':
@@ -183,7 +183,7 @@ def record_delete(aCTX, aArgs):
   - deleted
   - status
  """
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  args = {'rrsets':[{'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','type':aArgs['type'],'changetype':'DELETE','records':[],'comments':[]}]}
  try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
  except Exception as e: ret = {'deleted':False,'status':'NOT_OK','info':str(e)}
@@ -201,7 +201,7 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  try: domains = [x['name'] for x in aCTX.rest_call('%s/api/v1/servers/localhost/zones?dnssec=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})]
  except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else:
@@ -227,7 +227,7 @@ def status(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  try:
   server = aCTX.rest_call('%s/api/v1/servers/localhost'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
   zones  = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
@@ -246,7 +246,7 @@ def statistics(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['powerdns']['server']
+ settings = aCTX.config['services']['powerdns']['server']
  try: output = aCTX.rest_call('%s/api/v1/servers/localhost/statistics?includerings=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else: ret = {'status':'OK','statistics':{x['name']:x['type'] for x in output}}
@@ -266,7 +266,7 @@ def restart(aCTX, aArgs):
  """
  from subprocess import check_output, CalledProcessError
  ret = {}
- settings = aCTX.config['powerdns']
+ settings = aCTX.config['services']['powerdns']
  try: ret = {'output':check_output(settings.get('reload','service pdns restart').split()).decode(), 'code':0, 'status':'OK' }
  except CalledProcessError as c: ret = {'output':c.output, 'code':c.returncode, 'status':'NOT_OK'}
  return ret
@@ -289,7 +289,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('powerdns',{}).get('server',{})
+ settings = aCTX.config['services'].get('powerdns',{}).get('server',{})
  params = ['url','key','reload','nameserver','endpoint']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 

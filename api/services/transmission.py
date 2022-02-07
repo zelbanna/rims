@@ -31,7 +31,7 @@ def status(aCTX, aArgs):
  """
  ret = {}
  try:
-  command = aCTX.config['transmission']['status']
+  command = aCTX.config['services']['transmission']['status']
   output = check_output(command.split())
   ret['code'] = 0
  except CalledProcessError as c:
@@ -79,9 +79,9 @@ def restart(aCTX, aArgs):
  """
  ret = {}
  from time import sleep as time_sleep
- ret['stop'] = __op(aCTX.config['transmission']['stop'])['status']
+ ret['stop'] = __op(aCTX.config['services']['transmission']['stop'])['status']
  time_sleep(2)
- ret.update(__op(aCTX.config['transmission']['start']))
+ ret.update(__op(aCTX.config['services']['transmission']['start']))
  return ret
 
 #
@@ -95,7 +95,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('transmission',{})
+ settings = aCTX.config['services'].get('transmission',{})
  params = ['start','stop','status']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
@@ -109,7 +109,7 @@ def start(aCTX, aArgs):
  Output:
   - status
  """
- return __op(aCTX.config['transmission']['start'])
+ return __op(aCTX.config['services']['transmission']['start'])
 
 #
 #
@@ -121,4 +121,4 @@ def stop(aCTX, aArgs):
  Output:
   - status
  """
- return __op(aCTX.config['transmission']['stop'])
+ return __op(aCTX.config['services']['transmission']['stop'])

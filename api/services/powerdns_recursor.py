@@ -16,7 +16,7 @@ def sync(aCTX, aArgs):
  Output:
  """
  ret = {'added':[],'removed':[]}
- settings = aCTX.config['powerdns']['recursor']
+ settings = aCTX.config['services']['powerdns']['recursor']
  try: servers = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret['status'] = 'NOT_OK'
@@ -59,7 +59,7 @@ def status(aCTX, aArgs):
   - status
  """
  ret = {}
- settings = aCTX.config['powerdns']['recursor']
+ settings = aCTX.config['services']['powerdns']['recursor']
  try: servers = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e: ret.update({'status':'NOT_OK','info':str(e)})
  else: ret.update({'status':'OK','zones':[x for x in servers if x['servers']]})
@@ -75,7 +75,7 @@ def statistics(aCTX, aArgs):
   - remotes
  """
  ret = {}
- settings = aCTX.config['powerdns']['recursor']
+ settings = aCTX.config['services']['powerdns']['recursor']
  try: entries = aCTX.rest_call('%s/jsonstat?command=get-query-ring&name=queries'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})['entries']
  except Exception as e: ret.update({'queries':[],'exception':str(e)})
  else: ret['queries'] = entries
@@ -99,7 +99,7 @@ def restart(aCTX, aArgs):
  """
  from subprocess import check_output, CalledProcessError
  ret = {}
- settings = aCTX.config['powerdns']['recursor']
+ settings = aCTX.config['services']['powerdns']['recursor']
  try:
   ret['output'] = check_output(settings.get('reload','service pdns-recursor restart').split()).decode()
   ret['code'] = 0
@@ -130,7 +130,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('powerdns',{}).get('recursor',{})
+ settings = aCTX.config['services'].get('powerdns',{}).get('recursor',{})
  params = ['url','key','reload']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 

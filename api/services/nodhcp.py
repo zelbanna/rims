@@ -56,7 +56,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('nodhcp',{})
+ settings = aCTX.config['services'].get('nodhcp',{})
  params = []
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
