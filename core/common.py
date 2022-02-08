@@ -11,6 +11,9 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from urllib.error import HTTPError
 from ssl import create_default_context, CERT_NONE
+from influxdb_client import InfluxDBClient
+from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.domain.write_precision import WritePrecision
 
 ########################################### REST ##########################################
 #
@@ -74,6 +77,39 @@ def rest_call(aURL, **kwargs):
  if ecode:
   raise RestException(ecode,etype,einfo,edata)
  return res
+
+######################################## InfluxDB ######################################
+#
+# InfluxDB 2.x compatible handler
+# Add a default Handler
+class InfluxDB():
+
+ def __init__(self, aUrl, aOrg, aToken, aBucket = None):
+  self.url = aUrl
+  self.org = aOrg
+  self.token = aToken
+  self.bucket = aBucket
+  self.client = InfluxDBClient(url=aUrl, token=aToken, org=aOrg)
+  self.precision = WritePrecision.S
+  self.write_mode = SYNCHRONOUS
+
+ def status(self, aCTX, aArgs):
+  try:
+   return self.ic.health().to_dict()
+  except Exception as e:
+   return str(e)
+
+ def query_csv(self, aQuery, aDialect = None):
+  return self.client.query_api().query_csv(dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True} if not aDialect else aDialect, query = aQuery)
+
+ def write(self, aRecords, aBucket = None):
+  try:
+   bucket = aBucket if aBucket else self.bucket
+   with self.client.write_api(write_options=self.write_mode) as write_api:
+    write_api.write(bucket = bucket, write_precision = self.precision, record = aRecords)
+  except Exception as e:
+   raise Exception(e)
+
 
 ######################################## Scheduler ######################################
 #

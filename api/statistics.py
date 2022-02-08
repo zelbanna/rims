@@ -19,8 +19,7 @@ def query_interface(aCTX, aArgs):
  ret = {}
  query = f'from(bucket: "rims") |> range(start: -{aArgs.get("range",1)}h) |> filter(fn: (r) => r.host_id == "{aArgs["device_id"]}" and r.if_id == "{aArgs["interface_id"]}") |> derivative(nonNegative: true, unit: 1s) |> group(columns: ["_field"]) |> keep(columns: ["_time","_field","_value"])'
  try:
-  dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True}
-  res = aCTX.influxdb_client.query_api().query_csv(dialect=dialect, query = query)
+  res = aCTX.influxdb.query_csv(query)
   if any(res):
    ret['header'] = next(res)[3:]
    ret['data'] = [r[3:] for r in res]
@@ -53,8 +52,7 @@ def query_ddp(aCTX, aArgs):
  ret = {}
  query = f'from(bucket: "rims") |> range(start: -{aArgs.get("range",1)}h) |> filter(fn: (r) => r.host_id == "{aArgs["device_id"]}" and r._measurement == "{aArgs["measurement"]}" and r._field == "{aArgs["name"]}") |> group(columns: ["_field"]) |> keep(columns: ["_time","_field","_value"])'
  try:
-  dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True}
-  res = aCTX.influxdb_client.query_api().query_csv(dialect=dialect, query = query)
+  res = aCTX.influxdb.query_csv(query)
   if any(res):
    ret['header'] = next(res)[3:]
    ret['data'] = [r[3:] for r in res]
@@ -269,7 +267,6 @@ def report(aCTX, aArgs):
  from datetime import datetime
  ret = {'status':'NOT_OK','function':'statistics_report'}
  args = []
- db = aCTX.config['services']['influxdb']['bucket']
  ts = int(datetime.now().timestamp())
  if 'interfaces' in aArgs:
   tmpl = 'interface,host_id={0},host_ip={1},if_id=%i,if_name=%s in8s=%iu,inUPs=%iu,out8s=%iu,outUPs=%iu {2}'.format(aArgs['device_id'],aArgs['ip'],ts)
@@ -278,11 +275,10 @@ def report(aCTX, aArgs):
   tmpl = '%s,host_id={0},host_ip={1},%s %s {2}'.format(aArgs['device_id'],aArgs['ip'],ts)
   args.extend(tmpl%(m['measurement'], m['tags'].replace(' ','\ '), ','.join('%s=%s'%(x['name'][:20].replace(' ','\ '), x['value']) for x in m['values'] if x['value'] ) ) for m in aArgs['data_points'] if any(x['value'] for x in m['values']) )
  try:
-  with aCTX.influxdb_client.write_api(write_options=aCTX.influxdb_synchronous) as write_api:
-   write_api.write(bucket=db, write_precision = aCTX.influxdb_seconds, record = args)
+  aCTX.influxdb.write(args)
  except Exception as e:
   ret['info'] = str(e)
-  aCTX.log(f'statistics_report_tsdb_error: {str(e)}')
+  aCTX.log(f'statistics_report_write_error: {str(e)}')
  else:
   ret['status'] = 'OK'
  return ret

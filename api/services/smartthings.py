@@ -5,6 +5,11 @@ __type__ = "TELEMETRY"
 
 #
 #
+def __format(aString):
+ return aString.replace(" ", "_").replace("/", "-").replace(":", "").lower()
+
+#
+#
 def check(aCTX, aArgs):
  """Function checks smartthings API and push data to influxDB bucket
 
@@ -20,8 +25,8 @@ def check(aCTX, aArgs):
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
  state = aCTX.cache.get('smartthings')
  translate = aCTX.config['services']['smartthings']['capabilities']
- influx = []
- tmpl = 'smartthings,host_id=%s,host_label=%s %s=%i {0}'.format(ts)
+ records = []
+ tmpl = 'smartthings,host_id=%s,host_label=%s %s {0}'.format(ts)
  data = {}
  if not state:
   # from rims.api.services.smartthings import sync
@@ -34,7 +39,9 @@ def check(aCTX, aArgs):
    ret['info'] = str(e)
    break
   else:
-   data[dev[1]] = info = {}
+   label = __format(dev[1])
+   data[label] = info = {}
+   tagvalue = [] 
    for cap, measure in res['components']['main'].items():
     if cap in dev[0]:
      value = measure[translate[cap]]['value']
@@ -45,9 +52,12 @@ def check(aCTX, aArgs):
        value = 0
      elif value is None:
       value = 0
+     tagvalue.append("%s=%s"%(translate[cap],value))
      info[translate[cap]] = value
-   ret['status'] = 'OK'
-   ret['data'] = data
+   records.append(tmpl%(id,label,",".join(tagvalue)))
+  ret['status'] = 'OK'
+  ret['data'] = data
+  ret['records']=records
  return ret
 
 ################################################
