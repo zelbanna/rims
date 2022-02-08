@@ -160,6 +160,7 @@ class DB():
   self.close()
 
  def connect(self):
+  """ Connect and acquire a connection lock once"""
   with self._wait_lock:
    self._conn_waiting += 1
   self._conn_lock.acquire()
@@ -169,7 +170,7 @@ class DB():
    self._curs = self._conn.cursor()
 
  def close(self):
-  """ Close connection, audit, remove waiting threads and also remove reentrant lock """
+  """ Close connection, audit, remove waiting threads and also decrease reentrant lock once"""
   self.count['CLOSE'] += 1
   if self._dirty:
    self.commit()
@@ -181,7 +182,8 @@ class DB():
     self._conn.close()
     self._curs = None
     self._conn = None
-   self._conn_lock.release()
+  # Call release once - with every close - to match every 'acquire' and to keep lock correct (!)
+  self._conn_lock.release()
 
  def query(self,aQuery, aPrint = False):
   if aPrint:
