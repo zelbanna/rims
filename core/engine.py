@@ -872,7 +872,9 @@ class HouseKeeping(Thread):
   now = datetime.now(timezone.utc)
 
   # Worker monitoring
+  active = 0
   for w in ctx.workers_active():
+   active += 1
    if w[2] >= 60:
     ctx.log(f'{w[0]}/{w[3]} stuck for {w[2]} seconds with {w[1]}')
 
@@ -897,6 +899,6 @@ class HouseKeeping(Thread):
    for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in ctx.services.items() if v['type'] == 'AUTHENTICATION']:
     ctx.node_function(infra['node'], f"services.{infra['service']}", 'sync')(aArgs = {'id':infra['id'],'users':users})
   garbage_collect()
-  ctx.log("House keeping => OK")
+  ctx.log(f"House keeping => OK ({active})")
   return True
 

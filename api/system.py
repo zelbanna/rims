@@ -41,8 +41,8 @@ def state_queue(aCTX, aArgs):
  """ Function process context workers and watch for locked processes
 
   Args:
-   timeout. seconds to determine liveness, defaults to 10
-   log. whether or not to log each thread. Boolean defaults to False
+   - timeout. seconds to determine liveness, defaults to 10
+   - log. whether or not to log each thread. Boolean defaults to False
 
   Output:
    data. list of workers that are locked
