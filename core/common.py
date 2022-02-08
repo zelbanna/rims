@@ -109,6 +109,8 @@ class InfluxDB():
     write_api.write(bucket = bucket, write_precision = self.precision, record = aRecords)
   except Exception as e:
    raise Exception(e)
+  else:
+   return True
 
 
 ######################################## Scheduler ######################################

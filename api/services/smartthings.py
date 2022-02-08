@@ -5,13 +5,23 @@ __type__ = "TELEMETRY"
 
 #
 #
-def __format(aString):
- return aString.replace(" ", "_").replace("/", "-").replace(":", "").lower()
+def report(aCTX, aArgs):
+ """ Function report Smartthings data to influxDB
+
+ Args:
+  - records. List of records to enter
+
+ Output:
+  - status
+ """
+ records = aArgs['records']
+ aCTX.influxdb.write(records, aCTX.config['services']['smartthings']['bucket'])
+ return {'status':'OK','function':'smartthings_report','reported':len(records)}
 
 #
 #
-def check(aCTX, aArgs):
- """Function checks smartthings API and push data to influxDB bucket
+def process(aCTX, aArgs):
+ """Function checks smartthings API, process data and queue reporting to influxDB bucket
 
  Args:
 
@@ -19,32 +29,29 @@ def check(aCTX, aArgs):
   - status
  """
  from datetime import datetime
- ret = {}
- ts = int(datetime.now().timestamp())
+
+ ret = {'function':'smartthings_process'}
  url = 'https://api.smartthings.com/v1/devices/{0}/status'
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
+ tmpl = 'smartthings,host_id=%s,host_label=%s %s {0}'.format(int(datetime.now().timestamp()))
  state = aCTX.cache.get('smartthings')
- translate = aCTX.config['services']['smartthings']['capabilities']
+ xlate = aCTX.config['services']['smartthings']['capabilities']
  records = []
- tmpl = 'smartthings,host_id=%s,host_label=%s %s {0}'.format(ts)
- data = {}
  if not state:
   # from rims.api.services.smartthings import sync
   state = sync(aCTX, {})['data']
  for id,dev in state['devices'].items():
   try:
-   res = aCTX.rest_call(url.format(id),aHeader = hdr, aDataOnly = True, aMethod = 'GET')
+   res = aCTX.rest_call(url.format(id), aHeader = hdr, aDataOnly = True, aMethod = 'GET')
   except Exception as e:
    state['sync'] = ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
    break
   else:
-   label = __format(dev[1])
-   data[label] = info = {}
-   tagvalue = [] 
+   tagvalue = []
    for cap, measure in res['components']['main'].items():
     if cap in dev[0]:
-     value = measure[translate[cap]]['value']
+     value = measure[xlate[cap]]['value']
      if isinstance(value, str):
       if value == 'active':
        value = 1
@@ -52,12 +59,35 @@ def check(aCTX, aArgs):
        value = 0
      elif value is None:
       value = 0
-     tagvalue.append("%s=%s"%(translate[cap],value))
-     info[translate[cap]] = value
+     tagvalue.append("%s=%s"%(xlate[cap],value))
+   label = dev[1].replace(" ", "_").replace("/", "-").replace(":", "").lower()
    records.append(tmpl%(id,label,",".join(tagvalue)))
   ret['status'] = 'OK'
-  ret['data'] = data
-  ret['records']=records
+ aCTX.queue_api(report,{'records':records}, aOutput = aCTX.debug)
+ #report(aCTX,{'records':records})
+ return ret
+
+#
+#
+def device(aCTX, aArgs):
+ """Function returns capabilities of a device ID
+
+ Args:
+  - device_id (required)
+
+ Output:
+  - data
+ """
+ ret = {}
+ hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
+ try:
+  res = aCTX.rest_call('https://api.smartthings.com/v1/devices/{0}/status'.format(aArgs['device_id']), aHeader = hdr, aDataOnly = True, aMethod = 'GET')
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['info'] = str(e)
+ else:
+  ret['status'] = 'OK'
+  ret['data'] = res
  return ret
 
 ################################################
@@ -112,7 +142,7 @@ def sync(aCTX, aArgs):
    caps = []
    # Does the device carry any interesting capability?
    for cap in device['components'][0]['capabilities']:
-    state_capabilities[cap['id']] = True
+    state_capabilities[cap['id']] = device['deviceId']
     if cap['id'] in capabilities:
      caps.append(cap['id'])
    if caps:
@@ -148,7 +178,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('smartthings',{})
+ settings = aCTX.config['services'].get('smartthings',{})
  params = ['token','bucket','capabilities']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 

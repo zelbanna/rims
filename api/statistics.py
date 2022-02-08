@@ -255,7 +255,6 @@ def process(aCTX, aArgs):
 #
 def report(aCTX, aArgs):
  """Function updates statistics for a particular devices to influxdb - service must be running on this node.
- Line protocol uses nanosecond precision so we add 9 zeros for each write
 
  Args:
   - device_id (required). Device id
