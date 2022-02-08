@@ -841,7 +841,7 @@ class OUISearch extends Component {
  onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
 
  ouiSearch = () => {
-  post_call('api/master/oui_info',{oui:this.state.data.oui}).then(result => this.setState({content:<InfoArticle key='os_art'><InfoColumns key='os_cont'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.data.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.data.company}</span></InfoColumns></InfoArticle>}))
+  post_call('api/services/oui/info',{oui:this.state.data.oui}).then(result => this.setState({content:<InfoArticle key='os_art'><InfoColumns key='os_cont'><label htmlFor='oui'>OUI:</label><span id='oui'>{result.data.oui}</span><label htmlFor='company'>Company:</label><span id='company'>{result.data.company}</span></InfoColumns></InfoArticle>}))
  }
 
  render() {
@@ -864,7 +864,7 @@ class OUIList extends Component {
  }
 
  componentDidMount(){
-  post_call('api/master/oui_list').then(result => this.setState(result))
+  post_call('api/services/oui/list').then(result => this.setState(result))
  }
 
  render(){
