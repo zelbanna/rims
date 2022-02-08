@@ -26,7 +26,7 @@ from types import ModuleType
 from urllib.parse import unquote, parse_qs
 from queue import Queue
 from ipaddress import ip_address
-from rims.core.common import DB, rest_call, Scheduler, RestException
+from rims.core.common import DB, rest_call, Scheduler, RestException, InfluxDB
 
 ##################################################### Context #######################################################
 #
@@ -63,14 +63,8 @@ class Context():
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
   self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('services',{}).get('influxdb'):
-   influxconfig = self.config['services']['influxdb']
-   from influxdb_client import InfluxDBClient
-   from influxdb_client.client.write_api import SYNCHRONOUS
-   from influxdb_client.domain.write_precision import WritePrecision
-   self.influxdb_client = InfluxDBClient(url=influxconfig['url'], token=influxconfig['token'], org=influxconfig['org']) if influxconfig.get('version') == 2 else InfluxDBClient(url=influxconfig['url'], token=f"{influxconfig['username']}:{influxconfig['password']}", org='-')
-   self.influxdb_seconds = WritePrecision.S
-   self.influxdb_synchronous = SYNCHRONOUS
+  if self.config.get('influxdb'):
+   self.influxdb = InfluxDB(self.config['influxdb']['url'],self.config['influxdb']['org'],self.config['influxdb']['token'],self.config['influxdb']['bucket'])
   self.cache = {}
   self.nodes = {}
   self.tokens = {}
@@ -98,11 +92,8 @@ class Context():
   ctx_new = copy(self)
   database = self.config.get('database')
   ctx_new.db = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('services',{}).get('influxdb'):
-   influxconfig = self.config['services']['influxdb']
-   from influxdb_client import InfluxDBClient
-   from influxdb_client.client.write_api import SYNCHRONOUS
-   self.influxdb_client = InfluxDBClient(url=influxconfig['url'], token=influxconfig['token'], org=influxconfig['org']) if influxconfig.get('version') == 2 else InfluxDBClient(url=influxconfig['url'], token=f"{influxconfig['username']}:{influxconfig['password']}", org='-')
+  if self.config.get('influxdb'):
+   ctx_new.influxdb = InfluxDB(self.config['influxdb']['url'],self.config['influxdb']['org'],self.config['influxdb']['token'],self.config['influxdb']['bucket'])
   return ctx_new
 
  #

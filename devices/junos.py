@@ -121,8 +121,7 @@ class Junos(GenericDevice):
               '%s protocols lldp port-description-type interface-description'%base,
               '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp neighbour-port-info-display port-id'%base,
-              '%s protocols lldp interface all'%base,
-              '%s class-of-service host-outbound-traffic forwarding-class network-control'%base])
+              '%s protocols lldp interface all'%base])
 
   if self._ctx.ip:
    ret.append('%s snmp community %s clients %s/%s'%(base,self._ctx.config['snmp']['read'],self._ctx.ip,self._ctx.ip.max_prefixlen))
