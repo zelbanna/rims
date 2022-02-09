@@ -73,7 +73,7 @@ def device(aCTX, aArgs):
  """Function returns capabilities of a device ID
 
  Args:
-  - device_id (required)
+  - device (required)
 
  Output:
   - data
@@ -81,7 +81,7 @@ def device(aCTX, aArgs):
  ret = {}
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
  try:
-  res = aCTX.rest_call('https://api.smartthings.com/v1/devices/{0}/status'.format(aArgs['device_id']), aHeader = hdr, aDataOnly = True, aMethod = 'GET')
+  res = aCTX.rest_call('https://api.smartthings.com/v1/devices/{0}/status'.format(aArgs['device']), aHeader = hdr, aDataOnly = True, aMethod = 'GET')
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -105,11 +105,11 @@ def status(aCTX, aArgs):
  ret = {}
  state = aCTX.cache.get('smartthings')
  if state:
-  ret['status'] = state['sync']
+  ret['status'] = "OK" if state['sync'] else "NOT_OK"
   ret['devices'] = state['devices']
   ret['capabilities'] = state['capabilities']
  else:
-  ret['state'] = 'NOT_OK'
+  ret['status'] = 'NOT_OK'
  return ret
 
 #
@@ -134,7 +134,8 @@ def sync(aCTX, aArgs):
  try:
   data = aCTX.rest_call(url,aHeader = hdr, aDataOnly = True, aMethod = 'GET')
  except Exception as e:
-  state['sync'] = ret['status'] = 'NOT_OK'
+  state['sync'] = False
+  ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
  else:
   capabilities = aCTX.config['services']['smartthings']['capabilities']
@@ -147,8 +148,9 @@ def sync(aCTX, aArgs):
      caps.append(cap['id'])
    if caps:
     state_devices[device['deviceId']] = (caps,device['label'],device['name'])
+  state['sync'] = True
   ret['data'] = state
-  state['sync'] = ret['status'] = 'OK'
+  ret['status'] = 'OK'
   aCTX.cache['smartthings'] = state
  return ret
 
@@ -165,6 +167,7 @@ def restart(aCTX, aArgs):
   - result 'OK'/'NOT_OK'
  """
  state = aCTX.cache.get('smartthings',{})
+ state['sync'] = False
  return {'status':'OK','code':0,'output':""}
 
 #
