@@ -114,7 +114,7 @@ class Context():
    env['version'] = __version__
    env['build'] = __build__
   else:
-   env = self.rest_call(f"{self.config['master']}/internal/system/environment", aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__})
+   env = self.rest_call(f"{self.config['master']}/api/system/environment", aHeader = {'X-Token':self.token}, aArgs = {'node':aNode,'build':__build__})
    env['nodes']['master']['url'] = self.config['master']
    for v in env['tokens'].values():
     v['expires'] = datetime.strptime(v['expires'],"%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=timezone.utc)
@@ -266,7 +266,7 @@ class Context():
     with open(syslog['file'], 'a') as f:
      f.write(logstring)
 
- ################# API AND INTERNAL FUNCTIONS ##############
+ ################## API FUNCTIONS ###################
  #
  def node_function(self, aNode, aModule, aFunction, **kwargs):
   """
@@ -278,7 +278,7 @@ class Context():
    kwargs['aHeader'] = kwargs.get('aHeader',{})
    kwargs['aHeader']['X-Token'] = self.token
    try:
-    ret = partial(self.rest_call,f"{self.nodes[aNode]['url']}/internal/{aModule.replace('.','/')}/{aFunction}", **kwargs)
+    ret = partial(self.rest_call,f"{self.nodes[aNode]['url']}/api/{aModule.replace('.','/')}/{aFunction}", **kwargs)
    except Exception as e:
     self.log(f"Node Function REST failure: {aModule}/{aFunction}@{aNode} ({dumps(kwargs)}) => {e}")
     ret = {'status':'NOT_OK','info':f"NODE_FUNCTION_FAILURE: {e}"}
@@ -548,19 +548,33 @@ class SessionHandler(BaseHTTPRequestHandler):
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
   if path == 'api':
-   try:
-    cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])
-    tid = self._ctx.tokens[cookies['rims']]['id']
-   except:
+   if self.headers.get('X-Token') == self._ctx.token:
+    token_id = self._ctx.token
+   else:
+    try:
+     cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])
+     token_id = self._ctx.tokens[cookies['rims']]['id']
+    except:
+     token_id = None
+
+   if token_id:
+    args = {}
+    try:
+     length = int(self.headers.get('Content-Length',0))
+     if length:
+      raw = self.rfile.read(length).decode()
+      header,_,_ = self.headers['Content-Type'].partition(';')
+      if header == 'application/json':
+       args = loads(raw)
+      elif header == 'application/x-www-form-urlencoded':
+       args = { k: l[0] for k,l in parse_qs(raw, keep_blank_values=1).items() }
+    except:
+     pass
+    self.api(query,args,token_id)
+   else:
     self._headers.update({'X-Code':401})
     self._ctx.log(f"API Cookie error: {self.client_address[0]} sent non-matching cookie in call: {self.path}")
-   else:
-    self.api(query,tid)
-  elif path == 'internal':
-   if self.headers.get('X-Token') == self._ctx.token:
-    self.api(query,0)
-   else:
-    self._headers.update({'X-Code':401})
+
   elif path == 'front':
    self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
    output = {'message':"Welcome to the Management Portal",'title':'Portal'}
@@ -587,7 +601,7 @@ class SessionHandler(BaseHTTPRequestHandler):
      output = {'status':'NOT_OK','info':'no suitable argument','data':{}}
    self._body = dumps(output).encode('utf-8')
   elif path == 'register':
-   # Register uses internal tokens
+   # Register uses X-Token for authentication
    if self.headers.get('X-Token') == self._ctx.token:
     self._headers.update({'Content-type':'application/json; charset=utf-8'})
     try:
@@ -611,28 +625,13 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.wfile.write(self._body)
 
  #
- def api(self,api,tid):
+ def api(self,api,args,token_id):
   """ API serves the REST functions x.y.z.a:<port>/api/module-path/function """
   (mod,_,fun) = api.rpartition('/')
-  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':tid, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if mod != 'master' else 'master')})
-  try:
-   length = int(self.headers.get('Content-Length',0))
-   if length:
-    raw = self.rfile.read(length).decode()
-    header,_,_ = self.headers['Content-Type'].partition(';')
-    if header == 'application/json':
-     args = loads(raw)
-    elif header == 'application/x-www-form-urlencoded':
-     args = { k: l[0] for k,l in parse_qs(raw, keep_blank_values=1).items() }
-    else:
-     args = {}
-   else:
-    args = {}
-  except:
-   args = {}
+  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':token_id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if mod != 'master' else 'master')})
   restlog = self._ctx.config['logging']['rest']
   if restlog['enabled'] and self.headers.get('X-Log','true') == 'true':
-   logstring = f"%s: {api} '%s' {tid}@{self._headers['X-Route']}\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), dumps(args) if api != "system/worker" else "N/A")
+   logstring = f"%s: {api} '%s' {token_id}@{self._headers['X-Route']}\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), dumps(args) if api != "system/worker" else "N/A")
    if self._ctx.debug:
     stdout.write(logstring)
    else:
@@ -644,7 +643,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module(f"rims.api.{mod.replace('/','.')}")
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call(f"{self._ctx.nodes[self._headers['X-Route']]['url']}/internal/{api}", aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
+    self._body = self._ctx.rest_call(f"{self._ctx.nodes[self._headers['X-Route']]['url']}/api/{api}", aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
   except RestException as e:
    self._headers.update({'X-Args':args, 'X-Exception':e.exception, 'X-Code':e.code, 'X-Info':e.info})
   except Exception as e:
