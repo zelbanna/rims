@@ -482,6 +482,17 @@ class SessionHandler(BaseHTTPRequestHandler):
   self.end_headers()
 
  #
+ def get_token(self):
+  if self.headers.get('X-Token') == self._ctx.token:
+   return self._ctx.token
+  else:
+   try:
+    cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])
+    return self._ctx.tokens[cookies['rims']]['id']
+   except:
+    return None
+
+ #
  def do_OPTIONS(self):
   self._headers.update({'Access-Control-Allow-Headers':'X-Token,Content-Type','Access-Control-Allow-Origin':'*'})
   self.header(200,'OK',0)
@@ -490,7 +501,28 @@ class SessionHandler(BaseHTTPRequestHandler):
  def do_GET(self):
   if self.headers.get('If-None-Match') and self.headers['If-None-Match'][3:-1] == str(__build__):
    self.header(304,'Not Modified',0)
-  elif self.path != '/':
+  elif self.path == '/':
+   self._headers.update({'Location':'index.html'})
+   self.header(301,'Moved Permanently',0)
+  elif self.path[:5] == '/api/':
+   # API call, unquote and provide args
+   #
+   # Park token handling for now
+   token_id = self.get_token()
+   if token_id:
+    try:
+     mod,_,query = self.path[5:].partition('?')
+     args = parse_qs(query)
+    except Exception as e:
+     self._headers.update({'X-Exception':str(e),'Content-type':'text/html; charset=utf-8','X-Code':404})
+    else:
+     self.api(mod,args,0)
+   else:
+    self._headers.update({'X-Exception':'No matching token found','Content-type':'text/html; charset=utf-8','X-Code':401})
+   code = self._headers.pop('X-Code',200)
+   self.header(code,self.responses.get(code,('Other','Server specialized return code'))[0],len(self._body))
+   self.wfile.write(self._body)
+  else:
    path,_,query = unquote(self.path[1:]).rpartition('/')
    file,_,_ = query.partition('?')
    # split query in file and params
@@ -539,24 +571,13 @@ class SessionHandler(BaseHTTPRequestHandler):
       pass
    else:
     self.header(404,'Not Found',0)
-  else:
-   self._headers.update({'Location':'index.html'})
-   self.header(301,'Moved Permanently',0)
 
  #
  def do_POST(self):
   """ Route request to the right function /<path>/mod_fun?get"""
   path,_,query = self.path[1:].partition('/')
   if path == 'api':
-   if self.headers.get('X-Token') == self._ctx.token:
-    token_id = self._ctx.token
-   else:
-    try:
-     cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])
-     token_id = self._ctx.tokens[cookies['rims']]['id']
-    except:
-     token_id = None
-
+   token_id = self.get_token()
    if token_id:
     args = {}
     try:
