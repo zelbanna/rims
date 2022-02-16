@@ -419,7 +419,7 @@ DROP TABLE IF EXISTS `servers`;
 CREATE TABLE `servers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `node` varchar(40) NOT NULL,
-  `ui` varchar(60) NOT NULL DEFAULT '',
+  `ui` varchar(500) NOT NULL DEFAULT '',
   `type_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `node_service` (`node`,`type_id`),

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "7.4"
-__build__ = 396
+__version__ = "7.5"
+__build__ = 397
 __all__ = ['Context']
 
 from copy import copy
@@ -133,7 +133,8 @@ class Context():
    stdout.write(f"Load environment error: {e}\n")
    return False
   else:
-   self.log("______ Loading system environment _____")
+   self.log(f"______ Loading system environment _____")
+   self.log(f"OS PID: {getpid()}")
    self.log("Available signals: SIGINT, SIGUSR1, SIGUSR2, SIGTRAP")
    self.log(f"Version: {__build__}")
    self.log(f"Debug: {self.debug}")
@@ -484,7 +485,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  #
  def get_token(self):
   if self.headers.get('X-Token') == self._ctx.token:
-   return self._ctx.token
+   return 'internal'
   else:
    try:
     cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])

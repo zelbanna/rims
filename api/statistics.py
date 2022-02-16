@@ -263,10 +263,10 @@ def report(aCTX, aArgs):
 
  Output:
  """
- from datetime import datetime
+ from time import time
  ret = {'status':'NOT_OK','function':'statistics_report'}
  args = []
- ts = int(datetime.now().timestamp())
+ ts = int(time())
  if 'interfaces' in aArgs:
   tmpl = 'interface,host_id={0},host_ip={1},if_id=%i,if_name=%s in8s=%iu,inUPs=%iu,out8s=%iu,outUPs=%iu {2}'.format(aArgs['device_id'],aArgs['ip'],ts)
   args.extend(tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ '), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces'])
