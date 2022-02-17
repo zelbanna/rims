@@ -98,7 +98,7 @@ def process(aCTX, aArgs):
   return {'function':'nibe_process','status':'NOT_OK','info':'token_expired'}
 
  scaling = {10001:1,10012:1,10033:1,43084:0.1,43416:1,43420:1,43424:1}
- mapping = {"\u00b0C":"temperature","kW":"power","A":"current","%":"load","h":"time"}
+ mapping = {"\u00b0C":"temperature","kW":"power","A":"current","%":"load","h":"elapsed_time"}
  ret = {'function':'nibe_process'}
  config = aCTX.config['services']['nibe']
  sys_id = config['system_id']
@@ -122,10 +122,7 @@ def process(aCTX, aArgs):
    parameters.pop(x,None)
   for k,v in parameters.items():
    label = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
-   designation = v['designation'] if v['designation'] else k
-
-   # Check unit or mapping of parameters to temperature, power, current, ?
-   records.append(tmpl%(k, designation, label, mapping.get(v['unit'],"unit"), v['rawValue']/scaling.get(k,10) ))
+   records.append(tmpl%(k, v['designation'] if v['designation'] else k, label, mapping.get(v['unit'],"unit"), v['rawValue']/scaling.get(k,10) ))
   #ret['records'] = records
   ret['status'] = 'OK'
   aCTX.queue_api(report,{'records':records}, aOutput = aCTX.debug)

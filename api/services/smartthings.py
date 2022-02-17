@@ -34,7 +34,7 @@ def process(aCTX, aArgs):
  url = 'https://api.smartthings.com/v1/devices/{0}/status'
  config = aCTX.config['services']['smartthings']
  hdr = {'Authorization': 'Bearer {0}'.format(config['token'])}
- tmpl = '{0},type=smartthings,host_id=%s,host_label=%s %s {1}'.format(config.get('measurement','smartthings'),int(time()))
+ tmpl = '{0},type=smartthings,designation=iot,system_id=%s,label=%s %s {1}'.format(config.get('measurement','smartthings'),int(time()))
  xlate = config['capabilities']
  records = []
  state = aCTX.cache.get('smartthings')
