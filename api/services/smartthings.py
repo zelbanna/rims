@@ -32,17 +32,18 @@ def process(aCTX, aArgs):
 
  ret = {'function':'smartthings_process'}
  url = 'https://api.smartthings.com/v1/devices/{0}/status'
- hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
- tmpl = '{0},host_id=%s,host_label=%s %s {1}'.format(aCTX.config['services']['smartthings'].get('measurement','smartthings'),int(time()))
- state = aCTX.cache.get('smartthings')
- xlate = aCTX.config['services']['smartthings']['capabilities']
+ config = aCTX.config['services']['smartthings']
+ hdr = {'Authorization': 'Bearer {0}'.format(config['token'])}
+ tmpl = '{0},host_id=%s,host_label=%s %s {1}'.format(config.get('measurement','smartthings'),int(time()))
+ xlate = config['capabilities']
  records = []
+ state = aCTX.cache.get('smartthings')
  if not state:
   # from rims.api.services.smartthings import sync
   state = sync(aCTX, {})['data']
  for id,dev in state['devices'].items():
   try:
-   res = aCTX.rest_call(url.format(id), aHeader = hdr, aDataOnly = True, aMethod = 'GET')
+   res = aCTX.rest_call(url.format(id), aHeader = hdr, aMethod = 'GET')
   except Exception as e:
    state['sync'] = ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
@@ -53,10 +54,7 @@ def process(aCTX, aArgs):
     if cap in dev[0]:
      value = measure[xlate[cap]]['value']
      if isinstance(value, str):
-      if value == 'active':
-       value = 1
-      else:
-       value = 0
+      value = 1 if value == 'active' else 0
      elif value is None:
       value = 0
      tagvalue.append("%s=%s"%(xlate[cap],value))
@@ -81,7 +79,7 @@ def device(aCTX, aArgs):
  ret = {}
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
  try:
-  res = aCTX.rest_call('https://api.smartthings.com/v1/devices/{0}/status'.format(aArgs['device']), aHeader = hdr, aDataOnly = True, aMethod = 'GET')
+  res = aCTX.rest_call('https://api.smartthings.com/v1/devices/{0}/status'.format(aArgs['device']), aHeader = hdr, aMethod = 'GET')
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -90,7 +88,7 @@ def device(aCTX, aArgs):
   ret['data'] = res
  return ret
 
-################################################
+########################################################################################
 #
 #
 def status(aCTX, aArgs):
@@ -132,7 +130,7 @@ def sync(aCTX, aArgs):
  url = 'https://api.smartthings.com/v1/devices'
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
  try:
-  data = aCTX.rest_call(url,aHeader = hdr, aDataOnly = True, aMethod = 'GET')
+  data = aCTX.rest_call(url,aHeader = hdr, aMethod = 'GET')
  except Exception as e:
   state['sync'] = False
   ret['status'] = 'NOT_OK'
@@ -195,6 +193,8 @@ def start(aCTX, aArgs):
  Output:
   - status
  """
+ config = aCTX.config['services']['smartthings']
+ aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
  return {'status':'NO OP'}
 
 #
@@ -208,4 +208,3 @@ def stop(aCTX, aArgs):
   - status
  """
  return {'status':'NO OP'}
-

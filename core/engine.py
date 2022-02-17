@@ -275,7 +275,7 @@ class Context():
   For interchangably to work the argument to the function will have to be keyworded/**kwargs because if using REST then rest_call function picks everything from kwargs
   """
   if self.node != aNode:
-   kwargs['aDataOnly'] = True
+   # kwargs['aDebug'] = False
    kwargs['aHeader'] = kwargs.get('aHeader',{})
    kwargs['aHeader']['X-Token'] = self.token
    try:
@@ -665,7 +665,7 @@ class SessionHandler(BaseHTTPRequestHandler):
     module = import_module(f"rims.api.{mod.replace('/','.')}")
     self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call(f"{self._ctx.nodes[self._headers['X-Route']]['url']}/api/{api}", aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aDataOnly = True, aMethod = 'POST')
+    self._body = self._ctx.rest_call(f"{self._ctx.nodes[self._headers['X-Route']]['url']}/api/{api}", aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aMethod = 'POST')
   except RestException as e:
    self._headers.update({'X-Args':args, 'X-Exception':e.exception, 'X-Code':e.code, 'X-Info':e.info})
   except Exception as e:
@@ -738,7 +738,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:
     try:
      args['ip'] = self.client_address[0]
-     output = self._ctx.rest_call(f"{self._ctx.config['master']}/auth", aArgs = args, aDataOnly = True, aMethod = 'POST')
+     output = self._ctx.rest_call(f"{self._ctx.config['master']}/auth", aArgs = args)
      if 'destroy' not in args:
       self._ctx.tokens[output['token']] = {'id':output['id'],'alias':output['alias'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S %Z"),'ip':output['ip']}
       self._headers['X-Code'] = 200

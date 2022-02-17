@@ -62,7 +62,7 @@ def domain_info(aCTX, aArgs):
    if 'master' in aArgs:
     args['masters'] = aArgs['master'].split(',')
    try:
-    aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{id}", aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDataOnly = False)
+    aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{id}", aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDebug = True)
    except Exception as e:
     ret = {'status':'NOT_OK','update':False,'info':str(e)}
    else:
@@ -90,7 +90,7 @@ def domain_delete(aCTX, aArgs):
  """
  ret = {}
  settings = aCTX.config['services']['powerdns']['server']
- try: res = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{aArgs['id']}", aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']}, aDataOnly=False)
+ try: res = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{aArgs['id']}", aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']}, aDebug = True)
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['code'] = 0

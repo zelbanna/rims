@@ -29,7 +29,7 @@ except:
 started = f"Executing:{parsedinput.url}({args})"
 print(started)
 try:
- res = rest_call(parsedinput.url, aArgs = args, aMethod = parsedinput.method, aApplication = parsedinput.app, aTimeout = 300, aDataOnly = False, aVerify = (parsedinput.url[0:5] != 'https'))
+ res = rest_call(parsedinput.url, aArgs = args, aMethod = parsedinput.method, aApplication = parsedinput.app, aTimeout = 300, aDebug = True, aVerify = (parsedinput.url[0:5] != 'https'))
 except Exception as e:
  output = e.args[0]
 else:

@@ -35,7 +35,7 @@ class RestException(Exception):
   return f"REST({self.code}): {self.exception} => {self.data}"
 
 def rest_call(aURL, **kwargs):
- """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aTimeout, aDataOnly (default True), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
+ """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aTimeout, aDebug (default False), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
  try:
   head = { 'Content-Type': f"application/{kwargs.get('aApplication','json')}",'Accept':'application/json' }
   head.update(kwargs.get('aHeader',{}))
@@ -62,7 +62,7 @@ def rest_call(aURL, **kwargs):
    data = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
   except:
    data = None
-  res = data if kwargs.get('aDataOnly',True) else {'info':dict(sock.info()), 'code':sock.code, 'data':data }
+  res = data if not kwargs.get('aDebug',False) else {'info':dict(sock.info()), 'code':sock.code, 'data':data }
   sock.close()
  except HTTPError as h:
   ecode, etype, einfo = h.code, 'HTTPError', dict(h.info())
