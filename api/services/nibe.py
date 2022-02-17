@@ -97,11 +97,12 @@ def process(aCTX, aArgs):
  if not state or state['phase'] != 'active' or timestamp > state['expires_at']:
   return {'function':'nibe_process','status':'NOT_OK','info':'token_expired'}
 
- scaling = {10001:1,10012:1,10033:1,43084:100,43416:1,43420:1,43424:1}
+ scaling = {10001:1,10012:1,10033:1,43084:0.1,43416:1,43420:1,43424:1}
+ mapping = {"\u00b0C":"temperature","kW":"power","A":"current","%":"load","h":"time"}
  ret = {'function':'nibe_process'}
  config = aCTX.config['services']['nibe']
  sys_id = config['system_id']
- tmpl = '{0},system_id={1},parameter=%s,designation=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
+ tmpl = '{0},type=heater,system_id={1},parameter=%s,designation=%s,label=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
  url = 'https://api.nibeuplink.com/api/v1/{0}'
  hdr = {'Authorization': f"Bearer {state['access_token']}"}
  try:
@@ -117,12 +118,15 @@ def process(aCTX, aArgs):
   ret['info'] = str(e)
  else:
   records = []
-  for x in [43161,47212,47214]:
+  for x in [40071,43161,47212,47214]:
    parameters.pop(x,None)
   for k,v in parameters.items():
    label = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
    designation = v['designation'] if v['designation'] else k
-   records.append(tmpl%(k,designation,label,v['rawValue']/scaling.get(k,10)))
+
+   # Check unit or mapping of parameters to temperature, power, current, ?
+   records.append(tmpl%(k, designation, label, mapping.get(v['unit'],"unit"), v['rawValue']/scaling.get(k,10) ))
+  #ret['records'] = records
   ret['status'] = 'OK'
   aCTX.queue_api(report,{'records':records}, aOutput = aCTX.debug)
  return ret
