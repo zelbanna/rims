@@ -78,40 +78,78 @@ def rest_call(aURL, **kwargs):
   raise RestException(ecode,etype,einfo,edata)
  return res
 
-######################################## InfluxDB ######################################
+######################################## InfluxDB Class ######################################
 #
 # InfluxDB 2.x compatible handler
 # Add a default Handler
 class InfluxDB():
 
  def __init__(self, aUrl, aOrg, aToken, aBucket = None):
-  self.url = aUrl
-  self.org = aOrg
-  self.token = aToken
-  self.bucket = aBucket
-  self.client = InfluxDBClient(url=aUrl, token=aToken, org=aOrg)
-  self.precision = WritePrecision.S
-  self.write_mode = SYNCHRONOUS
+  self._url = aUrl
+  self._org = aOrg
+  self._token = aToken
+  self._bucket = aBucket
+  self._client = InfluxDBClient(url=aUrl, token=aToken, org=aOrg)
+  self._precision = WritePrecision.S
+  self._write_mode = SYNCHRONOUS
+  self._buckets = {}
+  self._active = True
+  self._lock = Lock()
 
- def status(self, aCTX, aArgs):
+ #
+ def status(self):
   try:
-   return self.ic.health().to_dict()
+   return self._client.health().to_dict()
   except Exception as e:
    return str(e)
 
+ #
  def query_csv(self, aQuery, aDialect = None):
-  return self.client.query_api().query_csv(dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True} if not aDialect else aDialect, query = aQuery)
+  return self._client.query_api().query_csv(dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True} if not aDialect else aDialect, query = aQuery)
 
+ #
+ def buffer(self):
+  size = 0
+  for v in self._buckets.values():
+   size += len(v)
+  return size
+
+ #
+ def active(self,aState = None):
+  if aState is None:
+   return self._active
+  with self._lock:
+   self._active = aState
+
+ # Synchronizes writes against DB
+ def sync(self):
+  if not self._active:
+   return -1
+  size = 0
+  with self._lock:
+   try:
+    with self._client.write_api(write_options=self._write_mode) as write_api:
+     for k,v in self._buckets.items():
+      size += len(v)
+      write_api.write(bucket = k, write_precision = self._precision, record = v)
+   except Exception as e:
+    raise Exception(e)
+   finally:
+    self._buckets = {}
+  return size
+
+ #
  def write(self, aRecords, aBucket = None):
-  try:
-   bucket = aBucket if aBucket else self.bucket
-   with self.client.write_api(write_options=self.write_mode) as write_api:
-    write_api.write(bucket = bucket, write_precision = self.precision, record = aRecords)
-  except Exception as e:
-   raise Exception(e)
-  else:
-   return True
-
+  if not self._active:
+   return False
+  with self._lock:
+   bucket_id = self._bucket if not aBucket else aBucket
+   bucket = self._buckets.get(bucket_id)
+   if not bucket:
+    self._buckets[bucket_id] = aRecords
+   else:
+    bucket.extend(aRecords)
+  return True
 
 ######################################## Scheduler ######################################
 #

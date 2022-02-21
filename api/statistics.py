@@ -230,54 +230,33 @@ def process(aCTX, aArgs):
  Output:
  """
  from rims.devices.generic import Device
+ from time import time
+ ts = int(time())
  nodes = [x['node'] for x in aCTX.services.values() if x['type'] == 'TSDB']
  report = aCTX.node_function(nodes[0],'statistics','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'statistics_process','reported':0}
+
  def __check_SP(aDev):
   try:
    device = Device(aCTX, aDev['device_id'], aDev['ip'])
    res = device.data_points(aDev.get('data_points',[]), aDev.get('interfaces',[]))
-   if res['status'] == 'OK':
-    report(aArgs = aDev)
-    ret['reported'] += 1
-   else:
-    aCTX.log(f"statistics_process_collection_failed for device: {aDev['device_id']} => {res['info']}")
   except Exception as e:
    aCTX.log(f"statistics_process_report_failed for device: {aDev['device_id']} => {str(e)}")
    return False
   else:
+   if res['status'] == 'OK':
+    records = []
+    if 'interfaces' in aDev:
+     tmpl = 'interface,host_id={0},host_ip={1},if_id=%i,if_name=%s in8s=%iu,inUPs=%iu,out8s=%iu,outUPs=%iu {2}'.format(aDev['device_id'],aDev['ip'],ts)
+     records.extend(tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ '), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aDev['interfaces'])
+    if 'data_points' in aDev:
+     tmpl = '%s,host_id={0},host_ip={1},%s %s {2}'.format(aDev['device_id'],aDev['ip'],ts)
+     records.extend(tmpl%(m['measurement'], m['tags'].replace(' ','\ '), ','.join('%s=%s'%(x['name'][:20].replace(' ','\ '), x['value']) for x in m['values'] if x['value'] ) ) for m in aDev['data_points'] if any(x['value'] for x in m['values']) )
+    aCTX.influxdb.write(records)
+    ret['reported'] += 1
+   else:
+    aCTX.log(f"statistics_process_collection_failed for device: {aDev['device_id']} => {res['info']}")
    return True
 
  aCTX.queue_block(__check_SP,aArgs['devices'])
- return ret
-
-#
-#
-def report(aCTX, aArgs):
- """Function updates statistics for a particular devices to influxdb - service must be running on this node.
-
- Args:
-  - device_id (required). Device id
-  - interfaces (required). list of interface objects
-  - data_points (optional). list of objects like {'measurement':<measurement>,'tags':'<tag-name>=<tag_value>,...', 'values':[{'name':<name>,'value':<value1>},...]}
-
- Output:
- """
- from time import time
- ret = {'status':'NOT_OK','function':'statistics_report'}
- args = []
- ts = int(time())
- if 'interfaces' in aArgs:
-  tmpl = 'interface,host_id={0},host_ip={1},if_id=%i,if_name=%s in8s=%iu,inUPs=%iu,out8s=%iu,outUPs=%iu {2}'.format(aArgs['device_id'],aArgs['ip'],ts)
-  args.extend(tmpl%(x['interface_id'], x['name'][:20].replace(' ','\ '), x['in8s'], x['inUPs'], x['out8s'], x['outUPs']) for x in aArgs['interfaces'])
- if 'data_points' in aArgs:
-  tmpl = '%s,host_id={0},host_ip={1},%s %s {2}'.format(aArgs['device_id'],aArgs['ip'],ts)
-  args.extend(tmpl%(m['measurement'], m['tags'].replace(' ','\ '), ','.join('%s=%s'%(x['name'][:20].replace(' ','\ '), x['value']) for x in m['values'] if x['value'] ) ) for m in aArgs['data_points'] if any(x['value'] for x in m['values']) )
- try:
-  aCTX.influxdb.write(args)
- except Exception as e:
-  ret['info'] = str(e)
-  aCTX.log(f'statistics_report_write_error: {str(e)}')
- else:
-  ret['status'] = 'OK'
  return ret
