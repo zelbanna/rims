@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
 import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
-import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, HealthButton, ItemsButton, RevertButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
-import styles from './infra/ui.module.css';
+import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
+// import styles from './infra/ui.module.css';
 
 // *************** Main ***************
 //
@@ -230,73 +230,10 @@ export class AddressInfo extends Component {
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
      </InfoColumns>
      <SaveButton key='ip_btn_save' onClick={() => this.updateInfo()} title='Save' />
-     {'changeSelf' in this.props && <HealthButton key='ip_btn_events' onClick={() => this.props.changeSelf(<AddressEvents key='address_events' id={this.state.data.id} changeSelf={this.props.changeSelf} />)} title='IPAM events - graphical' />}
-     {'changeSelf' in this.props && <LogButton key={'ip_btn_logs'} onClick={() => this.props.changeSelf(<AddressLogs key='address_logs' id={this.state.data.id} />)} title='IPAM events - logs' />}
      <Result key='ip_operation' result={result} />
     </InfoArticle>
   } else
    return <Spinner />
- }
-}
-
-// *************** Address Logs ***************
-//
-class AddressLogs extends Component {
- constructor(props){
-  super(props)
-  this.state = {}
- }
-
- componentDidMount(){
-  post_call('api/ipam/address_events',{id:this.props.id}).then(result => this.setState(result))
- }
-
- listItem = (row,idx) => [row.time,<StateLeds state={row.state} />]
-
- clearList = () => post_call('api/ipam/address_events',{op:'clear', id:this.props.id}).then(result => this.setState({events:[]}))
-
- render(){
-  return <ContentReport key={'alo_cr_'+this.props.id} header='State changes' thead={['Time','']} trows={this.state.events} listItem={this.listItem}>
-   <DeleteButton key='alo_btn_clear' onClick={() => this.clearList()} title='clear logs' />
-  </ContentReport>
- }
-}
-
-// *************** Address Events ****************
-//
-export class AddressEvents extends Component {
- constructor(props){
-  super(props)
-  this.state = {}
-  this.canvas = React.createRef()
-  this.timeline = null
- }
-
-componentDidMount(){
- import('vis-timeline/standalone/esm/vis-timeline-graph2d').then(vis => post_call('api/ipam/address_events',{id:this.props.id}).then(result => {
-   if (result.count > 0){
-    const events = result.events.map(({state, time}) => ({content:state, start:time, style:(state === 'up') ? 'background-color:#26CB20;' : 'background-color:#CB2026;', title:time}));
-    const dataset = new vis.DataSet(events);
-    this.timeline = new vis.Timeline(this.canvas.current, dataset, { locale:'en', min:events[events.length - 1].start, align:'left', width:'100%', height:150, zoomMin:60000, zoomMax:1209600000, clickToUse:true});
-   } else
-    this.canvas.current.innerHTML = 'no events';
-  }))
- }
-
- clearList = () => post_call('api/ipam/address_events',{op:'clear', id:this.props.id}).then(result => { this.setState({timeline:null}); this.canvas.current.innerHTML = 'no events';})
-
- gotoNow = () => {
-  const today = new Date()
-  this.timeline.moveTo(today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+' '+today.getHours()+':'+today.getMinutes());
- }
-
- render(){
-  return <Article key='ae_art' header='Events'>
-   <div className={styles.events} ref={this.canvas} />
-   <RevertButton key='ae_btn_reset' onClick={() => this.gotoNow()} title='Go to now' />
-   {'changeSelf' in this.props && <ItemsButton key='ae_btn_list' onClick={() => this.props.changeSelf(<AddressLogs key='address_logs' id={this.props.id} />)} title='List' />}
-   <DeleteButton key='ae_btn_clear' onClick={() => this.clearList()} title='clear logs' />
-  </Article>
  }
 }
 
