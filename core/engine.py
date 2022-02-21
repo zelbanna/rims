@@ -26,7 +26,7 @@ from types import ModuleType
 from urllib.parse import unquote, parse_qs
 from queue import Queue
 from ipaddress import ip_address
-from rims.core.common import DB, rest_call, Scheduler, RestException, InfluxDB
+from rims.core.common import DB, rest_call, Scheduler, RestException, InfluxDB, InfluxDummy
 
 ##################################################### Context #######################################################
 #
@@ -70,6 +70,8 @@ class Context():
   if self.config.get('services',{}).get('influxdb'):
    config = self.config['services']['influxdb']
    self.influxdb = InfluxDB(config['url'],config['org'],config['token'],config['bucket'])
+  else:
+   self.influxdb = InfluxDummy()
   self.rest_call = rest_call
   self.config['salt'] = self.config.get('salt','WBEUAHfO')
   self.config['workers'] = self.config.get('workers',20)

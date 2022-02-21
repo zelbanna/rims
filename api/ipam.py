@@ -389,50 +389,6 @@ def address_delete(aCTX, aArgs):
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 
-#
-#
-def address_events(aCTX, aArgs):
- """ Function operates on events
-
- Args:
-  - id (optional). find events for id
-  - op (optional). 'clear'. clears events (all or for 'id')
-  - extra (optional). list of extra fields to add (hostname,ip,ip_state)
-  - limit (optional)
-  - offset (optional)
-
- Output:
-  - status
-  - count (optional)
-  - events (optional) list of {'time','state',<extra>} entries
- """
- ret = {}
- with aCTX.db as db:
-  if aArgs.get('op') == 'clear':
-   if 'id' in aArgs:
-    ret['count'] = db.execute("DELETE FROM ipam_events WHERE ipam_id = %s"%aArgs['id'])
-   else:
-    db.execute("TRUNCATE ipam_events")
-  else:
-   fields = ['DATE_FORMAT(ie.time,"%Y-%m-%d %H:%i") AS time', 'ie.state']
-   joins = ['ipam_events AS ie']
-   if 'id' in aArgs:
-    flter = "ie.ipam_id = %s"%aArgs['id']
-   else:
-    flter = "TRUE"
-    fields.append('ie.ipam_id AS id')
-   if 'extra' in aArgs:
-    joins.append('ipam_addresses AS ia')
-    if 'hostname' in aArgs['extra']:
-     fields.append('ia.hostname')
-    if 'ip' in aArgs['extra']:
-     fields.append('INET6_NTOA(ia.ip) AS ip')
-    if 'ip_state' in aArgs['extra']:
-     fields.append('ia.state AS ip_state')
-   ret['count'] = db.query("SELECT {} FROM {} WHERE {} ORDER BY ie.time DESC LIMIT {} OFFSET {}".format(", ".join(fields), " LEFT JOIN ".join(joins), flter, aArgs.get('limit','50'), aArgs.get('offset','0')))
-   ret['events']= db.get_rows()
- return ret
-
 #################################### Monitor #################################
 #
 #
@@ -496,6 +452,7 @@ def process(aCTX, aArgs):
 
  Output:
  """
+ from time import time
  ret = {'status':'OK','function':'ipam_process'}
 
  report = aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
@@ -512,6 +469,10 @@ def process(aCTX, aArgs):
 
  changed = [dev for dev in aArgs['addresses'] if dev['state'] != dev['old']]
  if changed:
+  # Assume/hope influxdb client is configured locally
+  tmpl = 'ipam,host_id=%s,host_ip=%s state=%s {0}'.format(int(time()))
+  records = [tmpl%( x['id'], x['ip'] ,1 if x['state'] == 'up' else 0) for x in changed]
+  aCTX.influxdb.write(records)
   args = {'up':[x['id'] for x in changed if x['state'] == 'up'], 'down':[x['id'] for x in changed if x['state'] == 'down']}
   ret['up'] = len(args['up'])
   ret['down'] = len(args['down'])
@@ -537,12 +498,6 @@ def report(aCTX, aArgs):
    change = aArgs.get(chg)
    if change:
     ret[chg] = db.execute("UPDATE ipam_addresses AS ia SET ia.state = '%s' WHERE id IN (%s)"%(chg,",".join(str(x) for x in change)))
-    begin = 0
-    final  = len(change)
-    while begin < final:
-     end = min(final,begin+16)
-     db.execute("INSERT INTO ipam_events (ipam_id, state) VALUES %s"%(",".join("(%s,'%s')"%(x,chg) for x in change[begin:end])))
-     begin = end
  return ret
 
 #################################### DHCP ###############################

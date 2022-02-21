@@ -151,6 +151,22 @@ class InfluxDB():
     bucket.extend(aRecords)
   return True
 
+##### Dummy class #####
+
+class InfluxDummy():
+
+ def __init__(self):
+  pass
+
+ def write(self, aRecords, aBucket = None):
+  return False
+
+ def buffer(self):
+  return 0
+
+ def active(self, aState = None):
+  return False
+
 ######################################## Scheduler ######################################
 #
 # Single-thread scheduler for events happening withing X seconds or every X second. Uses RIMS Worker for execution to maintain resource control
