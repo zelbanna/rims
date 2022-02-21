@@ -142,7 +142,7 @@ class Context():
    self.tokens.update(env.get('tokens',{}))
    for task in self.config.get('tasks',[]):
     self.log("Adding task: %(module)s/%(function)s"%task)
-    self.schedule_api_task(task['module'],task['function'],int(task.get('frequency',0)), args = task.get('args',{}), output = task.get('output',False))
+    self.schedule_api_task(task['module'],task['function'],int(task.get('frequency',0)), args = task.get('args',{}), output = task.get('output',self.debug))
 
    if __build__ != env['build']:
     self.log(f"Build mismatch between master and node: {__build__} != {env['build']}")

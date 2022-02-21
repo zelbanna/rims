@@ -80,7 +80,7 @@ def process(aCTX, aArgs):
  timestamp = int(time())
  state = aCTX.cache.get('nibe',{})
  if not state or state['phase'] != 'active' or timestamp > state['expires_at']:
-  return {'function':'nibe_process','status':'NOT_OK','info':'token_expired'}
+  return {'status':'NOT_OK','function':'nibe_process','info':'token_expired'}
 
  scaling = {10001:1,10012:1,10033:1,43084:0.1,43416:1,43420:1,43424:1}
  mapping = {"\u00b0C":"temperature","kW":"power","A":"current","%":"load","h":"elapsed_time"}
@@ -204,6 +204,7 @@ def sync(aCTX, aArgs):
    except Exception as e:
     ret['token_file_error'] = str(e)
    aCTX.log(f"nibe_service_token_refresh successful, expire in {res['expires_in']} seconds")
+   ret['output'] = res['expires_in']
   finally:
    if aArgs.get('schedule'):
     aCTX.schedule_api(sync,'nibe_token_refresh', state['expires_in'], args = aArgs, output = aCTX.debug)
