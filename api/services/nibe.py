@@ -67,21 +67,6 @@ def auth(aCTX, aArgs):
 
 #
 #
-def report(aCTX, aArgs):
- """ Function report Nibe Uplink data to influxDB
-
- Args:
-  - records. List of records to enter
-
- Output:
-  - status
- """
- records = aArgs['records']
- aCTX.influxdb.write(records, aCTX.config['services']['nibe']['bucket'])
- return {'status':'OK','function':'nibe_report','reported':len(records)}
-
-#
-#
 def process(aCTX, aArgs):
  """Function checks nibe API, process data and queue reporting to influxDB bucket
 
@@ -123,9 +108,8 @@ def process(aCTX, aArgs):
   for k,v in parameters.items():
    label = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
    records.append(tmpl%(k, v['designation'] if v['designation'] else k, label, mapping.get(v['unit'],"unit"), v['rawValue']/scaling.get(k,10) ))
-  #ret['records'] = records
   ret['status'] = 'OK'
-  aCTX.queue_api(report,{'records':records}, aOutput = aCTX.debug)
+  aCTX.influxdb.write(records, config['bucket'])
  return ret
 
 #

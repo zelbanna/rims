@@ -5,21 +5,6 @@ __type__ = "TELEMETRY"
 
 #
 #
-def report(aCTX, aArgs):
- """ Function report Smartthings data to influxDB
-
- Args:
-  - records. List of records to enter
-
- Output:
-  - status
- """
- records = aArgs['records']
- aCTX.influxdb.write(records, aCTX.config['services']['smartthings']['bucket'])
- return {'status':'OK','function':'smartthings_report','reported':len(records)}
-
-#
-#
 def process(aCTX, aArgs):
  """Function checks smartthings API, process data and queue reporting to influxDB bucket
 
@@ -61,8 +46,7 @@ def process(aCTX, aArgs):
    label = dev[1].replace(" ", "_").replace("/", "-").replace(":", "").lower()
    records.append(tmpl%(id,label,",".join(tagvalue)))
   ret['status'] = 'OK'
- aCTX.queue_api(report,{'records':records}, aOutput = aCTX.debug)
- #report(aCTX,{'records':records})
+ aCTX.influxdb.write(records, config['bucket'])
  return ret
 
 #

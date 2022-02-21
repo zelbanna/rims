@@ -63,12 +63,13 @@ class Context():
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
   self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('influxdb'):
-   self.influxdb = InfluxDB(self.config['influxdb']['url'],self.config['influxdb']['org'],self.config['influxdb']['token'],self.config['influxdb']['bucket'])
   self.cache = {}
   self.nodes = {}
   self.tokens = {}
   self.services = {}
+  if self.config.get('services',{}).get('influxdb'):
+   config = self.config['services']['influxdb']
+   self.influxdb = InfluxDB(config['url'],config['org'],config['token'],config['bucket'])
   self.rest_call = rest_call
   self.config['salt'] = self.config.get('salt','WBEUAHfO')
   self.config['workers'] = self.config.get('workers',20)
@@ -92,8 +93,6 @@ class Context():
   ctx_new = copy(self)
   database = self.config.get('database')
   ctx_new.db = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('influxdb'):
-   ctx_new.influxdb = InfluxDB(self.config['influxdb']['url'],self.config['influxdb']['org'],self.config['influxdb']['token'],self.config['influxdb']['bucket'])
   return ctx_new
 
  #
@@ -336,6 +335,8 @@ class Context():
    'Worker idle':self.workers_idle(),
    'Worker queue':self.queue_size(),
    'Servers':self.workers_servers(),
+   'TSDB buffer':self.influxdb.buffer(),
+   'TSDB state':self.influxdb.active(),
    'Active Tokens':len(self.tokens),
    'Database':', '.join(f"{k.lower()}:{v}" for k,v in db_counter.items()),
    'OS pid':getpid()}
