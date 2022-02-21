@@ -118,7 +118,7 @@ def process(aCTX, aArgs):
   ret['info'] = str(e)
  else:
   records = []
-  for x in [40071,43161,47212,47214]:
+  for x in [40067,40071,43161,47212,47214]:
    parameters.pop(x,None)
   for k,v in parameters.items():
    label = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
