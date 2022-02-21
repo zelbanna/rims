@@ -112,3 +112,14 @@ def stop(aCTX, aArgs):
  aCTX.influxdb.active(False)
  return {'status':'OK'}
 
+#
+#
+def close(aCTX, aArgs):
+ """ Function provides closing behavior, wrapping up data and file handlers before closing
+
+ Args:
+
+ Output:
+  - status
+ """
+ return process(aCTX, aArgs)

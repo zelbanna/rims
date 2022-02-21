@@ -303,3 +303,15 @@ def stop(aCTX, aArgs):
   aCTX.cache['nibe'] = state
  state['phase'] = 'inactive'
  return {'status':'OK','info':'empty state'}
+
+#
+#
+def close(aCTX, aArgs):
+ """ Function provides closing behavior, wrapping up data and file handlers before closing
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}

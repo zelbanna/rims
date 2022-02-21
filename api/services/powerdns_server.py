@@ -317,3 +317,14 @@ def stop(aCTX, aArgs):
  """
  return {'status':'NO OP'}
 
+#
+#
+def close(aCTX, aArgs):
+ """ Function provides closing behavior, wrapping up data and file handlers before closing
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}

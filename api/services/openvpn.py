@@ -122,3 +122,15 @@ def stop(aCTX, aArgs):
   - status
  """
  return __op(aCTX.config['services']['openvpn']['stop'])
+
+#
+#
+def close(aCTX, aArgs):
+ """ Function provides closing behavior, wrapping up data and file handlers before closing
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}
