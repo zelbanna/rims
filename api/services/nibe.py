@@ -84,7 +84,7 @@ def process(aCTX, aArgs):
 
  scaling = {10001:1,10012:1,10033:1,43084:0.1,43416:1,43420:1,43424:1}
  mapping = {"\u00b0C":"temperature","kW":"power","A":"current","%":"load","h":"elapsed_time"}
- ret = {'function':'nibe_process'}
+ ret = {'status':'OK','function':'nibe_process'}
  config = aCTX.config['services']['nibe']
  sys_id = config['system_id']
  tmpl = '{0},type=heater,system_id={1},parameter=%s,designation=%s,label=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
@@ -108,7 +108,6 @@ def process(aCTX, aArgs):
   for k,v in parameters.items():
    label = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
    records.append(tmpl%(k, v['designation'] if v['designation'] else k, label, mapping.get(v['unit'],"unit"), v['rawValue']/scaling.get(k,10) ))
-  ret['status'] = 'OK'
   aCTX.influxdb.write(records, config['bucket'])
  return ret
 

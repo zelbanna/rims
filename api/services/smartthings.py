@@ -15,7 +15,7 @@ def process(aCTX, aArgs):
  """
  from time import time
 
- ret = {'function':'smartthings_process'}
+ ret = {'status':'OK','function':'smartthings_process'}
  url = 'https://api.smartthings.com/v1/devices/{0}/status'
  config = aCTX.config['services']['smartthings']
  hdr = {'Authorization': 'Bearer {0}'.format(config['token'])}
@@ -45,7 +45,6 @@ def process(aCTX, aArgs):
      tagvalue.append("%s=%s"%(xlate[cap],value))
    label = dev[1].replace(" ", "_").replace("/", "-").replace(":", "").lower()
    records.append(tmpl%(id,label,",".join(tagvalue)))
-  ret['status'] = 'OK'
  aCTX.influxdb.write(records, config['bucket'])
  return ret
 

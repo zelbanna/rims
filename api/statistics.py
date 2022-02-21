@@ -233,7 +233,6 @@ def process(aCTX, aArgs):
  from time import time
  ts = int(time())
  nodes = [x['node'] for x in aCTX.services.values() if x['type'] == 'TSDB']
- report = aCTX.node_function(nodes[0],'statistics','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'statistics_process','reported':0}
 
  def __check_SP(aDev):
