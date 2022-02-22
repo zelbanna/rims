@@ -58,7 +58,7 @@ class Sync extends Component{
    })
  }
 
- listItem = (row) => [row.type,row.host_id,row.device_id,row.vm,row.device_uuid,row.config]
+ listItem = (row) => [row.type,row.host_id,row.device_id,row.vm,row.bios_uuid,row.config]
 
  render(){
   return <ContentReport key='hyp_cr' header='VM Mapping' thead={['Status','Host','Device','VM Name','Device UUID','Config']} trows={this.state.data} listItem={this.listItem} />
@@ -201,7 +201,7 @@ class Info extends Component{
  }
 
  updateInfo(){
-  post_call('api/devices/'+this.props.type+'/vm_map',{device_uuid:this.state.data.device_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
+  post_call('api/devices/'+this.props.type+'/vm_map',{bios_uuid:this.state.data.bios_uuid, device_id:this.state.data.device_id, host_id:this.props.device_id, op:'update'}).then(result => this.setState({update:result.update}))
  }
 
  changeImport = (iif) => import('./interface.jsx').then(lib => this.setState({content:<lib.Info key='interface_info' device_id={this.state.data.device_id} class='virtual' mac={iif.mac} name={iif.name} interface_id={iif.interface_id} description={iif.port} changeSelf={this.changeContent} />}))
@@ -226,7 +226,7 @@ class Info extends Component{
       <TextInput key='device_id' id='device_id' label='Device ID' value={data.device_id} onChange={this.onChange} /><div />
       <TextLine key='device_name' id='device' label='Device Name' text={data.device_name} /><div />
       <TextLine key='snmp' id='snmp_id' label='SNMP id' text={data.snmp_id} /><div />
-      <TextLine key='uuid' id='uuid' label='UUID' text={data.device_uuid} /><div />
+      <TextLine key='uuid' id='uuid' label='UUID' text={data.bios_uuid} /><div />
       <StateLine key='state' id='state' state={data.state} /><div />
       <TextLine key='config' id='config' text={data.config} /><div />
       {Object.entries(this.state.interfaces).map(row => <Fragment key={row[0]}><TextLine key='interface' id={'interface_'+row[0]} label='Interface' text={`${row[1].name} - ${row[1].mac} - ${row[1].port}`} />{this.interfaceButton(row[0],row[1])}</Fragment>)}

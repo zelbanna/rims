@@ -257,7 +257,7 @@ export class Info extends Component {
      <InfoColumns key='ic_vm' style={{float:'left'}}>
       {vm && <TextLine key='name' id ='vm_name' label='VM Name' text={vm.name} />}
       {vm && <TextLine key='host' id ='vm_host' label='VM Host' text={vm.host} />}
-      {vm && <TextLine key='uuid' id ='vm_uuid' label='VM UUID' text={vm.device_uuid} style={{maxWidth:170}} extra={vm.device_uuid} />}
+      {vm && <TextLine key='uuid' id ='vm_uuid' label='VM UUID' text={vm.bios_uuid} style={{maxWidth:170}} extra={vm.bios_uuid} />}
       {vm && <TextLine key='uuhost' id ='vm_uuhost' label='Host UUID' text={vm.server_uuid} style={{maxWidth:170}} extra={vm.server_uuid} />}
      </InfoColumns>
      <InfoColumns key='ic_text' style={{clear:'both'}}>
