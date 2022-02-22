@@ -286,6 +286,7 @@ def start(aCTX, aArgs):
     sync(aCTX, aArgs)
    aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
    ret['status'] = 'OK'
+   ret['info'] = 'scheduled_nibe'
  return ret
 
 #

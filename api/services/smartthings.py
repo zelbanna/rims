@@ -177,8 +177,8 @@ def start(aCTX, aArgs):
   - status
  """
  config = aCTX.config['services']['smartthings']
- aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
- return {'status':'NO OP'}
+ aCTX.schedule_api_periodic(process,'smartthings_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
+ return {'status':'OK','info':'scheduled_smartthings'}
 
 #
 #
