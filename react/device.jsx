@@ -218,7 +218,6 @@ export class Info extends Component {
   post_call('api/device/info',{id:this.props.id, op:'lookup'}).then(result => this.setState({...result,content:null}))
  }
 
- changeIpam = (id) => import('./ipam.jsx').then(lib => this.changeContent(<lib.AddressEvents key='address_events' id={id} changeSelf={this.changeContent} />))
  changeInterfaces = () => import('./interface.jsx').then(lib => this.changeContent(<lib.List key='interface_list' device_id={this.props.id} changeSelf={this.changeContent} />))
  changeVisualize = () => import('./visualize.jsx').then(lib => this.changeSelf(<lib.Edit key={'viz_id_' + this.props.id} type='device' changeSelf={this.changeSelf} id={this.props.id} />))
 
@@ -273,7 +272,6 @@ export class Info extends Component {
      {has_ip && <SearchButton key='search' onClick={() => this.lookupInfo()} title='Information lookup' />}
      {function_strings.includes('manage') && <GoButton key='manage' onClick={() => this.context.changeMain({module:this.state.extra.type_base,function:'Manage',args:{device_id:this.props.id, type:this.state.extra.type_name}})} title={'Manage ' + data.hostname} />}
      {has_ip && <TermButton key='ssh' onClick={() => window.open(`ssh://${extra.username}@${extra.ip}`,'_self')} title='SSH connection' />}
-     {has_ip && <HealthButton key='health' onClick={() => this.changeIpam(this.state.extra.ipam_id)} title='IP health report' />}
      {rack && rack.console_url && <TermButton key='console' onClick={() => window.open(rack.console_url,'_self')} title='Serial Connection' /> }
      {data.url && <UiButton key='ui' onClick={() => window.open(data.url,'_blank')} title='Web UI' />}
      <Result key='result' result={JSON.stringify(this.state.update)} />
