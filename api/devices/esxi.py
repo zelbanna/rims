@@ -49,7 +49,7 @@ def vm_info(aCTX, aArgs):
   ret['status'] = 'OK'
   ret['interfaces'] = ret['data'].pop('interfaces',None)
   with aCTX.db as db:
-   if (db.query("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.server_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE device_uuid = '%s'"%ret['data']['device_uuid']) == 1):
+   if (db.query("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.server_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE bios_uuid = '%s'"%ret['data']['bios_uuid']) == 1):
     ret['data'].update(db.get_row())
     vm = ret['data'].pop('vm',None)
     if(ret['data']['device_id']):
@@ -67,7 +67,7 @@ def vm_info(aCTX, aArgs):
         ret['device'].pop(vm_if['pos'])
         vm_if.pop('pos',None)
     if aArgs.get('op') == 'update' or vm != ret['data']['name']:
-     ret['update'] = (db.execute("UPDATE device_vm_uuid SET vm = '%s', config = '%s', snmp_id = '%s' WHERE device_uuid = '%s'"%(ret['data']['name'], ret['data']['config'], aArgs['vm_id'],  ret['data']['device_uuid'])) == 1)
+     ret['update'] = (db.execute("UPDATE device_vm_uuid SET vm = '%s', config = '%s', snmp_id = '%s' WHERE bios_uuid = '%s'"%(ret['data']['name'], ret['data']['config'], aArgs['vm_id'],  ret['data']['bios_uuid'])) == 1)
    else:
     ret['data']['device_id'] = None
  return ret
@@ -78,7 +78,7 @@ def vm_map(aCTX, aArgs):
  """ Function maps or retrieves VM to device ID mapping
 
  Args:
-  - device_uuid (required)
+  - bios_uuid (required)
   - device_id (optional required)
   - host_id (optional_reauired)
   - op (optional)
@@ -89,11 +89,13 @@ def vm_map(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   ret['update'] = (db.execute("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE device_uuid = '%(device_uuid)s'"%aArgs) == 1)
-  ret['data'] = db.get_val('device_id') if (db.query("SELECT device_id FROM device_vm_uuid WHERE device_uuid = '%(device_uuid)s'"%aArgs) > 0) else ''
+   ret['update'] = (db.execute("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE bios_uuid = '%(bios_uuid)s'"%aArgs) == 1)
+  ret['data'] = db.get_val('device_id') if (db.query("SELECT device_id FROM device_vm_uuid WHERE bios_uuid = '%(bios_uuid)s'"%aArgs) > 0) else ''
  return ret
 
+##
 #
+# TODO: Make UUID required and make sure react pass that variable with the operation
 #
 def vm_op(aCTX, aArgs):
  """Function op provides VM operation control

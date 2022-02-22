@@ -207,7 +207,7 @@ def info(aCTX, aArgs):
    if not ret['extra']['functions']:
     ret['extra']['functions'] = ""
    # Rack infrastructure ?
-   if ret['data']['class'] == 'vm' and (db.query("SELECT dvu.vm AS name, dvu.device_uuid, dvu.server_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %s"%id) == 1):
+   if ret['data']['class'] == 'vm' and (db.query("SELECT dvu.vm AS name, dvu.bios_uuid, dvu.server_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %s"%id) == 1):
     ret['vm'] = db.get_row()
    elif db.query("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%id):
     rack = db.get_row()
@@ -347,7 +347,7 @@ def control(aCTX, aArgs):
   info = db.get_row()
   if info['class'] != 'vm' and (db.query("SELECT dp.id, dp.name, dp.pdu_id, dp.pdu_slot, dp.pdu_unit, pi.0_slot_id, pi.1_slot_id, dt.name AS pdu_type, INET6_NTOA(ia.ip) AS pdu_ip FROM device_pems AS dp LEFT JOIN pdu_info AS pi ON pi.device_id = dp.pdu_id LEFT JOIN devices ON devices.id = dp.pdu_id LEFT JOIN device_types AS dt ON devices.type_id = dt.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE dp.device_id = %s AND dp.pdu_id IS NOT NULL"%id) > 0):
    ret['pems'] = db.get_rows()
-  elif info['class'] == 'vm' and (db.query("SELECT dvu.host_id, snmp_id AS device_snmp_id, device_uuid, INET6_NTOA(ia.ip) AS host_ip, dt.name AS host_type FROM device_vm_uuid AS dvu LEFT JOIN devices ON dvu.host_id = devices.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dvu.device_id = %s"%id) == 1):
+  elif info['class'] == 'vm' and (db.query("SELECT dvu.host_id, snmp_id AS device_snmp_id, bios_uuid, INET6_NTOA(ia.ip) AS host_ip, dt.name AS host_type FROM device_vm_uuid AS dvu LEFT JOIN devices ON dvu.host_id = devices.id LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dvu.device_id = %s"%id) == 1):
    ret['mapping'] = db.get_row()
 
  if aArgs.get('device_op'):
@@ -359,7 +359,7 @@ def control(aCTX, aArgs):
    elif ret.get('mapping'):
     module = import_module("rims.devices.%s"%ret['mapping']['host_type'])
     with getattr(module,'Device',None)(aCTX,ret['mapping']['host_id'],ret['mapping']['host_ip']) as dev:
-     ret['result'] = dev.vm_operation(aArgs['device_op'],ret['mapping']['device_snmp_id'], aUUID = ret['mapping']['device_uuid'])
+     ret['result'] = dev.vm_operation(aArgs['device_op'],ret['mapping']['device_snmp_id'], aUUID = ret['mapping']['bios_uuid'])
    else:
     ret['result'] = 'NO_VM_MAPPING'
   except Exception as e:
@@ -809,8 +809,8 @@ def vm_mapping(aCTX, aArgs):
    db.execute("TRUNCATE device_vm_uuid")
    existing = {}
   else:
-   db.query("SELECT device_id, vm, device_uuid FROM device_vm_uuid")
-   existing = {row.pop('device_uuid',None):row for row in db.get_rows()}
+   db.query("SELECT device_id, vm, bios_uuid FROM device_vm_uuid")
+   existing = {row.pop('bios_uuid',None):row for row in db.get_rows()}
   db.query("SELECT di.device_id, di.interface_id, LPAD(hex(di.mac),12,0) AS mac FROM devices LEFT JOIN interfaces AS di ON di.device_id = devices.id WHERE devices.class = 'vm' and di.mac > 0")
   interfaces = {row.pop('mac',None):row for row in db.get_rows()}
   db.query("SELECT devices.id, INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types AS dt ON dt.id = devices.type_id WHERE dt.base = 'hypervisor' AND ia.state = 'up' AND %s"%("TRUE" if not aArgs.get('device_id') else "devices.id = %s"%aArgs['device_id']))
@@ -829,7 +829,7 @@ def vm_mapping(aCTX, aArgs):
       db_vm = interfaces.pop(intf['mac'],None)
       if db_vm:
        vm['device_id'] = db_vm['device_id']
-       existed = existing.pop(vm['device_uuid'],None)
+       existed = existing.pop(vm['bios_uuid'],None)
        if existed:
         ret['existing'].append(vm)
        else:
@@ -839,12 +839,12 @@ def vm_mapping(aCTX, aArgs):
       ret['inventory'].append(vm)
 
   for vm in ret['discovered']:
-   ret['update']['discovered'] = db.execute("INSERT INTO device_vm_uuid (device_id,host_id,snmp_id,device_uuid,config,vm) VALUES(%(device_id)s,%(host_id)s,%(snmp_id)s,'%(device_uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s'"%vm)
+   ret['update']['discovered'] = db.execute("INSERT INTO device_vm_uuid (device_id,host_id,snmp_id,bios_uuid,config,vm) VALUES(%(device_id)s,%(host_id)s,%(snmp_id)s,'%(bios_uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s'"%vm)
   for vm in ret['existing']:
-   ret['update']['existing'] = db.execute("UPDATE device_vm_uuid SET device_id = %(device_id)s, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s' WHERE device_uuid = '%(device_uuid)s'"%vm)
+   ret['update']['existing'] = db.execute("UPDATE device_vm_uuid SET device_id = %(device_id)s, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s' WHERE bios_uuid = '%(bios_uuid)s'"%vm)
   for vm in ret['inventory']:
-   ret['update']['inventory'] = db.execute("INSERT INTO device_vm_uuid (device_id,host_id,snmp_id,device_uuid,config,vm) VALUES(NULL,%(host_id)s,%(snmp_id)s,'%(device_uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE device_id = NULL, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s'"%vm)
- ret['database'] = [{'device_id':x['device_id'],'host_id':'-','device_uuid':'-','vm':'-','config':'-'} for x in vms.values()]
+   ret['update']['inventory'] = db.execute("INSERT INTO device_vm_uuid (device_id,host_id,snmp_id,bios_uuid,config,vm) VALUES(NULL,%(host_id)s,%(snmp_id)s,'%(bios_uuid)s','%(config)s','%(vm)s') ON DUPLICATE KEY UPDATE device_id = NULL, host_id = %(host_id)s, snmp_id = %(snmp_id)s, config = '%(config)s', vm = '%(vm)s'"%vm)
+ ret['database'] = [{'device_id':x['device_id'],'host_id':'-','bios_uuid':'-','vm':'-','config':'-'} for x in vms.values()]
  return ret
 
 ################################################### Classes ###################################################

@@ -9,7 +9,8 @@ from rims.core.common import VarList, Session
 
 ########################################### ESXi ############################################
 #
-
+# TODO: put a session object in the Context cache for esxi and self._id, reuse this to start pyVmomi migration 
+#
 class Device(GenericDevice):
 
  @classmethod
@@ -70,6 +71,7 @@ class Device(GenericDevice):
    v['description'] = v['description'][0:25]
   return interfaces
 
+ ####################################### Commands ####################################
  #
  # SSH interaction - Connect() send, send,.. Close()
  #
@@ -174,8 +176,9 @@ class Device(GenericDevice):
   self.log("VM snapshot [%s] on %s"%(aOP,aID))
   return ret
 
+ ############################################# SNMP ###########################################
  #
- # SNMP interaction
+ # SNMP interaction, feels quicker than the VMomi stuff...
  #
  def get_info(self, aID):
   vm = {'interfaces':{},'vm':None}
@@ -187,7 +190,7 @@ class Device(GenericDevice):
    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
    session.get(vmobj)
    session.walk(vminterfaces)
-   vm = {'name':vmobj[0].val.decode(),'config':vmobj[1].val.decode(),'state':Device.get_state_str(vmobj[2].val.decode()),'device_uuid':vmobj[3].val.decode(),'interfaces':{}}
+   vm = {'name':vmobj[0].val.decode(),'config':vmobj[1].val.decode(),'state':Device.get_state_str(vmobj[2].val.decode()),'bios_uuid':vmobj[3].val.decode(),'interfaces':{}}
    for obj in vminterfaces:
     tag,_,_ = obj.tag.rpartition('.')
     if   tag == '.1.3.6.1.4.1.6876.2.4.1.3':
@@ -245,7 +248,7 @@ class Device(GenericDevice):
     elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.3':
      vms[obj.iid]['config'] = obj.val.decode()
     elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.10':
-     vms[obj.iid]['device_uuid'] = obj.val.decode()
+     vms[obj.iid]['bios_uuid'] = obj.val.decode()
    for obj in vminterfaces:
     tag,_,iid = obj.tag.rpartition('.')
     if   tag == '.1.3.6.1.4.1.6876.2.4.1.3':
