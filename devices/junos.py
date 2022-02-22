@@ -11,89 +11,14 @@ from rims.devices.generic import Device as GenericDevice
 class Junos(GenericDevice):
 
  @classmethod
- def get_functions(cls):
-  return ['up_interfaces','info' ]
-
- @classmethod
  def get_data_points(cls):
   return [
    ('chassis','cpu=RE','temp','.1.3.6.1.4.1.2636.3.1.13.1.7.9.1.0.0'),
    ('chassis','cpu=RE','load','.1.3.6.1.4.1.2636.3.1.13.1.8.9.1.0.0')
   ]
 
- def __init__(self, aCTX, aID, aIP):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
-  self._interfacesname = {}
-  self._router  = None
-
- def __enter__(self):
-  if self.connect():
-   return self
-  else:
-   raise RuntimeError("Error connecting to host")
-
- def __exit__(self, *ctx_info):
-  self.close()
-
- def connect(self):
-  from jnpr.junos import Device as JunosDevice
-  if not self._router:
-   self._router = JunosDevice(self._ip, user=self._ctx.config['netconf']['username'], password=self._ctx.config['netconf']['password'], normalize=True)
-  try:
-   self._router.open()
-  except Exception as err:
-   self.log("Unable to connect:" + str(err)[:72])
-   return False
-  return True
-
- def close(self):
-  try:
-   self._router.close()
-  except Exception as err:
-   self.log("System Error - Unable to properly close router connection: " + str(err))
-
  def interfaces(self):
   return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla','fxp','em0','vme']}
-
- #
- # Netconf shit
- #
- def get_rpc(self):
-  return self._router.rpc
-
- def get_dev(self):
-  return self._router
-
- def get_interface_name(self, aifl):
-  return self._interfacesname.get(aifl.split('.')[0])
-
- def ping_rpc(self,ip):
-  result = self._router.rpc.ping(host=ip, count='1')
-  return len(result.xpath("ping-success"))
-
- def get_facts(self,akey):
-  return self._router.facts[akey]
-
- def load_interfaces_name(self):
-  interfaces = self._router.rpc.get_interface_information(descriptions=True)
-  for interface in interfaces:
-   ifd         = interface.find("name").text
-   description = interface.find("description").text
-   self._interfacesname[ifd] = description
-
- def up_interfaces(self):
-  interfaces = self._router.rpc.get_interface_information()
-  ret = []
-  for ifd in interfaces:
-   entry = {'Interface':ifd[0].text, 'State':ifd[2].text, 'SNMP':ifd[4].text, 'Type':ifd[5].text }
-   # Split ge-0/0/0 into ge and 0/0/0, remove extra numbers for aeX interfaces
-   tp = entry['Interface'].partition('-')[0].rstrip('0123456789')
-   if tp in [ 'ge', 'fe', 'xe', 'et','st0','ae' ] and entry['State'] == "up":
-    ret.append(entry)
-  return ret
-
- def info(self):
-  return [{'Version':self._router.facts['version'],'Model':self._router.facts['model']}]
 
  def configuration(self,argdict):
   base  = "set groups default_system"

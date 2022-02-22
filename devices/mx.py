@@ -11,10 +11,5 @@ from rims.devices.junos import Junos
 
 class Device(Junos):
 
- @classmethod
- def get_functions(cls):
-  return Junos.get_functions()
-
  def __init__(self, aCTX, aID, aIP = None):
   Junos.__init__(self, aCTX, aID, aIP)
-  self._interfacenames = {}

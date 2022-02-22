@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 """Installer"""
 __author__ = "Zacharias El Banna"
-__version__ = "6.1"
+__version__ = "7.5"
 
 from sys import path as syspath, exit as sysexit
 from json import load,dumps
 from os import chmod, listdir, path as ospath
 from subprocess import check_call
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-#from pip._internal import main as pipmain
 from pip import main as pipmain
 pkgdir = ospath.abspath(ospath.dirname(__file__))
 basedir = ospath.abspath(ospath.join(pkgdir,'..'))
@@ -88,15 +87,6 @@ if config.get('netconf') or config.get('esxi'):
   pipmain(["install", "-q","paramiko"])
  else:
   res['modules']['ssh'] = 'Installed'
-
-if config.get('netconf'):
- try:
-  from jnpr import junos
- except ImportError as e:
-  res['info']['junos-eznc'] = f'installing ({e})'
-  pipmain(["install","-q","junos-eznc"])
- else:
-  res['modules']['junos-eznc'] = 'Installed'
 
 if config.get('esxi'):
  try:

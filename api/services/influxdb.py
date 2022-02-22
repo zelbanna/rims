@@ -17,6 +17,7 @@ def process(aCTX, aArgs):
  try:
   res = aCTX.influxdb.sync()
  except Exception as e:
+  aCTX.log(f"influxdb error: {str(e)}")
   ret = {'status':'NOT_OK','function':'influxdb_process','output':str(e)}
  else:
   if res >= 0:
