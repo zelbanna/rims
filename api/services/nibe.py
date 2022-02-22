@@ -286,6 +286,7 @@ def start(aCTX, aArgs):
     sync(aCTX, aArgs)
    aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
    ret['status'] = 'OK'
+   ret['info'] = 'scheduled_nibe'
  return ret
 
 #
@@ -303,3 +304,15 @@ def stop(aCTX, aArgs):
   aCTX.cache['nibe'] = state
  state['phase'] = 'inactive'
  return {'status':'OK','info':'empty state'}
+
+#
+#
+def close(aCTX, aArgs):
+ """ Function provides closing behavior, wrapping up data and file handlers before closing
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}

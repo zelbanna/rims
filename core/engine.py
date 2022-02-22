@@ -198,20 +198,28 @@ class Context():
   """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough. Finally set kill to inform that we are done """
   def shutdown_dummy(n):
    return False
+
   self._abort.set()
-  #
-  # TODO:
-  # 1) Empty queue
-  # 2) Check if stuck workers and kill them if they been running for a long time
-  # 3) Let short lived jobs complete, if there are stuck worker, just forget them as we can't kill threads
-  #
-  while self.workers_alive():
+
+  # Gently shutdown services
+  for id,svc in self.services.items():
+   if svc['node'] == self.node:
+    module = import_module(f"rims.api.services.{svc['service']}")
+    fun = getattr(module,'close',lambda aCTX,aArgs: None)
+    res = fun(self,{'id':id})
+    if res and res['status'] == 'OK':
+     self.log(f"{svc['service']} => {res}")
+
+  iter = 0
+  while self.workers_alive() and iter < 70:
    # range is implicitly >= 0
    for x in range(self.workers_alive() - self._queue.qsize()):
     self._queue.put((shutdown_dummy,False,None,False,[x],{}))
    while self.workers_alive() and not self._queue.empty():
     sleep(0.2)
+    iter += 1
     self._workers = [x for x in self._workers if x.is_alive()]
+
   try:
    self._sock.close()
   except:

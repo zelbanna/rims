@@ -177,13 +177,25 @@ def start(aCTX, aArgs):
   - status
  """
  config = aCTX.config['services']['smartthings']
- aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
- return {'status':'NO OP'}
+ aCTX.schedule_api_periodic(process,'smartthings_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
+ return {'status':'OK','info':'scheduled_smartthings'}
 
 #
 #
 def stop(aCTX, aArgs):
  """ Function provides stop behavior
+
+ Args:
+
+ Output:
+  - status
+ """
+ return {'status':'NO OP'}
+
+#
+#
+def close(aCTX, aArgs):
+ """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:
 
