@@ -28,7 +28,7 @@ def process(aCTX, aArgs):
   state = sync(aCTX, {})['data']
  for id,dev in state['devices'].items():
   try:
-   res = aCTX.rest_call(url.format(id), aHeader = hdr, aMethod = 'GET')
+   res = aCTX.rest_call(url.format(id), aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
   except Exception as e:
    state['sync'] = ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
@@ -62,7 +62,7 @@ def device(aCTX, aArgs):
  ret = {}
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
  try:
-  res = aCTX.rest_call('https://api.smartthings.com/v1/devices/{0}/status'.format(aArgs['device']), aHeader = hdr, aMethod = 'GET')
+  res = aCTX.rest_call('https://api.smartthings.com/v1/devices/{0}/status'.format(aArgs['device']), aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -113,7 +113,7 @@ def sync(aCTX, aArgs):
  url = 'https://api.smartthings.com/v1/devices'
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
  try:
-  data = aCTX.rest_call(url,aHeader = hdr, aMethod = 'GET')
+  data = aCTX.rest_call(url, aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
  except Exception as e:
   state['sync'] = False
   ret['status'] = 'NOT_OK'

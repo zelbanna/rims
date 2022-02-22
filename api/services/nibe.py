@@ -46,7 +46,7 @@ def auth(aCTX, aArgs):
   config = aCTX.config['services']['nibe']
   args = {"grant_type":"authorization_code", "client_id":config['client_id'], "client_secret":config['client_secret'],"redirect_uri":config['redirect_uri'],"scope":"READSYSTEM","code":code}
   try:
-   res = aCTX.rest_call("https://api.nibeuplink.com/oauth/token", aVerify = False, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
+   res = aCTX.rest_call("https://api.nibeuplink.com/oauth/token", aSSL = aCTX.ssl, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
   except Exception as e:
    state['phase'] = None
    ret['status'] = 'NOT_OK'
@@ -96,7 +96,7 @@ def process(aCTX, aArgs):
   # for item in aCTX.rest_call(url.format(f"systems/{sys_id}/status/systemUnit/{unit['systemUnitId']}"), aHeader = hdr, aMethod = 'GET'):
   #  parametersunits.update({v['parameterId']:v for v in item['parameters']})
   for si in ["STATUS","CPR_INFO_EP14","SYSTEM_1","ADDITION","VENTILATION"]:
-   items = aCTX.rest_call(url.format(f"systems/{sys_id}/serviceinfo/categories/{si}"), aHeader = hdr, aMethod = 'GET')
+   items = aCTX.rest_call(url.format(f"systems/{sys_id}/serviceinfo/categories/{si}"), aHeader = hdr, aSSL = aCTX.ssl, aMethod = 'GET')
    parameters.update({v['parameterId']:v for v in items})
  except Exception as e:
   ret['status'] = 'NOT_OK'
@@ -127,7 +127,7 @@ def get(aCTX, aArgs):
  url = 'https://api.nibeuplink.com/api/v1/{0}'.format(aArgs['api'])
  hdr = {'Authorization': 'Bearer %s'%state['access_token']}
  try:
-  res = aCTX.rest_call(url, aHeader = hdr, aDebug = aArgs.get('debug',False), aMethod = 'GET')
+  res = aCTX.rest_call(url, aSSL = aCTX.ssl, aHeader = hdr, aDebug = aArgs.get('debug',False), aMethod = 'GET')
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -187,7 +187,7 @@ def sync(aCTX, aArgs):
   config = aCTX.config['services']['nibe']
   args = {"grant_type":"refresh_token", "client_id":config['client_id'], "client_secret":config['client_secret'],"refresh_token":state['refresh_token']}
   try:
-   res = aCTX.rest_call("https://api.nibeuplink.com/oauth/token", aVerify = False, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
+   res = aCTX.rest_call("https://api.nibeuplink.com/oauth/token", aSSL = aCTX.ssl, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
   except Exception as e:
    state['phase'] = 'inactive'
    ret['status'] = 'NOT_OK'

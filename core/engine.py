@@ -26,7 +26,7 @@ from types import ModuleType
 from urllib.parse import unquote, parse_qs
 from queue import Queue
 from ipaddress import ip_address
-from rims.core.common import DB, rest_call, Scheduler, RestException, InfluxDB, InfluxDummy
+from rims.core.common import DB, rest_call, Scheduler, RestException, InfluxDB, InfluxDummy, ssl_context
 
 ##################################################### Context #######################################################
 #
@@ -55,18 +55,20 @@ class Context():
   self._analytics = {'files':{},'modules':{}}
   self._start_time = int(time())
 
-  database   = self.config.get('database')
   self.ip    = None
   self.node  = self.config['id']
   self.token = self.config.get('token')
   self.path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
-  self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
   self.cache = {}
   self.nodes = {}
   self.tokens = {}
   self.services = {}
+  self.ssl = ssl_context()
+
+  database   = self.config.get('database')
+  self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
   if self.config.get('services',{}).get('influxdb'):
    config = self.config['services']['influxdb']
    self.influxdb = InfluxDB(config['url'],config['org'],config['token'],config['bucket'])

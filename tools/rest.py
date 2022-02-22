@@ -8,7 +8,7 @@ from os   import path as ospath
 from sys  import path as syspath, exit as sysexit
 from time import time
 syspath.insert(1, ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
-from rims.core.common import rest_call
+from rims.core.common import rest_call, ssl_context
 
 parser = ArgumentParser(prog='rest.py',description='Process REST calls')
 parser.add_argument('url', help = 'REST URL')
@@ -29,7 +29,7 @@ except:
 started = f"Executing:{parsedinput.url}({args})"
 print(started)
 try:
- res = rest_call(parsedinput.url, aArgs = args, aMethod = parsedinput.method, aApplication = parsedinput.app, aTimeout = 300, aDebug = True, aVerify = (parsedinput.url[0:5] != 'https'))
+ res = rest_call(parsedinput.url, aArgs = args, aMethod = parsedinput.method, aApplication = parsedinput.app, aTimeout = 300, aDebug = True, aSSL = ssl_context() if (parsedinput.url[0:5] == 'https') else None)
 except Exception as e:
  output = e.args[0]
 else:
