@@ -23,6 +23,7 @@ from influxdb_client.domain.write_precision import WritePrecision
 def basic_auth(aUsername,aPassword):
  return {'Authorization':'Basic %s'%(b64encode(f"{aUsername}:{aPassword}".encode('utf-8')).decode('utf-8')) }
 
+#
 class RestException(Exception):
 
  def __init__(self, *args):
@@ -34,8 +35,16 @@ class RestException(Exception):
  def __str__(self):
   return f"REST({self.code}): {self.exception} => {self.data}"
 
+#
+def ssl_context():
+ ssl_ctx = create_default_context()
+ ssl_ctx.check_hostname = False
+ ssl_ctx.verify_mode = CERT_NONE
+ return ssl_ctx
+
+#
 def rest_call(aURL, **kwargs):
- """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aTimeout, aDebug (default False), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
+ """ REST call function, aURL is required, then aApplication (default:'json' or 'x-www-form-urlencoded'), aArgs, aHeader (dict), aSSL (default 'None),  aTimeout, aDebug (default False), aDecode (not for binary..) . Returns de-json:ed data structure and all status codes """
  try:
   head = { 'Content-Type': f"application/{kwargs.get('aApplication','json')}",'Accept':'application/json' }
   head.update(kwargs.get('aHeader',{}))
@@ -51,13 +60,7 @@ def rest_call(aURL, **kwargs):
    raise RestException(f"No recognized application type ({head['Content-Type']})")
   req = Request(aURL, headers = head, data = args)
   req.get_method = lambda: kwargs.get('aMethod','POST')
-  if kwargs.get('aVerify',True):
-   sock = urlopen(req, timeout = kwargs.get('aTimeout',20))
-  else:
-   ssl_ctx = create_default_context()
-   ssl_ctx.check_hostname = False
-   ssl_ctx.verify_mode = CERT_NONE
-   sock = urlopen(req,context=ssl_ctx, timeout = kwargs.get('aTimeout',20))
+  sock = urlopen(req, context = kwargs.get('aSSL',None), timeout = kwargs.get('aTimeout',20))
   try:
    data = loads(sock.read().decode()) if kwargs.get('aDecode',True) else sock.read()
   except:

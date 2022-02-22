@@ -37,7 +37,7 @@ stop() {
   MSG="Stopping service handler @`cat $PIDFILE`"
   echo $MSG
   logger --tag=$SERVICE $MSG
-  kill -9 `cat $PIDFILE`
+  kill -2 `cat $PIDFILE`
   rm $PIDFILE
  else
   echo "System not running"
@@ -49,7 +49,7 @@ reload() {
   MSG=" Reloading modules for service handler @`cat $PIDFILE`"
   echo $MSG
   logger --tag=$SERVICE $MSG
-  kill -s SIGUSR1 `cat $PIDFILE`
+  kill -10 `cat $PIDFILE`
  else
   echo "System not running"
  fi

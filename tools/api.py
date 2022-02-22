@@ -30,7 +30,7 @@ except:
 started=f"Executing:{args.api}({arguments})"
 print(started)
 try:
- res = rest_call(f"{args.url}/api/{args.api}", aArgs = arguments, aTimeout = 300, aDebug = True, aVerify = True, aHeader = header)
+ res = rest_call(f"{args.url}/api/{args.api}", aArgs = arguments, aTimeout = 300, aDebug = True, aHeader = header)
 except RestException as e:
  output = e.info
 except Exception as e:

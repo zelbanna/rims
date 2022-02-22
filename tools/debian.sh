@@ -130,7 +130,6 @@ echo "docker exec -it influxdb2 influx v1 dbrp create --db rims --rp autogen --d
 
 
 pip3 install python3-netsnmp
-pip3 install junos-eznc
 
 cd /usr/local/sbin
 git init
