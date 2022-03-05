@@ -207,7 +207,7 @@ def info(aCTX, aArgs):
    if not ret['extra']['functions']:
     ret['extra']['functions'] = ""
    # Rack infrastructure ?
-   if ret['data']['class'] == 'vm' and (db.query("SELECT dvu.vm AS name, dvu.bios_uuid, dvu.server_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %s"%id) == 1):
+   if ret['data']['class'] == 'vm' and (db.query("SELECT dvu.vm AS name, dvu.bios_uuid, dvu.instance_uuid, dvu.config, devices.hostname AS host FROM device_vm_uuid AS dvu LEFT JOIN devices ON devices.id = dvu.host_id WHERE dvu.device_id = %s"%id) == 1):
     ret['vm'] = db.get_row()
    elif db.query("SELECT rack_unit,rack_size, console_id, console_port, rack_id, racks.name AS rack_name FROM rack_info LEFT JOIN racks ON racks.id = rack_info.rack_id WHERE rack_info.device_id = %i"%id):
     rack = db.get_row()

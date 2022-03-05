@@ -9,7 +9,7 @@ from rims.core.common import VarList, Session
 
 ########################################### ESXi ############################################
 #
-# TODO: put a session object in the Context cache for esxi and self._id, reuse this to start pyVmomi migration 
+# TODO: put a session object in the Context cache for esxi and self._id, reuse this to start pyVmomi migration
 #
 class Device(GenericDevice):
 
@@ -24,6 +24,13 @@ class Device(GenericDevice):
  def __init__(self, aCTX, aID, aIP = None):
   GenericDevice.__init__(self, aCTX, aID, aIP)
   self._sshclient = None
+  #cache = aCTX.cache.get('esxi',{})
+  #if not cache:
+  # aCTX['esxi'] = cache
+  #dev = cache.get(aID,{})
+  #if not dev:
+  # cache[aID] = dev
+  #self._cache = dev
 
  def __enter__(self):
   if not self._sshclient:
@@ -101,6 +108,8 @@ class Device(GenericDevice):
   return 'OPERATION_NOT_IMPLEMENTED_%s'%aType.upper()
 
  #
+ # TODO: Convert to pyVmomi
+ # 
  def vm_operation(self, aOP, aID, aUUID = None, aSnapshot = None):
   """Function vm_operation ... operates on VMs
 
@@ -136,6 +145,8 @@ class Device(GenericDevice):
    self.log("VM operation [%s] failed on %s => %s"%(aOP,aID,ret['info']))
   return ret
 
+ #
+ # TODO: Convert to pyVmomi
  #
  def snapshot(self, aOP, aID, aSnapshot):
   ret = {'status':'OK'}
@@ -203,6 +214,7 @@ class Device(GenericDevice):
   return vm
 
  #
+ #
  def get_vm_state(self, aID):
   ret = {}
   try:
@@ -214,6 +226,7 @@ class Device(GenericDevice):
    ret['state'] = 'unknown'
   return ret
 
+ #
  #
  def get_vm_list(self, aSort = None):
   # aSort = 'id' or 'name'

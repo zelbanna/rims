@@ -49,7 +49,7 @@ def vm_info(aCTX, aArgs):
   ret['status'] = 'OK'
   ret['interfaces'] = ret['data'].pop('interfaces',None)
   with aCTX.db as db:
-   if (db.query("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.server_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE bios_uuid = '%s'"%ret['data']['bios_uuid']) == 1):
+   if (db.query("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.instance_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE bios_uuid = '%s'"%ret['data']['bios_uuid']) == 1):
     ret['data'].update(db.get_row())
     vm = ret['data'].pop('vm',None)
     if(ret['data']['device_id']):
