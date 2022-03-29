@@ -43,7 +43,7 @@ class Device(GenericDevice):
     self.log("DEBUG: Authentication failed when connecting")
     self._sshclient = None
     raise RuntimeError("ESXi_Error connecting to host")
-   except NoValidConnections as e:
+   except Exception as e:
     self.log("DEBUG: Could not connect")
     self._sshclient = None
     raise RuntimeError("ESXi_Error connecting to host")

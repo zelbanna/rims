@@ -11,9 +11,6 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from urllib.error import HTTPError
 from ssl import create_default_context, CERT_NONE
-from influxdb_client import InfluxDBClient
-from influxdb_client.client.write_api import SYNCHRONOUS
-from influxdb_client.domain.write_precision import WritePrecision
 
 ########################################### REST ##########################################
 #
@@ -88,6 +85,10 @@ def rest_call(aURL, **kwargs):
 class InfluxDB():
 
  def __init__(self, aUrl, aOrg, aToken, aBucket = None):
+  # place import here to avoid import if influxdb is not necessary
+  from influxdb_client import InfluxDBClient
+  from influxdb_client.client.write_api import SYNCHRONOUS
+  from influxdb_client.domain.write_precision import WritePrecision
   self._url = aUrl
   self._org = aOrg
   self._token = aToken
