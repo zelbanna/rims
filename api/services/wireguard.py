@@ -42,9 +42,9 @@ def status(aCTX, aArgs):
   ret['status'] = 'OK'
 
  if not (output):
-  ret['status'] = 'STOPPED'
+  ret['state'] = 'INACTIVE'
  else:
-  ret['status'] = 'ACTIVE'
+  ret['state'] = 'ACTIVE'
   parts = output.decode().split():
   ret['extra'] = {'send':0,'received':0}
  return ret
