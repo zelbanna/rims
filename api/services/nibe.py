@@ -51,7 +51,7 @@ def auth(aCTX, aArgs):
    state['phase'] = None
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
-   aCTX.log(f"nibe_service_authentication NOT successful")
+   aCTX.log(f"nibe_service_authentication phase 1 NOT successful")
   else:
    from time import time
    from json import dump
@@ -182,6 +182,7 @@ def sync(aCTX, aArgs):
  if not state or state.get('phase') == 'inactive':
   ret['status'] = 'NOT_OK'
   ret['info'] = 'no_state_refresh_impossible'
+  aCTX.log(f"nibe_service_token_refresh phase 2 impossible")
  else:
   state['phase'] = 'refresh'
   config = aCTX.config['services']['nibe']
@@ -192,7 +193,7 @@ def sync(aCTX, aArgs):
    state['phase'] = 'inactive'
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
-   aCTX.log(f"nibe_service_token_refresh NOT successful")
+   aCTX.log(f"nibe_service_token_refresh phase 2 NOT successful")
   else:
    from time import time
    from json import dump

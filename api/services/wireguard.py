@@ -45,8 +45,8 @@ def status(aCTX, aArgs):
   ret['state'] = 'INACTIVE'
  else:
   ret['state'] = 'ACTIVE'
-  parts = output.decode().split():
-  ret['extra'] = {'send':0,'received':0}
+  parts = output.decode().split()
+  ret['extra'] = {'send':0,'received':0,'info':parts}
  return ret
 
 #
