@@ -126,14 +126,14 @@ def start(aCTX, aArgs):
  """
  ret = {'info':'scheduled_openweathermap'}
  state = aCTX.cache.get('openweathermap',{})
- if state.get('status') == 'activated':
+ if state.get('status') == 'active':
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
   ret['status'] = 'OK'
   config = aCTX.config['services']['openweathermap']
   aCTX.schedule_api_periodic(process,'openweathermap_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
-  aCTX.cache['openweathermap'] = {'status':'activated','timestamp':0}
+  aCTX.cache['openweathermap'] = {'status':'active','timestamp':0}
  return ret
 
 #
