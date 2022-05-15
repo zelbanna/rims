@@ -111,7 +111,7 @@ def parameters(aCTX, aArgs):
   - parameters
  """
  settings = aCTX.config['services'].get('openweathermap',{})
- params = ['token','bucket']
+ params = ['token','bucket','longitude','latitude']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
