@@ -211,7 +211,7 @@ def logs_clear(aCTX, aArgs):
     ret['file'][name] = 'CLEARED'
     aCTX.log("Emptied log [%s]"%name)
    except Exception as err:
-    ret['file'][name] = 'ERROR: %s'%(repr(err))
+    ret['file'][name] = 'LOGS_ERROR: %s'%(repr(err))
     ret['status'] = 'NOT_OK'
  return ret
 
@@ -239,7 +239,7 @@ def logs_get(aCTX, aArgs):
       pos = (pos + 1) % count
      ret[name] = [lines[(pos + n) % count][:-1] for n in reversed(list(range(count)))]
    except Exception as err:
-    ret[name] = ['ERROR: %s'%(repr(err))]
+    ret[name] = ['LOGS_ERROR: %s'%(repr(err))]
  return ret
 
 ################################# File ############################

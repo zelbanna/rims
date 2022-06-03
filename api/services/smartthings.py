@@ -20,12 +20,12 @@ def process(aCTX, aArgs):
  config = aCTX.config['services']['smartthings']
  hdr = {'Authorization': 'Bearer {0}'.format(config['token'])}
  tmpl = '{0},type=smartthings,designation=iot,system_id=%s,label=%s %s {1}'.format(config.get('measurement','smartthings'),int(time()))
- xlate = config['capabilities']
  records = []
  state = aCTX.cache.get('smartthings')
  if not state:
   # from rims.api.services.smartthings import sync
   state = sync(aCTX, {})['data']
+ xlate = state['translate']
  for id,dev in state['devices'].items():
   try:
    res = aCTX.rest_call(url.format(id), aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
@@ -37,14 +37,13 @@ def process(aCTX, aArgs):
    tagvalue = []
    for cap, measure in res['components']['main'].items():
     if cap in dev[0]:
-     value = measure[xlate[cap]]['value']
+     value = measure[xlate[cap][0]]['value']
      if isinstance(value, str):
       value = 1 if value == 'active' else 0
      elif value is None:
       value = 0
-     tagvalue.append("%s=%s"%(xlate[cap],value))
-   label = dev[1].replace(" ", "_").replace("/", "-").replace(":", "").lower()
-   records.append(tmpl%(id,label,",".join(tagvalue)))
+     tagvalue.append("%s=%s"%(xlate[cap][1],value))
+   records.append(tmpl%(id,dev[1],",".join(tagvalue)))
  aCTX.influxdb.write(records, config['bucket'])
  return ret
 
@@ -96,7 +95,9 @@ def status(aCTX, aArgs):
 #
 #
 def sync(aCTX, aArgs):
- """ Re-fetch the device list and reload capabilities/measurements. Saves them into a dictionary with id:(capabilities, label, name)
+ """ Re-fetch the device list and reload capabilities/measurements. Saves them into a dictionary with id:(capabilities, influx label, label, name, room_id)
+
+ Don't filter any capability in the call - so we can list all possible in the status
 
  Args:
   - id (required). Server id on master node
@@ -109,26 +110,47 @@ def sync(aCTX, aArgs):
  state = aCTX.cache.get('smartthings',{})
  state['capabilities'] = state_capabilities = {}
  state['devices'] = state_devices = {}
+ state['locations'] = state_locs = {}
+ state['rooms'] = state_rooms = {}
+ state['translate'] = state_xlate = {
+  'tvocMeasurement':('tvocLevel','tvoc'),
+  'temperatureMeasurement':('temperature','temperature'),
+  'relativeHumidityMeasurement':('humidity','humidity'),
+  'atmosphericPressureMeasurement':('atmosphericPressure','pressure'),
+  'illuminanceMeasurement':('illuminance','illuminance'),
+  'battery':('battery','battery'),
+  'powerMeter':('power','power'),
+  'energyMeter':('energy','energy')
+ }
  ret = {}
- url = 'https://api.smartthings.com/v1/devices'
+ devs_url = 'https://api.smartthings.com/v1/devices'
+ locs_url = 'https://api.smartthings.com/v1/locations'
+ room_url = 'https://api.smartthings.com/v1/locations/{0}/rooms'
  hdr = {'Authorization': 'Bearer {0}'.format(aCTX.config['services']['smartthings']['token'])}
  try:
-  data = aCTX.rest_call(url, aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
+  devs = aCTX.rest_call(devs_url, aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
+  locs = aCTX.rest_call(locs_url, aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
+  for loc in locs['items']:
+   state_locs[loc['locationId']] = loc['name']
+   rooms = aCTX.rest_call(room_url.format(loc['locationId']), aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
+   for room in rooms['items']:
+    state_rooms[room['roomId']] = room['name']
  except Exception as e:
   state['sync'] = False
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
  else:
-  capabilities = aCTX.config['services']['smartthings']['capabilities']
-  for device in data['items']:
+  for device in devs['items']:
    caps = []
    # Does the device carry any interesting capability?
    for cap in device['components'][0]['capabilities']:
     state_capabilities[cap['id']] = device['deviceId']
-    if cap['id'] in capabilities:
+    if cap['id'] in state_xlate:
      caps.append(cap['id'])
    if caps:
-    state_devices[device['deviceId']] = (caps,device['label'],device['name'])
+    room = state_rooms.get(device['roomId'],'unknown')
+    label = f"{room}_{device['label']}".replace(" ", "_").replace("/", "-").replace(":", "").lower()
+    state_devices[device['deviceId']] = (caps,label,device['label'],device['name'],room)
   state['sync'] = True
   ret['data'] = state
   ret['status'] = 'OK'

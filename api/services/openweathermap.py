@@ -58,7 +58,7 @@ def status(aCTX, aArgs):
   res['air'] = air['components']
   main = res['main']
   main['air_quality'] = air['main']['aqi']
-  main['atmosphericPressure'] = main.pop('pressure',1) / 10
+  main['pressure'] = main['pressure'] / 10
   main['temperature'] = main.pop('temp',0)
  except Exception as e:
   ret['info'] = str(e)
