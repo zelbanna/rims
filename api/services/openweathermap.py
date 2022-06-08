@@ -17,7 +17,7 @@ def process(aCTX, aArgs):
  state = aCTX.cache.get('openweathermap',{'status':'forced','timestamp':0})
  if state['status'] != 'inactivate':
   config = aCTX.config['services']['openweathermap']
-  res = status(aCTX,None)
+  res = sync(aCTX,None)
   if res['status'] == 'OK' and res['data']['dt'] > state['timestamp']:
    data = res['data']
    ts = state['timestamp'] = data['dt']
@@ -25,7 +25,7 @@ def process(aCTX, aArgs):
    records = [tmpl%('sys_weather',data['id'],'weather',",".join("%s=%s"%(k,v) for k,v in data['main'].items()))]
    records.append(tmpl%('sys_wind',data['id'],'wind',",".join("%s=%s"%(k,v) for k,v in data['wind'].items())))
    records.append(tmpl%('sys_air',data['id'],'air',",".join("%s=%s"%(k,v) for k,v in data['air'].items())))
-   records.append(tmpl%('sys_extra',data['id'],'extra',f"clouds={data['clouds']['all']},visibility={data['visibility'] / 100}"))
+   records.append(tmpl%('sys_extra',data['id'],'extra',f"clouds={data['clouds']['all']},visibility={data['visibility'] / 1000}"))
    records.append(tmpl%('sys_rain',data['id'],'rain',f"rain={data.get('rain',{'1h':0})['1h']}"))
    if state['status'] == 'active':
     aCTX.influxdb.write(records, config['bucket'])
@@ -40,14 +40,15 @@ def process(aCTX, aArgs):
 ########################################################################################
 #
 #
-def status(aCTX, aArgs):
+def sync(aCTX, aArgs):
  """Function does a check and returns status of the service
 
  Args:
-  - type (required)
+  - id (required)
 
  Output:
   - data
+  - status
  """
  ret = {}
  config = aCTX.config['services']['openweathermap']
@@ -71,15 +72,12 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def status(aCTX, aArgs):
  """ No-Op
 
  Args:
-  - id (required). Server id on master node
 
  Output:
-  - code. (error code, optional)
-  - output. (output from command)
   - status. (operation result)
  """
  ret = {'status':'OK'}
@@ -111,7 +109,7 @@ def parameters(aCTX, aArgs):
   - parameters
  """
  settings = aCTX.config['services'].get('openweathermap',{})
- params = ['token','bucket','longitude','latitude']
+ params = ['token','bucket','measurement','longitude','latitude']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
