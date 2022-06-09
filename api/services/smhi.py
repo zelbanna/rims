@@ -103,26 +103,19 @@ def sync(aCTX, aArgs):
    'tstm':('thunder','extra')
   }
   ret['state'] = aCTX.cache.get('smhi')
+  for stage in [('weather',weather), ('forecast',forecast)]:
+   measure = stage[1]
+   name = stage[0]
+   data = {'weather':{'pressure':0},'wind':{},'rain':{'1h':0},'extra':{}}
+   ret[name] = {'ts':int(datetime.fromisoformat(measure['validTime'].replace("Z", "+00:00")).timestamp()),'timestring':measure['validTime'],'data':data}
+   for p in measure['parameters']:
+    tp =  xlate.get(p['name'])
+    if tp:
+     data[tp[1]][tp[0]] = p['values'][0]
+   data['weather']['pressure'] = data['weather']['pressure'] / 10
 
-  data = {'weather':{'pressure':0},'wind':{},'rain':{'1h':0},'extra':{}}
-  ret['weather'] = {'ts':int(datetime.fromisoformat(weather['validTime'].replace("Z", "+00:00")).timestamp()),'timestring':weather['validTime'],'data':data}
-  for p in weather['parameters']:
-   tp =  xlate.get(p['name'])
-   if tp:
-    data[tp[1]][tp[0]] = p['values'][0]
-  data['weather']['pressure'] = data['weather']['pressure'] / 10
-  data = {'weather':{'pressure':0},'wind':{},'rain':{'1h':0},'extra':{}}
-  ret['forecast'] = {'ts':int(datetime.fromisoformat(weather['validTime'].replace("Z", "+00:00")).timestamp()),'timestring':forecast['validTime'],'data':data,'forecast_hours':config.get('forecasting',12)}
-  for p in forecast['parameters']:
-   tp =  xlate.get(p['name'])
-   if tp:
-    data[tp[1]][tp[0]] = p['values'][0]
-  data['weather']['pressure'] = data['weather']['pressure'] / 10
-
+  ret['forecast_hours'] = config.get('forecasting',12)
   ret['status'] = 'OK'
- return ret
-
- ret = {'status':'OK'}
  return ret
 
 #
