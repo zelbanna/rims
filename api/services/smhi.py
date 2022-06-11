@@ -22,7 +22,7 @@ def process(aCTX, aArgs):
    records = []
    for stage in ['weather','forecast']:
     data = res[stage]['data']
-    tmpl = '{0},type={1},designation=%s,system_id=%s,label=%s %s {2}'.format(config.get('measurement','smhi'),stage,res[stage]['ts'])
+    tmpl = '{0},origin=smhi,type={1},designation=%s,system_id=%s,label=%s %s {2}'.format(config.get('measurement','smhi'),stage,res[stage]['ts'])
     for tp in ['weather','wind','extra','rain']:
      records.append(tmpl%('sys_%s'%tp,'smhi',tp,",".join("%s=%s"%(k,v) for k,v in data[tp].items())))
 

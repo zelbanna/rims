@@ -21,7 +21,7 @@ def process(aCTX, aArgs):
   if res['status'] == 'OK' and res['data']['dt'] > state['timestamp']:
    data = res['data']
    ts = state['timestamp'] = data['dt']
-   tmpl = '{0},type=weather,designation=%s,system_id=%s,label=%s %s {1}'.format(config.get('measurement','openweathermap'),ts)
+   tmpl = '{0},origin=openweathermap,type=weather,designation=%s,system_id=%s,label=%s %s {1}'.format(config.get('measurement','openweathermap'),ts)
    records = [tmpl%('sys_weather',data['id'],'weather',",".join("%s=%s"%(k,v) for k,v in data['main'].items()))]
    records.append(tmpl%('sys_wind',data['id'],'wind',",".join("%s=%s"%(k,v) for k,v in data['wind'].items())))
    records.append(tmpl%('sys_air',data['id'],'air',",".join("%s=%s"%(k,v) for k,v in data['air'].items())))

@@ -87,7 +87,7 @@ def process(aCTX, aArgs):
  ret = {'status':'OK','function':'nibe_process'}
  config = aCTX.config['services']['nibe']
  sys_id = config['system_id']
- tmpl = '{0},type=heater,system_id={1},parameter=%s,designation=%s,label=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
+ tmpl = '{0},origin=nibe,type=heater,system_id={1},parameter=%s,designation=%s,label=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
  url = 'https://api.nibeuplink.com/api/v1/{0}'
  hdr = {'Authorization': f"Bearer {state['access_token']}"}
  try:
