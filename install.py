@@ -26,6 +26,7 @@ parser = ArgumentParser(prog='install',formatter_class=RawDescriptionHelpFormatt
 parser.add_argument('-c','--config', help = 'Config file',default = 'config.json', required=False)
 parser.add_argument('-s','--schema', help = 'Database Schema file',default = 'schema.db', required=False)
 parser.add_argument('-t','--startup', help = 'Startup template file',default = 'debian.init', required=False)
+# parser.add_argument('-e','--esxi', help = 'Add pyVMOmi',default = None, required=False)
 parsedinput = parser.parse_args()
 
 if not parsedinput.config:

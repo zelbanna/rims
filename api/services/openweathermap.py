@@ -21,12 +21,12 @@ def process(aCTX, aArgs):
   if res['status'] == 'OK' and res['data']['dt'] > state['timestamp']:
    data = res['data']
    ts = state['timestamp'] = data['dt']
-   tmpl = '{0},origin=openweathermap,type=weather,designation=%s,system_id=%s,label=%s %s {1}'.format(config.get('measurement','openweathermap'),ts)
-   records = [tmpl%('sys_weather',data['id'],'weather',",".join("%s=%s"%(k,v) for k,v in data['main'].items()))]
-   records.append(tmpl%('sys_wind',data['id'],'wind',",".join("%s=%s"%(k,v) for k,v in data['wind'].items())))
-   records.append(tmpl%('sys_air',data['id'],'air',",".join("%s=%s"%(k,v) for k,v in data['air'].items())))
-   records.append(tmpl%('sys_extra',data['id'],'extra',f"clouds={data['clouds']['all']},visibility={data['visibility'] / 1000}"))
-   records.append(tmpl%('sys_rain',data['id'],'rain',f"rain={data.get('rain',{'1h':0})['1h']}"))
+   tmpl = '{0},origin=openweathermap,type=weather,system_id={1},label=%s %s {2}'.format(config.get('measurement','openweathermap'),data['id'],ts)
+   records = [tmpl%('weather',",".join("%s=%s"%(k,v) for k,v in data['main'].items()))]
+   records.append(tmpl%('wind',",".join("%s=%s"%(k,v) for k,v in data['wind'].items())))
+   records.append(tmpl%('air',",".join("%s=%s"%(k,v) for k,v in data['air'].items())))
+   records.append(tmpl%('extra',f"clouds={data['clouds']['all']},visibility={data['visibility'] / 1000}"))
+   records.append(tmpl%('rain',f"rain={data.get('rain',{'1h':0})['1h']}"))
    if state['status'] == 'active':
     aCTX.influxdb.write(records, config['bucket'])
   else:

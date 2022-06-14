@@ -92,9 +92,6 @@ def process(aCTX, aArgs):
  hdr = {'Authorization': f"Bearer {state['access_token']}"}
  try:
   parameters = {}
-  #for unit in aCTX.rest_call(url.format(f"systems/{sys_id}/units"), aHeader = hdr, aMethod = 'GET'):
-  # for item in aCTX.rest_call(url.format(f"systems/{sys_id}/status/systemUnit/{unit['systemUnitId']}"), aHeader = hdr, aMethod = 'GET'):
-  #  parametersunits.update({v['parameterId']:v for v in item['parameters']})
   for si in ["STATUS","CPR_INFO_EP14","SYSTEM_1","ADDITION","VENTILATION"]:
    items = aCTX.rest_call(url.format(f"systems/{sys_id}/serviceinfo/categories/{si}"), aHeader = hdr, aSSL = aCTX.ssl, aMethod = 'GET')
    parameters.update({v['parameterId']:v for v in items})
