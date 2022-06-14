@@ -107,6 +107,16 @@ if config.get('snmp'):
  else:
   res['modules']['netsnmp'] = 'Installed'
 
+if config.get('services',{}).get('sun2000'):
+ try:
+  import huawei-solar
+ except ImportError as e:
+  res['info']['shuawei-solar'] = f'installing ({e})'
+  pipmain(["install","-q","huawei-solar"])
+ else:
+  res['modules']['huawei-solar'] = 'Installed'
+
+
 ############################################ MASTER ###########################################
 #
 # Install necessary modules
