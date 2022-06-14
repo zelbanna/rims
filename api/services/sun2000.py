@@ -15,8 +15,8 @@ def process(aCTX, aArgs):
  """
  from time import time
  ret = {'status':'OK','function':'sun2000_process'}
- state = aCTX.cache.get('sun2000',{'status':'forced','timestamp':0})
- if state['status'] != 'inactivate':
+ state = aCTX.cache.get('sun2000')
+ if state['status'] == 'active':
   config = aCTX.config['services']['sun2000']
   res = sync(aCTX,None)
   if res['status'] == 'OK':
@@ -24,8 +24,7 @@ def process(aCTX, aArgs):
    id = data.pop('serial_number',{'value':'N/A'})['value']
    tmpl = '{0},origin=sun2000,type=solar,system_id=%s,label=%s %s=%s {1}'.format(config.get('measurement','sun2000'),int(time()))
    records = [tmpl%(id,k,v['unit'],v['value']) for k,v in data.items()]
-   if state['status'] == 'active':
-    aCTX.influxdb.write(records, config['bucket'])
+   aCTX.influxdb.write(records, config['bucket'])
    if aCTX.debug:
     ret['data'] = records
   else:
@@ -46,9 +45,9 @@ def __init_state(aCTX, aArgs):
   - status
  """
  config = aCTX.config['services']['sun2000']
- state = aCTX.cache.get('sun2000',{'status':'inactive'})
+ state = aCTX.cache.get('sun2000')
  if not state:
-  aCTX.cache['sun2000'] = state
+  state = aCTX.cache['sun2000'] = {'status':'inactive'}
  state['mapping'] = {'\u00b0C':'temperature','W':'power','kWh':'energy','A':'current','%':'load','h':'elapsed_time','VA':'VA','V':'volt','Hz':'frequency','Var':'Var'}
  state['singles'] = ['serial_number','accumulated_yield_energy']
  for i in range(1,int(config['n_storage'])+1):
@@ -171,7 +170,7 @@ def start(aCTX, aArgs):
  state = aCTX.cache.get('sun2000',{})
  if state.get('status') == 'active':
   ret['status'] = 'NOT_OK'
-  ret['info'] = 'active'
+  ret['info'] = 'already_active'
  else:
   ret['status'] = 'OK'
   config = aCTX.config['services']['sun2000']
