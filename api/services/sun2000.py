@@ -22,8 +22,8 @@ def process(aCTX, aArgs):
   if res['status'] == 'OK':
    data = res['data']
    id = data.pop('serial_number',{'value':'N/A'})['value']
-   tmpl = '{0},origin=huawei_solar,type=solar,system_id=%s,label=%s %s=%s {1}'.format('iot',int(time()))
-   records = [tmpl%(id,k,v['unit'],v['value'] for k,v in data]
+   tmpl = '{0},origin=sun2000,type=solar,system_id=%s,label=%s %s=%s {1}'.format(config.get('measurement','sun2000'),int(time()))
+   records = [tmpl%(id,k,v['unit'],v['value']) for k,v in data.items()]
    if state['status'] == 'active':
     aCTX.influxdb.write(records, config['bucket'])
    if aCTX.debug:
@@ -46,7 +46,9 @@ def __init_state(aCTX, aArgs):
   - status
  """
  config = aCTX.config['services']['sun2000']
- state = aCTX.cache.get('sun2000')
+ state = aCTX.cache.get('sun2000',{'status':'inactive'})
+ if not state:
+  aCTX.cache['sun2000'] = state
  state['mapping'] = {'\u00b0C':'temperature','W':'power','kWh':'energy','A':'current','%':'load','h':'elapsed_time','VA':'VA','V':'volt','Hz':'frequency','Var':'Var'}
  state['singles'] = ['serial_number','accumulated_yield_energy']
  for i in range(1,int(config['n_storage'])+1):
@@ -58,11 +60,11 @@ def __init_state(aCTX, aArgs):
  system = ['phase_A_voltage','phase_B_voltage','phase_C_voltage','phase_A_current','phase_B_current','phase_C_current','day_active_power_peak','active_power','reactive_power','power_factor','grid_frequency','efficiency','internal_temperature']
  meter = ['power_meter_active_power','power_meter_reactive_power','active_grid_power_factor','active_grid_frequency','grid_exported_energy','grid_accumulated_energy','grid_accumulated_reactive_power']
  state['ranges'] = [strings, system, meter]
- state['items'] = singles.copy()
+ state['items'] = state['singles'].copy()
  state['items'].extend(strings)
  state['items'].extend(system)
  state['items'].extend(meter)
- return True
+ return state
 
 ########################################################################################
 #
@@ -98,13 +100,12 @@ def sync(aCTX, aArgs):
  config = aCTX.config['services']['sun2000']
  state = aCTX.cache.get('sun2000')
  if not state:
-  __init_state(aCTX, None))
- loop = asyncio.get_event_loop()
+  state = __init_state(aCTX, None)
+ loop = asyncio.new_event_loop()
 
- async def main(con: AsyncHuaweiSolar, singles: list[str], ranges: list[list[str]], items: list[str]):
-  #tmpl = '{0},origin=huawei_solar,type=solar,system_id=%s,label=%s %s=%s {1}'.format(config.get('measurement','sun2000'),int(time()))
+ async def main(con: AsyncHuaweiSolar, mapping: dict, singles: list[str], ranges: list[list[str]], items: list[str]):
   try:
-   probes = [con.get_multiple(strings), con.get_multiple(system), con.get_multiple(meter)]
+   probes = [con.get_multiple(x) for x in ranges]
    probes.extend([con.get(x) for x in singles])
    output = await asyncio.gather(*probes)
   except Exception as e:
@@ -117,7 +118,7 @@ def sync(aCTX, aArgs):
  ret = {}
  try:
   con = loop.run_until_complete(AsyncHuaweiSolar.create(config['ip'],port = config.get('port',6607)))
-  data = loop.run_until_complete(main(con,state['singles'],state['ranges'],state['items']))
+  data = loop.run_until_complete(main(con,state['mapping'],state['singles'],state['ranges'],state['items']))
   loop.run_until_complete(con.stop())
  except Exception as e:
   ret['status'] = 'NOT_OK'
@@ -175,8 +176,8 @@ def start(aCTX, aArgs):
   ret['status'] = 'OK'
   config = aCTX.config['services']['sun2000']
   aCTX.schedule_api_periodic(process,'sun2000_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
-  aCTX.cache['sun2000'] = {'status':'active'}
-  __init_state(aCTX, None)
+  state = __init_state(aCTX, None)
+  state['status'] = 'active'
  return ret
 
 #

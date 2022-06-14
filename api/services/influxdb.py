@@ -38,7 +38,7 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
- return {'data':aCTX.influxdb.status(),'state':aCTX.influxdb.active(), 'status':'OK' }
+ return {'data':aCTX.influxdb.status(),'state':aCTX.influxdb.active(), 'buffer':aCTX.influxdb.buffer(), 'status':'OK' }
 
 #
 #
