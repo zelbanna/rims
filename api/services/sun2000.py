@@ -65,6 +65,48 @@ def __init_state(aCTX, aArgs):
  state['items'].extend(meter)
  return state
 
+#
+#
+def get(aCTX, aArgs):
+ """ Function retrieves named register
+
+ Args:
+  - register. required
+
+ Output:
+  - status
+  - data
+ """
+ ret = {}
+ import asyncio
+ from huawei_solar import AsyncHuaweiSolar, REGISTERS
+
+ config = aCTX.config['services']['sun2000']
+ reg = aArgs['register']
+
+ async def fetch(con: AsyncHuaweiSolar, reg: str):
+  try:
+   probe = con.get(reg)
+   output = await probe
+  except Exception as e:
+   raise Exception(f'SUN2000 Error: {str(e)}')
+  else:
+   return {'value':output.value,'unit':output.unit}
+
+ try:
+  loop = asyncio.new_event_loop()
+  con = loop.run_until_complete(AsyncHuaweiSolar.create(config['ip'],port = config.get('port',6607)))
+  data = loop.run_until_complete(fetch(con,reg))
+  loop.run_until_complete(con.stop())
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['info'] = str(e)
+  ret['register'] = reg
+ else:
+  ret['status'] = 'OK'
+  ret['data'] = data
+  ret['register'] = REGISTERS[aArgs['register']].register
+ return ret
 ########################################################################################
 #
 #
