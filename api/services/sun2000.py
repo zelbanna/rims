@@ -49,7 +49,7 @@ def __init_state(aCTX, aArgs):
  if not state:
   state = aCTX.cache['sun2000'] = {'status':'inactive'}
  state['mapping'] = {'\u00b0C':'temperature','W':'power','kWh':'energy','A':'current','%':'load','h':'elapsed_time','VA':'VA','V':'volt','Hz':'frequency','Var':'Var'}
- state['singles'] = ['serial_number','accumulated_yield_energy']
+ state['singles'] = ['serial_number','accumulated_yield_energy','storage_total_charge','storage_total_discharge']
  for i in range(1,int(config['n_storage'])+1):
   state['singles'].extend([f'storage_unit_{i}_charge_discharge_power','storage_unit_1_state_of_capacity'])
 
