@@ -49,10 +49,7 @@ def __init_state(aCTX, aArgs):
  if not state:
   state = aCTX.cache['sun2000'] = {'status':'inactive'}
  state['mapping'] = {'\u00b0C':'temperature','W':'power','kWh':'energy','A':'current','%':'load','h':'elapsed_time','VA':'VA','V':'volt','Hz':'frequency','Var':'Var'}
- state['singles'] = ['serial_number','accumulated_yield_energy','storage_total_charge','storage_total_discharge']
- for i in range(1,int(config['n_storage'])+1):
-  state['singles'].extend([f'storage_unit_{i}_charge_discharge_power','storage_unit_1_state_of_capacity'])
-
+ state['singles'] = ['serial_number','accumulated_yield_energy','storage_state_of_capacity','storage_charge_discharge_power','storage_total_charge','storage_total_discharge']
  strings = ['pv_01_voltage','pv_01_current']
  for i in range(2,int(config['n_strings'])+1):
   strings.extend([f'pv_{i:02d}_voltage',f'pv_{i:02d}_current'])
@@ -84,19 +81,10 @@ def get(aCTX, aArgs):
  config = aCTX.config['services']['sun2000']
  reg = aArgs['register']
 
- async def fetch(con: AsyncHuaweiSolar, reg: str):
-  try:
-   probe = con.get(reg)
-   output = await probe
-  except Exception as e:
-   raise Exception(f'SUN2000 Error: {str(e)}')
-  else:
-   return {'value':output.value,'unit':output.unit}
-
  try:
   loop = asyncio.new_event_loop()
   con = loop.run_until_complete(AsyncHuaweiSolar.create(config['ip'],port = config.get('port',6607)))
-  data = loop.run_until_complete(fetch(con,reg))
+  output = loop.run_until_complete(con.get(reg))
   loop.run_until_complete(con.stop())
  except Exception as e:
   ret['status'] = 'NOT_OK'
@@ -104,9 +92,47 @@ def get(aCTX, aArgs):
   ret['register'] = reg
  else:
   ret['status'] = 'OK'
-  ret['data'] = data
+  ret['data'] = {'value':output.value,'unit':output.unit}
   ret['register'] = REGISTERS[aArgs['register']].register
  return ret
+
+#
+#
+def set(aCTX, aArgs):
+ """ Function sets named register
+
+ Args:
+  - register. required
+  - value, required
+
+ Output:
+  - status
+  - data
+ """
+ ret = {}
+ import asyncio
+ from huawei_solar import AsyncHuaweiSolar, REGISTERS
+
+ config = aCTX.config['services']['sun2000']
+ reg = aArgs['register']
+ val = aArgs['value']
+
+ try:
+  loop = asyncio.new_event_loop()
+  con = loop.run_until_complete(AsyncHuaweiSolar.create(config['ip'],port = config.get('port',6607)))
+  login = loop.run_until_complete(con.login(config['username'],config['password']))
+  res = loop.run_until_complete(con.set(reg, val)) if login else False
+  loop.run_until_complete(con.stop())
+ except Exception as e:
+  ret['status'] = 'NOT_OK'
+  ret['info'] = str(e)
+ else:
+  ret['status'] = 'OK'
+  ret['login'] = login
+  ret['result'] = res
+  ret['register'] = REGISTERS[aArgs['register']].register
+ return ret
+
 ########################################################################################
 #
 #
@@ -195,7 +221,7 @@ def parameters(aCTX, aArgs):
   - parameters
  """
  settings = aCTX.config['services'].get('sun2000',{})
- params = ['measurement','bucket','n_strings','n_storage','ip','port']
+ params = ['measurement','bucket','n_strings','ip','port']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #

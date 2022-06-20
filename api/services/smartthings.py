@@ -24,7 +24,11 @@ def process(aCTX, aArgs):
  state = aCTX.cache.get('smartthings')
  if not state:
   # from rims.api.services.smartthings import sync
-  state = sync(aCTX, {})['data']
+  res = sync(aCTX, {})
+  if res['status'] == 'OK':
+   state = res['data']
+  else:
+   return {'status':'NOT_OK','function':'smartthings_process','info':res['info']}
  xlate = state['translate']
  for id,dev in state['devices'].items():
   try:

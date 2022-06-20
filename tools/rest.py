@@ -12,7 +12,7 @@ from rims.core.common import rest_call, ssl_context
 
 parser = ArgumentParser(prog='rest.py',description='Process REST calls')
 parser.add_argument('url', help = 'REST URL')
-parser.add_argument('args', help = 'Arguments', default = '{}')
+parser.add_argument('-a','--args', help = 'Arguments', required = False, default = '{}')
 parser.add_argument('-m','--method', help = 'Method, default GET or default POST if arguments supplied', required = False, default = 'POST')
 parser.add_argument('-c','--app',    help = 'Content/Application type, default json', required = False, default = 'json')
 parsedinput = parser.parse_args()
