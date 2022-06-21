@@ -109,7 +109,7 @@ if config.get('snmp'):
 
 if config.get('services',{}).get('sun2000'):
  try:
-  import huawei-solar
+  import huawei_solar
  except ImportError as e:
   res['info']['shuawei-solar'] = f'installing ({e})'
   pipmain(["install","-q","huawei-solar"])
