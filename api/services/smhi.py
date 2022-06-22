@@ -97,7 +97,7 @@ def sync(aCTX, aArgs):
    'pmean':('1h','rain'),
    'prec3':('3h','rain'),
    'vis':('visibility','extra'),
-   'c_sigfr':('clouds','extra'),
+   'c_sigfr':('cloud_significant','extra'),
    'tcc':('cloud_cover','extra'),
    'tcc_mean':('cloud_cover','extra'),
    'tstm':('thunder','extra')
@@ -112,7 +112,8 @@ def sync(aCTX, aArgs):
     tp =  xlate.get(p['name'])
     if tp:
      data[tp[1]][tp[0]] = p['values'][0]
-   data['weather']['pressure'] = data['weather']['pressure'] / 10
+   data['weather']['pressure']  = data['weather']['pressure'] / 10
+   data['extra']['cloud_cover'] = int(data['extra']['cloud_cover'] * 12.5)
 
   ret['forecast_hours'] = config.get('forecasting',12)
   ret['status'] = 'OK'
