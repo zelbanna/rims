@@ -9,7 +9,7 @@ def process(aCTX, aArgs):
  """Function checks nordpool API, process data and queue reporting to influxDB bucket
 
  Args:
-  - datestring (optional). ISO format "YYYY-MM-DD"
+  - isodate (optional). ISO format "YYYY-MM-DD"
 
  Output:
   - status
@@ -17,13 +17,13 @@ def process(aCTX, aArgs):
  ret = {'status':'OK','function':'nordpool_process'}
 
  state = aCTX.cache.get('nordpool',{'status':'active' if aCTX.debug else 'inactive'})
- if state['status'] == 'active' or aArgs.get('datestring'):
+ if state['status'] == 'active' or aArgs.get('isodate'):
   config = aCTX.config['services']['nordpool']
-  res = sync(aCTX,{'datestring':aArgs.get('datestring')})
+  res = sync(aCTX,{'isodate':aArgs.get('isodate')})
   if res['status'] == 'OK':
    data = res['data']
-   tmpl = '{},origin=nordpool,type=pricing,system_id=nordpool,hour=%s,currency={} price=%s %s'.format(config.get('measurement','nordpool'),config.get('currency','EUR'))
-   records = [tmpl%(f"{x['slot']:02d}",x['price']/1000.0,x['ts']) for x in data]
+   tmpl = '{},origin=nordpool,type=pricing,system_id=nordpool,currency={} price=%s %s'.format(config.get('measurement','nordpool'),config.get('currency','EUR'))
+   records = [tmpl%(x['price']/1000.0,x['ts']) for x in data]
    aCTX.influxdb.write(records, config['bucket'])
    if aCTX.debug:
     ret['data'] = records
@@ -39,8 +39,6 @@ def process(aCTX, aArgs):
 #
 def status(aCTX, aArgs):
  """Function retrives the forecast 24h market prices
-
- https://www.nordpoolgroup.com/api/marketdata/page/194?entityName=SE3&endDate=21-06-2022
 
  Args:
   - type (required)
@@ -63,7 +61,7 @@ def sync(aCTX, aArgs):
 
  Args:
   - id (required). Server id on master node
-  - datestring (optional). ISO format "YYYY-MM-DD"
+  - isodate (optional). ISO format "YYYY-MM-DD"
 
  Output:
   - prices. Object
@@ -71,7 +69,7 @@ def sync(aCTX, aArgs):
  """
  from datetime import datetime, date, timedelta
  ret = {}
- tomorrow = date.today() + timedelta(days = 1) if not aArgs.get('datestring') else datetime.fromisoformat(aArgs['datestring'])
+ tomorrow = date.today() + timedelta(days = 1) if not aArgs.get('isodate') else datetime.fromisoformat(aArgs['isodate'])
  tm_string = f'{tomorrow.day:02d}-{tomorrow.month:02d}-{tomorrow.year}'
  config = aCTX.config['services']['nordpool']
  state = aCTX.cache.get('nordpool',{'date':None})
@@ -98,7 +96,7 @@ def sync(aCTX, aArgs):
    ret['status'] = 'NOT_OK'
    ret['info'] = 'no_updated_prices'
    ret['date'] = tm_string
-   ret['result'] = prices['data']['Rows'][0]['Name']
+   ret['result'] = prices['data']['Rows'][0]['Columns'][0]['Name']
  return ret
 
 #
