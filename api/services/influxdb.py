@@ -26,6 +26,23 @@ def process(aCTX, aArgs):
    ret = {'status':'NOT_OK','function':'influxdb_process','output':'inactive'}
  return ret
 
+#
+#
+def query(aCTX, aArgs):
+ ret = {}
+ try:
+  res = aCTX.influxdb.query(aArgs['query'])
+  if any(res):
+   ret['data'] = [{'field':r.get_field(), 'val':r.get_val()} for r in res.records]
+   ret['status'] = 'OK'
+  else:
+   ret['status'] = 'NOT_OK'
+   ret['info'] = 'empty'
+ except Exception as e:
+  return {'status':'NOT_OK','info':str(e)}
+ else:
+  return ret
+
 ################################# Service OPs #################################
 #
 #

@@ -19,11 +19,9 @@ def query_interface(aCTX, aArgs):
  ret = {}
  query = f'from(bucket: "rims") |> range(start: -{aArgs.get("range",1)}h) |> filter(fn: (r) => r.host_id == "{aArgs["device_id"]}" and r.if_id == "{aArgs["interface_id"]}") |> derivative(nonNegative: true, unit: 1s) |> group(columns: ["_field"]) |> keep(columns: ["_time","_field","_value"])'
  try:
-  res = aCTX.influxdb.query_csv(query)
+  res = aCTX.influxdb.query(query)
   if any(res):
-   ret['header'] = next(res)[3:]
-   ret['data'] = [r[3:] for r in res]
-   ret['data'].pop()
+   ret['data'] = [{'field':r.get_field(), 'val':r.get_val()} for r in res.records]
    ret['status'] = 'OK'
   else:
    ret['status'] = 'NOT_OK'
@@ -54,9 +52,7 @@ def query_ddp(aCTX, aArgs):
  try:
   res = aCTX.influxdb.query_csv(query)
   if any(res):
-   ret['header'] = next(res)[3:]
-   ret['data'] = [r[3:] for r in res]
-   ret['data'].pop()
+   ret['data'] = [{'field':r.get_field(), 'val':r.get_val()} for r in res.records]
    ret['status'] = 'OK'
   else:
    ret['status'] = 'NOT_OK'

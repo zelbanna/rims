@@ -108,10 +108,6 @@ class InfluxDB():
    return str(e)
 
  #
- def query_csv(self, aQuery, aDialect = None):
-  return self._client.query_api().query_csv(dialect = {'annotations': ['default'], 'comment_prefix': '#', 'date_time_format': 'RFC3339', 'delimiter': ',', 'header': True} if not aDialect else aDialect, query = aQuery)
-
- #
  def buffer(self):
   size = 0
   for v in self._buckets.values():
@@ -141,6 +137,10 @@ class InfluxDB():
    finally:
     self._buckets = {}
   return size
+
+ #
+ def query(self, aQuery):
+  return self._client.query_api().query(org=self._org, query = query)
 
  #
  def write(self, aRecords, aBucket = None):

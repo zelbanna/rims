@@ -1,4 +1,10 @@
-"""Nibe API module. Implements logics to use scheduler and influxdb handler for Nibe statistics """
+"""Nibe API module. Implements logics to use scheduler and influxdb handler for Nibe statistics
+
+State machine updates phase variable to represent state ok token, always schedule a thread for this - but maybe not use it (because we then cover refresh token in the same start call)
+'phase': None -> init (bootstrap) -> authorize -> [invalid -> refresh -> valid]
+'running': None -> [True | False]
+
+"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
@@ -55,7 +61,7 @@ def auth(aCTX, aArgs):
   else:
    from time import time
    from json import dump
-   state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'active','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
+   state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'valid','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
    ret['status'] = 'OK'
    try:
     with open(config['token_file'],'w+') as file:
@@ -79,7 +85,12 @@ def process(aCTX, aArgs):
 
  timestamp = int(time())
  state = aCTX.cache.get('nibe',{})
- if not state or state['phase'] != 'active' or timestamp > state['expires_at']:
+
+ if not state:
+  return {'status':'NOT_OK','function':'nibe_process','info':'no_state'}
+ elif not state.get('running'):
+  return {'status':'NOT_OK','function':'nibe_process','info':'not_running'}
+ elif state['phase'] != 'valid' or timestamp > state['expires_at']:
   return {'status':'NOT_OK','function':'nibe_process','info':'token_expired'}
 
  scaling = {10001:1,10012:1,10033:1,43084:0.1,43416:1,43420:1,43424:1}
@@ -176,7 +187,8 @@ def sync(aCTX, aArgs):
  """
  ret = {}
  state = aCTX.cache.get('nibe',{})
- if not state or state.get('phase') == 'inactive':
+ if not state:
+  state['phase'] = 'invalid'
   ret['status'] = 'NOT_OK'
   ret['info'] = 'no_state_refresh_impossible'
   aCTX.log(f"nibe_service_token_refresh phase 2 impossible")
@@ -187,14 +199,14 @@ def sync(aCTX, aArgs):
   try:
    res = aCTX.rest_call("https://api.nibeuplink.com/oauth/token", aSSL = aCTX.ssl, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
   except Exception as e:
-   state['phase'] = 'inactive'
+   state['phase'] = 'invalid'
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
    aCTX.log(f"nibe_service_token_refresh phase 2 NOT successful")
   else:
    from time import time
    from json import dump
-   state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'active','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
+   state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'valid','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
    ret['status'] = 'OK'
    try:
     with open(config['token_file'],'w+') as file:
@@ -256,7 +268,7 @@ def parameters(aCTX, aArgs):
 #
 #
 def start(aCTX, aArgs):
- """ Function provides stop behavior
+ """ Function provides start behavior
 
  Args:
 
@@ -265,19 +277,24 @@ def start(aCTX, aArgs):
  """
  from json import load
  from time import time
- ret = {}
+ ret = {'status':'NOT_OK'}
  config = aCTX.config['services']['nibe']
- # Load state, check bootstrap is already done
- try:
-  with open(config['token_file'],'r') as file:
-   state = aCTX.cache['nibe'] = load(file)
- except Exception as e:
-  ret['output'] = str(e)
-  ret['status'] = 'NOT_OK'
- else:
-  if state['phase'] == 'active':
+ state = aCTX.cache.get('nibe')
+ if not state:
+  # Get phase but forget about running state
+  try:
+   with open(config['token_file'],'r') as file:
+    state = aCTX.cache['nibe'] = load(file)
+  except Exception as e:
+   return {'output':str(e),'status':'NOT_OK'}
+  else:
+   state['running'] = None
+
+ if state['phase'] == 'valid':
+  # Phase is ok - we can start all the scheduling...
+  if state.get('running') == None:
    remaining = state['expires_at'] - int(time())
-   aArgs['schedule'] = True
+   state['running'] = aArgs['schedule'] = True
    if remaining > 0:
     aCTX.schedule_api(sync,'nibe_token_refresh',remaining, args = aArgs, output = aCTX.debug)
    else:
@@ -285,6 +302,13 @@ def start(aCTX, aArgs):
    aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
    ret['status'] = 'OK'
    ret['info'] = 'scheduled_nibe'
+  elif state['running']:
+   ret['info'] = 'running'
+  else:
+   state['running'] = True
+   ret['status'] = 'OK'
+ else:
+  ret['info'] = 'phase_not_ok'
  return ret
 
 #
@@ -300,7 +324,7 @@ def stop(aCTX, aArgs):
  state = aCTX.cache.get('nibe',{})
  if not state:
   aCTX.cache['nibe'] = state
- state['phase'] = 'inactive'
+ state['running'] = False
  return {'status':'OK','info':'empty state'}
 
 #

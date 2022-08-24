@@ -16,8 +16,8 @@ def process(aCTX, aArgs):
  """
  ret = {'status':'OK','function':'nordpool_process'}
 
- state = aCTX.cache.get('nordpool',{'status':'active' if aCTX.debug else 'inactive'})
- if state['status'] == 'active' or aArgs.get('isodate'):
+ state = aCTX.cache.get('nordpool',{'running':aCTX.debug})
+ if state['running'] or aArgs.get('isodate'):
   config = aCTX.config['services']['nordpool']
   res = sync(aCTX,{'isodate':aArgs.get('isodate')})
   if res['status'] == 'OK':
@@ -146,7 +146,7 @@ def start(aCTX, aArgs):
 
  ret = {'info':'scheduled_nordpool'}
  state = aCTX.cache.get('nordpool',{})
- if state.get('status') == 'active':
+ if state.get('running'):
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
@@ -154,7 +154,7 @@ def start(aCTX, aArgs):
   aCTX.cache['nordpool'] = state
   config = aCTX.config['services']['nordpool']
   aCTX.schedule_api_periodic(process,'nordpool_process', 7200, args = aArgs, output = aCTX.debug)
-  aCTX.cache['nordpool'] = {'status':'active','date':None}
+  aCTX.cache['nordpool'] = {'running':True,'date':None}
  return ret
 
 #

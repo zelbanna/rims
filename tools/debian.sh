@@ -40,7 +40,7 @@ read
 docker create --name=mariadb -e PUID=900 -e PGID=900 -e MYSQL_ROOT_PASSWORD=$mariadbpassword -e TZ=Europe/Stockholm -v mariadb:/config --net services --ip 172.18.0.2 --restart unless-stopped linuxserver/mariadb
 docker start mariadb
 docker create --name=influxdb2 --user 900:900 -p 8086:8086/tcp -v influxdb2:/var/lib/influxdb2 -v influxdb2.conf.d:/etc/influxdb2 --net services --ip 172.18.0.3 --restart unless-stopped influxdb
-docker create --name=grafana --user 900:900 -p 3000:3000/tcp -v grafana:/var/lib/grafana --net services --ip 172.18.0.6 --restart unless-stopped grafana/grafana
+# docker create --name=grafana --user 900:900 -p 3000:3000/tcp -v grafana:/var/lib/grafana --net services --ip 172.18.0.6 --restart unless-stopped grafana/grafana
 docker create --name=pdns-server --user 900:root -v pdns-server:/etc/powerdns  -v /var/sockets/pdns-server:/var/run/pdns --net services --ip 172.18.0.5 --restart unless-stopped xddxdd/powerdns
 docker create --name=pdns-recursor -p 53:53 -p 53:53/udp -v pdns-recursor:/etc/powerdns  --net services --ip 172.18.0.4 --restart unless-stopped xddxdd/powerdns-recursor
 docker create --name=telegraf --user 900:900 -p 8092:8092/udp -p 8125:8125/udp -p 8094:8094/tcp -v telegraf:/etc/telegraf -v /var/run/docker.sock:/var/run/docker.sock -v /var/sockets:/var/sockets --net services --ip 172.18.0.7 --restart unless-stopped telegraf
