@@ -42,6 +42,9 @@ def process(aCTX, aArgs):
    for cap, measure in res['components']['main'].items():
     if cap in dev[0]:
      value = measure[xlate[cap][0]]['value']
+     # Special crap, if pressure normalize it to Pa
+     if cap == 'atmosphericPressureMeasurement':
+      value = value * 10.0
      if isinstance(value, str):
       value = 1 if value == 'active' else 0
      elif value is None:
@@ -117,7 +120,7 @@ def sync(aCTX, aArgs):
  state['locations'] = state_locs = {}
  state['rooms'] = state_rooms = {}
  state['translate'] = state_xlate = {
-  'tvocMeasurement':('tvocLevel','tvoc'),
+  'tvocMeasurement':('tvocLevel','voc'),
   'temperatureMeasurement':('temperature','temperature'),
   'relativeHumidityMeasurement':('humidity','humidity'),
   'atmosphericPressureMeasurement':('atmosphericPressure','pressure'),

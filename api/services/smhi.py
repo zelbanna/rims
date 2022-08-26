@@ -112,7 +112,6 @@ def sync(aCTX, aArgs):
     tp =  xlate.get(p['name'])
     if tp:
      data[tp[1]][tp[0]] = p['values'][0]
-   data['weather']['pressure']  = data['weather']['pressure'] / 10
    data['extra']['cloud_cover'] = int(data['extra']['cloud_cover'] * 12.5)
 
   ret['forecast_hours'] = config.get('forecasting',12)
@@ -158,13 +157,14 @@ def start(aCTX, aArgs):
  Output:
   - status
  """
- ret = {'info':'scheduled_smhi'}
+ ret = {}
  state = aCTX.cache.get('smhi',{})
  if state.get('status') == 'active':
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
   ret['status'] = 'OK'
+  ret['info'] = 'scheduled_smhi'
   config = aCTX.config['services']['smhi']
   aCTX.schedule_api_periodic(process,'smhi_process',3600, args = aArgs, output = aCTX.debug)
   aCTX.cache['smhi'] = {'status':'active'}

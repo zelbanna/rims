@@ -57,9 +57,10 @@ def sync(aCTX, aArgs):
   res = aCTX.rest_call(url%'weather', aSSL = aCTX.ssl, aMethod = 'GET')
   air = aCTX.rest_call(url%'air_pollution', aSSL = aCTX.ssl, aMethod = 'GET')['list'][0]
   res['air'] = air['components']
+  res['air']['co2'] = res['air'].pop('co',0)
+  res['air']['pm25'] = res['air'].pop('pm2_5',0)
   main = res['main']
   main['air_quality'] = air['main']['aqi']
-  main['pressure'] = main['pressure'] / 10
   main['temperature'] = main.pop('temp',0)
  except Exception as e:
   ret['info'] = str(e)
@@ -122,13 +123,14 @@ def start(aCTX, aArgs):
  Output:
   - status
  """
- ret = {'info':'scheduled_openweathermap'}
+ ret = {}
  state = aCTX.cache.get('openweathermap',{})
  if state.get('status') == 'active':
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
   ret['status'] = 'OK'
+  ret['info'] = 'scheduled_openweathermap'
   config = aCTX.config['services']['openweathermap']
   aCTX.schedule_api_periodic(process,'openweathermap_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
   aCTX.cache['openweathermap'] = {'status':'active','timestamp':0}

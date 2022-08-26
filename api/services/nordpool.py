@@ -144,13 +144,14 @@ def start(aCTX, aArgs):
  #diff = int((thr - now).total_seconds())
  #delay = 60 + diff if diff > 0 else 84660 - diff
 
- ret = {'info':'scheduled_nordpool'}
+ ret = {}
  state = aCTX.cache.get('nordpool',{})
  if state.get('running'):
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
   ret['status'] = 'OK'
+  ret['info'] = 'scheduled_nordpool'
   aCTX.cache['nordpool'] = state
   config = aCTX.config['services']['nordpool']
   aCTX.schedule_api_periodic(process,'nordpool_process', 7200, args = aArgs, output = aCTX.debug)

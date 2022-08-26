@@ -300,8 +300,8 @@ def start(aCTX, aArgs):
    else:
     sync(aCTX, aArgs)
    aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
-   ret['status'] = 'OK'
    ret['info'] = 'scheduled_nibe'
+   ret['status'] = 'OK'
   elif state['running']:
    ret['info'] = 'running'
   else:
@@ -324,8 +324,12 @@ def stop(aCTX, aArgs):
  state = aCTX.cache.get('nibe',{})
  if not state:
   aCTX.cache['nibe'] = state
- state['running'] = False
- return {'status':'OK','info':'empty state'}
+ if state.get('running') == None:
+  return {'status':'OK','info':'empty state'}
+ else:
+  state['running'] = False
+  return {'status':'OK','info':'stopped'}
+
 
 #
 #
