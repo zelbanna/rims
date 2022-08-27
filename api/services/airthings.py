@@ -37,7 +37,7 @@ def auth(aCTX, aArgs):
   from time import time
   state.update({'access_token':res['access_token'],'expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
   aCTX.log(f"airthings_service_authentication successful, expire in {res['expires_in']} seconds")
-  return {"status":"OK",'data':res}
+  return {'status':'OK','data':res}
 
 #
 #
@@ -88,10 +88,10 @@ def process(aCTX, aArgs):
   return {'status':'NOT_OK','function':'airthings_process','info':'token_expired'}
  ret = {'status':'OK', 'function':'airthings_process'}
  records = []
- for dev in state['devices']:
+ for dev in state.get('devices',[]):
   try:
    res = aCTX.rest_call(f"https://ext-api.airthings.com/v1/devices/{dev['id']}/latest-samples", aSSL = aCTX.ssl, aHeader = {'Authorization': 'Bearer %s'%state['access_token']}, aMethod = 'GET')
-  except:
+  except Exception as e:
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
    break
@@ -120,20 +120,18 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
- from time import time
- ret = None
  state = aCTX.cache.get('airthings',{})
  if not state:
-  aCTX.cache['airthings'] = state
- if state:
+  return {'status':'NOT_OK','info':'no_state'}
+ elif state.get('expires_at'):
+  from time import time
   remaining = state['expires_at'] - int(time())
   if remaining > 0:
-   ret = {'status':'OK','state':state,'remaining':remaining}
+   return {'status':'OK','state':state,'remaining':remaining}
   else:
-   ret = {'status':'NOT_OK','info':'token_expired'}
+   return {'status':'NOT_OK','info':'token_expired'}
  else:
-  ret = {'status':'NOT_OK','info':'no_state'}
- return ret
+  return {'status':'NOT_OK','info':'no_synced_state'}
 
 #
 #
@@ -153,6 +151,7 @@ def sync(aCTX, aArgs):
  state = aCTX.cache.get('airthings',{})
  if not state:
   aCTX.cache['airthings'] = state
+
  res = auth(aCTX, aArgs)
  if not res['status'] == 'OK':
   ret['status'] = 'NOT_OK'
@@ -160,26 +159,29 @@ def sync(aCTX, aArgs):
   ret['output'] = res['info']
   timeout = 60
  else:
-  # Authentication done, now ask for devices w S/N and names in lower case
+  # Authentication done, now ask for devices w S/N and names in lower case - but not too fast
+  from time import sleep
+  sleep(10)
   state['translate'] = {
    'temp':'temperature',
    'radonShortTermAvg':'radon'
   }
   try:
    res = aCTX.rest_call('https://ext-api.airthings.com/v1/devices', aSSL = aCTX.ssl, aHeader = {'Authorization': 'Bearer %s'%state['access_token']}, aDebug = aArgs.get('debug',False), aMethod = 'GET')
-  except:
+  except Exception as e:
    timeout = 60
    ret['status'] = 'NOT_OK'
-   ret['info'] = 'no_sync_response'
+   ret['info'] = 'no_data_response'
+   ret['extra'] = str(e)
   else:
    ret['status'] = 'OK'
    state['devices'] = [{'id':dev['id'],'location':dev['location']['name'],'label':dev['segment']['name'].replace(" ", "_").replace("/", "-").replace(":", "").lower()} for dev in res['devices']]
-   res['output'] = state['devices']
    timeout = state['expires_in'] - 5
 
  if aArgs.get('schedule'):
   aCTX.schedule_api(sync,'airthings_token_state_refresh', timeout, args = aArgs, output = aCTX.debug)
   ret['function'] = 'airthings_token_state_sync'
+  ret['timeout'] = timeout
  return ret
 
 #
@@ -224,6 +226,7 @@ def start(aCTX, aArgs):
  """
  ret = {'status':'NOT_OK'}
  config = aCTX.config['services']['airthings']
+
  state = aCTX.cache.get('airthings',{})
  if not state:
   aCTX.cache['airthings'] = state
@@ -253,9 +256,9 @@ def stop(aCTX, aArgs):
  """
  state = aCTX.cache.get('airthings',{})
  if not state:
-  aCTX.cache['airthings'] = state
- if state.get('running') == None:
-  return {'status':'OK','info':'empty state'}
+  return {'status':'OK','info':'empty_state'}
+ elif state.get('running') == None:
+  return {'status':'OK','info':'no_running_state'}
  else:
   state['running'] = False
   return {'status':'OK','info':'stopped'}

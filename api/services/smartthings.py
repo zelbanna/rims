@@ -45,7 +45,9 @@ def process(aCTX, aArgs):
      # Special crap, if pressure normalize it to Pa
      if cap == 'atmosphericPressureMeasurement':
       value = value * 10.0
-     if isinstance(value, str):
+     elif cap == 'tvocMeasurement':
+      value = value * 1000
+     elif isinstance(value, str):
       value = 1 if value == 'active' else 0
      elif value is None:
       value = 0
