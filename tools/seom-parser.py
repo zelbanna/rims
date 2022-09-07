@@ -7,7 +7,7 @@ __author__ = "Zacharias El Banna"
 from json import load
 from argparse import ArgumentParser
 from os   import path as ospath
-from sys  import path as exit
+from sys  import exit
 from datetime import datetime
 from pytz import timezone
 from influxdb_client import InfluxDBClient
@@ -60,5 +60,5 @@ else:
   print(f'InfluxDB exception: {str(e)}')
   exit(1)
  else:
-  print("Write file content to TSDB")
-exit(0)
+  print("Wrote file content to TSDB")
+  exit(0)
