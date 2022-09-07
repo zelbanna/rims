@@ -43,7 +43,7 @@ try:
     if cols[33+mon]:
      dp = cols[33+mon].strip('\n').split('-')
      # Remove one hour since CSV hours is from 1 to 24 but in the real world clock hours goes from 0 to 23....
-     dt = tzone.localize(datetime(int(dp[0]),int(dp[1]),int(dp[2]),int(cols[33])-1,2,0))
+     dt = tzone.localize(datetime(int(dp[0]),int(dp[1]),int(dp[2]),int(cols[33])-1,0,0))
      val = '0' if not cols[10+mon] else cols[10+mon].replace(',','.')
      # print(f'{str(dt)} : {int(dt.timestamp())} -> {val}')
      records[mon].append((val, int(dt.timestamp())))
