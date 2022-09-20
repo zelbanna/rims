@@ -30,7 +30,7 @@ except Exception as e:
  exit(1)
 
 tzone = timezone(args.timezone)
-tmpl = 'pricing,origin=seom,type=revenue,system_id=seom,currency=SEK revenue=%s %s'
+tmpl = 'pricing,origin=seom,type=production,system_id=seom energy=%s %s'
 records = [[],[],[],[],[],[],[],[],[],[],[],[],[],[]]
 
 try:
