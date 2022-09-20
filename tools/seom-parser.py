@@ -5,7 +5,7 @@ __author__ = "Zacharias El Banna"
 # Parses SEOM CSV reports for solar production and inserts into IoT TSDB...
 #
 from json import load
-from argparse import ArgumentParser
+from argparse import ArgumentParser, BooleanOptionalAction
 from os   import path as ospath
 from sys  import exit
 from datetime import datetime
@@ -15,6 +15,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.domain.write_precision import WritePrecision
 parser = ArgumentParser(prog='seom-parser', description = 'Program parses SEOM solar production CSVs')
 parser.add_argument('file', metavar='file', help = 'CSV file')
+parser.add_argument('-d','--debug', help = 'Debug mode', action = BooleanOptionalAction, default=False)
 parser.add_argument('-c','--config', help = 'Config unless config.json', default='../config.json')
 parser.add_argument('-b','--bucket', help = 'InfluDB bucket unless iot', default='iot')
 parser.add_argument('-t','--timezone', help = 'Timezone unless Europe/Stockholm', default='Europe/Stockholm')
@@ -45,7 +46,8 @@ try:
      # Remove one hour since CSV hours is from 1 to 24 but in the real world clock hours goes from 0 to 23....
      dt = tzone.localize(datetime(int(dp[0]),int(dp[1]),int(dp[2]),int(cols[33])-1,0,0))
      val = '0' if not cols[10+mon] else cols[10+mon].replace(',','.')
-     # print(f'{str(dt)} : {int(dt.timestamp())} -> {val}')
+     if args.debug:
+      print(f'{str(dt)} : {int(dt.timestamp())} -> {val}')
      records[mon].append((val, int(dt.timestamp())))
 except Exception as e:
  print(f'Error parsing CSV: {str(e)}')

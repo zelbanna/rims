@@ -1,4 +1,4 @@
-"""Nordpool market data module. Implements logics to fetch nordpool price and volumen data. Always run daily as prices are fixed the day before  """
+"""Nordpool market data module. Implements logics to fetch nordpool price and volume data. Always run daily as prices are fixed the day before  """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
@@ -48,10 +48,13 @@ def status(aCTX, aArgs):
  """
  from datetime import date, timedelta
  ret = {}
- tomorrow = date.today() + timedelta(days = 1)
- tm_string = f'{tomorrow.day:02d}-{tomorrow.month:02d}-{tomorrow.year}'
+ isodate = date.today() + timedelta(days = 1)
+ date_string = f'{isodate.day:02d}-{isodate.month:02d}-{isodate.year}'
  config = aCTX.config['services']['nordpool']
- return {'status':'OK','url':f"https://www.nordpoolgroup.com/api/marketdata/page/10/?entityName={config['entity']}&endDate={tm_string}&currency={config['currency']}"}
+ state = aCTX.cache.get("nordpool",{})
+ if not state:
+  state = aCTX.cache['nordpool'] = {'running':False,'tomorrow':None,'prices':None,'next':None}
+ return {'status':'OK','url':f"https://www.nordpoolgroup.com/api/marketdata/page/10/?entityName={config['entity']}&endDate={date_string}&currency={config['currency']}", 'state':state}
 
 
 #
@@ -69,33 +72,48 @@ def sync(aCTX, aArgs):
  """
  from datetime import datetime, date, timedelta
  ret = {}
- tomorrow = date.today() + timedelta(days = 1) if not aArgs.get('isodate') else datetime.fromisoformat(aArgs['isodate'])
- tm_string = f'{tomorrow.day:02d}-{tomorrow.month:02d}-{tomorrow.year}'
  config = aCTX.config['services']['nordpool']
- state = aCTX.cache.get('nordpool',{'date':None})
- url = f"https://www.nordpoolgroup.com/api/marketdata/page/10/?entityName={config['entity']}&endDate={tm_string}&currency={config['currency']}"
+ state = aCTX.cache.get("nordpool",{})
+ if not state:
+  state = aCTX.cache['nordpool'] = {'running':False,'tomorrow':None,'prices':None,'next':None}
+
+ today = date.today()
+ isodate = today + timedelta(days = 1) if not aArgs.get('isodate') else datetime.fromisoformat(aArgs['isodate'])
+ date_string = f'{isodate.day:02d}-{isodate.month:02d}-{isodate.year}'
+ url = f"https://www.nordpoolgroup.com/api/marketdata/page/10/?entityName={config['entity']}&endDate={date_string}&currency={config['currency']}"
+
  try:
   prices = aCTX.rest_call(url, aSSL = aCTX.ssl, aMethod = 'GET')
  except Exception as e:
   ret['info'] = str(e)
   ret['status'] = 'NOT_OK'
  else:
-  if prices['data']['Rows'][0]['Columns'][0]['Name'] == tm_string:
+  if prices['data']['Rows'][0]['Columns'][0]['Name'] == date_string:
    ret['data'] = records = []
    for i,x in enumerate(prices['data']['Rows'][:24]):
     ts = int(datetime.timestamp(datetime.fromisoformat(x['StartTime'])))
     price = float(x['Columns'][0]['Value'].replace(" ","").replace(",","."))
-    records.append({'slot':i, 'ts':ts,'price':price})
+    records.append({'ts':ts,'price':price})
+
+   today_string =  f'{today.day:02d}-{today.month:02d}-{today.year}'
+   # If we are fetching current prices, save them
+   if today_string == date_string:
+    state['prices'] = ret['data']
+   # Or if the saved that is today, move next prices to current prices
+   elif state['tomorrow'] == today_string and state['next']:
+    state['prices'] = state['next']
+   # Populate next prices if we have fetched them (automatically)
+   if not aArgs.get('isodate'):
+    state['next'] = ret['data']
+    state['tomorrow'] = date_string
+   ret['date'] = date_string
+   ret['today'] = today_string
    ret['exchangerate'] = prices['data']['ExchangeRateOfficial']
-   ret['year'] = tomorrow.year
-   ret['month'] = tomorrow.month
-   ret['day'] = tomorrow.day
    ret['status'] = 'OK'
-   state['date'] = tm_string
   else:
    ret['status'] = 'NOT_OK'
    ret['info'] = 'no_updated_prices'
-   ret['date'] = tm_string
+   ret['date'] = date_string
    ret['result'] = prices['data']['Rows'][0]['Columns'][0]['Name']
  return ret
 
@@ -131,31 +149,22 @@ def parameters(aCTX, aArgs):
 #
 #
 def start(aCTX, aArgs):
- """ Function provides start behavior and schedules readout every 2h (so most of the time it won't do anything)
+ """ Function provides start behavior and schedules readout every 2h (so most of the time it won't do anything), this is a one way startup model without stop
 
  Args:
 
  Output:
   - status
  """
- #from datetime import datetime
- #now = datetime.today()
- #thr = datetime(now.year,now.month,now.day,15,0,0)
- #diff = int((thr - now).total_seconds())
- #delay = 60 + diff if diff > 0 else 84660 - diff
-
  ret = {}
- state = aCTX.cache.get('nordpool',{})
- if state.get('running'):
+ if aCTX.cache.get('nordpool',{}).get('running'):
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
   ret['status'] = 'OK'
   ret['info'] = 'scheduled_nordpool'
-  aCTX.cache['nordpool'] = state
-  config = aCTX.config['services']['nordpool']
+  aCTX.cache['nordpool'] = {'running':True,'tomorrow':None,'prices':None,'next':None}
   aCTX.schedule_api_periodic(process,'nordpool_process', 7200, args = aArgs, output = aCTX.debug)
-  aCTX.cache['nordpool'] = {'running':True,'date':None}
  return ret
 
 #
