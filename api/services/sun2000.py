@@ -23,7 +23,7 @@ def process(aCTX, aArgs):
    data = res['data']
    id = data.pop('serial_number',{'value':'N/A'})['value']
    tmpl = '{0},origin=sun2000,type=solar,system_id=%s,label=%s %s=%s {1}'.format(config.get('measurement','sun2000'),int(time()))
-   records = [tmpl%(id,k,v['unit'],v['value']) for k,v in data.items()]
+   records = [tmpl%(id,k,v['unit'],v['value']) for k,v in data.items() if v['value'] is not None]
    aCTX.influxdb.write(records, config['bucket'])
    if aCTX.debug:
     ret['data'] = records
