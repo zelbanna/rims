@@ -22,6 +22,8 @@ def process(aCTX, aArgs):
   if res['status'] == 'OK':
    data = res['data']
    id = data.pop('serial_number',{'value':'N/A'})['value']
+   data['storage_charge_discharge_power']['value'] = -1 * data['storage_charge_discharge_power']['value']
+   data['power_meter_active_power']['value'] = -1 * data['power_meter_active_power']['value']
    tmpl = '{0},origin=sun2000,type=solar,system_id=%s,label=%s %s=%s {1}'.format(config.get('measurement','sun2000'),int(time()))
    records = [tmpl%(id,k,v['unit'],v['value']) for k,v in data.items() if v['value'] is not None]
    aCTX.influxdb.write(records, config['bucket'])
