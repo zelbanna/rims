@@ -203,6 +203,8 @@ class Context():
 
   self._abort.set()
 
+  self.log("Shutting down RIMS service (%s)"%getpid())
+
   # Gently shutdown services
   for id,svc in self.services.items():
    if svc['node'] == self.node:

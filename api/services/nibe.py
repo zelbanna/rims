@@ -98,13 +98,16 @@ def process(aCTX, aArgs):
  config = aCTX.config['services']['nibe']
  sys_id = config['system_id']
  tmpl = '{0},origin=nibe,type=heater,system_id={1},parameter=%s,designation=%s,label=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
- url = 'https://api.nibeuplink.com/api/v1/{0}'
+ url = f'https://api.nibeuplink.com/api/v1/systems/{sys_id}/serviceinfo/categories/%s'
+
+ def __check_call(aParam):
+  items = aCTX.rest_call(url%aParam, aHeader = hdr, aSSL = aCTX.ssl, aMethod = 'GET')
+  parameters.update({v['parameterId']:v for v in items})
+
  hdr = {'Authorization': f"Bearer {state['access_token']}"}
  try:
   parameters = {}
-  for si in ["STATUS","CPR_INFO_EP14","SYSTEM_1","ADDITION","VENTILATION"]:
-   items = aCTX.rest_call(url.format(f"systems/{sys_id}/serviceinfo/categories/{si}"), aHeader = hdr, aSSL = aCTX.ssl, aMethod = 'GET')
-   parameters.update({v['parameterId']:v for v in items})
+  aCTX.queue_block(__check_call,["STATUS","CPR_INFO_EP14","SYSTEM_1","ADDITION","VENTILATION"])
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)

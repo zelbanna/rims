@@ -31,13 +31,15 @@ def process(aCTX, aArgs):
   else:
    return {'status':'NOT_OK','function':'smartthings_process','info':res['info']}
  xlate = state['translate']
- for id,dev in state['devices'].items():
+
+ def __check_call(aDev):
+  id, dev = aDev
   try:
    res = aCTX.rest_call(url.format(id), aSSL = aCTX.ssl, aHeader = hdr, aMethod = 'GET')
   except Exception as e:
    state['sync'] = ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
-   break
+   return False
   else:
    tagvalue = []
    for cap, measure in res['components']['main'].items():
@@ -54,6 +56,9 @@ def process(aCTX, aArgs):
       value = 0
      tagvalue.append("%s=%s"%(xlate[cap][1],value))
    records.append(tmpl%(id,dev[1],",".join(tagvalue)))
+   return True
+
+ aCTX.queue_block(__check_call, state['devices'].items())
  aCTX.influxdb.write(records, config['bucket'])
  return ret
 
