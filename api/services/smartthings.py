@@ -3,6 +3,8 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
 
+from time import time
+
 #
 #
 def process(aCTX, aArgs):
@@ -13,7 +15,6 @@ def process(aCTX, aArgs):
  Output:
   - status
  """
- from time import time
 
  ret = {'status':'OK','function':'smartthings_process'}
  url = 'https://api.smartthings.com/v1/devices/{0}/status'

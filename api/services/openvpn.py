@@ -4,6 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 __type__ = "VPN"
 
 from subprocess import check_output, CalledProcessError
+from time import sleep
 
 #
 #
@@ -78,9 +79,8 @@ def restart(aCTX, aArgs):
   - result 'OK'/'NOT_OK'
  """
  ret = {}
- from time import sleep as time_sleep
  ret['stop'] = __op(aCTX.config['services']['openvpn']['stop'])['status']
- time_sleep(2)
+ sleep(2)
  ret.update(__op(aCTX.config['services']['openvpn']['start']))
  return ret
 

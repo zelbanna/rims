@@ -3,6 +3,9 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "INFO"
 
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError
+
 #
 #
 def list(aCTX, aArgs):
@@ -68,8 +71,6 @@ def sync(aCTX, aArgs):
   - output. (output from command)
   - status. (operation result)
  """
- from urllib.request import urlopen, Request
- from urllib.error import HTTPError
  ret = {'output':0,'status':'NOT_OK'}
  try:
   req = Request(aCTX.config['services']['oui']['location'])

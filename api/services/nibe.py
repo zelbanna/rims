@@ -9,6 +9,10 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
 
+from urllib.parse import quote_plus
+from time import time
+from json import dump, load
+
 #
 #
 def bootstrap(aCTX, aArgs):
@@ -19,7 +23,6 @@ def bootstrap(aCTX, aArgs):
  Output:
   - status
  """
- from urllib.parse import quote_plus
  state = aCTX.cache.get('nibe',{})
  if not state:
   aCTX.cache['nibe'] = state
@@ -59,8 +62,6 @@ def auth(aCTX, aArgs):
    ret['info'] = str(e)
    aCTX.log(f"nibe_service_authentication phase 1 NOT successful")
   else:
-   from time import time
-   from json import dump
    state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'valid','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
    ret['status'] = 'OK'
    try:
@@ -81,8 +82,6 @@ def process(aCTX, aArgs):
  Output:
   - status
  """
- from time import time
-
  timestamp = int(time())
  state = aCTX.cache.get('nibe',{})
 
@@ -156,7 +155,6 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
- from time import time
  ret = None
  state = aCTX.cache.get('nibe',{})
  if not state:
@@ -204,8 +202,6 @@ def sync(aCTX, aArgs):
    ret['info'] = str(e)
    aCTX.log(f"nibe_service_token_refresh phase 2 NOT successful")
   else:
-   from time import time
-   from json import dump
    state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'valid','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
    ret['status'] = 'OK'
    try:
@@ -235,8 +231,6 @@ def restart(aCTX, aArgs):
   - output
   - result 'OK'/'NOT_OK'
  """
- from json import load
- from time import time
  ret = {}
  config = aCTX.config['services']['nibe']
  try:
@@ -275,8 +269,6 @@ def start(aCTX, aArgs):
  Output:
   - status
  """
- from json import load
- from time import time
  ret = {'status':'NOT_OK'}
  config = aCTX.config['services']['nibe']
  state = aCTX.cache.get('nibe')

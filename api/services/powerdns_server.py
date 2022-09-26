@@ -3,6 +3,8 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "NAMESERVER"
 
+from subprocess import check_output, CalledProcessError
+
 #################################### Domains #######################################
 #
 #
@@ -264,7 +266,6 @@ def restart(aCTX, aArgs):
   - output
   - result 'OK'/'NOT_OK'
  """
- from subprocess import check_output, CalledProcessError
  ret = {}
  settings = aCTX.config['services']['powerdns']
  try: ret = {'output':check_output(settings.get('reload','service pdns restart').split()).decode(), 'code':0, 'status':'OK' }

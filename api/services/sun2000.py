@@ -3,6 +3,10 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
 
+from time import time
+from huawei_solar import AsyncHuaweiSolar, REGISTERS
+import asyncio
+
 #
 #
 def process(aCTX, aArgs):
@@ -13,7 +17,6 @@ def process(aCTX, aArgs):
  Output:
   - status
  """
- from time import time
  ret = {'status':'OK','function':'sun2000_process'}
  state = aCTX.cache.get('sun2000')
  if state['status'] == 'active':
@@ -77,8 +80,6 @@ def get(aCTX, aArgs):
   - data
  """
  ret = {}
- import asyncio
- from huawei_solar import AsyncHuaweiSolar, REGISTERS
 
  config = aCTX.config['services']['sun2000']
  reg = aArgs['register']
@@ -113,7 +114,6 @@ def set(aCTX, aArgs):
  """
  ret = {}
  import asyncio
- from huawei_solar import AsyncHuaweiSolar, REGISTERS
 
  config = aCTX.config['services']['sun2000']
  reg = aArgs['register']
@@ -162,9 +162,7 @@ def sync(aCTX, aArgs):
  Output:
   - status. (operation result)
  """
- from time import time
  import asyncio
- from huawei_solar import AsyncHuaweiSolar
 
  config = aCTX.config['services']['sun2000']
  state = aCTX.cache.get('sun2000')

@@ -5,6 +5,7 @@ __type__ = "AUTHENTICATION"
 
 from rims.core.common import basic_auth
 from datetime import datetime
+
 #
 # Junos configuration:
 #

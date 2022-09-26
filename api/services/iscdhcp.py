@@ -3,13 +3,15 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "DHCP"
 
+from time import strftime, localtime
+from ipaddress import ip_address
+from subprocess import check_output, CalledProcessError
+
 #
 # Writes IPv4 entries into DHCPd.conf file
 #
 def __write_file(aFile,aEntries):
  # Create file
- from time import strftime, localtime
- from ipaddress import ip_address
  with open(aFile,'w') as config_file:
   config_file.write("# Modified: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
   for entry in aEntries:
@@ -27,7 +29,6 @@ def status(aCTX, aArgs):
 
  Output:
  """
- from ipaddress import ip_address
  result = []
  lease  = {}
  with open(aCTX.config['services']['iscdhcp']['active'],'r') as leasefile:
@@ -110,7 +111,6 @@ def restart(aCTX, aArgs):
   - output
   - result 'OK'/'NOT_OK'
  """
- from subprocess import check_output, CalledProcessError
  ret = {}
  try:
   ret['output'] = check_output(aCTX.config['services']['iscdhcp']['reload'].split()).decode()

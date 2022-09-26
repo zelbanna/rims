@@ -11,6 +11,9 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
 
+from core.common import basic_auth
+from time import time, sleep
+
 #
 #
 def auth(aCTX, aArgs):
@@ -22,7 +25,6 @@ def auth(aCTX, aArgs):
   - status
   - data
  """
- from core.common import basic_auth
  state = aCTX.cache['airthings']
  config = aCTX.config['services']['airthings']
  auth_url = 'https://accounts-api.airthings.com/v1/token'
@@ -34,7 +36,6 @@ def auth(aCTX, aArgs):
   state.update({'access_token':None,'expires_at':0,'expires_in':0})
   return {'status':'NOT_OK','info':str(e)}
  else:
-  from time import time
   state.update({'access_token':res['access_token'],'expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
   aCTX.log(f"airthings_service_authentication successful, expire in {res['expires_in']} seconds")
   return {'status':'OK','data':res}
@@ -77,7 +78,6 @@ def process(aCTX, aArgs):
  state = aCTX.cache.get('airthings',{})
  config = aCTX.config['services']['airthings']
  tmpl = '{0},origin=airthings,type=iot,system_id=%s,label=%s %s %s'.format(config.get('measurement','airthings'))
- from time import time
  timestamp = int(time())
 
  if not state:
@@ -124,7 +124,6 @@ def status(aCTX, aArgs):
  if not state:
   return {'status':'NOT_OK','info':'no_state'}
  elif state.get('expires_at'):
-  from time import time
   remaining = state['expires_at'] - int(time())
   if remaining > 0:
    return {'status':'OK','state':state,'remaining':remaining}
@@ -160,7 +159,6 @@ def sync(aCTX, aArgs):
   timeout = 60
  else:
   # Authentication done, now ask for devices w S/N and names in lower case - but not too fast
-  from time import sleep
   sleep(10)
   state['translate'] = {
    'temp':'temperature',

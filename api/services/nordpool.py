@@ -3,6 +3,8 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
 
+from datetime import datetime, date, timedelta
+
 #
 #
 def process(aCTX, aArgs):
@@ -46,7 +48,6 @@ def status(aCTX, aArgs):
  Output:
   - url
  """
- from datetime import date, timedelta
  ret = {}
  isodate = date.today() + timedelta(days = 1)
  date_string = f'{isodate.day:02d}-{isodate.month:02d}-{isodate.year}'
@@ -70,7 +71,6 @@ def sync(aCTX, aArgs):
   - prices. Object
   - status. (operation result)
  """
- from datetime import datetime, date, timedelta
  ret = {}
  config = aCTX.config['services']['nordpool']
  state = aCTX.cache.get("nordpool",{})

@@ -3,6 +3,8 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "RECURSOR"
 
+from subprocess import check_output, CalledProcessError
+
 
 ############################### Tools #################################
 #
@@ -97,7 +99,6 @@ def restart(aCTX, aArgs):
   - output
   - result 'OK'/'NOT_OK'
  """
- from subprocess import check_output, CalledProcessError
  ret = {}
  settings = aCTX.config['services']['powerdns']['recursor']
  try:

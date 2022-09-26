@@ -3,6 +3,8 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"
 
+from datetime import datetime
+
 #
 #
 def process(aCTX, aArgs):
@@ -73,7 +75,6 @@ def sync(aCTX, aArgs):
   - forecast. Object
   - status. (operation result)
  """
- from datetime import datetime
  ret = {}
  config = aCTX.config['services']['smhi']
  url_forecast = 'https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/{longitude}/lat/{latitude}/data.json'.format(**config)
