@@ -2,6 +2,11 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
+from subprocess import check_output
+from difflib import unified_diff
+from os import remove
+from json import dumps
+
 #
 #
 def dump(aCTX, aArgs):
@@ -16,7 +21,6 @@ def dump(aCTX, aArgs):
 
  Output:
  """
- from subprocess import check_output
  if all(i in aArgs for i in ['username','password','database','host']):
   db,host,username,password = aArgs['database'],aArgs['host'],aArgs['username'],aArgs['password']
  else:
@@ -72,7 +76,6 @@ def restore(aCTX, aArgs):
  Output:
   - result
  """
- from subprocess import check_output
  if all(i in aArgs for i in ['username','password','host']):
   username,password,host = aArgs['username'],aArgs['password'],aArgs['host']
  else:
@@ -102,7 +105,6 @@ def diff(aCTX, aArgs):
   - output. list of lines indicating where the diff is
  """
 
- from difflib import unified_diff
  with open(aArgs['schema_file']) as f:
   data = f.read()
  ret = {}
@@ -134,8 +136,6 @@ def patch(aCTX, aArgs):
 
  Output:
  """
- from os import remove
- from json import dumps
  ret = {'status':'NOT_OK'}
  args = dict(aArgs)
  args.update({'mode':'database','full':True})
