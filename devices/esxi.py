@@ -4,8 +4,11 @@ __type__    = "hypervisor"
 __icon__    = "viz-server.png"
 __oid__     = 6876
 
+from select import select
+from time import sleep, strftime
 from rims.devices.generic import Device as GenericDevice
 from rims.core.common import VarList, Session
+from paramiko import SSHClient, AutoAddPolicy, AuthenticationException
 
 ########################################### ESXi ############################################
 #
@@ -34,7 +37,6 @@ class Device(GenericDevice):
 
  def __enter__(self):
   if not self._sshclient:
-   from paramiko import SSHClient, AutoAddPolicy, AuthenticationException
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
@@ -84,7 +86,6 @@ class Device(GenericDevice):
  #
 
  def _command(self, aMessage):
-  from select import select
   if self._sshclient:
    output = ""
    #self.log("ssh_send: [{}]".format(aMessage))
@@ -134,7 +135,6 @@ class Device(GenericDevice):
     if uuidobj[0].val.decode() !=  aUUID:
      raise Exception('UUID_NOT_MATCHING')
    if aOP in ['on','off','reboot','shutdown','suspend']:
-    from time import sleep
     self._command("vim-cmd vmsvc/power.%s %s"%(aOP,aID))
     sleep(5)
    ret.update(self.get_vm_state(aID))
@@ -176,7 +176,6 @@ class Device(GenericDevice):
       ret['data'].append(data)
       data = {'id':None,'name':None,'desc':None,'created':None,'state':None}
   elif aOP == 'create':
-   from time import strftime
    self._command("vim-cmd vmsvc/snapshot.create %s 'Portal Snapshot' '%s'"%(aID,strftime("%Y%m%d")))
   elif aOP == 'revert':
    self._command("vim-cmd vmsvc/snapshot.revert %s %s suppressPowerOff"%(aID,aSnapshot))

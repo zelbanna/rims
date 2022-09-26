@@ -12,6 +12,7 @@ __icon__    = "viz-generic.png"
 __oid__     = 8072
 
 from rims.core.common import VarList, VarBind, Session
+from os import system
 
 ########################################### Device ########################################
 class Device(object):
@@ -48,7 +49,6 @@ class Device(object):
   return 'NOT_IMPLEMENTED_%s'%aType.upper()
 
  def ping_device(self):
-  from os import system
   return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
 
  def configuration(self,argdict):

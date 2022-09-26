@@ -8,6 +8,7 @@ __type__    = "pdu"
 
 from rims.devices.generic import Device as GenericDevice
 from rims.core.common import VarList, VarBind, Session
+from time import sleep
 
 ######################################## PDU ########################################
 
@@ -30,7 +31,6 @@ class Device(GenericDevice):
 
  #
  def set_state(self,slot,unit,state):
-  from time import sleep
   try:
    ret = {}
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1"
