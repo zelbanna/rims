@@ -2,6 +2,8 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
+from importlib import import_module
+
 ############################################### INTERFACES ################################################
 #
 #
@@ -285,7 +287,6 @@ def snmp(aCTX, aArgs):
 
  Output:
  """
- from importlib import import_module
 
  ret = {}
  with aCTX.db as db:
@@ -409,7 +410,6 @@ def lldp_mapping(aCTX, aArgs):
  with aCTX.db as db:
   if db.query("SELECT dt.name AS type, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = '%(device_id)s'"%aArgs):
    dev = db.get_row()
-   from importlib import import_module
    try:
     module = import_module("rims.devices.%s"%dev['type'])
     info   = getattr(module,'Device',None)(aCTX, aArgs['device_id'],dev['ip']).lldp()

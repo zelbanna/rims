@@ -11,6 +11,7 @@ from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from urllib.error import HTTPError
 from ssl import create_default_context, CERT_NONE
+from re import compile as re_compile
 
 ########################################### REST ##########################################
 #
@@ -348,7 +349,6 @@ class VarBind():
   self.type = tp
   # parse iid out of tag if needed, 'None' is not good and neither is '' for iid in client_intf
   if iid is None and tag is not None:
-   from re import compile as re_compile
    regex = re_compile(r'^((?:\.\d+)+|(?:\w+(?:[-:]*\w+)+))\.?(.*)$')
    match = regex.match(tag)
    if match:

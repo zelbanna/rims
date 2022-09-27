@@ -2,6 +2,9 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
+from os import path as ospath, listdir
+from importlib import import_module
+
 ############################### System #################################
 #
 #
@@ -54,21 +57,6 @@ def state_queue(aCTX, aArgs):
    if aArgs.get('log'):
     aCTX.log(f'Worker {w[0]} stuck for {w[2]} seconds with {w[1]}')
  return ret
-
-#
-#
-def sleep(aCTX, aArgs):
- """ Function sleeps for X seconds
-
- Args:
-  - seconds
-
- Output:
-  status
- """
- from time import sleep as time_sleep
- time_sleep(int(aArgs.get('seconds',10)))
- return {'status':'OK'}
 
 #
 #
@@ -151,7 +139,6 @@ def rest_explore(aCTX, aArgs):
 
  Output:
  """
- from importlib import import_module
  from types import FunctionType as function
  def __analyze(aFile):
   data = {'api':aFile, 'functions':[]}
@@ -166,7 +153,6 @@ def rest_explore(aCTX, aArgs):
  if 'api' in aArgs:
   ret['data'].append(__analyze(aArgs['api']))
  else:
-  from os import path as ospath, listdir
   restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
   for restfile in listdir(restdir):
    if restfile[-3:] == '.py':
@@ -184,7 +170,6 @@ def rest_information(aCTX, aArgs):
 
  Output:
  """
- from importlib import import_module
  try:
   mod = import_module("rims.api.%s"%(aArgs['api']))
   fun = getattr(mod,aArgs['function'],None)
@@ -257,7 +242,6 @@ def file_list(aCTX, aArgs):
   - 'path' relative the api to access the files
 
  """
- from os import path as ospath, listdir
  ret = {'files':[]}
  try:
   if 'directory' in aArgs:

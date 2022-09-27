@@ -113,7 +113,6 @@ def set(aCTX, aArgs):
   - data
  """
  ret = {}
- import asyncio
 
  config = aCTX.config['services']['sun2000']
  reg = aArgs['register']
@@ -162,8 +161,7 @@ def sync(aCTX, aArgs):
  Output:
   - status. (operation result)
  """
- import asyncio
-
+ ret = {}
  config = aCTX.config['services']['sun2000']
  state = aCTX.cache.get('sun2000')
  if not state:
@@ -182,7 +180,6 @@ def sync(aCTX, aArgs):
    flatten.extend([item for sublist in output[:3] for item in sublist])
    return {items[i]:{'value':r.value,'unit':mapping.get(r.unit,'unit')} for i,r in enumerate(flatten)}
 
- ret = {}
  try:
   con = loop.run_until_complete(AsyncHuaweiSolar.create(config['ip'],port = config.get('port',6607)))
   data = loop.run_until_complete(main(con,state['mapping'],state['singles'],state['ranges'],state['items']))

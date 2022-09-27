@@ -3,6 +3,10 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
 
+from crypt import crypt
+from datetime import date
+from time import localtime
+
 ####################################### SITE ######################################
 #
 #
@@ -139,7 +143,6 @@ def user_encrypt(aCTX, aArgs):
  Output:
   - encrypted
  """
- from crypt import crypt
  ret = {}
  ret['data'] = crypt(aArgs['data'],"$1$%s$"%aCTX.config['salt'])
  return ret
@@ -166,7 +169,6 @@ def user_info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  with aCTX.db as db:
   if op == 'update':
-   from crypt import crypt
    # Password at least 6 characters
    if len(aArgs.get('password','')) > 5:
     aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aCTX.config['salt']).split('$')[3]
@@ -333,7 +335,6 @@ def activity_daily(aCTX, aArgs):
  ret = {}
 
  if not aArgs.get('date'):
-  from datetime import date
   dt = date.today()
   ret['date'] = "%i-%02i-%02i"%(dt.year,dt.month,dt.day)
  else:
@@ -386,8 +387,6 @@ def activity_info(aCTX, aArgs):
    ret['found'] = (db.query("SELECT id,user_id,type_id, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, event FROM activities WHERE id = %s"%id) > 0)
    ret['data'] = db.get_row()
   else:
-   from time import localtime
-   from datetime import date
    tm = localtime()
    dt = date.today()
    ret['data'] = {'id':'new','user_id':None,'type_id':None,'date':"%i-%02i-%02i"%(dt.year,dt.month,dt.day),'time':"%02i:%02i"%(tm.tm_hour,tm.tm_min),'event':'empty'}

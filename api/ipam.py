@@ -4,6 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 from ipaddress import ip_address, ip_network
 from subprocess import run, DEVNULL
+from time import time
 
 def __detect_state(aIP):
  """ Ping 'IP' once to detect presence """
@@ -452,7 +453,6 @@ def process(aCTX, aArgs):
 
  Output:
  """
- from time import time
  ret = {'status':'OK','function':'ipam_process'}
 
  report = aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})

@@ -2,6 +2,10 @@
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
+from time import time
+from importlib import import_module
+from ipaddress import ip_address
+
 ############################################ Device Basics ###########################################
 #
 #
@@ -339,7 +343,6 @@ def control(aCTX, aArgs):
  Output:
   - pems. list of pems
  """
- from importlib import import_module
  ret = {}
  id = aArgs['id']
  with aCTX.db as db:
@@ -398,7 +401,6 @@ def search(aCTX, aArgs):
  ret = {}
  with aCTX.db as db:
   if aArgs.get('node'):
-   from ipaddress import ip_address
    url = aCTX.nodes[aArgs['node']]['url']
    arg = url.split(':')[1][2:].split('/')[0]
    try: ip_address(arg)
@@ -431,7 +433,6 @@ def new(aCTX, aArgs):
 
  with aCTX.db as db:
   from rims.api.ipam import address_info, address_sanitize
-  from ipaddress import ip_address
   try:
    ip = ip_address(aArgs.get('ip'))
   except:
@@ -503,7 +504,6 @@ def discover(aCTX, aArgs):
 
  Output:
  """
- from time import time
  from rims.devices.detector import execute as execute_detect
  from rims.api.ipam import network_discover, address_info, address_delete
  from rims.api.dns import record_info
@@ -534,7 +534,6 @@ def discover(aCTX, aArgs):
 
  # We can now do inserts only (no update) as we skip existing :-)
  if ip_addresses:
-  from ipaddress import ip_address
   from rims.api.dns import record_info
   with aCTX.db as db:
    if aArgs['a_domain_id'] and (db.query("SELECT name FROM domains WHERE type = 'forward' AND id = %s"%aArgs['a_domain_id']) > 0):
@@ -592,7 +591,6 @@ def function(aCTX, aArgs):
 
  Output:
  """
- from importlib import import_module
  ret = {}
  try:
   module = import_module("rims.devices.%s"%(aArgs['type']))
@@ -614,7 +612,6 @@ def configuration_template(aCTX, aArgs):
 
  Output:
  """
- from importlib import import_module
  ret = {}
  with aCTX.db as db:
   db.query("SELECT ine.mask,INET6_NTOA(ine.gateway) AS gateway,INET6_NTOA(ine.network) AS network, INET6_NTOA(ia.ip) AS ip, devices.hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_domain_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aArgs['id'])
@@ -801,7 +798,6 @@ def vm_mapping(aCTX, aArgs):
 
  Output:
  """
- from importlib import import_module
  ret = {'inventory':[],'database':None,'discovered':[],'existing':[],'update':{}}
  vms = {}
  with aCTX.db as db:

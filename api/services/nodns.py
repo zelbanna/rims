@@ -3,6 +3,8 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "NAMESERVER"
 
+from os import linesep
+
 #################################### Domains #######################################
 #
 #
@@ -171,7 +173,6 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- #from ipaddress import IPv4Address, IPv4Network
  ret = {'status':'OK'}
  with aCTX.db as db:
   # Empty all
@@ -186,7 +187,6 @@ def sync(aCTX, aArgs):
 
   # Write to local 'hosts' file or similar
   if aCTX.config['services']['nodns'].get('file'):
-   from os import linesep
    try:
     with open(aCTX.config['services']['nodns']['file'],'w+') as ndfile:
      db.query("SELECT name, content FROM records WHERE type = 'A'")
