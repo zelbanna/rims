@@ -432,13 +432,15 @@ def check(aCTX, aArgs):
    addresses = db.get_rows()
 
  if addresses:
+  report = aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
+
   if 'repeat' in aArgs:
    # INTERNAL from rims.api.ipam import process
-   aCTX.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses}, output = aCTX.debug)
+   aCTX.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses,'report':report}, output = aCTX.debug)
    return {'status':'OK','function':'ipam_check','detach_frequency':aArgs['repeat']}
   else:
    # INTERNAL from rims.api.ipam import process
-   process(aCTX,{'addresses':addresses})
+   process(aCTX,{'addresses':addresses,'report':report})
    return {'status':'OK','function':'ipam_check'}
  else:
   return {'status':'OK','function':'ipam_check','info':'no addresses'}
@@ -455,8 +457,6 @@ def process(aCTX, aArgs):
  """
  ret = {'status':'OK','function':'ipam_process'}
 
- report = aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
-
  def __check_IP(aDev):
   aDev['old'] = aDev['state']
   try:
@@ -469,6 +469,8 @@ def process(aCTX, aArgs):
 
  changed = [dev for dev in aArgs['addresses'] if dev['state'] != dev['old']]
  if changed:
+  report = aArgs['report'] if aArgs.get('report') else aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
+
   # Assume/hope influxdb client is configured locally
   tmpl = 'ipam,host_id=%s,host_ip=%s state=%s {0}'.format(int(time()))
   records = [tmpl%( x['id'], x['ip'] ,1 if x['state'] == 'up' else 0) for x in changed]
