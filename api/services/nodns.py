@@ -56,7 +56,7 @@ def domain_info(aCTX, aArgs):
    else:
     # Because we don't know our own server id we cannot insert here, assume max + 1 value is available :-)
     ret['insert'] = True
-    ret['data']['id'] = "nodns_" + str(db.get_val('next') if db.query("SELECT max(id) + 1 AS next FROM domains") else 1)
+    ret['data']['id'] = str(db.get_val('next') if db.query("SELECT max(id) + 1 AS next FROM domains") else 1)
   elif id != 'new':
    db.query("SELECT foreign_id AS id, name, 'MASTER' AS type, DATE_FORMAT(serial, '%%Y%%m%%d') AS serial, master FROM domains WHERE foreign_id = '%s'"%id)
    ret['data'] = db.get_row()
@@ -92,7 +92,7 @@ def record_list(aCTX, aArgs):
  select = []
  with aCTX.db as db:
   if 'domain_id' in aArgs:
-   select.append("domain_id = %s"%aArgs['domain_id'])
+   select.append("domain_id = '%s'"%aArgs['domain_id'])
   if 'type' in aArgs:
    select.append("type = '%s'"%aArgs['type'].upper())
   tune = " WHERE %s"%(" AND ".join(select)) if select else ""
@@ -122,7 +122,7 @@ def record_info(aCTX, aArgs):
   if op == 'new':
    ret = {'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
   elif op == 'info':
-   if db.query("SELECT domain_id,name,content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM records WHERE name = '%s' AND domain_id = %s AND type = '%s'"%(aArgs['name'],aArgs['domain_id'],aArgs['type'])):
+   if db.query("SELECT domain_id,name,content,type,ttl,DATE_FORMAT(serial,'%%Y%%m%%d%%H%%i') AS serial FROM records WHERE name = '%s' AND domain_id = '%s' AND type = '%s'"%(aArgs['name'],aArgs['domain_id'],aArgs['type'])):
     ret = {'status':'OK','data':db.get_row()}
    else:
     ret = {'status':'NOT_OK','data':None}
@@ -134,9 +134,9 @@ def record_info(aCTX, aArgs):
    ret['data'] = aArgs
    try:
     if op == 'insert':
-     ret['insert'] = (db.execute("INSERT INTO records (domain_id,name,content,type,ttl) VALUES(%(domain_id)s,'%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0)
+     ret['insert'] = (db.execute("INSERT INTO records (domain_id,name,content,type,ttl) VALUES('%(domain_id)s','%(name)s','%(content)s','%(type)s',%(ttl)s)"%aArgs) > 0)
     elif op == 'update':
-     ret['update'] = (db.execute("UPDATE records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
+     ret['update'] = (db.execute("UPDATE records SET content = '%(content)s', ttl = %(ttl)s WHERE domain_id = '%(domain_id)s' AND name = '%(name)s' AND type = '%(type)s'"%aArgs) > 0)
    except Exception as e:
     ret.update({'status':'NOT_OK','info':str(e)})
    else:
@@ -159,7 +159,7 @@ def record_delete(aCTX, aArgs):
  """
  ret = {}
  with aCTX.db as db:
-  ret['deleted'] = bool(db.execute("DELETE FROM records WHERE domain_id = %(domain_id)s AND name = '%(name)s' AND type = '%(type)s'"%aArgs))
+  ret['deleted'] = bool(db.execute("DELETE FROM records WHERE domain_id = '%(domain_id)s' AND name = '%(name)s' AND type = '%(type)s'"%aArgs))
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 
