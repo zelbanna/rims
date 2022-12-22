@@ -2,7 +2,7 @@
 __author__ = "Zacharias El Banna"
 __version__ = "7.6"
 __build__ = 400
-__all__ = ['Context']
+__all__ = ['RunTime']
 
 from copy import copy
 from crypt import crypt
@@ -28,14 +28,14 @@ from queue import Queue
 from ipaddress import ip_address
 from rims.core.common import DB, rest_call, Scheduler, RestException, InfluxDB, InfluxDummy, ssl_context
 
-##################################################### Context #######################################################
+##################################################### RunTime #######################################################
 #
 # Main state object, contains config, workers, modules and calls etc..
 #
-class Context():
+class RunTime():
 
  def __init__(self,aConfig, aDebug = False):
-  """ Context init - create the infrastructure but populate later
+  """ RunTime init - create the infrastructure but populate later
   - Consume config file
   - Set node ID
   - Prepare database and workers
@@ -154,7 +154,7 @@ class Context():
 
  #
  def start(self):
-  """ Start "moving" parts of context, workers and signal handlers to start processing incoming requests and scheduled tasks """
+  """ Start "moving" parts of RunTime, workers and signal handlers to start processing incoming requests and scheduled tasks """
 
   def create_socket(port):
    """ Create a (secure) socket """
@@ -209,7 +209,7 @@ class Context():
   for id,svc in self.services.items():
    if svc['node'] == self.node:
     module = import_module(f"rims.api.services.{svc['service']}")
-    fun = getattr(module,'close',lambda aCTX,aArgs: None)
+    fun = getattr(module,'close',lambda aRT,aArgs: None)
     res = fun(self,{'id':id})
     if res and res['status'] == 'OK':
      self.log(f"{svc['service']} => {res}")
@@ -298,7 +298,7 @@ class Context():
     ret = {'status':'NOT_OK','info':f"NODE_FUNCTION_FAILURE: {e}"}
   else:
    module = import_module(f"rims.api.{aModule}")
-   fun = getattr(module,aFunction,lambda aCTX,aArgs: None)
+   fun = getattr(module,aFunction,lambda aRT,aArgs: None)
    ret = partial(fun,self)
   return ret
 
@@ -467,7 +467,7 @@ class SessionHandler(BaseHTTPRequestHandler):
  def __init__(self, *args, **kwargs):
   self._headers = {'X-Powered-By':f"RIMS Engine {__version__}.{__build__}",'Date':self.date_time_string()}
   self._body = b'null'
-  self._ctx = args[2]._ctx
+  self._rt = args[2]._rt
   BaseHTTPRequestHandler.__init__(self,*args, **kwargs)
 
  #
@@ -499,12 +499,12 @@ class SessionHandler(BaseHTTPRequestHandler):
 
  #
  def get_token(self):
-  if self.headers.get('X-Token') == self._ctx.token:
+  if self.headers.get('X-Token') == self._rt.token:
    return 'internal'
   else:
    try:
     cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])
-    return self._ctx.tokens[cookies['rims']]['id']
+    return self._rt.tokens[cookies['rims']]['id']
    except:
     return None
 
@@ -543,14 +543,14 @@ class SessionHandler(BaseHTTPRequestHandler):
    file,_,_ = query.partition('?')
    # split query in file and params
    if path[:5] != 'files':
-    fullpath = ospath.join(self._ctx.site,path,file)
+    fullpath = ospath.join(self._rt.site,path,file)
    elif path == 'files':
-    fullpath = ospath.join(self._ctx.config['files'][file])
+    fullpath = ospath.join(self._rt.config['files'][file])
     file = ''
    else:
     param,_,rest = path[6:].partition('/')
-    fullpath = ospath.join(self._ctx.config['files'][param],rest,file)
-   self._ctx.analytics('files', path, file)
+    fullpath = ospath.join(self._rt.config['files'][param],rest,file)
+   self._rt.analytics('files', path, file)
    if file == '' and ospath.isdir(fullpath):
     self._headers['Content-type']='text/html; charset=utf-8'
     try:
@@ -610,12 +610,12 @@ class SessionHandler(BaseHTTPRequestHandler):
     self.api(query,args,token_id)
    else:
     self._headers.update({'X-Code':401})
-    self._ctx.log(f"API Cookie error: {self.client_address[0]} sent non-matching cookie in call: {self.path}")
+    self._rt.log(f"API Cookie error: {self.client_address[0]} sent non-matching cookie:{token_id}, in call: {self.path}")
 
   elif path == 'front':
    self._headers.update({'Content-type':'application/json; charset=utf-8','Access-Control-Allow-Origin':"*"})
    output = {'message':"Welcome to the Management Portal",'title':'Portal'}
-   output.update(self._ctx.config['site'].get('portal'))
+   output.update(self._rt.config['site'].get('portal'))
    self._body = dumps(output).encode('utf-8')
   elif path == 'auth':
    self.auth()
@@ -630,16 +630,16 @@ class SessionHandler(BaseHTTPRequestHandler):
    else:
     if args.get('id'):
      module = import_module('rims.api.visualize')
-     output = getattr(module,"show", lambda x,y: None)(self._ctx, {'id':args['id']})
+     output = getattr(module,"show", lambda x,y: None)(self._rt, {'id':args['id']})
     elif args.get('device'):
      module = import_module('rims.api.device')
-     output = getattr(module,"management", lambda x,y: None)(self._ctx, {'id':args['device']})
+     output = getattr(module,"management", lambda x,y: None)(self._rt, {'id':args['device']})
     else:
      output = {'status':'NOT_OK','info':'no suitable argument','data':{}}
    self._body = dumps(output).encode('utf-8')
   elif path == 'register':
    # Register uses X-Token for authentication
-   if self.headers.get('X-Token') == self._ctx.token:
+   if self.headers.get('X-Token') == self._rt.token:
     self._headers.update({'Content-type':'application/json; charset=utf-8'})
     try:
      length = int(self.headers.get('Content-Length',0))
@@ -649,9 +649,9 @@ class SessionHandler(BaseHTTPRequestHandler):
      output = {'status':'NOT_OK','info':str(e)}
     else:
      output = {'status':'OK'}
-     with self._ctx.db as db:
+     with self._rt.db as db:
       output['update'] = (db.execute("INSERT INTO nodes(node, url) VALUES ('%(node)s','%(url)s') ON DUPLICATE KEY UPDATE url = '%(url)s'"%params) > 0)
-     self._ctx.log(f"Registered node {args['id']}: update:{output['update']}")
+     self._rt.log(f"Registered node {args['id']}: update:{output['update']}")
     self._body = dumps(output).encode('utf-8')
    else:
     self._headers.update({'X-Code':401})
@@ -665,27 +665,27 @@ class SessionHandler(BaseHTTPRequestHandler):
  def api(self,api,args,token_id):
   """ API serves the REST functions x.y.z.a:<port>/api/module-path/function """
   (mod,_,fun) = api.rpartition('/')
-  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':token_id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._ctx.node if mod != 'master' else 'master')})
-  restlog = self._ctx.config['logging']['rest']
+  self._headers.update({'X-Module':mod, 'X-Function':fun ,'X-User-ID':token_id, 'Content-Type':"application/json; charset=utf-8",'Access-Control-Allow-Origin':"*",'X-Route':self.headers.get('X-Route',self._rt.node if mod != 'master' else 'master')})
+  restlog = self._rt.config['logging']['rest']
   if restlog['enabled'] and self.headers.get('X-Log','true') == 'true':
    logstring = f"%s: {api} '%s' {token_id}@{self._headers['X-Route']}\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), dumps(args) if api != "system/worker" else "N/A")
-   if self._ctx.debug:
+   if self._rt.debug:
     stdout.write(logstring)
    else:
     with open(restlog['file'], 'a') as f:
      f.write(logstring)
   try:
-   self._ctx.analytics('modules',mod,fun)
-   if self._headers['X-Route'] == self._ctx.node:
+   self._rt.analytics('modules',mod,fun)
+   if self._headers['X-Route'] == self._rt.node:
     module = import_module(f"rims.api.{mod.replace('/','.')}")
-    self._body = dumps(getattr(module,fun, lambda x,y: None)(self._ctx, args)).encode('utf-8')
+    self._body = dumps(getattr(module,fun, lambda x,y: None)(self._rt, args)).encode('utf-8')
    else:
-    self._body = self._ctx.rest_call(f"{self._ctx.nodes[self._headers['X-Route']]['url']}/api/{api}", aArgs = args, aHeader = {'X-Token':self._ctx.token}, aDecode = False, aMethod = 'POST')
+    self._body = self._rt.rest_call(f"{self._rt.nodes[self._headers['X-Route']]['url']}/api/{api}", aArgs = args, aHeader = {'X-Token':self._rt.token}, aDecode = False, aMethod = 'POST')
   except RestException as e:
    self._headers.update({'X-Args':args, 'X-Exception':e.exception, 'X-Code':e.code, 'X-Info':e.info})
   except Exception as e:
    self._headers.update({'X-Args':args, 'X-Exception':type(e).__name__, 'X-Code':600, 'X-Info':','.join(map(str,e.args))})
-   if self._ctx.debug:
+   if self._rt.debug:
     for n,v in enumerate(format_exc().split('\n')):
      self._headers[f"X-Debug-{n:02}"] = v
 
@@ -707,32 +707,32 @@ class SessionHandler(BaseHTTPRequestHandler):
   except Exception as e:
    output['info'] = {'argument':str(e)}
   else:
-   if self._ctx.node == 'master':
+   if self._rt.node == 'master':
     if 'verify' in args:
-     if self._ctx.tokens.get(token):
-      entry = self._ctx.tokens[token]
+     if self._rt.tokens.get(token):
+      entry = self._rt.tokens[token]
       # Check if client moved, update local table then...
       if entry['ip'] != args.get('ip',self.client_address[0]):
        entry['ip'] = args.get('ip',self.client_address[0])
       output = {'status':'OK','id':entry['id'],'ip':entry['ip'],'alias':entry['alias'],'token':token,'class':entry['class'],'expires':entry['expires'].strftime('%a, %d %b %Y %H:%M:%S %Z')}
       self._headers['X-Code'] = 200
     elif 'destroy' in args:
-     info = self._ctx.tokens.pop(token,None)
+     info = self._rt.tokens.pop(token,None)
      if info:
-      self._ctx.queue_function(self._ctx.auth_exec, info['alias'], info['ip'], 'invalidate')
-      with self._ctx.db as db:
+      self._rt.queue_function(self._rt.auth_exec, info['alias'], info['ip'], 'invalidate')
+      with self._rt.db as db:
        if not db.execute(f"DELETE FROM user_tokens WHERE token = '{token}'"):
-        self._ctx.log(f"Authentication: destroying non-existent token requested from {self.client_address[0]}")
+        self._rt.log(f"Authentication: destroying non-existent token requested from {self.client_address[0]}")
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     else:
-     passcode = crypt(password, f"$1${self._ctx.config['salt']}$").split('$')[3]
-     with self._ctx.db as db:
+     passcode = crypt(password, f"$1${self._rt.config['salt']}$").split('$')[3]
+     with self._rt.db as db:
       if db.query(f"SELECT id, class, theme FROM users WHERE alias = '{username}' and password = '{passcode}'"):
        expires = datetime.now(timezone.utc) + timedelta(days=5)
        output.update(db.get_row())
        output.update({'alias':username,'ip':args.get('ip',self.client_address[0]),'expires':expires.strftime('%a, %d %b %Y %H:%M:%S %Z')})
-       for k,v in self._ctx.tokens.items():
+       for k,v in self._rt.tokens.items():
         # Existing id/ip, just update token expiration and return existing
         if v['id'] == output['id'] and v['ip'] == output['ip']:
          output['token'] = k
@@ -743,27 +743,27 @@ class SessionHandler(BaseHTTPRequestHandler):
         # New token generated, update all tables (token, database and auth servers)
         output['token'] = self.__randomizer(16)
         db.execute("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET6_ATON('%(ip)s'))"%output)
-        self._ctx.tokens[output['token']] = {'id':output['id'],'alias':username,'expires':expires,'ip':output['ip'],'class':output['class']}
-        self._ctx.queue_function(self._ctx.auth_exec, username, output['ip'], 'authenticate')
+        self._rt.tokens[output['token']] = {'id':output['id'],'alias':username,'expires':expires,'ip':output['ip'],'class':output['class']}
+        self._rt.queue_function(self._rt.auth_exec, username, output['ip'], 'authenticate')
        output['status'] = 'OK'
        self._headers['X-Code'] = 200
       else:
        output['info'] = {'authentication':'username and password combination not found','username':username,'passcode':passcode}
-       self._ctx.log(f"Authentication failure for {username} from {args.get('ip',self.client_address[0])}")
+       self._rt.log(f"Authentication failure for {username} from {args.get('ip',self.client_address[0])}")
    else:
     try:
      args['ip'] = self.client_address[0]
-     output = self._ctx.rest_call(f"{self._ctx.config['master']}/auth", aArgs = args)
+     output = self._rt.rest_call(f"{self._rt.config['master']}/auth", aArgs = args)
      if 'destroy' not in args:
-      self._ctx.tokens[output['token']] = {'id':output['id'],'alias':output['alias'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S %Z"),'ip':output['ip']}
+      self._rt.tokens[output['token']] = {'id':output['id'],'alias':output['alias'],'expires':datetime.strptime(output['expires'],"%a, %d %b %Y %H:%M:%S %Z"),'ip':output['ip']}
       self._headers['X-Code'] = 200
      elif output['status'] == 'OK':
-      self._ctx.tokens.pop(args['destroy'],None)
+      self._rt.tokens.pop(args['destroy'],None)
       self._headers['X-Code'] = 200
     except Exception as e:
      output = {'info':e.args[0]}
      self._headers['X-Code'] = e.args[0]['code']
-  output['node'] = self._ctx.node
+  output['node'] = self._rt.node
   self._body = dumps(output).encode('utf-8')
 
 ########################################### Threads ###########################################
@@ -781,31 +781,31 @@ class TimeOutException(Exception):
 #
 class Worker(Thread):
 
- def __init__(self, aContext, aAbort, aNumber, aQueue):
+ def __init__(self, aRunTime, aAbort, aNumber, aQueue):
   Thread.__init__(self)
   self._n      = aNumber
   self.func    = None
   self._abort  = aAbort
   self._idle   = Event()
   self._queue  = aQueue
-  self._ctx    = aContext.clone()
+  self._rt    = aRunTime.clone()
   self._time   = None
   self.daemon  = True
   self.name    = f"Worker({aNumber:02})"
   self.start()
 
  def db_analytics(self):
-  return self._ctx.db.count.items()
+  return self._rt.db.count.items()
 
  def is_idle(self):
   return self._idle.is_set()
 
  # Returns starting epoch
  def runtime(self):
-  return self._time if self._ctx.debug and self._time else 0
+  return self._time if self._rt.debug and self._time else 0
 
  def run(self):
-  ctx, queue, abort, idle = self._ctx, self._queue, self._abort, self._idle
+  ctx, queue, abort, idle = self._rt, self._queue, self._abort, self._idle
   while not abort.is_set():
    try:
     self.func = None
@@ -839,7 +839,7 @@ class Worker(Thread):
 #
 class SocketServer(Thread):
 
- def __init__(self, aContext, aAbort, aName, aAddress, aSocket):
+ def __init__(self, aRunTime, aAbort, aName, aAddress, aSocket):
   Thread.__init__(self)
   self.name   = f"SocketServer({aName}"
   self.daemon = True
@@ -848,12 +848,12 @@ class SocketServer(Thread):
   self._httpd = httpd
   httpd.socket = aSocket
   httpd.timeout = 0.5
-  httpd._ctx = self._ctx = aContext.clone()
+  httpd._rt = self._rt = aRunTime.clone()
   httpd.server_bind = httpd.server_close = lambda self: None
   self.start()
 
  def db_analytics(self):
-  return self._ctx.db.count.items()
+  return self._rt.db.count.items()
 
  def run(self):
   abort = self._abort
@@ -871,18 +871,18 @@ class SocketServer(Thread):
 class HouseKeeping(Thread):
  """Persistent thread for continuous house keeping"""
 
- def __init__(self, aContext, aAbort):
+ def __init__(self, aRunTime, aAbort):
   Thread.__init__(self)
   self.name = 'House Keeping'
   self.daemon = True
   self._abort = aAbort
-  self._ctx = aContext.clone()
+  self._rt = aRunTime.clone()
   self.start()
 
  #
  def run(self):
   abort = self._abort
-  sleep(int(self._ctx.config.get('startupdelay',10)))
+  sleep(int(self._rt.config.get('startupdelay',10)))
   while not abort.is_set():
    try:
     self.house_keeping()
@@ -895,7 +895,7 @@ class HouseKeeping(Thread):
  #
  def house_keeping(self):
   """ House keeping should do all the things that are supposed to be regular (phase out old tokens, memory mangagement etc)"""
-  ctx = self._ctx
+  ctx = self._rt
   now = datetime.now(timezone.utc)
 
   # Worker monitoring

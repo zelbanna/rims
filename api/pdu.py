@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """List PDUs
 
  Args:
@@ -14,7 +14,7 @@ def list(aCTX, aArgs):
   - data
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT pi.*, devices.hostname AS name FROM pdu_info AS pi LEFT JOIN devices ON pi.device_id = devices.id")
   ret['data'] = db.get_rows()
   if aArgs.get('empty'):

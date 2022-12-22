@@ -16,14 +16,14 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self, aCTX, aID, aIP = None):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
+ def __init__(self, aRT, aID, aIP = None):
+  GenericDevice.__init__(self, aRT, aID, aIP)
 
  def get_inventory(self):
   result = []
   try:
    portobjs = VarList('.1.3.6.1.4.1.25049.17.2.1.2')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(portobjs)
    for obj in portobjs:
     result.append({'interface':obj.iid,'name':obj.val.decode()})

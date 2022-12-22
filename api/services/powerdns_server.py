@@ -8,7 +8,7 @@ from subprocess import check_output, CalledProcessError
 #################################### Domains #######################################
 #
 #
-def domain_list(aCTX, aArgs):
+def domain_list(aRT, aArgs):
  """Function provides a list of all domains from this server
 
  Args:
@@ -16,9 +16,9 @@ def domain_list(aCTX, aArgs):
  Output:
  """
  ret = {}
- settings = aCTX.config['services']['powerdns']['server']
+ settings = aRT.config['services']['powerdns']['server']
  try:
-  ret['data'] = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones?dnssec=false", aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+  ret['data'] = aRT.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones?dnssec=false", aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -31,7 +31,7 @@ def domain_list(aCTX, aArgs):
  return ret
 
 #
-def domain_info(aCTX, aArgs):
+def domain_info(aRT, aArgs):
  """Function create/update domain info
 
  Args:
@@ -47,11 +47,11 @@ def domain_info(aCTX, aArgs):
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
  output = {}
- settings = aCTX.config['services']['powerdns']['server']
+ settings = aRT.config['services']['powerdns']['server']
  if op == 'update' and id == 'new':
   args = {'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','kind':aArgs.get('type','Master').lower().capitalize(),'dnssec':False,'soa-edit':'INCEPTION-INCREMENT','masters':aArgs.get('master','127.0.0.1').split(','),'nameservers':settings.get('nameservers','server.local.').split(',')}
   # Fix name so that it ends with .
-  try: output = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones?rrsets=false", aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+  try: output = aRT.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones?rrsets=false", aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
   except Exception as e:
    ret = {'status':'NOT_OK','insert':False,'info':str(e)}
   else:
@@ -64,13 +64,13 @@ def domain_info(aCTX, aArgs):
    if 'master' in aArgs:
     args['masters'] = aArgs['master'].split(',')
    try:
-    aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{id}", aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDebug = True)
+    aRT.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{id}", aMethod = 'PUT', aHeader = {'X-API-Key':settings['key']}, aArgs = args, aDebug = True)
    except Exception as e:
     ret = {'status':'NOT_OK','update':False,'info':str(e)}
    else:
     ret = {'status':'OK','update':True}
   try:
-   output = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{id}", aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+   output = aRT.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{id}", aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
   except:
    ret['status'] = 'NOT_OK'
   else:
@@ -82,7 +82,7 @@ def domain_info(aCTX, aArgs):
 
 #
 #
-def domain_delete(aCTX, aArgs):
+def domain_delete(aRT, aArgs):
  """Function deletes a zone - assumes all metadata and RRs is automatically removed
 
  Args:
@@ -91,8 +91,8 @@ def domain_delete(aCTX, aArgs):
  Output:
  """
  ret = {}
- settings = aCTX.config['services']['powerdns']['server']
- try: res = aCTX.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{aArgs['id']}", aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']}, aDebug = True)
+ settings = aRT.config['services']['powerdns']['server']
+ try: res = aRT.rest_call(f"{settings['url']}/api/v1/servers/localhost/zones/{aArgs['id']}", aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']}, aDebug = True)
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['code'] = 0
@@ -105,7 +105,7 @@ def domain_delete(aCTX, aArgs):
 #################################### Records #######################################
 #
 #
-def record_list(aCTX, aArgs):
+def record_list(aRT, aArgs):
  """Function docstring for records TBD
 
  Args:
@@ -114,8 +114,8 @@ def record_list(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['services']['powerdns']['server']
- try: output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+ settings = aRT.config['services']['powerdns']['server']
+ try: output = aRT.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
  else:
@@ -128,7 +128,7 @@ def record_list(aCTX, aArgs):
 
 #
 #
-def record_info(aCTX, aArgs):
+def record_info(aRT, aArgs):
  """Function docstring for record_info TBD
 
  Args:
@@ -142,12 +142,12 @@ def record_info(aCTX, aArgs):
  Output:
  """
  op = aArgs.pop('op',None)
- settings = aCTX.config['services']['powerdns']['server']
+ settings = aRT.config['services']['powerdns']['server']
  if op == 'new':
   ret = { 'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
  elif op == 'info':
   try:
-   output = aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+   output = aRT.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
   except Exception as e:
    ret = {'status':'NOT_OK','info':str(e)}
   else:
@@ -165,7 +165,7 @@ def record_info(aCTX, aArgs):
    aArgs['content'] = aArgs['content'] + '.'
 
   args = {'rrsets':[{'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','type':aArgs['type'],'ttl':aArgs['ttl'],'changetype':'REPLACE','records':[{'content':aArgs['content'],'disabled':False}],'comments':[]}]}
-  try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+  try: aRT.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
   except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
   else: ret = {'status':'OK'}
   ret['data'] = aArgs
@@ -173,7 +173,7 @@ def record_info(aCTX, aArgs):
 
 #
 #
-def record_delete(aCTX, aArgs):
+def record_delete(aRT, aArgs):
  """ Function deletes records info per type
 
  Args:
@@ -185,9 +185,9 @@ def record_delete(aCTX, aArgs):
   - deleted
   - status
  """
- settings = aCTX.config['services']['powerdns']['server']
+ settings = aRT.config['services']['powerdns']['server']
  args = {'rrsets':[{'name':aArgs['name'] if aArgs['name'][-1] == '.' else aArgs['name'] + '.','type':aArgs['type'],'changetype':'DELETE','records':[],'comments':[]}]}
- try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+ try: aRT.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],aArgs['domain_id']), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
  except Exception as e: ret = {'deleted':False,'status':'NOT_OK','info':str(e)}
  else: ret = {'deleted':True,'status':'OK'}
  return ret
@@ -195,7 +195,7 @@ def record_delete(aCTX, aArgs):
 ############################### Tools #################################
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """Function docstring for sync.
 
  Args:
@@ -203,17 +203,17 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['services']['powerdns']['server']
- try: domains = [x['name'] for x in aCTX.rest_call('%s/api/v1/servers/localhost/zones?dnssec=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})]
+ settings = aRT.config['services']['powerdns']['server']
+ try: domains = [x['name'] for x in aRT.rest_call('%s/api/v1/servers/localhost/zones?dnssec=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})]
  except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else:
-  sync_data = aCTX.node_function('master','dns','sync_data')
+  sync_data = aRT.node_function('master','dns','sync_data')
   ret = {'status':'OK','records':0}
   for dom in domains:
    records = sync_data(aArgs = {'server_id':aArgs['id'],'foreign_id':dom})['data']
    args = {'rrsets':[{'name':x['name'] if x['name'][-1] == '.' else x['name'] + '.','type':x['type'],'ttl':'3600','changetype':'REPLACE','records':[{'content':x['content'],'disabled':False}],'comments':[]} for x in records]}
    try:
-    aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],dom), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
+    aRT.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],dom), aMethod = 'PATCH', aHeader = {'X-API-Key':settings['key']}, aArgs = args)
    except Exception as e:
     ret.update({'status':'NOT_OK',dom:str(e)})
    else:
@@ -222,17 +222,17 @@ def sync(aCTX, aArgs):
 
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function docstring for return various status elements
 
  Args:
 
  Output:
  """
- settings = aCTX.config['services']['powerdns']['server']
+ settings = aRT.config['services']['powerdns']['server']
  try:
-  server = aCTX.rest_call('%s/api/v1/servers/localhost'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
-  zones  = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+  server = aRT.rest_call('%s/api/v1/servers/localhost'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+  zones  = aRT.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
  else:
@@ -241,22 +241,22 @@ def status(aCTX, aArgs):
 
 #
 #
-def statistics(aCTX, aArgs):
+def statistics(aRT, aArgs):
  """Function docstring for return various status elements
 
  Args:
 
  Output:
  """
- settings = aCTX.config['services']['powerdns']['server']
- try: output = aCTX.rest_call('%s/api/v1/servers/localhost/statistics?includerings=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+ settings = aRT.config['services']['powerdns']['server']
+ try: output = aRT.rest_call('%s/api/v1/servers/localhost/statistics?includerings=false'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e: ret = {'status':'NOT_OK','info':str(e)}
  else: ret = {'status':'OK','statistics':{x['name']:x['type'] for x in output}}
  return ret
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -267,14 +267,14 @@ def restart(aCTX, aArgs):
   - result 'OK'/'NOT_OK'
  """
  ret = {}
- settings = aCTX.config['services']['powerdns']
+ settings = aRT.config['services']['powerdns']
  try: ret = {'output':check_output(settings.get('reload','service pdns restart').split()).decode(), 'code':0, 'status':'OK' }
  except CalledProcessError as c: ret = {'output':c.output, 'code':c.returncode, 'status':'NOT_OK'}
  return ret
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Settings:
@@ -290,13 +290,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('powerdns',{}).get('server',{})
+ settings = aRT.config['services'].get('powerdns',{}).get('server',{})
  params = ['url','key','reload','nameserver','endpoint']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -308,7 +308,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -320,7 +320,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

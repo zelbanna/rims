@@ -24,12 +24,12 @@ class Device(GenericDevice):
  def get_functions(cls):
   return ['manage']
 
- def __init__(self, aCTX, aID, aIP = None):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
+ def __init__(self, aRT, aID, aIP = None):
+  GenericDevice.__init__(self, aRT, aID, aIP)
   self._sshclient = None
-  #cache = aCTX.cache.get('esxi',{})
+  #cache = aRT.cache.get('esxi',{})
   #if not cache:
-  # aCTX['esxi'] = cache
+  # aRT['esxi'] = cache
   #dev = cache.get(aID,{})
   #if not dev:
   # cache[aID] = dev
@@ -40,7 +40,7 @@ class Device(GenericDevice):
    try:
     self._sshclient = SSHClient()
     self._sshclient.set_missing_host_key_policy(AutoAddPolicy())
-    self._sshclient.connect(self._ip, username=self._ctx.config['esxi']['username'], password=self._ctx.config['esxi']['password'] )
+    self._sshclient.connect(self._ip, username=self._rt.config['esxi']['username'], password=self._rt.config['esxi']['password'] )
    except AuthenticationException:
     self.log("DEBUG: Authentication failed when connecting")
     self._sshclient = None
@@ -129,7 +129,7 @@ class Device(GenericDevice):
   ret = {'id':aID,'status':'OK'}
   try:
    if aUUID:
-    session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+    session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
     uuidobj = VarList('.1.3.6.1.4.1.6876.2.1.1.10.%s'%aID)
     session.get(uuidobj)
     if uuidobj[0].val.decode() !=  aUUID:
@@ -197,7 +197,7 @@ class Device(GenericDevice):
    vmobj = VarList('.1.3.6.1.4.1.6876.2.1.1.2.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.3.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.6.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.10.%s'%aID)
    # Name, portgroup, MAC
    vminterfaces = VarList('.1.3.6.1.4.1.6876.2.4.1.3.%s'%aID,'.1.3.6.1.4.1.6876.2.4.1.4.%s'%aID,'.1.3.6.1.4.1.6876.2.4.1.7.%s'%aID)
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.get(vmobj)
    session.walk(vminterfaces)
    vm = {'name':vmobj[0].val.decode(),'config':vmobj[1].val.decode(),'state':Device.get_state_str(vmobj[2].val.decode()),'bios_uuid':vmobj[3].val.decode(),'interfaces':{}}
@@ -218,7 +218,7 @@ class Device(GenericDevice):
   ret = {}
   try:
    vmstateobj = VarList('.1.3.6.1.4.1.6876.2.1.1.6.%s'%aID)
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.get(vmstateobj)
    ret['state'] = Device.get_state_str(vmstateobj[0].val.decode())
   except:
@@ -233,7 +233,7 @@ class Device(GenericDevice):
   try:
    vmnameobjs = VarList('.1.3.6.1.4.1.6876.2.1.1.2')
    vmstateobjs = VarList('.1.3.6.1.4.1.6876.2.1.1.6')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(vmnameobjs)
    session.walk(vmstateobjs)
    for indx,result in enumerate(vmnameobjs):
@@ -251,7 +251,7 @@ class Device(GenericDevice):
    vmobjs = VarList('.1.3.6.1.4.1.6876.2.1.1.2','.1.3.6.1.4.1.6876.2.1.1.3','.1.3.6.1.4.1.6876.2.1.1.10')
    # Name, portgroup, MAC (not ':'-expanded)
    vminterfaces = VarList('.1.3.6.1.4.1.6876.2.4.1.3','.1.3.6.1.4.1.6876.2.4.1.4','.1.3.6.1.4.1.6876.2.4.1.7')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(vmobjs)
    session.walk(vminterfaces)
    for obj in vmobjs:

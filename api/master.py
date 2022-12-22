@@ -10,7 +10,7 @@ from time import localtime
 ####################################### SITE ######################################
 #
 #
-def inventory(aCTX, aArgs):
+def inventory(aRT, aArgs):
  """Function docstring for inventory. Provides inventory info for particular nodes
 
  Args:
@@ -22,7 +22,7 @@ def inventory(aCTX, aArgs):
  ret = {'navinfo':[]}
  if aArgs['node'] == 'master':
   ret.update({'node':True,'users':True})
- with aCTX.db as db:
+ with aRT.db as db:
   if 'user_id' in aArgs and (db.query("SELECT alias FROM users WHERE id = %s"%aArgs['user_id']) > 0):
    ret['navinfo'].append(db.get_val('alias'))
  return ret
@@ -30,7 +30,7 @@ def inventory(aCTX, aArgs):
 ####################################### NODE ######################################
 #
 #
-def node_list(aCTX, aArgs):
+def node_list(aRT, aArgs):
  """Function docstring for node_list TBD
 
  Args:
@@ -38,14 +38,14 @@ def node_list(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT * FROM nodes")
   ret['data']  = db.get_rows()
  return ret
 
 #
 #
-def node_info(aCTX, aArgs):
+def node_info(aRT, aArgs):
  """Function docstring for node_info TBD
 
  Args:
@@ -62,7 +62,7 @@ def node_info(aCTX, aArgs):
   aArgs['device_id'] = int(aArgs.get('device_id'))
  except:
   aArgs['device_id'] = 'NULL'
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    if id != 'new':
     ret['update'] = (db.update_dict('nodes',aArgs,'id=%s'%id) > 0)
@@ -74,18 +74,18 @@ def node_info(aCTX, aArgs):
    ret['data'] = db.get_row()
    if ret['found'] and op == 'update':
     node = ret['data']
-    for k in list(aCTX.nodes.keys()):
-     if aCTX.nodes[k]['id'] == node['id']:
-      aCTX.nodes.pop(k,None)
+    for k in list(aRT.nodes.keys()):
+     if aRT.nodes[k]['id'] == node['id']:
+      aRT.nodes.pop(k,None)
       break
-    aCTX.nodes[node['node']] = {'id':node['id'],'url':node['url']}
+    aRT.nodes[node['node']] = {'id':node['id'],'url':node['url']}
   else:
    ret['data'] = {'id':'new','node':'Unknown','url':'Unknown','device_id':None,'hostname':''}
  return ret
 
 #
 #
-def node_delete(aCTX, aArgs):
+def node_delete(aRT, aArgs):
  """Function docstring for node_delete TBD
 
  Args:
@@ -95,9 +95,9 @@ def node_delete(aCTX, aArgs):
   - deleted (bool)
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   if (aArgs['id'] != 'new') and db.query("SELECT node FROM nodes WHERE id = %s AND node <> 'master'"%aArgs['id']) > 0:
-   aCTX.nodes.pop(db.get_val('node'),None)
+   aRT.nodes.pop(db.get_val('node'),None)
    ret['deleted'] = (db.execute("DELETE FROM nodes WHERE id = %s"%aArgs['id']) == 1)
   else:
    ret['deleted'] = False
@@ -105,7 +105,7 @@ def node_delete(aCTX, aArgs):
 
 #
 #
-def node_to_api(aCTX, aArgs):
+def node_to_api(aRT, aArgs):
  """ Function returns api for a specific node name
 
  Args:
@@ -114,12 +114,12 @@ def node_to_api(aCTX, aArgs):
  Output:
   - url
  """
- return {'url':aCTX.nodes[aArgs['node']]['url']}
+ return {'url':aRT.nodes[aArgs['node']]['url']}
 
 ####################################### USERS ######################################
 #
 #
-def user_list(aCTX, aArgs):
+def user_list(aRT, aArgs):
  """Function docstring for user_list TBD
 
  Args:
@@ -127,14 +127,14 @@ def user_list(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT id, alias, name, email FROM users ORDER by name")
   ret['data']  = db.get_rows()
  return ret
 
 #
 #
-def user_encrypt(aCTX, aArgs):
+def user_encrypt(aRT, aArgs):
  """Function encrypts 'data' with password encryption techniques, providing entire encryption string (method,salt,code)
 
  Args:
@@ -144,12 +144,12 @@ def user_encrypt(aCTX, aArgs):
   - encrypted
  """
  ret = {}
- ret['data'] = crypt(aArgs['data'],"$1$%s$"%aCTX.config['salt'])
+ ret['data'] = crypt(aArgs['data'],"$1$%s$"%aRT.config['salt'])
  return ret
 
 #
 #
-def user_info(aCTX, aArgs):
+def user_info(aRT, aArgs):
  """Function docstring for user_info TBD
 
  Args:
@@ -167,18 +167,18 @@ def user_info(aCTX, aArgs):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    # Password at least 6 characters
    if len(aArgs.get('password','')) > 5:
-    aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aCTX.config['salt']).split('$')[3]
+    aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aRT.config['salt']).split('$')[3]
    else:
     ret['password_check'] = 'OK' if (aArgs.pop('password',None) is None) else 'NOT_OK'
    if id != 'new':
     ret['update'] = (db.update_dict('users',aArgs,"id=%s"%id) == 1)
    else:
     if 'password' not in aArgs:
-     aArgs['password'] = crypt('changeme','$1$%s$'%aCTX.config['salt']).split('$')[3]
+     aArgs['password'] = crypt('changeme','$1$%s$'%aRT.config['salt']).split('$')[3]
     ret['update'] = (db.insert_dict('users',aArgs) == 1)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 
@@ -193,7 +193,7 @@ def user_info(aCTX, aArgs):
 
 #
 #
-def user_delete(aCTX, aArgs):
+def user_delete(aRT, aArgs):
  """Function docstring for user_delete TBD
 
  Args:
@@ -201,14 +201,14 @@ def user_delete(aCTX, aArgs):
 
  Output:
  """
- with aCTX.db as db:
+ with aRT.db as db:
   res = (db.execute("DELETE FROM users WHERE id = '%s'"%aArgs['id']) == 1)
  return { 'deleted':res }
 
 ################################ SERVERS ##################################
 #
 #
-def server_list(aCTX, aArgs):
+def server_list(aRT, aArgs):
  """Function docstring for server_list TBD
 
  Args:
@@ -217,14 +217,14 @@ def server_list(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT servers.id, st.service, servers.node, st.type, servers.ui FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY servers.node"%("type = '%s'"%aArgs['type'] if 'type' in aArgs else "TRUE"))
   ret['data']= db.get_rows()
  return ret
 
 #
 #
-def server_info(aCTX, aArgs):
+def server_info(aRT, aArgs):
  """Function docstring for server_info TBD
 
  Args:
@@ -235,8 +235,8 @@ def server_info(aCTX, aArgs):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with aCTX.db as db:
-  ret['nodes'] = list(aCTX.nodes.keys())
+ with aRT.db as db:
+  ret['nodes'] = list(aRT.nodes.keys())
   if op == 'update':
    if aArgs.get('ui') == 'None':
     aArgs['ui'] = 'NULL'
@@ -253,7 +253,7 @@ def server_info(aCTX, aArgs):
    if op == 'update':
     for x in ret['services']:
      if ret['data']['type_id'] == x['id']:
-      aCTX.services[int(id)] = {'node':ret['data']['node'],'service':x['service'],'type':x['type']}
+      aRT.services[int(id)] = {'node':ret['data']['node'],'service':x['service'],'type':x['type']}
       break
   else:
    ret['data'] = {'id':'new','node':None,'type_id':None,'ui':''}
@@ -264,7 +264,7 @@ def server_info(aCTX, aArgs):
 
 #
 #
-def server_delete(aCTX, aArgs):
+def server_delete(aRT, aArgs):
  """Function docstring for server_delete TBD
 
  Args:
@@ -273,14 +273,14 @@ def server_delete(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = db.execute("DELETE FROM servers WHERE id = %s"%aArgs['id'])
-  aCTX.services.pop(int(aArgs['id']),None)
+  aRT.services.pop(int(aArgs['id']),None)
  return ret
 
 #
 #
-def server_operation(aCTX, aArgs):
+def server_operation(aRT, aArgs):
  """Server status sends 'op' message to server @ node and convey result. What 'op' means is server dependend
 
  Args:
@@ -289,9 +289,9 @@ def server_operation(aCTX, aArgs):
 
  Output:
  """
- infra = aCTX.services[int(aArgs['id'])]
+ infra = aRT.services[int(aArgs['id'])]
  try:
-  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],aArgs['op'])(aArgs = {'id':aArgs['id']})
+  ret = aRT.node_function(infra['node'],"services.%s"%infra['service'],aArgs['op'])(aArgs = {'id':aArgs['id']})
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
  else:
@@ -301,7 +301,7 @@ def server_operation(aCTX, aArgs):
 ####################################### ACTIVITIES #######################################
 #
 #
-def activity_list(aCTX, aArgs):
+def activity_list(aRT, aArgs):
  """ Function docstring for activity_list. TBD
 
  Args:
@@ -317,14 +317,14 @@ def activity_list(aCTX, aArgs):
   select = "activities.id, activities.event"
  else:
   select = "activities.id"
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT %s, activity_types.type AS type, activity_types.class AS class, DATE_FORMAT(date_time,'%%H:%%i') AS time, DATE_FORMAT(date_time, '%%Y-%%m-%%d') AS date, alias AS user FROM activities LEFT JOIN activity_types ON activities.type_id = activity_types.id LEFT JOIN users ON users.id = activities.user_id ORDER BY date_time DESC LIMIT %s, %s"%(select,ret['start'],ret['end']))
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def activity_daily(aCTX, aArgs):
+def activity_daily(aRT, aArgs):
  """ Function docstring for activity_daily.
 
  Args:
@@ -340,7 +340,7 @@ def activity_daily(aCTX, aArgs):
  else:
   ret['date'] = aArgs['date']
 
- with aCTX.db as db:
+ with aRT.db as db:
   if 'users' in aArgs.get('extras',[]):
    db.query("SELECT id,alias FROM users ORDER BY alias")
    ret['users'] = {x['id']:x for x in db.get_rows()}
@@ -350,7 +350,7 @@ def activity_daily(aCTX, aArgs):
 
 #
 #
-def activity_info(aCTX, aArgs):
+def activity_info(aRT, aArgs):
  """ Function docstring for activity_info. TBD
 
  Args:
@@ -366,7 +366,7 @@ def activity_info(aCTX, aArgs):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   extras = aArgs.get('extras',[])
   if 'types' in extras:
    db.query("SELECT * FROM activity_types ORDER BY type ASC")
@@ -394,7 +394,7 @@ def activity_info(aCTX, aArgs):
 
 #
 #
-def activity_delete(aCTX, aArgs):
+def activity_delete(aRT, aArgs):
  """ Function docstring for activity_delete. TBD
 
  Args:
@@ -403,13 +403,13 @@ def activity_delete(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = (db.execute("DELETE FROM activities WHERE id = '%s'"%aArgs['id']) == 1)
  return ret
 
 #
 #
-def activity_type_list(aCTX, aArgs):
+def activity_type_list(aRT, aArgs):
  """ Function docstring for activity_type_list. TBD
 
  Args:
@@ -417,14 +417,14 @@ def activity_type_list(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT * FROM activity_types ORDER BY type ASC")
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def activity_type_info(aCTX, aArgs):
+def activity_type_info(aRT, aArgs):
  """ Function docstring for activity_type_info. TBD
 
  Args:
@@ -434,7 +434,7 @@ def activity_type_info(aCTX, aArgs):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    if id != 'new':
     ret['update'] = db.update_dict('activity_types',aArgs,"id=%s"%id)
@@ -452,7 +452,7 @@ def activity_type_info(aCTX, aArgs):
 
 #
 #
-def activity_type_delete(aCTX, aArgs):
+def activity_type_delete(aRT, aArgs):
  """ Function docstring for activity_type_delete. TBD
 
  Args:
@@ -461,6 +461,6 @@ def activity_type_delete(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = (db.execute("DELETE FROM activity_types WHERE id = '%s'"%aArgs['id']) == 1)
  return ret

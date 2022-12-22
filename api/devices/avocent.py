@@ -6,7 +6,7 @@ from rims.devices.avocent import Device
 
 #
 #
-def update(aCTX, aArgs):
+def update(aRT, aArgs):
  """Function docstring for update TBD
 
  Args:
@@ -19,7 +19,7 @@ def update(aCTX, aArgs):
  """
  ret = {}
  if not (int(aArgs['slot']) == 0 and int(aArgs['unit']) == 0):
-  avocent = Device(aCTX, aArgs['device_id'])
+  avocent = Device(aRT, aArgs['device_id'])
   ret = avocent.set_name(int(aArgs['slot']),int(aArgs['unit']),aArgs['text'])
  else:
   ret['info'] = 'not updating 0.0'
@@ -28,7 +28,7 @@ def update(aCTX, aArgs):
 
 #
 #
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """Function docstring for info TBD
 
  Args:
@@ -39,9 +39,9 @@ def info(aCTX, aArgs):
   - info
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   if aArgs.get('op') == 'lookup':
-   pdu = Device(aCTX,aArgs['device_id'])
+   pdu = Device(aRT,aArgs['device_id'])
    slots = pdu.get_slot_names()
    args = {'slots':len(slots)}
    if args['slots'] > 0:
@@ -59,7 +59,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def inventory(aCTX, aArgs):
+def inventory(aRT, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -69,7 +69,7 @@ def inventory(aCTX, aArgs):
   - data. list of inventory items
  """
  ret = {}
- avocent = Device(aCTX,aArgs['device_id'])
+ avocent = Device(aRT,aArgs['device_id'])
  try:    ret['data'] = avocent.get_inventory()
  except: ret['status'] = 'NOT_OK'
  else:   ret['status'] = 'OK'
@@ -77,7 +77,7 @@ def inventory(aCTX, aArgs):
 
 #
 #
-def op(aCTX, aArgs):
+def op(aRT, aArgs):
  """Function docstring for op TBD
 
  Args:
@@ -91,7 +91,7 @@ def op(aCTX, aArgs):
   - state. New state
  """
  from time import sleep
- avocent = Device(aCTX,aArgs['device_id'])
+ avocent = Device(aRT,aArgs['device_id'])
  ret = avocent.set_state(aArgs['slot'],aArgs['unit'],aArgs['state'])
  sleep(10)
  ret['state'] = avocent.get_state(aArgs['slot'],aArgs['unit'])['state']

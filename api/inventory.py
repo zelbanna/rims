@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ############################################### INVENTORY ################################################
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """ Function retrives the inventory
 
  Args:
@@ -29,14 +29,14 @@ def list(aCTX, aArgs):
  if 'extra' in aArgs:
   fields.extend(['inv.%s'%x for x in aArgs['extra']])
 
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT %s FROM %s WHERE %s %s"%(", ".join(fields),' LEFT JOIN '.join(tables),' AND '.join(flter),sort))
   ret['data'] = db.get_rows() if 'dict' not in aArgs else db.get_dict(aArgs['dict'])
  return ret
 
 #
 #
-def vendor_list(aCTX, aArgs):
+def vendor_list(aRT, aArgs):
  """Function retrieves vendors in inventory
 
  Args:
@@ -44,14 +44,14 @@ def vendor_list(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT vendor, count(*) AS count FROM inventory GROUP BY vendor")
   ret['data']  = db.get_rows()
  return ret
 
 #
 #
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """ Function operates on inventory items
 
  Args:
@@ -74,7 +74,7 @@ def info(aCTX, aArgs):
  ret = {}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    for tp in ['license','support_contract']:
     x = aArgs.get(tp,0)
@@ -106,7 +106,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """Function deleted an inventory item
 
  Args:
@@ -115,6 +115,6 @@ def delete(aCTX, aArgs):
  Output:
   - deleted (bool)
  """
- with aCTX.db as db:
+ with aRT.db as db:
   res = (db.execute("DELETE FROM inventory WHERE id = %s"%aArgs['id']) == 1)
  return {'deleted':res}

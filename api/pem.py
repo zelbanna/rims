@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """ Function provides PEM management for a device
 
  Args:
@@ -21,14 +21,14 @@ def list(aCTX, aArgs):
  if aArgs.get('lookup'):
   select.append('devices.hostname AS pdu_name')
   tables.append('devices ON dp.pdu_id = devices.id')
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT %s FROM %s WHERE device_id = %s"%(', '.join(select),' LEFT JOIN '.join(tables),id))
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """ Function provides pem management for a PEM
 
  Args:
@@ -44,7 +44,7 @@ def info(aCTX, aArgs):
  ret = {}
  id = aArgs.pop('id',None)
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    if id != 'new':
     ret['update'] = (db.update_dict('device_pems',aArgs,'id=%s'%id) > 0)
@@ -67,7 +67,7 @@ def info(aCTX, aArgs):
    pdu_info = db.get_row()
    try:
     module = import_module("rims.devices.%s"%pdu_info['type'])
-    pdu = getattr(module,'Device',None)(aCTX, ret['data']['pdu_id'],pdu_info['ip'])
+    pdu = getattr(module,'Device',None)(aRT, ret['data']['pdu_id'],pdu_info['ip'])
     pdu_res = pdu.set_name( int(pdu_info['pdu_slot']), int(ret['data']['pdu_unit']) , "%s-%s"%(hostname,ret['data']['name']) )
     ret['result'] = pdu_res
    except Exception as e:
@@ -79,7 +79,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """ Function deletes a PEM
 
  Args:
@@ -88,7 +88,7 @@ def delete(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = (db.execute("DELETE FROM device_pems WHERE id = %s"%aArgs['id']) == 1)
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret

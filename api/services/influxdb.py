@@ -13,11 +13,11 @@ __type__ = "TSDB"
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  try:
-  res = aCTX.influxdb.sync()
+  res = aRT.influxdb.sync()
  except Exception as e:
-  aCTX.log(f"influxdb error: {str(e)}")
+  aRT.log(f"influxdb error: {str(e)}")
   ret = {'status':'NOT_OK','function':'influxdb_process','output':str(e)}
  else:
   if res >= 0:
@@ -28,10 +28,10 @@ def process(aCTX, aArgs):
 
 #
 #
-def query(aCTX, aArgs):
+def query(aRT, aArgs):
  ret = {}
  try:
-  res = aCTX.influxdb.query(aArgs['query'])
+  res = aRT.influxdb.query(aArgs['query'])
   if any(res):
    ret['data'] = [{'field':r.get_field(), 'val':r.get_val()} for r in res.records]
    ret['status'] = 'OK'
@@ -46,7 +46,7 @@ def query(aCTX, aArgs):
 ################################# Service OPs #################################
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function docstring for leases. No OP
 
  Args:
@@ -55,11 +55,11 @@ def status(aCTX, aArgs):
  Output:
   - data
  """
- return {'data':aCTX.influxdb.status(),'state':aCTX.influxdb.active(), 'buffer':aCTX.influxdb.buffer(), 'status':'OK' }
+ return {'data':aRT.influxdb.status(),'state':aRT.influxdb.active(), 'buffer':aRT.influxdb.buffer(), 'status':'OK' }
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """No OP
 
  Args:
@@ -70,13 +70,13 @@ def sync(aCTX, aArgs):
   - output. (output from command)
   - status. (operation result)
  """
- ret = process(aCTX, aArgs)
+ ret = process(aRT, aArgs)
  ret.pop('function',None)
  return ret
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -86,12 +86,12 @@ def restart(aCTX, aArgs):
   - output
   - result 'OK'/'NOT_OK'
  """
- aCTX.influxdb.active(True)
+ aRT.influxdb.active(True)
  return {'status':'OK','code':0,'output':"start"}
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -100,13 +100,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('influxdb',{})
+ settings = aRT.config['services'].get('influxdb',{})
  params = ['url','org','token','bucket']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -114,12 +114,12 @@ def start(aCTX, aArgs):
  Output:
   - status
  """
- aCTX.influxdb.active(True)
+ aRT.influxdb.active(True)
  return {'status':'OK'}
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -127,12 +127,12 @@ def stop(aCTX, aArgs):
  Output:
   - status
  """
- aCTX.influxdb.active(False)
+ aRT.influxdb.active(False)
  return {'status':'OK'}
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:
@@ -140,4 +140,4 @@ def close(aCTX, aArgs):
  Output:
   - status
  """
- return process(aCTX, aArgs)
+ return process(aRT, aArgs)

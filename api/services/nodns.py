@@ -8,7 +8,7 @@ from os import linesep
 #################################### Domains #######################################
 #
 #
-def domain_list(aCTX, aArgs):
+def domain_list(aRT, aArgs):
  """Function returns all domains by this server
 
  Args:
@@ -19,15 +19,15 @@ def domain_list(aCTX, aArgs):
   - endpoint
  """
  ret = {'status':'OK'}
- with aCTX.db as db:
-  ret['count'] = db.query("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns'"%aCTX.node)
+ with aRT.db as db:
+  ret['count'] = db.query("SELECT foreign_id AS id, name,'MASTER' AS type,'127.0.0.1' AS master,0 AS notified_serial FROM domains JOIN servers ON domains.server_id = servers.id AND servers.node = '%s' JOIN service_types AS st ON servers.type_id = st.id AND st.service = 'nodns'"%aRT.node)
   ret['data'] = db.get_rows()
-  ret['endpoint'] = aCTX.config['services']['nodns'].get('endpoint','127.0.0.1:53')
+  ret['endpoint'] = aRT.config['services']['nodns'].get('endpoint','127.0.0.1:53')
  return ret
 
 #
 #
-def domain_info(aCTX, aArgs):
+def domain_info(aRT, aArgs):
  """ Function provide domain info and modification
 
  Args:
@@ -42,8 +42,8 @@ def domain_info(aCTX, aArgs):
  id = aArgs['id']
  op = aArgs.pop('op',None)
  aArgs.pop('endpoint',None)
- ret = {'endpoint':aCTX.config['services']['nodns'].get('endpoint','127.0.0.1:53')}
- with aCTX.db as db:
+ ret = {'endpoint':aRT.config['services']['nodns'].get('endpoint','127.0.0.1:53')}
+ with aRT.db as db:
   if op == "update":
    ret['data'] = aArgs
    if id != 'new':
@@ -64,7 +64,7 @@ def domain_info(aCTX, aArgs):
 
 #
 #
-def domain_delete(aCTX, aArgs):
+def domain_delete(aRT, aArgs):
  """ Let local domain database management handle this, NO OP
 
  Args:
@@ -79,7 +79,7 @@ def domain_delete(aCTX, aArgs):
 #################################### Records #######################################
 #
 #
-def record_list(aCTX, aArgs):
+def record_list(aRT, aArgs):
  """ List device information where we have something -> i.e. on .local devices
 
  Args:
@@ -90,7 +90,7 @@ def record_list(aCTX, aArgs):
  """
  ret = {'status':'OK'}
  select = []
- with aCTX.db as db:
+ with aRT.db as db:
   if 'domain_id' in aArgs:
    select.append("domain_id = '%s'"%aArgs['domain_id'])
   if 'type' in aArgs:
@@ -102,7 +102,7 @@ def record_list(aCTX, aArgs):
 
 #
 #
-def record_info(aCTX, aArgs):
+def record_info(aRT, aArgs):
  """if new, do a mapping of either arpa or ip, else show ip info
 
  Args:
@@ -118,7 +118,7 @@ def record_info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  aArgs.pop('serial',None)
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'new':
    ret = {'status':'OK','data':{ 'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600' }}
   elif op == 'info':
@@ -145,7 +145,7 @@ def record_info(aCTX, aArgs):
 
 #
 #
-def record_delete(aCTX, aArgs):
+def record_delete(aRT, aArgs):
  """ Function deletes records info per type
 
  Args:
@@ -158,14 +158,14 @@ def record_delete(aCTX, aArgs):
   - status
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = bool(db.execute("DELETE FROM records WHERE domain_id = '%(domain_id)s' AND name = '%(name)s' AND type = '%(type)s'"%aArgs))
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
 
 ############################### Tools #################################
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """ Synchronize device table and recreate records, write resolv info to file
 
  Args:
@@ -174,7 +174,7 @@ def sync(aCTX, aArgs):
  Output:
  """
  ret = {'status':'OK'}
- with aCTX.db as db:
+ with aRT.db as db:
   # Empty all
   db.execute("TRUNCATE records")
   # Auto insert all IPAM A records
@@ -186,18 +186,18 @@ def sync(aCTX, aArgs):
   # TODO: Retrive all reverse records, and their reverse_zone_id, parse like in sync_data
 
   # Write to local 'hosts' file or similar
-  if aCTX.config['services']['nodns'].get('file'):
+  if aRT.config['services']['nodns'].get('file'):
    try:
-    with open(aCTX.config['services']['nodns']['file'],'w+') as ndfile:
+    with open(aRT.config['services']['nodns']['file'],'w+') as ndfile:
      db.query("SELECT name, content FROM records WHERE type = 'A'")
      ndfile.write(linesep.join(f"{rec['content']}\t{rec['name']}" for rec in db.get_rows() ))
    except Exception as e:
-    aCTX.log("Error writing NoDNS file: %s"%str(e))
+    aRT.log("Error writing NoDNS file: %s"%str(e))
  return ret
 
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """ Function returns server status
 
  Args:
@@ -208,7 +208,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def statistics(aCTX, aArgs):
+def statistics(aRT, aArgs):
  """ Function returns server statistics
 
  Args:
@@ -219,7 +219,7 @@ def statistics(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -233,7 +233,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mappings of anticipated config vs actual
 
  Args:
@@ -242,13 +242,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('nodns',{})
+ settings = aRT.config.get('nodns',{})
  params = ['file']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -260,7 +260,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -272,7 +272,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

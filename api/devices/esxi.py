@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 from rims.devices.esxi import Device
 
 #
-def inventory(aCTX, aArgs):
+def inventory(aRT, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -16,7 +16,7 @@ def inventory(aCTX, aArgs):
  """
  ret = {}
  try:
-  esxi = Device(aCTX, aArgs['device_id'])
+  esxi = Device(aRT, aArgs['device_id'])
   ret['data'] = esxi.get_vm_list(aArgs.get('sort','name'))
  except Exception as err:
   ret['status'] = 'NOT_OK'
@@ -28,7 +28,7 @@ def inventory(aCTX, aArgs):
 
 #
 #
-def vm_info(aCTX, aArgs):
+def vm_info(aRT, aArgs):
  """Function info returns state information for VM
 
  Args:
@@ -40,7 +40,7 @@ def vm_info(aCTX, aArgs):
  """
  ret = {}
  try:
-  esxi = Device(aCTX, aArgs['device_id'])
+  esxi = Device(aRT, aArgs['device_id'])
   ret['data'] = esxi.get_info(aArgs['vm_id'])
  except Exception as err:
   ret['status'] = 'NOT_OK'
@@ -48,7 +48,7 @@ def vm_info(aCTX, aArgs):
  else:
   ret['status'] = 'OK'
   ret['interfaces'] = ret['data'].pop('interfaces',None)
-  with aCTX.db as db:
+  with aRT.db as db:
    if (db.query("SELECT dvu.device_id, dvu.host_id, dvu.snmp_id, dvu.instance_uuid, dev.hostname AS device_name, dvu.vm FROM device_vm_uuid AS dvu LEFT JOIN devices AS dev ON dev.id = dvu.device_id WHERE bios_uuid = '%s'"%ret['data']['bios_uuid']) == 1):
     ret['data'].update(db.get_row())
     vm = ret['data'].pop('vm',None)
@@ -74,7 +74,7 @@ def vm_info(aCTX, aArgs):
 
 #
 #
-def vm_map(aCTX, aArgs):
+def vm_map(aRT, aArgs):
  """ Function maps or retrieves VM to device ID mapping
 
  Args:
@@ -87,7 +87,7 @@ def vm_map(aCTX, aArgs):
  """
  ret = {}
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    ret['update'] = (db.execute("UPDATE device_vm_uuid SET device_id = '%(device_id)s', host_id = '%(host_id)s' WHERE bios_uuid = '%(bios_uuid)s'"%aArgs) == 1)
   ret['data'] = db.get_val('device_id') if (db.query("SELECT device_id FROM device_vm_uuid WHERE bios_uuid = '%(bios_uuid)s'"%aArgs) > 0) else ''
@@ -97,7 +97,7 @@ def vm_map(aCTX, aArgs):
 #
 # TODO: Make UUID required and make sure react pass that variable with the operation
 #
-def vm_op(aCTX, aArgs):
+def vm_op(aRT, aArgs):
  """Function op provides VM operation control
 
  Args:
@@ -108,13 +108,13 @@ def vm_op(aCTX, aArgs):
 
  Output:
  """
- with Device(aCTX, aArgs['device_id']) as esxi:
+ with Device(aRT, aArgs['device_id']) as esxi:
   ret = esxi.vm_operation(aArgs['op'],aArgs['vm_id'],aUUID = aArgs.get('uuid'))
  return ret
 
 #
 #
-def vm_snapshot(aCTX, aArgs):
+def vm_snapshot(aRT, aArgs):
  """Function snapshot provides VM snapshot control
 
  Args:
@@ -127,13 +127,13 @@ def vm_snapshot(aCTX, aArgs):
   - data (optional)
   - status
  """
- with Device(aCTX, aArgs['device_id']) as esxi:
+ with Device(aRT, aArgs['device_id']) as esxi:
   ret = esxi.snapshot(aArgs['op'],aArgs['vm_id'], aArgs.get('snapshot'))
  return ret
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Settings:
@@ -148,7 +148,7 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config.get('esxi',{})
- settings.update(aCTX.config.get('snmp',{}))
+ settings = aRT.config.get('esxi',{})
+ settings.update(aRT.config.get('snmp',{}))
  params = ['username','password','read','write','timeout']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}

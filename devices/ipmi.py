@@ -17,12 +17,12 @@ from os import devnull
 
 class Device(GenericDevice):
 
- def __init__(self, aCTX, aID, aIP = None):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
+ def __init__(self, aRT, aID, aIP = None):
+  GenericDevice.__init__(self, aRT, aID, aIP)
 
  def get_info(self, agrep):
   result = []
-  readout = check_output("ipmitool -H " + self._ip + " -U " + self._ctx.config['ipmi']['username'] + " -P " + self._ctx.config['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True).decode()
+  readout = check_output("ipmitool -H " + self._ip + " -U " + self._rt.config['ipmi']['username'] + " -P " + self._rt.config['ipmi']['password'] + " sdr | grep -E '" + agrep + "'",shell=True).decode()
   for fanline in readout.split('\n'):
    if fanline != "":
     fan = fanline.split()
@@ -33,5 +33,5 @@ class Device(GenericDevice):
   FNULL = open(devnull, 'w')
   rear  = strToHex(arear)
   front = strToHex(afront)
-  ipmistring = "ipmitool -H " + self._ip + " -U " + self._ctx.config['ipmi']['username'] + " -P " + self._ctx.config['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
+  ipmistring = "ipmitool -H " + self._ip + " -U " + self._rt.config['ipmi']['username'] + " -P " + self._rt.config['ipmi']['password'] + " raw 0x3a 0x01 0x00 0x00 " + rear + " " + rear + " " + front + " " + front + " 0x00 0x00"
   return check_call(ipmistring,stdout=FNULL,stderr=FNULL,shell=True)

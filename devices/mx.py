@@ -11,5 +11,5 @@ from rims.devices.junos import Junos
 
 class Device(Junos):
 
- def __init__(self, aCTX, aID, aIP = None):
-  Junos.__init__(self, aCTX, aID, aIP)
+ def __init__(self, aRT, aID, aIP = None):
+  Junos.__init__(self, aRT, aID, aIP)

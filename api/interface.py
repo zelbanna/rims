@@ -7,7 +7,7 @@ from importlib import import_module
 ############################################### INTERFACES ################################################
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """List interfaces for a specific device
 
  Args:
@@ -18,7 +18,7 @@ def list(aCTX, aArgs):
  """
  ret = {}
 
- with aCTX.db as db:
+ with aRT.db as db:
   columns = ['di.interface_id', 'di.ipam_id', 'di.class', 'INET6_NTOA(ia.ip) AS ip', 'di.connection_id', 'LPAD(hex(di.mac),12,0) AS mac','di.state AS if_state', 'ia.state AS ip_state', 'di.snmp_index', 'di.name AS name', 'di.description']
   tables = ['ipam_addresses AS ia ON di.ipam_id = ia.id']
   if aArgs.get('device_id'):
@@ -38,7 +38,7 @@ def list(aCTX, aArgs):
 
 #
 #
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """Show or update a specific interface for a device
 
  Args:
@@ -62,7 +62,7 @@ def info(aCTX, aArgs):
  iid = aArgs.pop('interface_id','new')
  extra = aArgs.pop('extra',[])
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    # IPAM_id has it's own ops
    aArgs.pop('ipam_id',None)
@@ -110,9 +110,9 @@ def info(aCTX, aArgs):
     data = db.get_row()
     from rims.api.ipam import address_info, address_sanitize
     from rims.api.dns import record_info, record_delete
-    data['hostname'] = address_sanitize(aCTX, {'hostname':data['hostname']})['sanitized']
+    data['hostname'] = address_sanitize(aRT, {'hostname':data['hostname']})['sanitized']
     # Update IP hostname and DNS with 'device-interface' name
-    res = address_info(aCTX, {'op':'update_only','id':data['ipam_id'],'hostname':'%s-%s'%(data['hostname'],data['name'])})
+    res = address_info(aRT, {'op':'update_only','id':data['ipam_id'],'hostname':'%s-%s'%(data['hostname'],data['name'])})
     # If this happens to be the management ip and device has a domain too, check what is the new interface IP hostname and update the CNAME
     if data['system_ipam_id'] == data['ipam_id'] and data['a_domain_id']:
      tp = 'A' if 'A' in res else 'AAAA'
@@ -120,10 +120,10 @@ def info(aCTX, aArgs):
      args = {'domain_id':data['a_domain_id'], 'name':'%s.%s'%(data['hostname'],data['domain']),'type':tp}
      if FWD['create'] == 'OK':
       args.update({'op':'update', 'content':res['ip']})
-      res = record_info(aCTX, args)
+      res = record_info(aRT, args)
       ret[tp] = res['data']
      else:
-      res = record_delete(aCTX, args)
+      res = record_delete(aRT, args)
     ret['status'] = res['status']
     ret['update'] = ret['status'] == 'OK'
    else:
@@ -146,7 +146,7 @@ def info(aCTX, aArgs):
    else:
     args['hostname'] = 'unknown'
    from rims.api.ipam import address_info
-   ret['ipam'] = address_info(aCTX, args)
+   ret['ipam'] = address_info(aRT, args)
    ret['status'] = ret['ipam'].pop('status','NOT_OK')
    if ret['status'] == 'OK':
     db.execute("INSERT INTO interface_alternatives SET interface_id = %s, ipam_id = %s"%(iid,ret['ipam']['data']['id']))
@@ -176,7 +176,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """Delete device interfaces using either id of interface or device (the latter where interfaces are not up or bound to ip addresses)
 
  Args:
@@ -188,22 +188,22 @@ def delete(aCTX, aArgs):
   - deleted. Number of deleted interfaces
  """
  ret = {'deleted':0,'cleared':0}
- with aCTX.db as db:
+ with aRT.db as db:
   from rims.api.ipam import address_delete
   interfaces = [aArgs['interface_id']] if 'interface_id' in aArgs else aArgs['interfaces']
   for id in interfaces:
    if db.query("SELECT ipam_id FROM interfaces AS di WHERE di.interface_id = %s AND di.ipam_id IS NOT NULL"%id):
-    address_delete(aCTX, {'id':db.get_val('ipam_id')})
+    address_delete(aRT, {'id':db.get_val('ipam_id')})
    if db.query("SELECT ipam_id FROM interface_alternatives AS iia WHERE interface_id = %s"%id):
     for ipam in db.get_rows():
-     address_delete(aCTX, {'id':ipam['ipam_id']})
+     address_delete(aRT, {'id':ipam['ipam_id']})
    ret['cleared'] += db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id = %s)"%id)
    ret['deleted'] += db.execute("DELETE FROM interfaces WHERE interface_id = %s"%id)
  return ret
 
 #
 #
-def cleanup(aCTX, aArgs):
+def cleanup(aRT, aArgs):
  """Cleanup interfaces using id of device. Interfaces which doesn't have any associations
 
  Args:
@@ -213,13 +213,13 @@ def cleanup(aCTX, aArgs):
   - delete. Number of deleted interfaces
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['delete'] = db.execute("DELETE FROM interfaces WHERE device_id = %(device_id)s AND manual = 0 AND state != 'up' AND ipam_id IS NULL AND connection_id IS NULL AND NOT EXISTS (SELECT 1 FROM interface_alternatives AS iia WHERE iia.interface_id = interfaces.interface_id)"%aArgs)
  return ret
 
 #
 #
-def addresses(aCTX, aArgs):
+def addresses(aRT, aArgs):
  """Function returns all addresses associated with interface
 
  Args:
@@ -231,14 +231,14 @@ def addresses(aCTX, aArgs):
 
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['primary'] = db.get_row() if db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id WHERE di.interface_id = %s"%aArgs['interface_id']) > 0 else {}
   ret['alternatives'] = db.get_rows() if db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip FROM ipam_addresses AS ia LEFT JOIN interface_alternatives AS iia ON iia.ipam_id = ia.id WHERE iia.interface_id = %s"%aArgs['interface_id']) > 0 else []
  return ret
 
 #
 #
-def connect(aCTX, aArgs):
+def connect(aRT, aArgs):
  """Function connects two device interfaces simultaneously to each other, removes old interfaces before
 
  Args:
@@ -250,7 +250,7 @@ def connect(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['clear'] = db.execute("DELETE FROM connections WHERE id IN (SELECT DISTINCT connection_id FROM interfaces WHERE interface_id IN (%(a_id)s,%(b_id)s))"%aArgs)
   if not aArgs.get('disconnect',False):
    db.execute("INSERT INTO connections SET map = '%s'"%('true' if aArgs.get('map',True) else 'false'))
@@ -262,7 +262,7 @@ def connect(aCTX, aArgs):
 
 #
 #
-def disconnect(aCTX, aArgs):
+def disconnect(aRT, aArgs):
  """Function disconnects a connection
 
  Args:
@@ -271,14 +271,14 @@ def disconnect(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['clear'] = db.execute("DELETE FROM connections WHERE id = '%s'"%aArgs['connection_id'])
  return ret
 
 
 #
 #
-def snmp(aCTX, aArgs):
+def snmp(aRT, aArgs):
  """ SNMP Discovery function for interfaces. Either provide info for a single interface or trying to detect new interfaces.
 
  Args:
@@ -289,12 +289,12 @@ def snmp(aCTX, aArgs):
  """
 
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT INET6_NTOA(ia.ip) AS ip, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aArgs['device_id'])
   info = db.get_row()
   try:
    module  = import_module("rims.devices.%s"%(info['type']))
-   dev = getattr(module,'Device',lambda x,y: None)(aCTX, aArgs['device_id'], info['ip'])
+   dev = getattr(module,'Device',lambda x,y: None)(aRT, aArgs['device_id'], info['ip'])
    if aArgs.get('index'):
     data = dev.interface(aArgs['index'])
    else:
@@ -329,7 +329,7 @@ def snmp(aCTX, aArgs):
 
 #
 #
-def stats(aCTX, aArgs):
+def stats(aRT, aArgs):
  """ Function fetches interface stats for a particular device interface(s)
 
  Args:
@@ -340,10 +340,10 @@ def stats(aCTX, aArgs):
  """
  ret = {'status':'NOT_OK'}
  from rims.devices.generic import Device
- with aCTX.db as db:
+ with aRT.db as db:
   if db.query("SELECT snmp_index,interface_id FROM interfaces WHERE device_id = %s AND snmp_index > 0"%aArgs['device_id']):
    interfaces = db.get_rows()
-   device = Device(aCTX, aArgs['device_id'], aArgs.get('ip'))
+   device = Device(aRT, aArgs['device_id'], aArgs.get('ip'))
    res = device.data_points([],interfaces)
    ret.update(res)
  return ret
@@ -351,7 +351,7 @@ def stats(aCTX, aArgs):
 
 #
 #
-def connection_info(aCTX, aArgs):
+def connection_info(aRT, aArgs):
  """Function to find out connection info
 
  Args:
@@ -365,7 +365,7 @@ def connection_info(aCTX, aArgs):
  ret = {}
  id = aArgs.get('connection_id')
  op = aArgs.get('op')
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    ret['status'] = 'OK' if (db.execute("UPDATE connections SET map = '%s' WHERE id = '%s'"%('true' if aArgs.get('map',False) else 'false',id)) > 0) else 'NOT_OK'
   ret['found'] = bool(db.query("SELECT map FROM connections WHERE id = '%s'"%id))
@@ -377,7 +377,7 @@ def connection_info(aCTX, aArgs):
 
 #
 #
-def lldp(aCTX, aArgs):
+def lldp(aRT, aArgs):
  """Function to find out lldp information
 
  Args:
@@ -388,12 +388,12 @@ def lldp(aCTX, aArgs):
   - LLDP info
  """
  from rims.devices.generic import Device
- device = Device(aCTX, aArgs['device_id'], aArgs.get('ip'))
+ device = Device(aRT, aArgs['device_id'], aArgs.get('ip'))
  return device.lldp()
 
 #
 #
-def lldp_mapping(aCTX, aArgs):
+def lldp_mapping(aRT, aArgs):
  """Function discovers connections using lldp info
 
  Args:
@@ -407,12 +407,12 @@ def lldp_mapping(aCTX, aArgs):
   except:
    return 0
 
- with aCTX.db as db:
+ with aRT.db as db:
   if db.query("SELECT dt.name AS type, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE devices.id = '%(device_id)s'"%aArgs):
    dev = db.get_row()
    try:
     module = import_module("rims.devices.%s"%dev['type'])
-    info   = getattr(module,'Device',None)(aCTX, aArgs['device_id'],dev['ip']).lldp()
+    info   = getattr(module,'Device',None)(aRT, aArgs['device_id'],dev['ip']).lldp()
    except Exception as e:
     return {'status':'NOT_OK','info':'Could not load device lldp process','error':repr(e)}
    else:
@@ -420,13 +420,13 @@ def lldp_mapping(aCTX, aArgs):
     sql_intf = "SELECT interface_id, snmp_index, name, connection_id FROM interfaces WHERE device_id = %(device_id)s AND snmp_index > 0"
     if not db.query(sql_intf%aArgs):
      # INTERNAL from rims.api.interface import snmp
-     snmp(aCTX, aArgs)
+     snmp(aRT, aArgs)
      db.query(sql_intf%aArgs)
     interfaces = db.get_dict('snmp_index')
     for k,v in info.items():
      args = {}
      if not interfaces.get(int(k)):
-      aCTX.log(f"DEVICE_LOG({aArgs['device_id']}): LLDP local interface index not in database: {k}")
+      aRT.log(f"DEVICE_LOG({aArgs['device_id']}): LLDP local interface index not in database: {k}")
       v['status'] = 'no_local_interface'
       v['connection_id'] = None
       continue
@@ -476,7 +476,7 @@ def lldp_mapping(aCTX, aArgs):
 #################################### Monitor #################################
 #
 #
-def clear(aCTX, aArgs):
+def clear(aRT, aArgs):
  """ Clear all interface statistics
 
  Args:
@@ -484,13 +484,13 @@ def clear(aCTX, aArgs):
 
  """
  ret = {'status':'OK'}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.execute("UPDATE interfaces SET state = 'unknown' WHERE %s"%('TRUE' if not aArgs.get('device_id') else 'device_id = %s'%aArgs['device_id']))
  return ret
 
 #
 #
-def check(aCTX, aArgs):
+def check(aRT, aArgs):
  """ Initiate a status check for devices' interfaces.
 
  Args:
@@ -500,7 +500,7 @@ def check(aCTX, aArgs):
  """
  devices = []
 
- with aCTX.db as db:
+ with aRT.db as db:
   if db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))) and db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows()))):
    for dev in db.get_rows():
     if db.query("SELECT snmp_index,interface_id,state FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']):
@@ -510,17 +510,17 @@ def check(aCTX, aArgs):
  if devices:
   if 'repeat' in aArgs:
    # INTERNAL from rims.api.interface import process
-   aCTX.schedule_api_periodic(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aCTX.debug)
+   aRT.schedule_api_periodic(process,'interface_process',int(aArgs['repeat']),args = {'devices':devices}, output = aRT.debug)
    return {'status':'OK','function':'interface_check','detach_frequency':aArgs['repeat']}
   else:
    # INTERNAL from rims.api.interface import process
-   return process(aCTX,{'devices':devices})
+   return process(aRT,{'devices':devices})
  else:
   return {'status':'OK','info':'no interfaces'}
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  """ Function processes a list of devices and their interfaces
 
  Args:
@@ -529,16 +529,16 @@ def process(aCTX, aArgs):
  Output:
  """
  from rims.devices.generic import Device
- report = aCTX.node_function(aCTX.node if aCTX.db else 'master','interface','report', aHeader= {'X-Log':'false'})
+ report = aRT.node_function(aRT.node if aRT.db else 'master','interface','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'interface_process','changed':0}
 
  def __check_IF(aDev):
   if aDev['interfaces']:
    try:
-    device = Device(aCTX, aDev['device_id'], aDev['ip'])
+    device = Device(aRT, aDev['device_id'], aDev['ip'])
     probe  = device.interfaces_state()
    except Exception as e:
-    aCTX.log("interface_process issue for device %s: %s"%(aDev['device_id'],str(e)))
+    aRT.log("interface_process issue for device %s: %s"%(aDev['device_id'],str(e)))
    else:
     for intf in aDev['interfaces']:
      intf['old'] = intf['state']
@@ -549,12 +549,12 @@ def process(aCTX, aArgs):
      # from rims.api.interface import report
      report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
 
- aCTX.queue_block(__check_IF,aArgs['devices'])
+ aRT.queue_block(__check_IF,aArgs['devices'])
  return ret
 
 #
 #
-def report(aCTX, aArgs):
+def report(aRT, aArgs):
  """Function updates interface status
 
  Args:
@@ -565,7 +565,7 @@ def report(aCTX, aArgs):
  Output:
  """
  ret = {'status':'OK','function':'interface_report'}
- with aCTX.db as db:
+ with aRT.db as db:
   for chg in ['up','down']:
    if aArgs.get(chg):
     ret[chg] = db.execute("UPDATE interfaces SET state = '%s' WHERE interface_id IN (%s)"%(chg,",".join(str(x) for x in aArgs[chg])))

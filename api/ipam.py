@@ -12,7 +12,7 @@ def __detect_state(aIP):
 ##################################### Networks ####################################
 #
 #
-def network_list(aCTX, aArgs):
+def network_list(aRT, aArgs):
  """Lists networks
 
  Args:
@@ -28,14 +28,14 @@ def network_list(aCTX, aArgs):
   -- class
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT ipam_networks.id, CONCAT(INET6_NTOA(network),'/',mask) AS netasc, INET6_NTOA(gateway) AS gateway, description, st.service, IF(IS_IPV4(INET6_NTOA(network)),'v4','v6') AS class FROM ipam_networks LEFT JOIN servers ON ipam_networks.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id ORDER by network")
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def network_info(aCTX, aArgs):
+def network_info(aRT, aArgs):
  """Function docstring for info
 
  Args:
@@ -58,10 +58,10 @@ def network_info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  extra = aArgs.pop('extra',[])
 
- with aCTX.db as db:
+ with aRT.db as db:
   if 'servers' in extra:
    ret['servers'] = [{'id':'NULL','service':'N/A','node':'N/A'}]
-   ret['servers'].extend({'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'DHCP')
+   ret['servers'].extend({'id':k,'service':v['service'],'node':v['node']} for k,v in aRT.services.items() if v['type'] == 'DHCP')
 
   if op == 'update':
    try:
@@ -86,13 +86,13 @@ def network_info(aCTX, aArgs):
    ret['data'] = { 'id':'new', 'network':'0.0.0.0', 'mask':'24', 'gateway':'0.0.0.0', 'description':'New','reverse_zone_id':None,'server_id':None }
   if 'domains' in extra:
    from rims.api.dns import domain_ptr_list
-   ret['domains'] = domain_ptr_list(aCTX, {'prefix':ret['data']['network']})
+   ret['domains'] = domain_ptr_list(aRT, {'prefix':ret['data']['network']})
  return ret
 
 
 #
 #
-def network_delete(aCTX, aArgs):
+def network_delete(aRT, aArgs):
  """Function docstring for network_delete TBD.
 
  Args:
@@ -101,17 +101,17 @@ def network_delete(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT id, a_domain_id FROM ipam_addresses AS ia WHERE network_id = %s AND a_domain_id IS NOT NULL"%aArgs['id'])
   for id in db.get_rows():
     # INTERNAL from rims.api.ipam import address_delete
-   address_delete(aCTX, id)
+   address_delete(aRT, id)
   ret['deleted'] = bool(db.execute("DELETE FROM ipam_networks WHERE id = %s"%aArgs['id']))
  return ret
 
 #
 #
-def network_discover(aCTX, aArgs):
+def network_discover(aRT, aArgs):
  """ Function discovers _new_ IP:s that answer to ping within a certain network. A list of such IP:s are returned
 
  Args:
@@ -130,7 +130,7 @@ def network_discover(aCTX, aArgs):
  simultaneous = int(aArgs.get('simultaneous',20))
  ret = {'addresses':addresses}
 
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT CONCAT(INET6_NTOA(network),'/',mask) AS network, reverse_zone_id FROM ipam_networks WHERE id = %s"%aArgs['id'])
   info  = db.get_row()
   net = ip_network(info['network'])
@@ -140,10 +140,10 @@ def network_discover(aCTX, aArgs):
 
  if net.version == 4:
   try:
-   sema = aCTX.semaphore(simultaneous)
+   sema = aRT.semaphore(simultaneous)
    for ip in net.hosts():
     if ip not in existing:
-     aCTX.queue_semaphore(__detect_thread,sema,str(ip),addresses)
+     aRT.queue_semaphore(__detect_thread,sema,str(ip),addresses)
    for _ in range(simultaneous):
     sema.acquire()
   except Exception as err:
@@ -159,7 +159,7 @@ def network_discover(aCTX, aArgs):
 #
 # Addresses contains types, IP (v4 for now)
 #
-def address_list(aCTX, aArgs):
+def address_list(aRT, aArgs):
  """Allocation of IP addresses within a network.
 
  Args:
@@ -169,7 +169,7 @@ def address_list(aCTX, aArgs):
 
  Output:
  """
- with aCTX.db as db:
+ with aRT.db as db:
   if db.query("SELECT mask, INET6_NTOA(network) as network, INET6_NTOA(gateway) as gateway, IF(IS_IPV4(INET6_NTOA(network)),'v4','v6') AS class FROM ipam_networks WHERE id = %(network_id)s"%aArgs):
    ret = db.get_row()
    ret['status'] = 'OK'
@@ -201,7 +201,7 @@ def address_list(aCTX, aArgs):
 
 #
 #
-def address_info(aCTX, aArgs):
+def address_info(aRT, aArgs):
  """ Function manages IPAM address instance info and also updates DNS
 
  Args:
@@ -223,7 +223,7 @@ def address_info(aCTX, aArgs):
  op = aArgs.pop('op',None)
  aArgs.pop('ptr_domain_id',None)
  aArgs.pop('state',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op:
    if id != 'new':
     if db.query("SELECT INET6_NTOA(ia.ip) AS ip, network_id, a_domain_id, hostname, reverse_zone_id AS ptr_domain_id, IF(IS_IPV4(INET6_NTOA(ia.ip)),'v4','v6') AS class FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id):
@@ -251,7 +251,7 @@ def address_info(aCTX, aArgs):
 
    if ret['status'] == 'OK':
     # INTERNAL from rims.api.ipam import address_sanitize
-    aArgs['hostname'] = address_sanitize(aCTX, {'hostname':aArgs.get('hostname',old['hostname'])})['sanitized']
+    aArgs['hostname'] = address_sanitize(aRT, {'hostname':aArgs.get('hostname',old['hostname'])})['sanitized']
     aArgs['a_domain_id'] = aArgs.get('a_domain_id',old['a_domain_id'])
     if id != 'new':
      try: ret['update'] = (db.execute("UPDATE ipam_addresses SET network_id = %s, a_domain_id = %s, hostname = '%s', ip = INET6_ATON('%s') WHERE id = %s"%(aArgs['network_id'],aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL', aArgs['hostname'], ip,id)) == 1)
@@ -276,19 +276,19 @@ def address_info(aCTX, aArgs):
 
      # Remove (PTR could remain, if we are sure that the old actually existed (!))
      if old['a_domain_id']:
-      ret[FWD]['delete'] = record_delete(aCTX, {'domain_id':old['a_domain_id'],'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]), 'type':FWD})['status']
+      ret[FWD]['delete'] = record_delete(aRT, {'domain_id':old['a_domain_id'],'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]), 'type':FWD})['status']
      if old['ptr_domain_id'] and ip.version == 4:
-      ret['PTR']['delete'] = record_delete(aCTX, {'domain_id':old['ptr_domain_id'], 'name':ip.reverse_pointer, 'type':'PTR'})['status']
+      ret['PTR']['delete'] = record_delete(aRT, {'domain_id':old['ptr_domain_id'], 'name':ip.reverse_pointer, 'type':'PTR'})['status']
 
      # Create - let record_info handle errors, if we have a domain we can create both A and PTR otherwise none (!)
      if aArgs.get('a_domain_id') not in (None,'NULL'):
       fqdn = '%s.%s'%(aArgs.get('hostname',old['hostname']),domains[int(aArgs['a_domain_id'])])
-      ret[FWD]['create'] = record_info(aCTX, {'domain_id':aArgs['a_domain_id'], 'name':fqdn, 'type':FWD, 'content':str(ip), 'op':'insert'})['status']
+      ret[FWD]['create'] = record_info(aRT, {'domain_id':aArgs['a_domain_id'], 'name':fqdn, 'type':FWD, 'content':str(ip), 'op':'insert'})['status']
       ret[FWD]['fqdn'] = fqdn
       # PTR: If there is a new ip/net combo, try that one, else try restore the old one (neither might work!)
       # PTR: .. could have saved a delete above but then we don't know if there anyway wasn't a record
       if ip.version == 4 and (network_db['mask'] >= 24 or ip in ip_network('%(network)s/24'%network_db)):
-       ret['PTR']['create'] = record_info(aCTX, {'domain_id':network_db['reverse_zone_id'], 'name':ip.reverse_pointer, 'type':'PTR', 'content':fqdn, 'op':'insert'})['status']
+       ret['PTR']['create'] = record_info(aRT, {'domain_id':network_db['reverse_zone_id'], 'name':ip.reverse_pointer, 'type':'PTR', 'content':fqdn, 'op':'insert'})['status']
       else:
        ret['PTR']['create'] ='NOT_OK_V%s_DOMAIN'%ip.version
 
@@ -310,7 +310,7 @@ def address_info(aCTX, aArgs):
 
 #
 #
-def address_sanitize(aCTX, aArgs):
+def address_sanitize(aRT, aArgs):
  """ Function sanitize info, e.g. hostnames, so that they will fit into DNS records
 
  Args:
@@ -338,7 +338,7 @@ def address_sanitize(aCTX, aArgs):
 
 #
 #
-def address_find(aCTX, aArgs):
+def address_find(aRT, aArgs):
  """Function docstring for address_find TBD
 
  Args:
@@ -346,7 +346,7 @@ def address_find(aCTX, aArgs):
 
  Output:
  """
- with aCTX.db as db:
+ with aRT.db as db:
   if not db.query("SELECT CONCAT(INET6_NTOA(network),'/',mask) AS network FROM ipam_networks WHERE id = %(network_id)s"%aArgs):
    return {'status':'NOT_OK', 'info':'Network not found'}
   net = ip_network(db.get_val('network'))
@@ -364,7 +364,7 @@ def address_find(aCTX, aArgs):
 
 #
 #
-def address_delete(aCTX, aArgs):
+def address_delete(aRT, aArgs):
  """Function deletes an IP id
 
  Args:
@@ -375,7 +375,7 @@ def address_delete(aCTX, aArgs):
  """
  ret = {}
  from rims.api.dns import record_delete
- with aCTX.db as db:
+ with aRT.db as db:
   if db.query("SELECT INET6_NTOA(ia.ip) AS ip, ia.hostname, ia.a_domain_id, reverse_zone_id AS ptr_domain_id FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%aArgs['id']):
    old = db.get_row()
    ip = ip_address(old['ip'])
@@ -383,9 +383,9 @@ def address_delete(aCTX, aArgs):
    domains = {x['id']:x['name'] for x in db.get_rows()}
    FWD = 'A' if ip.version == 4 else 'AAAA'
    if old['a_domain_id']:
-    ret[FWD] = record_delete(aCTX, {'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]), 'domain_id':old['a_domain_id'], 'type':FWD})['status']
+    ret[FWD] = record_delete(aRT, {'name':'%s.%s'%(old['hostname'],domains[old['a_domain_id']]), 'domain_id':old['a_domain_id'], 'type':FWD})['status']
    if old['ptr_domain_id'] and ip.version == 4:
-    ret['PTR'] = record_delete(aCTX, {'name':ip.reverse_pointer, 'domain_id':old['ptr_domain_id'],'type':'PTR'})['status']
+    ret['PTR'] = record_delete(aRT, {'name':ip.reverse_pointer, 'domain_id':old['ptr_domain_id'],'type':'PTR'})['status']
   ret['deleted'] = bool(db.execute("DELETE FROM ipam_addresses WHERE id = %s"%aArgs['id']))
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret
@@ -393,7 +393,7 @@ def address_delete(aCTX, aArgs):
 #################################### Monitor #################################
 #
 #
-def clear(aCTX, aArgs):
+def clear(aRT, aArgs):
  """ Clear all interface statistics, for all or subset of ipam addresses
 
  Args:
@@ -402,7 +402,7 @@ def clear(aCTX, aArgs):
 
  """
  ret = {'status':'OK'}
- with aCTX.db as db:
+ with aRT.db as db:
   if aArgs.get('device_id'):
    flter = "id IN (SELECT ia.id FROM ipam_addresses AS ia LEFT JOIN interfaces AS di ON di.ipam_id = ia.id LEFT JOIN devices ON devices.id = di.device_id WHERE devices.id = %s)"%aArgs['device_id']
   elif aArgs.get('network_id'):
@@ -414,7 +414,7 @@ def clear(aCTX, aArgs):
 
 #
 #
-def check(aCTX, aArgs):
+def check(aRT, aArgs):
  """ Initiate a status check for all or a subset of IP:s that belongs to proper interfaces
 
  TODO: check all alternatives, LEFT JOIN interface_alternatives AS iia ON iia.interface_id = di.interface_id .... OR iia.ipam_id = ia.id
@@ -425,29 +425,29 @@ def check(aCTX, aArgs):
 
  """
  addresses = []
- with aCTX.db as db:
+ with aRT.db as db:
   if db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))):
    networks = db.get_rows()
    db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia WHERE network_id IN (%s)"%(','.join(str(x['id']) for x in networks)))
    addresses = db.get_rows()
 
  if addresses:
-  report = aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
+  report = aRT.node_function(aRT.node if aRT.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
 
   if 'repeat' in aArgs:
    # INTERNAL from rims.api.ipam import process
-   aCTX.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses,'report':report}, output = aCTX.debug)
+   aRT.schedule_api_periodic(process,'ipam_process',int(aArgs['repeat']),args = {'addresses':addresses,'report':report}, output = aRT.debug)
    return {'status':'OK','function':'ipam_check','detach_frequency':aArgs['repeat']}
   else:
    # INTERNAL from rims.api.ipam import process
-   process(aCTX,{'addresses':addresses,'report':report})
+   process(aRT,{'addresses':addresses,'report':report})
    return {'status':'OK','function':'ipam_check'}
  else:
   return {'status':'OK','function':'ipam_check','info':'no addresses'}
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  """ Function checks all IP addresses
 
  Args:
@@ -465,16 +465,16 @@ def process(aCTX, aArgs):
    aDev['state'] = 'unknown'
   return True
 
- aCTX.queue_block(__check_IP,aArgs['addresses'])
+ aRT.queue_block(__check_IP,aArgs['addresses'])
 
  changed = [dev for dev in aArgs['addresses'] if dev['state'] != dev['old']]
  if changed:
-  report = aArgs['report'] if aArgs.get('report') else aCTX.node_function(aCTX.node if aCTX.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
+  report = aArgs['report'] if aArgs.get('report') else aRT.node_function(aRT.node if aRT.db else 'master','ipam','report', aHeader= {'X-Log':'false'})
 
   # Assume/hope influxdb client is configured locally
   tmpl = 'ipam,host_id=%s,host_ip=%s state=%s {0}'.format(int(time()))
   records = [tmpl%( x['id'], x['ip'] ,1 if x['state'] == 'up' else 0) for x in changed]
-  aCTX.influxdb.write(records)
+  aRT.influxdb.write(records)
   args = {'up':[x['id'] for x in changed if x['state'] == 'up'], 'down':[x['id'] for x in changed if x['state'] == 'down']}
   ret['up'] = len(args['up'])
   ret['down'] = len(args['down'])
@@ -483,7 +483,7 @@ def process(aCTX, aArgs):
 
 #
 #
-def report(aCTX, aArgs):
+def report(aRT, aArgs):
  """ Updates addresses' status
 
  Args:
@@ -495,7 +495,7 @@ def report(aCTX, aArgs):
   - down (number of updated down state)
  """
  ret = {'function':'ipam_report'}
- with aCTX.db as db:
+ with aRT.db as db:
   for chg in ['up','down']:
    change = aArgs.get(chg)
    if change:
@@ -505,7 +505,7 @@ def report(aCTX, aArgs):
 #################################### DHCP ###############################
 #
 #
-def server_leases(aCTX, aArgs):
+def server_leases(aRT, aArgs):
  """Server_leases returns free or active server leases for DHCP servers
 
  Args:
@@ -514,13 +514,13 @@ def server_leases(aCTX, aArgs):
  Output:
  """
  ret = {'data':[],'type':aArgs.get('type','active')}
- for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'DHCP']:
-  data = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'status')(aArgs = {'binding':ret['type']})['data']
+ for infra in [{'service':v['service'],'node':v['node']} for v in aRT.services.values() if v['type'] == 'DHCP']:
+  data = aRT.node_function(infra['node'],"services.%s"%infra['service'],'status')(aArgs = {'binding':ret['type']})['data']
   if data:
    ret['data'].extend(data)
  oui_s = set([str(int(x.get('mac')[0:8].replace(':',''),16)) for x in ret['data']])
  if oui_s:
-  with aCTX.db as db:
+  with aRT.db as db:
    db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui in (%s)"%','.join(oui_s))
    oui_d = {x['oui']:x['company'] for x in db.get_rows()}
   for lease in ret['data']:
@@ -529,7 +529,7 @@ def server_leases(aCTX, aArgs):
 
 #
 #
-def server_macs(aCTX, aArgs):
+def server_macs(aRT, aArgs):
  """Function returns all MACs for ip addresses belonging to networks belonging to particular server.
 
  TODO:  optimize into one query?
@@ -541,7 +541,7 @@ def server_macs(aCTX, aArgs):
  """
  tmpl = "ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM ipam_addresses AS ia JOIN ipam_networks AS ine ON ia.network_id = ine.id"
  ret = {'status':'OK'}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count']  = db.query("SELECT %s INNER JOIN interfaces AS di ON di.ipam_id = ia.id WHERE di.mac > 0 AND ine.server_id = %s"%(tmpl, aArgs['server_id']))
   ret['data']   = db.get_rows()
   if aArgs.get('alternatives'):
@@ -553,7 +553,7 @@ def server_macs(aCTX, aArgs):
 
 #
 #
-def reservation_list(aCTX, aArgs):
+def reservation_list(aRT, aArgs):
  """ Function retrieves allocated ip addresses for either server_id or network_id
 
  Args:
@@ -564,7 +564,7 @@ def reservation_list(aCTX, aArgs):
   - data
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   if aArgs.get('network_id'):
    ret['count'] = db.query("SELECT ir.id, INET6_NTOA(ia.ip) AS ip, type FROM ipam_reservations AS ir LEFT JOIN ipam_addresses AS ia ON ir.id = ia.id WHERE ia.network_id = %s ORDER BY ia.ip"%aArgs['network_id'])
   else:
@@ -574,7 +574,7 @@ def reservation_list(aCTX, aArgs):
 
 #
 #
-def reservation_new(aCTX, aArgs):
+def reservation_new(aRT, aArgs):
  """ Function inserts a new reservation for address (ip) or scope of addresses (start => end)
 
  aArgs:
@@ -587,14 +587,14 @@ def reservation_new(aCTX, aArgs):
 
  Output:
  """
- with aCTX.db as db:
+ with aRT.db as db:
   if aArgs.get('ip'):
    try:
     ip = ip_address(aArgs['ip'])
    except:
     ret = {'status':'NOT_OK','info':'Illegal IP'}
    else:
-    ret = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':aArgs['network_id'], 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL'})
+    ret = address_info(aRT, {'op':'update_only', 'id':'new', 'network_id':aArgs['network_id'], 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL'})
     ret['reserved'] = (db.execute("INSERT INTO ipam_reservations (id, type) VALUES (%s, '%s')"%(ret['id'],aArgs.get('type','dhcp'))) > 0) if ret['status'] == 'OK' else False
   else:
    ret = {'status':'NOT_OK'}
@@ -611,7 +611,7 @@ def reservation_new(aCTX, aArgs):
      ip = ip_address(aArgs['start'])
      end = ip_address(aArgs['end'])
      while ip <= end:
-      res = address_info(aCTX, {'op':'update_only', 'id':'new', 'network_id':net, 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':dom})
+      res = address_info(aRT, {'op':'update_only', 'id':'new', 'network_id':net, 'ip':str(ip), 'hostname':'resv-%i'%int(ip), 'a_domain_id':dom})
       if not (res['status'] == 'OK' and (db.execute("INSERT INTO ipam_reservations (id, type) VALUES (%s, '%s')"%(res['id'], aArgs.get('type','dhcp'))) > 0)):
        ret['reserved'] = False
       ip = ip + 1
@@ -621,7 +621,7 @@ def reservation_new(aCTX, aArgs):
 
 #
 #
-def reservation_delete(aCTX, aArgs):
+def reservation_delete(aRT, aArgs):
  """ Function deletes a reserved address (id)
 
  Args:
@@ -630,4 +630,4 @@ def reservation_delete(aCTX, aArgs):
  Output:
  """
  # Since DB constraints will delete reservation entry, with IPAM entry this is really a No OP
- return address_delete(aCTX, {'id':aArgs['id']})
+ return address_delete(aRT, {'id':aArgs['id']})

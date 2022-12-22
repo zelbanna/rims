@@ -30,28 +30,28 @@ stderr.write("daemon: opening config file\n")
 with open(input.config,'r') as file:
  config = load(file)
 
-stderr.write("daemon: creating context\n")
+stderr.write("daemon: creating RunTime\n")
 try:
- from core.engine import Context
- ctx = Context(config,input.debug)
+ from core.engine import RunTime
+ rt = RunTime(config,input.debug)
 except Exception as e:
- stderr.write(f"daemon: creating context failed: {str(e)}\n")
+ stderr.write(f"daemon: creating RunTime failed: {str(e)}\n")
  sysexit(2)
 
-stderr.write("daemon: attempting to load context\n")
+stderr.write("daemon: attempting to load RunTime\n")
 try:
- while not ctx.load():
+ while not rt.load():
   sleep(10)
 except Exception as e:
- stderr.write(f"daemon: loadting context failed: {str(e)}\n")
+ stderr.write(f"daemon: loadting RunTime failed: {str(e)}\n")
  sysexit(3)
 
 stderr.write("daemon: attempting to start environment\n")
-if ctx.start():
- ctx.wait()
+if rt.start():
+ rt.wait()
  stderr.write("daemon: clean closing of environment\n")
  sysexit(0)
 else:
- ctx.close()
+ rt.close()
  stderr.write("daemon: starting environment failed\n")
  sysexit(1)

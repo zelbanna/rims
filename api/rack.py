@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -14,14 +14,14 @@ def list(aCTX, aArgs):
  """
  ret = {}
  sort = aArgs.get('sort','racks.id')
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT racks.id, racks.name, racks.size, locations.name AS location, locations.id AS location_id FROM racks LEFT JOIN locations ON racks.location_id = locations.id ORDER BY %s"%sort)
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """Function docstring for info TBD
 
  Args:
@@ -33,7 +33,7 @@ def info(aCTX, aArgs):
  ret =  {'status':'OK'}
  id = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    if id != 'new':
     ret['update'] = (db.update_dict('racks',aArgs,'id=%s'%id) > 0)
@@ -60,7 +60,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def inventory(aCTX, aArgs):
+def inventory(aRT, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -71,7 +71,7 @@ def inventory(aCTX, aArgs):
  ret = {'name': None, 'console':[], 'pdu':[] }
  sqlbase = "SELECT devices.id, devices.hostname, dt.name AS type, dt.base AS base FROM devices INNER JOIN device_types AS dt ON devices.type_id = dt.id WHERE %s ORDER BY devices.hostname"
 
- with aCTX.db as db:
+ with aRT.db as db:
   if 'id' in aArgs:
    db.query("SELECT name, pdu_1, pdu_2, console FROM racks WHERE id = '%s'"%aArgs['id'])
    select = db.get_row()
@@ -90,7 +90,7 @@ def inventory(aCTX, aArgs):
 
 #
 #
-def devices(aCTX, aArgs):
+def devices(aRT, aArgs):
  """Devices finds device information for rack such that we can build a rack "layout"
 
  Args:
@@ -101,7 +101,7 @@ def devices(aCTX, aArgs):
  """
  ret = {'sort':aArgs.get('sort','devices.id')}
  id = aArgs['id']
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT name, size FROM racks where id = %s"%id)
   ret.update(db.get_row())
   db.query("SELECT devices.id, devices.hostname, ri.rack_unit, ri.rack_size FROM devices INNER JOIN rack_info AS ri ON devices.id = ri.device_id WHERE ri.rack_id = %s ORDER BY %s"%(id,ret['sort']))
@@ -112,7 +112,7 @@ def devices(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """Function docstring for delete TBD
 
  Args:
@@ -120,6 +120,6 @@ def delete(aCTX, aArgs):
 
  Output:
  """
- with aCTX.db as db:
+ with aRT.db as db:
   deleted = (db.execute("DELETE FROM racks WHERE id = %s"%aArgs['id']) == 1)
  return {'deleted':deleted}

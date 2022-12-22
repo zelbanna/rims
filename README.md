@@ -22,7 +22,7 @@ Everything centers around the 'engine', it uses a config to bootstart itself. In
 
 ################################### Guidelines ##################################
 
-- REST functions are defined in file <file> and accepts an argument tuple, (Context, Dictionary) => def func(aCTX, aArgs), they must return something that can be JSON serialized (!)
+- REST functions are defined in file <file> and accepts an argument tuple, (Context, Dictionary) => def func(aRT, aArgs), they must return something that can be JSON serialized (!)
 a request is routed to the function by calling URL/<api>/<file>/func with argument as dictionary (before serialization) or use the core provided node_function when requireing REST  within another function
 
 - Devices inherit (at least) from Device class in generic and can override various functions. They will get instatiated and added to the system during install phase. an __icon__ provide visualization icon (relative the image/ directory)

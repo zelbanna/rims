@@ -17,10 +17,10 @@ from os import system
 ########################################### Device ########################################
 class Device(object):
 
- def __init__(self, aCTX, aID, aIP = None):
+ def __init__(self, aRT, aID, aIP = None):
   self._id = aID
-  self._ctx = aCTX
-  self._ip = aIP if aIP else aCTX.node_function(aCTX.node if aCTX.db else 'master','device','management')({'id':aID})['data']['ip']
+  self._rt = aRT
+  self._ip = aIP if aIP else aRT.node_function(aRT.node if aRT.db else 'master','device','management')({'id':aID})['data']['ip']
   if self._ip is None:
    raise Exception('GenericDevice(%s) - No IP passed or could be found'%aID)
 
@@ -36,7 +36,7 @@ class Device(object):
 
  def __exit__(self, *ctx_info): pass
 
- def log(self, aMsg): self._ctx.log(f'DEVICE_LOG({self._id}): {aMsg}')
+ def log(self, aMsg): self._rt.log(f'DEVICE_LOG({self._id}): {aMsg}')
 
  def get_ip(self): return self._ip
 
@@ -54,22 +54,22 @@ class Device(object):
  def configuration(self,argdict):
   ret = ["No config template for this device type.","",
    "Please set the following manually:",
-   "- Username: %s"%self._ctx.config['netconf']['username'],
-   "- Password: %s"%self._ctx.config['netconf']['password'],
+   "- Username: %s"%self._rt.config['netconf']['username'],
+   "- Password: %s"%self._rt.config['netconf']['password'],
    "- Domain:   %s"%argdict['domain'],
    "- Gateway: %s"%argdict['gateway'],
    "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
-   "- SNMP read community: %s"%self._ctx.config['snmp']['read'],
-   "- SNMP write community: %s"%self._ctx.config['snmp']['write']]
+   "- SNMP read community: %s"%self._rt.config['snmp']['read'],
+   "- SNMP write community: %s"%self._rt.config['snmp']['write']]
 
-  if self._ctx.config.get('tacplus'):
-   ret.append("- Tacacs: %s"%self._ctx.config['tacplus']['ip'])
-  if self._ctx.config['netconf'].get('dns'):
-   ret.append('- Nameserver: %s'%(self._ctx.config['netconf']['dns']))
-  if self._ctx.config['netconf'].get('ntp'):
-   ret.append('- NTP: %s'%(self._ctx.config['netconf']['ntp']))
-  if self._ctx.config['netconf'].get('anonftp'):
-   ret.append('- AnonFTP: %s'%(self._ctx.config['netconf']['anonftp']))
+  if self._rt.config.get('tacplus'):
+   ret.append("- Tacacs: %s"%self._rt.config['tacplus']['ip'])
+  if self._rt.config['netconf'].get('dns'):
+   ret.append('- Nameserver: %s'%(self._rt.config['netconf']['dns']))
+  if self._rt.config['netconf'].get('ntp'):
+   ret.append('- NTP: %s'%(self._rt.config['netconf']['ntp']))
+  if self._rt.config['netconf'].get('anonftp'):
+   ret.append('- AnonFTP: %s'%(self._rt.config['netconf']['anonftp']))
   return ret
 
  #
@@ -77,7 +77,7 @@ class Device(object):
   interfaces = {}
   try:
    objs = VarList('.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(objs)
    if (session.ErrorInd != 0):
     raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
@@ -96,7 +96,7 @@ class Device(object):
  #
  def interface(self,aIndex):
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    ifoid   = VarList('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex)
    session.get(ifoid)
   except: return {'name':None,'description':None, 'mac':None}
@@ -106,7 +106,7 @@ class Device(object):
  def interfaces_state(self):
   try:
    objs = VarList('.1.3.6.1.2.1.2.2.1.8')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(objs)
   except:
    return {}
@@ -124,7 +124,7 @@ class Device(object):
   ret = {}
   remove = []
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    for iif in aInterfaces:
     ifentry = VarList('.1.3.6.1.2.1.2.2.1.10.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.11.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.16.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.17.%i'%iif['snmp_index'])
     session.get(ifentry)
@@ -169,7 +169,7 @@ class Device(object):
 
   neighbors = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    locoid = VarList('.1.0.8802.1.1.2.1.3.7.1.3')
    remoid = VarList('.1.0.8802.1.1.2.1.4.1.1')
    session.walk(locoid)
@@ -219,7 +219,7 @@ class Device(object):
   try:
    fdb_objs = VarList('.1.3.6.1.2.1.17.7.1.2.2.1.2')
    int_objs = VarList('.1.3.6.1.2.1.17.1.4.1.2')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(fdb_objs)
    session.walk(int_objs)
   except Exception as e: return {'status':'NOT_OK','info':str(e)}

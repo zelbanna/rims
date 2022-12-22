@@ -9,8 +9,8 @@ from rims.core.common import Session, VarList
 
 class Device(GenericDevice):
 
- def __init__(self, aCTX, aID, aIP = None):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
+ def __init__(self, aRT, aID, aIP = None):
+  GenericDevice.__init__(self, aRT, aID, aIP)
 
  # Name decoding according to how LLDP sees 'this' machine
  def name_decode(self, aName):
@@ -27,7 +27,7 @@ class Device(GenericDevice):
  def interfaces(self):
   interfaces = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    macs  = VarList('.1.3.6.1.2.1.2.2.1.6')
    session.walk(macs)
    for mac in macs:
@@ -39,7 +39,7 @@ class Device(GenericDevice):
 
  def interface(self, aIndex):
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    entry  = VarList('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex)
    session.get(entry)
   except Exception as e:

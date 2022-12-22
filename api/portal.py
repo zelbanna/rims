@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ####################################### SITE ######################################
 #
 #
-def application(aCTX, aArgs):
+def application(aRT, aArgs):
  """Function docstring for application. Using 'portal' config ('title', 'message' and title of start page...)
 
  Args:
@@ -13,12 +13,12 @@ def application(aCTX, aArgs):
  Output:
  """
  ret = {'message':"Welcome to the Management Portal",'title':'Portal'}
- ret.update(aCTX.config['site'].get('portal'))
+ ret.update(aRT.config['site'].get('portal'))
  return ret
 
 #
 #
-def menu(aCTX, aArgs):
+def menu(aRT, aArgs):
  """Function docstring for menu
 
  Args:
@@ -26,15 +26,15 @@ def menu(aCTX, aArgs):
  Output:
  """
  data = {}
- data['start'] = aCTX.config['site']['portal'].get('start')
+ data['start'] = aRT.config['site']['portal'].get('start')
  # INTERNAL from rims.api.portal import resources
- data['menu'] = resources(aCTX,{'type':'menuitem'})['data']
- data['title'] = aCTX.config['site'].get('portal',{}).get('title','Portal')
+ data['menu'] = resources(aRT,{'type':'menuitem'})['data']
+ data['title'] = aRT.config['site'].get('portal',{}).get('title','Portal')
  return {'status':'OK','data':data}
 
 #
 #
-def resources(aCTX, aArgs):
+def resources(aRT, aArgs):
  """Function returns site information
 
  Args:
@@ -43,12 +43,12 @@ def resources(aCTX, aArgs):
  Output:
  """
  ret = {'data':[]}
- ret['data'] = aCTX.config['site'].get(aArgs['type'],{})
+ ret['data'] = aRT.config['site'].get(aArgs['type'],{})
  return ret
 
 #
 #
-def resource(aCTX, aArgs):
+def resource(aRT, aArgs):
  """Function returns resource href
 
  Args:
@@ -57,17 +57,17 @@ def resource(aCTX, aArgs):
 
  Output:
  """
- data = aCTX.config['site'][aArgs['type']][aArgs['title']]
+ data = aRT.config['site'][aArgs['type']][aArgs['title']]
  for tp in ['module','frame','tab']:
   if tp in data:
-   ret = {tp:aCTX.config['site'][aArgs['type']][aArgs['title']][tp]}
+   ret = {tp:aRT.config['site'][aArgs['type']][aArgs['title']][tp]}
    break
  return ret
 
 ############################### Site ###########################
 #
 #
-def theme_list(aCTX, aArgs):
+def theme_list(aRT, aArgs):
  """ Function returns a list of available themes
 
  Args:
@@ -76,12 +76,12 @@ def theme_list(aCTX, aArgs):
   - list of theme names
  """
  themes = ['light','dark']
- themes.extend(aCTX.config.get('site',{}).get('theme',{}).keys())
+ themes.extend(aRT.config.get('site',{}).get('theme',{}).keys())
  return {'data':themes}
 
 #
 #
-def theme_info(aCTX, aArgs):
+def theme_info(aRT, aArgs):
  """ Function returns theme parameters
 
  Args:
@@ -94,5 +94,5 @@ def theme_info(aCTX, aArgs):
   "light":{ "main":"#F1F1F1", "head":"#1A1A1A", "head-focus":"#666666", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#FFFFFF", "std-txt":"#000000", "ui":"#000000", "ui-txt":"#FFFFFF" },
   "dark":{  "main":"#0A0A0A", "head":"#1A1A1A", "head-focus":"#666666", "head-txt":"#FFFFFF", "high":"#CB2026", "std":"#1A1A1A", "std-txt":"#9CA6B0", "ui":"#000000", "ui-txt":"#FFFFFF" }
  }
- theme = {f"--{k}-color":v for k,v in themes.get(aArgs['theme'],aCTX.config.get('site',{}).get('theme',{}).get(aArgs['theme'],{})).items()}
+ theme = {f"--{k}-color":v for k,v in themes.get(aArgs['theme'],aRT.config.get('site',{}).get('theme',{}).get(aArgs['theme'],{})).items()}
  return {'status':"OK" if theme else "NOT_OK", 'data':theme}

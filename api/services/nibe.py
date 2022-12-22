@@ -15,7 +15,7 @@ from json import dump, load
 
 #
 #
-def bootstrap(aCTX, aArgs):
+def bootstrap(aRT, aArgs):
  """ Function provides start behavior, i.e. bootstrap authentication and token handling process
 
  Args:
@@ -23,17 +23,17 @@ def bootstrap(aCTX, aArgs):
  Output:
   - status
  """
- state = aCTX.cache.get('nibe',{})
+ state = aRT.cache.get('nibe',{})
  if not state:
-  aCTX.cache['nibe'] = state
+  aRT.cache['nibe'] = state
  state['phase'] = 'init'
- config = aCTX.config['services']['nibe']
+ config = aRT.config['services']['nibe']
  redirect_uri = quote_plus(config['redirect_uri'])
  return {"status":"OK", "callstring":f"https://api.nibeuplink.com/oauth/authorize?response_type=code&client_id={config['client_id']}&scope=READSYSTEM&redirect_uri={redirect_uri}&state={config['state']}"}
 
 #
 #
-def auth(aCTX, aArgs):
+def auth(aRT, aArgs):
  """ Function is callback URI for phase one Oauth 2.0 authentication
 
  Args:
@@ -43,24 +43,24 @@ def auth(aCTX, aArgs):
  Output:
  """
  ret = {}
- state = aCTX.cache.get('nibe',{})
+ state = aRT.cache.get('nibe',{})
  if not state:
-  aCTX.cache['nibe'] = state
+  aRT.cache['nibe'] = state
  code = aArgs['code'][0]
  if state.get('code') == code:
   ret['status'] = 'NOT_OK'
   ret['info'] = 'already authenticated using that code'
  else:
   state['phase'] = 'authorize'
-  config = aCTX.config['services']['nibe']
+  config = aRT.config['services']['nibe']
   args = {"grant_type":"authorization_code", "client_id":config['client_id'], "client_secret":config['client_secret'],"redirect_uri":config['redirect_uri'],"scope":"READSYSTEM","code":code}
   try:
-   res = aCTX.rest_call("https://api.nibeuplink.com/oauth/token", aSSL = aCTX.ssl, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
+   res = aRT.rest_call("https://api.nibeuplink.com/oauth/token", aSSL = aRT.ssl, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
   except Exception as e:
    state['phase'] = None
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
-   aCTX.log(f"nibe_service_authentication phase 1 NOT successful")
+   aRT.log(f"nibe_service_authentication phase 1 NOT successful")
   else:
    state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'valid','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
    ret['status'] = 'OK'
@@ -69,12 +69,12 @@ def auth(aCTX, aArgs):
      dump(state,file,indent=4)
    except Exception as e:
     ret['token_file_error'] = str(e)
-   aCTX.log(f"nibe_service_authentication successful, expire in {res['expires_in']} seconds")
+   aRT.log(f"nibe_service_authentication successful, expire in {res['expires_in']} seconds")
  return ret
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  """Function checks nibe API, process data and queue reporting to influxDB bucket
 
  Args:
@@ -83,7 +83,7 @@ def process(aCTX, aArgs):
   - status
  """
  timestamp = int(time())
- state = aCTX.cache.get('nibe',{})
+ state = aRT.cache.get('nibe',{})
 
  if not state:
   return {'status':'NOT_OK','function':'nibe_process','info':'no_state'}
@@ -95,19 +95,19 @@ def process(aCTX, aArgs):
  scaling = {10001:1,10012:1,10033:1,43084:0.1,43416:1,43420:1,43424:1}
  mapping = {"\u00b0C":"temperature","kW":"power","A":"current","%":"load","h":"elapsed_time"}
  ret = {'status':'OK','function':'nibe_process'}
- config = aCTX.config['services']['nibe']
+ config = aRT.config['services']['nibe']
  sys_id = config['system_id']
  tmpl = '{0},origin=nibe,type=heater,system_id={1},parameter=%s,designation=%s,label=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
  url = f'https://api.nibeuplink.com/api/v1/systems/{sys_id}/serviceinfo/categories/%s'
 
  def __check_call(aParam):
-  items = aCTX.rest_call(url%aParam, aHeader = hdr, aSSL = aCTX.ssl, aMethod = 'GET')
+  items = aRT.rest_call(url%aParam, aHeader = hdr, aSSL = aRT.ssl, aMethod = 'GET')
   parameters.update({v['parameterId']:v for v in items})
 
  hdr = {'Authorization': f"Bearer {state['access_token']}"}
  try:
   parameters = {}
-  aCTX.queue_block(__check_call,["STATUS","CPR_INFO_EP14","SYSTEM_1","ADDITION","VENTILATION"])
+  aRT.queue_block(__check_call,["STATUS","CPR_INFO_EP14","SYSTEM_1","ADDITION","VENTILATION"])
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -118,12 +118,12 @@ def process(aCTX, aArgs):
   for k,v in parameters.items():
    label = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
    records.append(tmpl%(k, v['designation'] if v['designation'] else k, label, mapping.get(v['unit'],"unit"), v['rawValue']/scaling.get(k,10) ))
-  aCTX.influxdb.write(records, config['bucket'])
+  aRT.influxdb.write(records, config['bucket'])
  return ret
 
 #
 #
-def get(aCTX, aArgs):
+def get(aRT, aArgs):
  """ Function provides a generic GET call for the nibe API. since there is only v1 api this info must be omitted in the 'api' argument
 
  Args:
@@ -133,11 +133,11 @@ def get(aCTX, aArgs):
  Output:
  """
  ret = {}
- state = aCTX.cache.get('nibe',{})
+ state = aRT.cache.get('nibe',{})
  url = 'https://api.nibeuplink.com/api/v1/{0}'.format(aArgs['api'])
  hdr = {'Authorization': 'Bearer %s'%state['access_token']}
  try:
-  res = aCTX.rest_call(url, aSSL = aCTX.ssl, aHeader = hdr, aDebug = aArgs.get('debug',False), aMethod = 'GET')
+  res = aRT.rest_call(url, aSSL = aRT.ssl, aHeader = hdr, aDebug = aArgs.get('debug',False), aMethod = 'GET')
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
@@ -149,7 +149,7 @@ def get(aCTX, aArgs):
 ################################################
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function check cache state and auth status
 
  Args:
@@ -159,9 +159,9 @@ def status(aCTX, aArgs):
   - data
  """
  ret = None
- state = aCTX.cache.get('nibe',{})
+ state = aRT.cache.get('nibe',{})
  if not state:
-  aCTX.cache['nibe'] = state
+  aRT.cache['nibe'] = state
  if state:
   remaining = state['expires_at'] - int(time())
   if remaining > 0:
@@ -174,7 +174,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """ Function refresh Oauth token
 
  Args:
@@ -187,23 +187,23 @@ def sync(aCTX, aArgs):
   - status. (operation result)
  """
  ret = {}
- state = aCTX.cache.get('nibe',{})
+ state = aRT.cache.get('nibe',{})
  if not state:
   state['phase'] = 'invalid'
   ret['status'] = 'NOT_OK'
   ret['info'] = 'no_state_refresh_impossible'
-  aCTX.log(f"nibe_service_token_refresh phase 2 impossible")
+  aRT.log(f"nibe_service_token_refresh phase 2 impossible")
  else:
   state['phase'] = 'refresh'
-  config = aCTX.config['services']['nibe']
+  config = aRT.config['services']['nibe']
   args = {"grant_type":"refresh_token", "client_id":config['client_id'], "client_secret":config['client_secret'],"refresh_token":state['refresh_token']}
   try:
-   res = aCTX.rest_call("https://api.nibeuplink.com/oauth/token", aSSL = aCTX.ssl, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
+   res = aRT.rest_call("https://api.nibeuplink.com/oauth/token", aSSL = aRT.ssl, aArgs = args, aHeader = {'Content-Type':'application/x-www-form-urlencoded'})
   except Exception as e:
    state['phase'] = 'invalid'
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
-   aCTX.log(f"nibe_service_token_refresh phase 2 NOT successful")
+   aRT.log(f"nibe_service_token_refresh phase 2 NOT successful")
   else:
    state.update({'access_token':res['access_token'],'refresh_token':res['refresh_token'],'phase':'valid','expires_at':int(time()) + res['expires_in'],'expires_in':res['expires_in']})
    ret['status'] = 'OK'
@@ -212,18 +212,18 @@ def sync(aCTX, aArgs):
      dump(state,file,indent=4)
    except Exception as e:
     ret['token_file_error'] = str(e)
-   aCTX.log(f"nibe_service_token_refresh successful, expire in {res['expires_in']} seconds")
+   aRT.log(f"nibe_service_token_refresh successful, expire in {res['expires_in']} seconds")
    ret['output'] = res['expires_in']
   finally:
    if aArgs.get('schedule'):
-    aCTX.schedule_api(sync,'nibe_token_refresh', state['expires_in'], args = aArgs, output = aCTX.debug)
+    aRT.schedule_api(sync,'nibe_token_refresh', state['expires_in'], args = aArgs, output = aRT.debug)
     ret['function'] = 'nibe_token_sync'
 
  return ret
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function reload Oauth state
 
  Args:
@@ -235,10 +235,10 @@ def restart(aCTX, aArgs):
   - result 'OK'/'NOT_OK'
  """
  ret = {}
- config = aCTX.config['services']['nibe']
+ config = aRT.config['services']['nibe']
  try:
   with open(config['token_file'],'r') as file:
-   state = aCTX.cache['nibe'] = load(file)
+   state = aRT.cache['nibe'] = load(file)
  except Exception as e:
   ret['output'] = str(e)
   ret['status'] = 'NOT_OK'
@@ -249,7 +249,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -258,13 +258,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('nibe',{})
+ settings = aRT.config['services'].get('nibe',{})
  params = ['client_id','client_secret','redirect_uri','bucket','token_file','state']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -273,13 +273,13 @@ def start(aCTX, aArgs):
   - status
  """
  ret = {'status':'NOT_OK'}
- config = aCTX.config['services']['nibe']
- state = aCTX.cache.get('nibe')
+ config = aRT.config['services']['nibe']
+ state = aRT.cache.get('nibe')
  if not state:
   # Get phase but forget about running state
   try:
    with open(config['token_file'],'r') as file:
-    state = aCTX.cache['nibe'] = load(file)
+    state = aRT.cache['nibe'] = load(file)
   except Exception as e:
    return {'output':str(e),'status':'NOT_OK'}
   else:
@@ -291,10 +291,10 @@ def start(aCTX, aArgs):
    remaining = state['expires_at'] - int(time())
    state['running'] = aArgs['schedule'] = True
    if remaining > 0:
-    aCTX.schedule_api(sync,'nibe_token_refresh',remaining, args = aArgs, output = aCTX.debug)
+    aRT.schedule_api(sync,'nibe_token_refresh',remaining, args = aArgs, output = aRT.debug)
    else:
-    sync(aCTX, aArgs)
-   aCTX.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
+    sync(aRT, aArgs)
+   aRT.schedule_api_periodic(process,'nibe_process',int(config.get('frequency',60)), args = aArgs, output = aRT.debug)
    ret['info'] = 'scheduled_nibe'
    ret['status'] = 'OK'
   elif state['running']:
@@ -308,7 +308,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -316,9 +316,9 @@ def stop(aCTX, aArgs):
  Output:
   - status
  """
- state = aCTX.cache.get('nibe',{})
+ state = aRT.cache.get('nibe',{})
  if not state:
-  aCTX.cache['nibe'] = state
+  aRT.cache['nibe'] = state
  if state.get('running') == None:
   return {'status':'OK','info':'empty state'}
  else:
@@ -328,7 +328,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

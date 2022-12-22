@@ -5,7 +5,7 @@ __add_globals__ = lambda x: globals().update(x)
 ############################################### INVENTORY ################################################
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """ Function retrives locations
 
  Args:
@@ -14,14 +14,14 @@ def list(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT * FROM locations")
   ret['data'] =  db.get_rows() if not 'dict' in aArgs else db.get_dict(aArgs['dict'])
  return ret
 
 #
 #
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """ Function operates on location items
 
  Args:
@@ -34,7 +34,7 @@ def info(aCTX, aArgs):
  ret = {}
  lid = aArgs.pop('id','new')
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    if lid != 'new':
     ret['update'] = db.update_dict('locations',aArgs,f"id={lid}")
@@ -47,7 +47,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """ Function deletes a location
 
  Args:
@@ -57,7 +57,7 @@ def delete(aCTX, aArgs):
  """
  ret = {}
  # Racks and inventory sets NULL anyway
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = bool(db.execute(f"DELETE FROM locations WHERE id = {aArgs['id']}"))
   ret['status'] = 'OK' if ret['deleted'] else 'NOT_OK'
  return ret

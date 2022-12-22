@@ -9,7 +9,7 @@ import asyncio
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  """Function checks modbus registers, process data and queue reporting to influxDB bucket
 
  Args:
@@ -18,10 +18,10 @@ def process(aCTX, aArgs):
   - status
  """
  ret = {'status':'OK','function':'sun2000_process'}
- state = aCTX.cache.get('sun2000')
+ state = aRT.cache.get('sun2000')
  if state['status'] == 'active':
-  config = aCTX.config['services']['sun2000']
-  res = sync(aCTX,None)
+  config = aRT.config['services']['sun2000']
+  res = sync(aRT,None)
   if res['status'] == 'OK':
    data = res['data']
    id = data.pop('serial_number',{'value':'N/A'})['value']
@@ -29,8 +29,8 @@ def process(aCTX, aArgs):
    data['power_meter_active_power']['value'] = -1 * data['power_meter_active_power']['value']
    tmpl = '{0},origin=sun2000,type=solar,system_id=%s,label=%s %s=%s {1}'.format(config.get('measurement','sun2000'),int(time()))
    records = [tmpl%(id,k,v['unit'],v['value']) for k,v in data.items() if v['value'] is not None]
-   aCTX.influxdb.write(records, config['bucket'])
-   if aCTX.debug:
+   aRT.influxdb.write(records, config['bucket'])
+   if aRT.debug:
     ret['data'] = records
   else:
    ret = res
@@ -41,7 +41,7 @@ def process(aCTX, aArgs):
 
 #
 #
-def __init_state(aCTX, aArgs):
+def __init_state(aRT, aArgs):
  """ Function initialize state for sun2000
 
  Args:
@@ -49,10 +49,10 @@ def __init_state(aCTX, aArgs):
  Output:
   - status
  """
- config = aCTX.config['services']['sun2000']
- state = aCTX.cache.get('sun2000')
+ config = aRT.config['services']['sun2000']
+ state = aRT.cache.get('sun2000')
  if not state:
-  state = aCTX.cache['sun2000'] = {'status':'inactive'}
+  state = aRT.cache['sun2000'] = {'status':'inactive'}
  state['mapping'] = {'\u00b0C':'temperature','W':'power','kWh':'energy','A':'current','%':'load','h':'elapsed_time','VA':'VA','V':'volt','Hz':'frequency','Var':'Var'}
  state['singles'] = ['serial_number','accumulated_yield_energy','storage_state_of_capacity','storage_charge_discharge_power','storage_total_charge','storage_total_discharge']
  strings = ['pv_01_voltage','pv_01_current']
@@ -69,7 +69,7 @@ def __init_state(aCTX, aArgs):
 
 #
 #
-def get(aCTX, aArgs):
+def get(aRT, aArgs):
  """ Function retrieves named register
 
  Args:
@@ -81,7 +81,7 @@ def get(aCTX, aArgs):
  """
  ret = {}
 
- config = aCTX.config['services']['sun2000']
+ config = aRT.config['services']['sun2000']
  reg = aArgs['register']
 
  try:
@@ -101,7 +101,7 @@ def get(aCTX, aArgs):
 
 #
 #
-def set(aCTX, aArgs):
+def set(aRT, aArgs):
  """ Function sets named register
 
  Args:
@@ -114,7 +114,7 @@ def set(aCTX, aArgs):
  """
  ret = {}
 
- config = aCTX.config['services']['sun2000']
+ config = aRT.config['services']['sun2000']
  reg = aArgs['register']
  val = aArgs['value']
 
@@ -137,7 +137,7 @@ def set(aCTX, aArgs):
 ########################################################################################
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function retrives status of service
 
  Args:
@@ -146,13 +146,13 @@ def status(aCTX, aArgs):
  Output:
  """
  ret = {}
- config = aCTX.config['services']['sun2000']
- return {'status':'OK','state':aCTX.cache.get('sun2000')}
+ config = aRT.config['services']['sun2000']
+ return {'status':'OK','state':aRT.cache.get('sun2000')}
 
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """ Sync data and return register values
 
  Args:
@@ -162,10 +162,10 @@ def sync(aCTX, aArgs):
   - status. (operation result)
  """
  ret = {}
- config = aCTX.config['services']['sun2000']
- state = aCTX.cache.get('sun2000')
+ config = aRT.config['services']['sun2000']
+ state = aRT.cache.get('sun2000')
  if not state:
-  state = __init_state(aCTX, None)
+  state = __init_state(aRT, None)
  loop = asyncio.new_event_loop()
 
  async def main(con: AsyncHuaweiSolar, mapping: dict, singles: list[str], ranges: list[list[str]], items: list[str]):
@@ -194,7 +194,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -208,7 +208,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -217,13 +217,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('sun2000',{})
+ settings = aRT.config['services'].get('sun2000',{})
  params = ['measurement','bucket','n_strings','ip','port']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -232,21 +232,21 @@ def start(aCTX, aArgs):
   - status
  """
  ret = {'info':'scheduled_sun2000'}
- state = aCTX.cache.get('sun2000',{})
+ state = aRT.cache.get('sun2000',{})
  if state.get('status') == 'active':
   ret['status'] = 'NOT_OK'
   ret['info'] = 'already_active'
  else:
   ret['status'] = 'OK'
-  config = aCTX.config['services']['sun2000']
-  aCTX.schedule_api_periodic(process,'sun2000_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
-  state = __init_state(aCTX, None)
+  config = aRT.config['services']['sun2000']
+  aRT.schedule_api_periodic(process,'sun2000_process',int(config.get('frequency',60)), args = aArgs, output = aRT.debug)
+  state = __init_state(aRT, None)
   state['status'] = 'active'
  return ret
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -255,19 +255,19 @@ def stop(aCTX, aArgs):
   - status
  """
  ret = {}
- state = aCTX.cache.get('sun2000',{})
+ state = aRT.cache.get('sun2000',{})
  if state.get('status') != 'active':
   ret['status'] = 'NOT_OK'
   ret['info'] = 'inactive'
  else:
   state['status'] = 'inactive'
-  aCTX.cache['sun2000'] = state
+  aRT.cache['sun2000'] = state
   ret['status'] = 'OK'
  return ret
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

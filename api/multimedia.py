@@ -12,7 +12,7 @@ __add_globals__ = lambda x: globals().update(x)
 from os import remove, rmdir, walk, path as ospath, devnull, chmod, rename
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -21,7 +21,7 @@ def list(aCTX, aArgs):
  """
  ret = {'data':[]}
  try:
-  ret['root'] = aCTX.config['multimedia']['torrent_directory']
+  ret['root'] = aRT.config['multimedia']['torrent_directory']
   for path,_,files in walk(ret['root']):
    ret['data'].extend([{'path':path,'file':file} for file in files if file[-3:] in ['mp4','mkv']])
  except Exception as err:
@@ -33,7 +33,7 @@ def list(aCTX, aArgs):
 
 #
 #
-def cleanup(aCTX, aArgs):
+def cleanup(aRT, aArgs):
  """Function docstring for cleanup TBD
 
  Args:
@@ -41,7 +41,7 @@ def cleanup(aCTX, aArgs):
  Output:
   - <data> - type,path,item,status,(info)
  """
- ret = {'root':aCTX.config['multimedia']['torrent_directory'],'data':[]}
+ ret = {'root':aRT.config['multimedia']['torrent_directory'],'data':[]}
  for path,dirs,files in walk(ret['root']):
   for item in files:
    try:
@@ -63,7 +63,7 @@ def cleanup(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """Function docstring for delete TBD
 
  Args:
@@ -82,7 +82,7 @@ def delete(aCTX, aArgs):
 
 #
 #
-def transfer(aCTX, aArgs):
+def transfer(aRT, aArgs):
  """Function docstring TBD
 
  Args:
@@ -93,7 +93,7 @@ def transfer(aCTX, aArgs):
  """
  from shutil import move
  try:
-  move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(aCTX.config['multimedia']['media_directory'],aArgs['file']) )
+  move( ospath.join(aArgs['path'],aArgs['file']), ospath.join(aRT.config['multimedia']['media_directory'],aArgs['file']) )
  except Exception as err:
   ret = {'status':'NOT_OK','info':str(err)}
  else:
@@ -103,7 +103,7 @@ def transfer(aCTX, aArgs):
 ################################################# Media Functions ################################################
 #
 #
-def check_srt(aCTX, aArgs):
+def check_srt(aRT, aArgs):
  """Function find the 'first' SRT file in a directory
 
  Args:
@@ -131,7 +131,7 @@ def check_srt(aCTX, aArgs):
 
 #
 #
-def check_title(aCTX, aArgs):
+def check_title(aRT, aArgs):
  """Function tries to determine if this is a series or movie and then how to rename the file such that it would be easy to catalog
 
  Args:
@@ -193,7 +193,7 @@ def check_title(aCTX, aArgs):
 
 #
 #
-def check_content(aCTX, aArgs):
+def check_content(aRT, aArgs):
  """Function docstring for check_content. Checks file using avprobe to determine content and how to optimize file
 
  Args:
@@ -258,7 +258,7 @@ def check_content(aCTX, aArgs):
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  """Process a media file
 
  Args:
@@ -278,9 +278,9 @@ def process(aCTX, aArgs):
  data = {'prefix':filename[:-4],'suffix':filename[-3:],'rename':False}
  ret = {'status':'NOT_OK','info':None,'data':data,'seconds':int(time())}
  # INTERNAL from rims.api.multimedia import check_srt
- srt  = check_srt(aCTX, {'filepath':filename})['data']
+ srt  = check_srt(aRT, {'filepath':filename})['data']
  # INTERNAL from rims.api.multimedia import check_title
- info = aArgs if aArgs.get('name') and aArgs.get('info') else check_title(aCTX, {'filepath':filename})['data']
+ info = aArgs if aArgs.get('name') and aArgs.get('info') else check_title(aRT, {'filepath':filename})['data']
  dest = ospath.abspath(ospath.join(info['path'],info['name']))
  data.update({'changes':{'subtitle':"",'audio':"",'srt':"",'aac':""},'dest':dest})
 
@@ -299,7 +299,7 @@ def process(aCTX, aArgs):
     data['changes']['srt']="--language 0:{0} --track-name 0:{0} -s 0 -D -A {1}".format(srt['code'], repr(ospath.abspath(srtfile)))
     rename(srt['file'],srtfile)
 
-   probe = check_content(aCTX, {'filepath':dest,'srt':srt.get('code')})['data']
+   probe = check_content(aRT, {'filepath':dest,'srt':srt.get('code')})['data']
 
    # if forced download or if there are subs to remove but no subs to add left
    if probe['subtitle']['remove']:
@@ -321,7 +321,7 @@ def process(aCTX, aArgs):
      data['aac_probe'] = probe['audio']['add_aac']
      tmpfile = filename + ".process"
      rename(dest,tmpfile)
-     tempd   = aCTX.config['multimedia']['temp_directory']
+     tempd   = aRT.config['multimedia']['temp_directory']
      tempdir = mkdtemp(suffix = "",prefix = 'aac.',dir = tempd)
 
      if probe['audio']['add_aac']:
@@ -369,7 +369,7 @@ def process(aCTX, aArgs):
 ################################################ TBD ################################################
 #
 #
-def delay_set(aCTX, aArgs):
+def delay_set(aRT, aArgs):
  """Sets offset in ms for file 'original' (MKV)
 
  Args:

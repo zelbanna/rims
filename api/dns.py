@@ -9,7 +9,7 @@ __add_globals__ = lambda x: globals().update(x)
 ################################ Domains ##################################
 #
 #
-def domain_list(aCTX, aArgs):
+def domain_list(aRT, aArgs):
  """Function docstring for domain_list.
 
  Args:
@@ -20,18 +20,18 @@ def domain_list(aCTX, aArgs):
   - filter:forward/reverse
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   if aArgs.get('sync',False):
    # INTERNAL from rims.api.dns import sync_recursor, sync_nameserver
-   ret['ns'] = sync_nameserver(aCTX, aArgs = {})
-   ret['rec'] = sync_recursor(aCTX, aArgs = {})
+   ret['ns'] = sync_nameserver(aRT, aArgs = {})
+   ret['rec'] = sync_recursor(aRT, aArgs = {})
   ret['count'] = db.query("SELECT domains.id, domains.name, st.service FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE %s ORDER BY name"%("TRUE" if 'filter' not in aArgs else "domains.type = '%s'"%aArgs['filter']))
   ret['data'] = db.get_rows()
  return ret
 
 #
 #
-def domain_info(aCTX, aArgs):
+def domain_info(aRT, aArgs):
  """Function docstring for domain_info TBD
 
  Args:
@@ -47,10 +47,10 @@ def domain_info(aCTX, aArgs):
  ret = {}
  id = aArgs['id']
  if id  == 'new' and aArgs.get('op') != 'update':
-  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']
+  ret['servers'] = [{'id':k,'service':v['service'],'node':v['node']} for k,v in aRT.services.items() if v['type'] == 'NAMESERVER']
   ret['data'] = {'id':'new','name':'new-name','master':'ip-of-master','type':'Master', 'serial':0 }
  else:
-  with aCTX.db as db:
+  with aRT.db as db:
    if id == 'new':
     infra = bool(db.query("SELECT servers.id, 'new' AS foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE servers.id = %s"%aArgs.pop('server_id','0')))
    else:
@@ -58,7 +58,7 @@ def domain_info(aCTX, aArgs):
    if infra:
     ret['infra'] = db.get_row()
     aArgs['id']  = ret['infra']['foreign_id']
-    ret.update(aCTX.node_function(ret['infra']['node'],"services.%s"%ret['infra']['service'],'domain_info')(aArgs = aArgs))
+    ret.update(aRT.node_function(ret['infra']['node'],"services.%s"%ret['infra']['service'],'domain_info')(aArgs = aArgs))
     if ret.get('insert'):
      ret['cache'] = bool(db.insert_dict('domains',{'name':aArgs['name'],'server_id':ret['infra']['id'],'foreign_id':ret['data']['id'],'master':aArgs['master'],'type':'reverse' if 'arpa' in aArgs['name'] else 'forward', 'endpoint':ret['endpoint']}))
      ret['infra']['foreign_id'] = ret['data']['id']
@@ -72,7 +72,7 @@ def domain_info(aCTX, aArgs):
 
 #
 #
-def domain_delete(aCTX, aArgs):
+def domain_delete(aRT, aArgs):
  """Function domain_delete deletes a domain from local caching and remote nameserver. All records will have no domain
 
  Args:
@@ -81,16 +81,16 @@ def domain_delete(aCTX, aArgs):
  Output:
  """
  id = int(aArgs['id'])
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT servers.id, foreign_id, domains.type, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %i"%id)
   infra = db.get_row()
-  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
+  ret = aRT.node_function(infra['node'],"services.%s"%infra['service'],'domain_delete')(aArgs = {'id':infra['foreign_id']})
   ret['cache'] = bool(db.execute("DELETE FROM domains WHERE id = %i AND server_id = %s"%(id,infra['id']))) if ret['deleted'] else False
  return ret
 
 #
 #
-def domain_ptr_list(aCTX, aArgs):
+def domain_ptr_list(aRT, aArgs):
  """ Function returns matching PTR domain id's and extra server info for a prefix
 
  Args:
@@ -104,14 +104,14 @@ def domain_ptr_list(aCTX, aArgs):
   octets.reverse()
   octets.append("in-addr.arpa")
   return ".".join(octets)
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT domains.id, name, CONCAT(st.service,'@',node) AS server FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.name = '%s'"%(GL_ip2arpa(aArgs['prefix'])))
   domains = db.get_rows()
  return domains
 
 #
 #
-def domain_forwarders(aCTX, aArgs):
+def domain_forwarders(aRT, aArgs):
  """ Function returns information for forwarders / recursors
 
  Args:
@@ -120,7 +120,7 @@ def domain_forwarders(aCTX, aArgs):
   data - list of forwarding entries with the endpoint handling them
  """
  ret = {'status':'OK'}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT domains.name, domains.foreign_id, domains.endpoint FROM domains LEFT JOIN servers ON domains.server_id = servers.id LEFT JOIN service_types AS st ON servers.type_id = st.id WHERE domains.type = 'forward' AND st.service <> 'nodns'")
   ret['data'] = db.get_rows()
  return ret
@@ -128,7 +128,7 @@ def domain_forwarders(aCTX, aArgs):
 ######################################## Records ####################################
 #
 #
-def record_list(aCTX, aArgs):
+def record_list(aRT, aArgs):
  """Function docstring for record_list TBD
 
  Args:
@@ -139,21 +139,21 @@ def record_list(aCTX, aArgs):
   - data
  """
  if aArgs.get('domain_id') is not None:
-  with aCTX.db as db:
+  with aRT.db as db:
    db.query("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
  else:
   # Strictly internal use - this one fetch all records for consistency check
-  infra = aCTX.services.get(aArgs['server_id'])
+  infra = aRT.services.get(aArgs['server_id'])
   aArgs.pop('server_id',None)
- ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_list')(aArgs = aArgs)
+ ret = aRT.node_function(infra['node'],"services.%s"%infra['service'],'record_list')(aArgs = aArgs)
  ret['domain_id'] = aArgs.get('domain_id',0)
  return ret
 
 #
 #
-def record_info(aCTX, aArgs):
+def record_info(aRT, aArgs):
  """Function docstring for record_info TBD
 
  Args:
@@ -172,11 +172,11 @@ def record_info(aCTX, aArgs):
   ret = {'status':'OK', 'data':{'domain_id':aArgs['domain_id'],'name':'key','content':'value','type':'type-of-record','ttl':'3600'}}
  else:
   domain_id = aArgs['domain_id']
-  with aCTX.db as db:
+  with aRT.db as db:
    db.query("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%domain_id)
    infra = db.get_row()
    aArgs['domain_id'] = infra['foreign_id']
-  ret = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_info')(aArgs = aArgs)
+  ret = aRT.node_function(infra['node'],"services.%s"%infra['service'],'record_info')(aArgs = aArgs)
   if ret.get('data'):
    ret['data']['domain_id'] = domain_id
   ret['status'] = ret.get('status','OK')
@@ -184,7 +184,7 @@ def record_info(aCTX, aArgs):
 
 #
 #
-def record_delete(aCTX, aArgs):
+def record_delete(aRT, aArgs):
  """Function docstring for record_delete TBD
 
  Args:
@@ -194,16 +194,16 @@ def record_delete(aCTX, aArgs):
 
  Output:
  """
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT foreign_id, st.service, node FROM servers LEFT JOIN service_types AS st ON servers.type_id = st.id LEFT JOIN domains ON domains.server_id = servers.id WHERE domains.id = %s"%aArgs['domain_id'])
   infra = db.get_row()
  aArgs['domain_id'] = infra['foreign_id']
- return aCTX.node_function(infra['node'],"services.%s"%infra['service'],'record_delete')(aArgs = aArgs)
+ return aRT.node_function(infra['node'],"services.%s"%infra['service'],'record_delete')(aArgs = aArgs)
 
 ###################################### Tools ####################################
 #
 #
-def statistics(aCTX, aArgs):
+def statistics(aRT, aArgs):
  """Function returns statistics from all recursors
 
  Args:
@@ -215,15 +215,15 @@ def statistics(aCTX, aArgs):
  """
  ret = {'queries':{},'remotes':{}}
  args = {'count':aArgs.get('count',20)}
- for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
-  res = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'statistics')(aArgs = args)
+ for infra in [{'service':v['service'],'node':v['node']} for v in aRT.services.values() if v['type'] == 'RECURSOR']:
+  res = aRT.node_function(infra['node'],"services.%s"%infra['service'],'statistics')(aArgs = args)
   ret['queries']["%(node)s_%(service)s"%infra] = res['queries']
   ret['remotes']["%(node)s_%(service)s"%infra] = res['remotes']
  return ret
 
 #
 #
-def sync_nameserver(aCTX, aArgs):
+def sync_nameserver(aRT, aArgs):
  """ Function synchronizes nameservers with the local cached
 
  Args:
@@ -232,8 +232,8 @@ def sync_nameserver(aCTX, aArgs):
  """
  ret = {'added':[],'removed':[],'fixed':0,'errors':[]}
  org = {}
- for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aCTX.services.items() if v['type'] == 'NAMESERVER']:
-  res = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
+ for infra in [{'id':k,'service':v['service'],'node':v['node']} for k,v in aRT.services.items() if v['type'] == 'NAMESERVER']:
+  res = aRT.node_function(infra['node'],"services.%s"%infra['service'],'domain_list')(aArgs = {})
   if res['status'] == 'OK':
    org[infra['id']] = res
   else:
@@ -244,7 +244,7 @@ def sync_nameserver(aCTX, aArgs):
  else:
   ret['status'] = 'OK'
 
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT domains.*, CONCAT(server_id,'_',foreign_id) AS srv_id FROM domains")
   cache = db.get_dict('srv_id')
   for srv,info in org.items():
@@ -264,7 +264,7 @@ def sync_nameserver(aCTX, aArgs):
 
 #
 #
-def sync_recursor(aCTX, aArgs):
+def sync_recursor(aRT, aArgs):
  """ Function synchronizes recursors and with database/forwarders to point them to the correct nameserver
 
  Args:
@@ -273,9 +273,9 @@ def sync_recursor(aCTX, aArgs):
  """
  ret = {'added':[],'removed':[],'errors':[]}
  # INTERNAL from rims.api.dns import domain_forwarders
- domains = domain_forwarders(aCTX,{})['data']
- for infra in [{'service':v['service'],'node':v['node']} for v in aCTX.services.values() if v['type'] == 'RECURSOR']:
-  res = aCTX.node_function(infra['node'],"services.%s"%infra['service'],'sync')(aArgs = {'domains':domains})
+ domains = domain_forwarders(aRT,{})['data']
+ for infra in [{'service':v['service'],'node':v['node']} for v in aRT.services.values() if v['type'] == 'RECURSOR']:
+  res = aRT.node_function(infra['node'],"services.%s"%infra['service'],'sync')(aArgs = {'domains':domains})
   if res['status'] == 'OK':
    ret['added'].extend(res['added'])
    ret['removed'].extend(res['removed'])
@@ -285,7 +285,7 @@ def sync_recursor(aCTX, aArgs):
  return ret
 
 #
-def sync_data(aCTX, aArgs):
+def sync_data(aRT, aArgs):
  """ Function retrieves various data for synchronizing nameservers, data is retrieved in canonical format. Only return PTR records that fits a /24
 
  Args:
@@ -297,7 +297,7 @@ def sync_data(aCTX, aArgs):
   - status
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   if db.query("SELECT id,type FROM domains WHERE server_id = %(server_id)s AND foreign_id = '%(foreign_id)s'"%aArgs):
    ret['status'] = 'OK'
    domain = db.get_row()

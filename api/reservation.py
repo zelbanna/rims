@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """Function docstring for list TBD
 
  Args:
@@ -13,7 +13,7 @@ def list(aCTX, aArgs):
  Output:
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT user_id, shutdown, device_id, DATE_FORMAT(time_start,'%Y-%m-%d %H:%i') AS start, DATE_FORMAT(time_end,'%Y-%m-%d %H:%i') AS end, NOW() < time_end AS valid, devices.hostname, users.alias {} FROM reservations INNER JOIN devices ON device_id = devices.id INNER JOIN users ON user_id = users.id ORDER by user_id".format('' if not aArgs.get('extended') else ", info"))
   ret['data'] = db.get_rows()
   for res in ret['data']:
@@ -22,7 +22,7 @@ def list(aCTX, aArgs):
 
 #
 #
-def new(aCTX, aArgs):
+def new(aRT, aArgs):
  """ Function creates a new reservation
 
  Args:
@@ -35,7 +35,7 @@ def new(aCTX, aArgs):
  - status
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   aArgs['shutdown'] = aArgs.get('shutdown','no')
   try: db.insert_dict('reservations',aArgs)
   except: ret = 'NOT_OK'
@@ -45,7 +45,7 @@ def new(aCTX, aArgs):
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """ Function creates a new reservation
 
  Args:
@@ -56,13 +56,13 @@ def delete(aCTX, aArgs):
  - status
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = (db.execute("DELETE FROM reservations WHERE device_id = %s"%aArgs['device_id']) > 0)
  return ret
 
 #
 #
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """ Function provides reservation info and operation
 
  Args:
@@ -77,7 +77,7 @@ def info(aCTX, aArgs):
  ret = {}
  op = aArgs.pop('op',None)
  id = aArgs.pop('device_id',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    aArgs.pop('alias',None)
    aArgs['shutdown'] = aArgs.get('shutdown','no')
@@ -88,7 +88,7 @@ def info(aCTX, aArgs):
 
 #
 #
-def extend(aCTX, aArgs):
+def extend(aRT, aArgs):
  """ Function extends reservation for device
 
  Args:
@@ -99,12 +99,12 @@ def extend(aCTX, aArgs):
  """
  ret = {}
  aArgs['days'] = aArgs.get('days',5)
- with aCTX.db as db:
+ with aRT.db as db:
   ret['status'] = 'OK' if (db.execute("UPDATE reservations SET time_end = NOW() + INTERVAL %(days)s DAY WHERE device_id = %(device_id)s"%aArgs) == 1) else 'NOT_OK'
  return ret
 #
 #
-def expiration_status(aCTX, aArgs):
+def expiration_status(aRT, aArgs):
  """ Function runs shutdown and kills power when no time left.
 
  Args:
@@ -115,16 +115,16 @@ def expiration_status(aCTX, aArgs):
  """
  from rims.api.device import control as device_control
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT devices.id, res.shutdown, devices.hostname, res.user_id, users.alias, (res.time_end - NOW()) AS remaining FROM devices LEFT JOIN reservations AS res ON res.device_id = devices.id LEFT JOIN users ON res.user_id = users.id WHERE (res.time_end - NOW()) < %s"%aArgs.get('threshold',3600))
   ret['hosts'] = db.get_rows()
   for host in ret['hosts']:
    if host['remaining'] < 0:
     if host['shutdown'] > 0:
-     aCTX.queue_function(device_control, aCTX, {'id':host['id'], 'pem_op':'off','pem_id':'all','device_op':'shutdown' if host['shutdown'] == 1 else 'reset'})
+     aRT.queue_function(device_control, aRT, {'id':host['id'], 'pem_op':'off','pem_id':'all','device_op':'shutdown' if host['shutdown'] == 1 else 'reset'})
     message = 'Host %(hostname)s reservation expired (reserved by %(alias)s)'%host
    else:
     message = 'Host %(hostname)s reservation about to expire - remaining time: %(remaining)s (reserved by %(alias)s)'%host
-   aCTX.log(message)
+   aRT.log(message)
 
  return ret

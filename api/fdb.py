@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """ Function retrieves switch table for a device and populate FDB table for caching
 
  Args:
@@ -17,20 +17,20 @@ def sync(aCTX, aArgs):
  from importlib import import_module
  try:
   module = import_module(f"rims.devices.{aArgs.get('type','generic')}")
-  ret = getattr(module,'Device',None)(aCTX,aArgs['id'],aArgs.get('ip')).fdb()
+  ret = getattr(module,'Device',None)(aRT,aArgs['id'],aArgs.get('ip')).fdb()
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
  else:
   if ret['status'] == 'OK':
    fdb = ret.pop('FDB',[])
-   with aCTX.db as db:
+   with aRT.db as db:
     ret['delete'] = db.execute(f"DELETE FROM fdb WHERE device_id = {aArgs['id']}")
     ret['insert']  = db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join(f"({aArgs['id']},{x['vlan']},{x['snmp']},{x['mac']})" for x in fdb)) if fdb else 0
  return ret
 
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """ Function retrieves switch table entries from database
 
  Args:
@@ -41,7 +41,7 @@ def list(aCTX, aArgs):
   - fdb
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   fields = ['di.interface_id', 'di.name', 'LPAD(hex(fdb.mac),12,0) AS mac', 'fdb.snmp_index','fdb.vlan']
   joins = ['interfaces AS di ON di.device_id = fdb.device_id AND di.snmp_index = fdb.snmp_index']
   where = ['TRUE']
@@ -75,7 +75,7 @@ def list(aCTX, aArgs):
 
 #
 #
-def search(aCTX, aArgs):
+def search(aRT, aArgs):
  """ Function finds mac to host mapping
 
  Args:
@@ -91,7 +91,7 @@ def search(aCTX, aArgs):
   ret['status'] = 'NOT_OK'
   ret['info'] = 'Malformed MAC'
  else:
-  with aCTX.db as db:
+  with aRT.db as db:
    if db.query(f"SELECT device_id, interface_id, name, description, oui.company AS oui FROM interfaces LEFT JOIN oui ON oui.oui = ({mac} >> 24) WHERE mac = {mac} ORDER BY snmp_index, name"):
     ret['interfaces'] = db.get_rows()
     db.query(f"SELECT id, hostname FROM devices WHERE id = {ret['interfaces'][0]['device_id']}")
@@ -105,7 +105,7 @@ def search(aCTX, aArgs):
 
 #
 #
-def check(aCTX, aArgs):
+def check(aRT, aArgs):
  """ Function initiate a check/fdb_sync on all network devices
 
  Args:
@@ -130,13 +130,13 @@ def check(aCTX, aArgs):
       db.execute("INSERT INTO fdb (device_id, vlan, snmp_index, mac) VALUES %s"%','.join(f"({lArgs['id']},{x['vlan']},{x['snmp']},{x['mac']})" for x in fdb))
   return True
 
- with aCTX.db as db:
+ with aRT.db as db:
   ret['status'] = 'OK'
   ret['count'] = db.query("SELECT devices.hostname, devices.id, INET6_NTOA(ia.ip) AS ip, dt.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types AS dt ON devices.type_id = dt.id WHERE dt.base = 'network'")
   if ret['count'] > 0:
-   sema = aCTX.semaphore(20)
+   sema = aRT.semaphore(20)
    for dev in db.get_rows():
-    aCTX.queue_api(__fdb_check,dev,sema)
+    aRT.queue_api(__fdb_check,dev,sema)
    for _ in range(20):
     sema.acquire()
  return ret

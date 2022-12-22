@@ -17,9 +17,9 @@ from xmlrpc import client as rpcclient
 # Change IP for a domain in loopia DNS
 #
 
-def set_ip(aCTX, aArgs):
+def set_ip(aRT, aArgs):
  ret = {}
- settings = aCTX.config['loopia']
+ settings = aRT.config['loopia']
  try:
   client = rpcclient.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
   data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
@@ -36,9 +36,9 @@ def set_ip(aCTX, aArgs):
 #
 # Get Loopia info for subdomain
 #
-def get_ip(aCTX, aArgs):
+def get_ip(aRT, aArgs):
  ret = {}
- settings = aCTX.config['loopia']
+ settings = aRT.config['loopia']
  try:
   client = rpcclient.ServerProxy(uri = settings['rpc_server'], encoding = 'utf-8')
   data = client.getZoneRecords(settings['username'], settings['password'], settings['domain'], aArgs['subdomain'])[0]
@@ -52,5 +52,5 @@ def get_ip(aCTX, aArgs):
 
 #
 #
-def get_loopia_suffix(aCTX, aArgs):
- return {'suffix':f".{aCTX.config['loopia']['domain']}"}
+def get_loopia_suffix(aRT, aArgs):
+ return {'suffix':f".{aRT.config['loopia']['domain']}"}

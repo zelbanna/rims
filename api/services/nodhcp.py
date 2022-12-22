@@ -6,7 +6,7 @@ __type__ = "DHCP"
 #
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function docstring for leases. No OP
 
  Args:
@@ -18,7 +18,7 @@ def status(aCTX, aArgs):
  return {'data':None, 'status':'OK' }
 
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """No OP
 
  Args:
@@ -33,7 +33,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -47,7 +47,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -56,13 +56,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('nodhcp',{})
+ settings = aRT.config['services'].get('nodhcp',{})
  params = []
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -74,7 +74,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -86,7 +86,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

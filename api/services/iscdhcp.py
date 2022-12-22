@@ -21,7 +21,7 @@ def __write_file(aFile,aEntries):
 
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function docstring for leases TBD
 
  Args:
@@ -31,7 +31,7 @@ def status(aCTX, aArgs):
  """
  result = []
  lease  = {}
- with open(aCTX.config['services']['iscdhcp']['active'],'r') as leasefile:
+ with open(aRT.config['services']['iscdhcp']['active'],'r') as leasefile:
   for line in leasefile:
    if line == '\n':
     continue
@@ -55,7 +55,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """Function docstring for sync:  reload the DHCP server to use updated info
 
  Args:
@@ -63,14 +63,14 @@ def sync(aCTX, aArgs):
 
  Output:
  """
- entries = aCTX.node_function('master','ipam','server_macs')(aArgs = {'server_id':aArgs['id'],'alternatives':True})
- __write_file(aCTX.config['services']['iscdhcp']['static'],entries['data'])
+ entries = aRT.node_function('master','ipam','server_macs')(aArgs = {'server_id':aArgs['id'],'alternatives':True})
+ __write_file(aRT.config['services']['iscdhcp']['static'],entries['data'])
  # INTERNAL from rims.api.iscdhcp import restart
- return restart(aCTX, None)
+ return restart(aRT, None)
 
 #
 #
-def update(aCTX, aArgs):
+def update(aRT, aArgs):
  """Function docstring for check: update specific entry
 
  Args:
@@ -83,7 +83,7 @@ def update(aCTX, aArgs):
  """
  devices = {}
 
- with open(aCTX.config['services']['iscdhcp']['static'],'r') as config_file:
+ with open(aRT.config['services']['iscdhcp']['static'],'r') as config_file:
   for line in config_file:
    if line[0] == '#':
     continue
@@ -92,16 +92,16 @@ def update(aCTX, aArgs):
    devices[id] = {'id':id,'mac':parts[5][:-1],'ip':parts[7][:-1],'network':parts[11]}
  if 'id' in aArgs:
   devices[aArgs['id']] = {'id':aArgs['id'],'mac':aArgs['mac'],'ip':aArgs['ip'],'network':aArgs['network']}
-  __write_file(aCTX.config['services']['iscdhcp']['static'],devices.values())
+  __write_file(aRT.config['services']['iscdhcp']['static'],devices.values())
   # INTERNAL from rims.api.iscdhcp import restart
-  ret = restart(aCTX,None)
+  ret = restart(aRT,None)
  else:
   ret = {'status':'OK','devices':devices}
  return ret
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -113,7 +113,7 @@ def restart(aCTX, aArgs):
  """
  ret = {}
  try:
-  ret['output'] = check_output(aCTX.config['services']['iscdhcp']['reload'].split()).decode()
+  ret['output'] = check_output(aRT.config['services']['iscdhcp']['reload'].split()).decode()
  except CalledProcessError as c:
   ret['code'] = c.returncode
   ret['output'] = c.output.decode()
@@ -124,7 +124,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -133,13 +133,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('iscdhcp',{})
+ settings = aRT.config['services'].get('iscdhcp',{})
  params = ['reload','active','static']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -151,7 +151,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -163,7 +163,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

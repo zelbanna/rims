@@ -8,7 +8,7 @@ from urllib.error import HTTPError
 
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """Function returns a list of OUI:s
 
  Args:
@@ -17,12 +17,12 @@ def list(aCTX, aArgs):
   - data
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui")
   ret['data'] = db.get_rows()
  return ret
 
-def info(aCTX, aArgs):
+def info(aRT, aArgs):
  """ Function retrieves OUI info from database
 
  Args:
@@ -35,7 +35,7 @@ def info(aCTX, aArgs):
  ret = {}
  try:
   oui = int(aArgs['oui'].translate(str.maketrans({":":"","-":""}))[:6],16)
-  with aCTX.db as db:
+  with aRT.db as db:
    ret['data']= db.get_row() if db.query("SELECT LPAD(HEX(oui),6,0) AS oui, company FROM oui WHERE oui = %s"%oui) else {'oui':'NOT_FOUND','company':'NOT_FOUND'}
    ret['status'] = 'OK' if ret['data']['oui'] != 'NOT_FOUND' else 'NOT_FOUND'
  except Exception as e:
@@ -45,7 +45,7 @@ def info(aCTX, aArgs):
 #########################################################################3
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function docstring for status. No OP
 
  Args:
@@ -58,7 +58,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """ Function fetch and populate OUI table
 
  Args:
@@ -73,7 +73,7 @@ def sync(aCTX, aArgs):
  """
  ret = {'output':0,'status':'NOT_OK'}
  try:
-  req = Request(aCTX.config['services']['oui']['location'])
+  req = Request(aRT.config['services']['oui']['location'])
   sock = urlopen(req, timeout = 120)
   data = sock.read().decode()
   sock.close()
@@ -82,7 +82,7 @@ def sync(aCTX, aArgs):
  except Exception as e:
   ret.update({ 'status':type(e).__name__, 'code':590, 'error':repr(e)})
  else:
-  with aCTX.db as db:
+  with aRT.db as db:
    if aArgs.get('clear') is True:
     db.execute("TRUNCATE oui")
    for line in data.split('\n'):
@@ -97,7 +97,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -111,7 +111,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -120,13 +120,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('oui',{})
+ settings = aRT.config['services'].get('oui',{})
  params = ['location']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -138,7 +138,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -150,7 +150,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

@@ -18,7 +18,7 @@ from datetime import datetime
 
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function docstring for auth table status
 
  Args:
@@ -30,7 +30,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """ Function checks the auth table and add/remove entries (in this case, only updates...)
 
  Args:
@@ -40,14 +40,14 @@ def sync(aCTX, aArgs):
  Output:
  """
  ret = {'added':[],'removed':[]}
- settings = aCTX.config['services']['srx']
+ settings = aRT.config['services']['srx']
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logon</operation><timeout>%s</timeout><IP>%s</IP><domain>global</domain><user>%s</user><role-list><role>%s</role></role-list><posture>healthy</posture></userfw-entry></userfw-entries>'
- users = aArgs['users'] if aArgs.get('users') else aCTX.tokens.values()
+ users = aArgs['users'] if aArgs.get('users') else aRT.tokens.values()
  try:
   for usr in users:
-   aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, 7200, usr['ip'], usr['alias'],"</role><role>".join(settings['roles'])))
+   aRT.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, 7200, usr['ip'], usr['alias'],"</role><role>".join(settings['roles'])))
    ret['added'] = usr['alias']
  except Exception as e:
   ret['status'] = 'NOT_OK'
@@ -58,7 +58,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -72,7 +72,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def authenticate(aCTX, aArgs):
+def authenticate(aRT, aArgs):
  """ Function adds authentication entry
 
  Args:
@@ -83,11 +83,11 @@ def authenticate(aCTX, aArgs):
  Output:
   - status
  """
- settings = aCTX.config['services']['srx']
+ settings = aRT.config['services']['srx']
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logon</operation><timeout>%s</timeout><IP>%s</IP><domain>global</domain><user>%s</user><role-list><role>%s</role></role-list><posture>healthy</posture></userfw-entry></userfw-entries>'
- try: aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs.get('timeout',7200), aArgs['ip'], aArgs['alias'],"</role><role>".join(settings['roles'])))
+ try: aRT.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs.get('timeout',7200), aArgs['ip'], aArgs['alias'],"</role><role>".join(settings['roles'])))
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
  else:
@@ -96,7 +96,7 @@ def authenticate(aCTX, aArgs):
 
 #
 #
-def invalidate(aCTX, aArgs):
+def invalidate(aRT, aArgs):
  """ Function removes authentication entry
 
  Args:
@@ -105,11 +105,11 @@ def invalidate(aCTX, aArgs):
 
  Output:
  """
- settings = aCTX.config['services']['srx']
+ settings = aRT.config['services']['srx']
  auth = basic_auth(settings['username'], settings['password'])
  ts = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
  argstr = '<?xml version="1.0" encoding="UTF-8"?><userfw-entries><userfw-entry><source>Aruba ClearPass</source><timestamp>%s</timestamp><operation>logoff</operation><IP>%s</IP></userfw-entry></userfw-entries>'
- try: aCTX.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs['ip']))
+ try: aRT.rest_call('%s/api/userfw/v1/post-entry'%settings['url'], aHeader = auth, aApplication = 'xml', aArgs = argstr%(ts, aArgs['ip']))
  except Exception as e:
   ret = {'status':'NOT_OK','info':str(e)}
  else:
@@ -118,7 +118,7 @@ def invalidate(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -127,13 +127,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('srx',{})
+ settings = aRT.config['services'].get('srx',{})
  params = ['url','username','password','roles']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -145,7 +145,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -157,7 +157,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

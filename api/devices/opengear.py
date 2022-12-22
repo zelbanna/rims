@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def inventory(aCTX, aArgs):
+def inventory(aRT, aArgs):
  """Function docstring for inventory TBD
 
  Args:
@@ -16,15 +16,15 @@ def inventory(aCTX, aArgs):
  from rims.devices.opengear import Device
  ret = {}
  id = aArgs['device_id']
- console = Device(aCTX, id)
+ console = Device(aRT, id)
  ret['data'] = console.get_inventory();
- with aCTX.db as db:
+ with aRT.db as db:
   ret['extra'] = db.get_row() if (db.query("SELECT * FROM console_info WHERE device_id = '%s'"%id) > 0) else {'access_url':'telnet://%s'%console.get_ip(),'port':6000}
  return ret
 
 #
 #
-def info (aCTX, aArgs):
+def info (aRT, aArgs):
  """Function docstring for info TBD
 
  Args:
@@ -37,7 +37,7 @@ def info (aCTX, aArgs):
  ret = {}
  id = aArgs['device_id']
  op = aArgs.pop('op',None)
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    if 'port' in aArgs:
     try: aArgs['port'] = int(aArgs['port'])

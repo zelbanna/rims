@@ -9,7 +9,7 @@ from subprocess import check_output, CalledProcessError
 ############################### Tools #################################
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """Function docstring for sync. Sync domain caching with recursor forwarder
 
  Args:
@@ -18,32 +18,32 @@ def sync(aCTX, aArgs):
  Output:
  """
  ret = {'added':[],'removed':[]}
- settings = aCTX.config['services']['powerdns']['recursor']
- try: servers = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+ settings = aRT.config['services']['powerdns']['recursor']
+ try: servers = aRT.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
  else:
   ret['status'] = 'OK'
   forwarders = [x for x in servers if x['servers']]
-  domains = aCTX.node_function('master','dns','domain_forwarders')(aArgs = {})['data'] if not aArgs.get('domains') else aArgs['domains']
+  domains = aRT.node_function('master','dns','domain_forwarders')(aArgs = {})['data'] if not aArgs.get('domains') else aArgs['domains']
   for dom in domains:
    for f in forwarders:
     if f['name'] == (dom['name'] + '.'):
      f['sync'] = dom['sync'] = True
      break
    else:
-    try: aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = {'id':dom['foreign_id'], 'name':dom['name'] + '.', 'type':'Zone', 'servers':[dom['endpoint']], 'kind':'Forwarded', 'url':dom['name'], 'recursion_desired':False })
+    try: aRT.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'POST', aHeader = {'X-API-Key':settings['key']}, aArgs = {'id':dom['foreign_id'], 'name':dom['name'] + '.', 'type':'Zone', 'servers':[dom['endpoint']], 'kind':'Forwarded', 'url':dom['name'], 'recursion_desired':False })
     except Exception as e:
-     aCTX.log("PowerDNS Recursor sync (add): Error => %s"%e)
+     aRT.log("PowerDNS Recursor sync (add): Error => %s"%e)
      ret['status'] = 'NOT_OK'
      ret['info'] = str(e)
     else: ret['added'].append(dom)
   for f in forwarders:
    if not f.get('sync'):
-    try: aCTX.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],f['id']), aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']})
+    try: aRT.rest_call('%s/api/v1/servers/localhost/zones/%s'%(settings['url'],f['id']), aMethod = 'DELETE', aHeader = {'X-API-Key':settings['key']})
     except Exception as e:
-     aCTX.log("PowerDNS Recursor sync (rem): Error => %s"%e)
+     aRT.log("PowerDNS Recursor sync (rem): Error => %s"%e)
      ret['status'] = 'NOT_OK'
      ret['info'] = str(e)
     else: ret['removed'].append(f)
@@ -51,7 +51,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function returns recursor status - the number of forwarding zones
 
  Args:
@@ -61,13 +61,13 @@ def status(aCTX, aArgs):
   - status
  """
  ret = {}
- settings = aCTX.config['services']['powerdns']['recursor']
- try: servers = aCTX.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
+ settings = aRT.config['services']['powerdns']['recursor']
+ try: servers = aRT.rest_call('%s/api/v1/servers/localhost/zones'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})
  except Exception as e: ret.update({'status':'NOT_OK','info':str(e)})
  else: ret.update({'status':'OK','zones':[x for x in servers if x['servers']]})
  return ret
 
-def statistics(aCTX, aArgs):
+def statistics(aRT, aArgs):
  """Function returns recursor statistics
 
  Args:
@@ -77,19 +77,19 @@ def statistics(aCTX, aArgs):
   - remotes
  """
  ret = {}
- settings = aCTX.config['services']['powerdns']['recursor']
- try: entries = aCTX.rest_call('%s/jsonstat?command=get-query-ring&name=queries'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})['entries']
+ settings = aRT.config['services']['powerdns']['recursor']
+ try: entries = aRT.rest_call('%s/jsonstat?command=get-query-ring&name=queries'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})['entries']
  except Exception as e: ret.update({'queries':[],'exception':str(e)})
  else: ret['queries'] = entries
 
- try: entries = aCTX.rest_call('%s/jsonstat?command=get-remote-ring&name=remotes'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})['entries']
+ try: entries = aRT.rest_call('%s/jsonstat?command=get-remote-ring&name=remotes'%(settings['url']), aMethod = 'GET', aHeader = {'X-API-Key':settings['key']})['entries']
  except Exception as e: ret.update({'remotes':[], 'exception':str(e)})
  else: ret['remotes'] = entries
  return ret
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -100,7 +100,7 @@ def restart(aCTX, aArgs):
   - result 'OK'/'NOT_OK'
  """
  ret = {}
- settings = aCTX.config['services']['powerdns']['recursor']
+ settings = aRT.config['services']['powerdns']['recursor']
  try:
   ret['output'] = check_output(settings.get('reload','service pdns-recursor restart').split()).decode()
   ret['code'] = 0
@@ -117,7 +117,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Settings:
@@ -131,13 +131,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('powerdns',{}).get('recursor',{})
+ settings = aRT.config['services'].get('powerdns',{}).get('recursor',{})
  params = ['url','key','reload']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -149,7 +149,7 @@ def start(aCTX, aArgs):
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -161,7 +161,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

@@ -21,7 +21,7 @@ def __op(aOP):
 
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function docstring for leases. No OP
 
  Args:
@@ -32,7 +32,7 @@ def status(aCTX, aArgs):
  """
  ret = {}
  try:
-  command = aCTX.config['services']['transmission']['status']
+  command = aRT.config['services']['transmission']['status']
   output = check_output(command.split())
   ret['code'] = 0
  except CalledProcessError as c:
@@ -53,7 +53,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """No OP
 
  Args:
@@ -68,7 +68,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -79,14 +79,14 @@ def restart(aCTX, aArgs):
   - result 'OK'/'NOT_OK'
  """
  ret = {}
- ret['stop'] = __op(aCTX.config['services']['transmission']['stop'])['status']
+ ret['stop'] = __op(aRT.config['services']['transmission']['stop'])['status']
  sleep(2)
- ret.update(__op(aCTX.config['services']['transmission']['start']))
+ ret.update(__op(aRT.config['services']['transmission']['start']))
  return ret
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -95,13 +95,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('transmission',{})
+ settings = aRT.config['services'].get('transmission',{})
  params = ['start','stop','status']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -109,11 +109,11 @@ def start(aCTX, aArgs):
  Output:
   - status
  """
- return __op(aCTX.config['services']['transmission']['start'])
+ return __op(aRT.config['services']['transmission']['start'])
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -121,11 +121,11 @@ def stop(aCTX, aArgs):
  Output:
   - status
  """
- return __op(aCTX.config['services']['transmission']['stop'])
+ return __op(aRT.config['services']['transmission']['stop'])
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

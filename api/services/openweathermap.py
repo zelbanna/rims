@@ -5,7 +5,7 @@ __type__ = "TELEMETRY"
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  """Function checks OpenWeathermap API, process data and queue reporting to influxDB bucket
 
  Args:
@@ -14,10 +14,10 @@ def process(aCTX, aArgs):
   - status
  """
  ret = {'status':'OK','function':'openweathermap_process'}
- state = aCTX.cache.get('openweathermap',{'status':'forced','timestamp':0})
+ state = aRT.cache.get('openweathermap',{'status':'forced','timestamp':0})
  if state['status'] != 'inactivate':
-  config = aCTX.config['services']['openweathermap']
-  res = sync(aCTX,None)
+  config = aRT.config['services']['openweathermap']
+  res = sync(aRT,None)
   if res['status'] == 'OK' and res['data']['dt'] > state['timestamp']:
    data = res['data']
    ts = state['timestamp'] = data['dt']
@@ -28,7 +28,7 @@ def process(aCTX, aArgs):
    records.append(tmpl%('extra',f"clouds={data['clouds']['all']},visibility={data['visibility'] / 1000}"))
    records.append(tmpl%('rain',f"rain={data.get('rain',{'1h':0})['1h']}"))
    if state['status'] == 'active':
-    aCTX.influxdb.write(records, config['bucket'])
+    aRT.influxdb.write(records, config['bucket'])
   else:
    ret['status'] = 'NOT_OK'
    ret['info'] = 'no_updated_data'
@@ -40,7 +40,7 @@ def process(aCTX, aArgs):
 ########################################################################################
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """Function does a check and returns status of the service
 
  Args:
@@ -51,11 +51,11 @@ def sync(aCTX, aArgs):
   - status
  """
  ret = {}
- config = aCTX.config['services']['openweathermap']
+ config = aRT.config['services']['openweathermap']
  url = 'https://api.openweathermap.org/data/2.5/%s?lat={latitude}&lon={longitude}&appid={token}&units=metric'.format(**config)
  try:
-  res = aCTX.rest_call(url%'weather', aSSL = aCTX.ssl, aMethod = 'GET')
-  air = aCTX.rest_call(url%'air_pollution', aSSL = aCTX.ssl, aMethod = 'GET')['list'][0]
+  res = aRT.rest_call(url%'weather', aSSL = aRT.ssl, aMethod = 'GET')
+  air = aRT.rest_call(url%'air_pollution', aSSL = aRT.ssl, aMethod = 'GET')['list'][0]
   res['air'] = air['components']
   res['air']['co2'] = res['air'].pop('co',0)
   res['air']['pm25'] = res['air'].pop('pm2_5',0)
@@ -67,13 +67,13 @@ def sync(aCTX, aArgs):
   ret['status'] = 'NOT_OK'
  else:
   ret['data'] = res
-  ret['state'] = aCTX.cache.get('openweathermap')
+  ret['state'] = aRT.cache.get('openweathermap')
   ret['status'] = 'OK'
  return ret
 
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """ No-Op
 
  Args:
@@ -86,7 +86,7 @@ def status(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -100,7 +100,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -109,13 +109,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('openweathermap',{})
+ settings = aRT.config['services'].get('openweathermap',{})
  params = ['token','bucket','measurement','longitude','latitude']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior
 
  Args:
@@ -124,21 +124,21 @@ def start(aCTX, aArgs):
   - status
  """
  ret = {}
- state = aCTX.cache.get('openweathermap',{})
+ state = aRT.cache.get('openweathermap',{})
  if state.get('status') == 'active':
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
   ret['status'] = 'OK'
   ret['info'] = 'scheduled_openweathermap'
-  config = aCTX.config['services']['openweathermap']
-  aCTX.schedule_api_periodic(process,'openweathermap_process',int(config.get('frequency',60)), args = aArgs, output = aCTX.debug)
-  aCTX.cache['openweathermap'] = {'status':'active','timestamp':0}
+  config = aRT.config['services']['openweathermap']
+  aRT.schedule_api_periodic(process,'openweathermap_process',int(config.get('frequency',60)), args = aArgs, output = aRT.debug)
+  aRT.cache['openweathermap'] = {'status':'active','timestamp':0}
  return ret
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -150,7 +150,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

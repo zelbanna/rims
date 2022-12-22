@@ -26,8 +26,8 @@ class Device(GenericDevice):
  def set_outlet_state(cls,state):
   return { 'off':b'3', 'on':b'2', 'reboot':b'4' }.get(state,b'1')
 
- def __init__(self, aCTX, aID, aIP = None):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
+ def __init__(self, aRT, aID, aIP = None):
+  GenericDevice.__init__(self, aRT, aID, aIP)
 
  #
  def set_state(self,slot,unit,state):
@@ -36,8 +36,8 @@ class Device(GenericDevice):
    tag = ".1.3.6.1.4.1.10418.17.2.5.5.1.6.1"
    iid = "%s.%s"%(slot,unit)
    op  = Device.set_outlet_state(state)
-   # snmpset -v2c -c %s %s %s i %s"%(self._ctx.config['snmp']['write'], self._ip, oid, op))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['write'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   # snmpset -v2c -c %s %s %s i %s"%(self._rt.config['snmp']['write'], self._ip, oid, op))
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['write'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    setobj = VarList(VarBind(tag,iid , op ,"INTEGER"))
    res = session.set(setobj)
    sleep(0.5)
@@ -57,7 +57,7 @@ class Device(GenericDevice):
   ret = {'state':'unknown' }
   try:
    stateobj = VarList('.1.3.6.1.4.1.10418.17.2.5.5.1.5.1.%s.%s'%(slot,unit))
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.get(stateobj)
    if (session.ErrorInd == 0):
     ret['status'] = 'OK'
@@ -79,7 +79,7 @@ class Device(GenericDevice):
    name = name[:16].encode('utf-8')
    tag = '.1.3.6.1.4.1.10418.17.2.5.5.1.4.1'
    iid = "%s.%s"%(slot,unit)
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['write'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['write'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    setobj = VarList(VarBind(tag , iid , name, "OPAQUE"))
    session.set(setobj)
    if (session.ErrorInd == 0):
@@ -98,7 +98,7 @@ class Device(GenericDevice):
   slots = []
   try:
    slotobjs = VarList('.1.3.6.1.4.1.10418.17.2.5.3.1.3')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(slotobjs)
    for slot in slotobjs:
     slots.append([slot.iid, slot.val.decode()])
@@ -113,7 +113,7 @@ class Device(GenericDevice):
    outletobjs = VarList('.1.3.6.1.4.1.10418.17.2.5.5.1.4')
    stateobjs  = VarList('.1.3.6.1.4.1.10418.17.2.5.5.1.5')
    slotobjs   = VarList('.1.3.6.1.4.1.10418.17.2.5.3.1.3')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._ctx.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._ctx.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
    session.walk(outletobjs)
    session.walk(stateobjs)
    session.walk(slotobjs)

@@ -14,5 +14,5 @@ class Device(GenericDevice):
    ('chassis','cpu=cpu','CPU free','.1.3.6.1.4.1.2021.11.11.0')
   ]
 
- def __init__(self, aCTX, aID, aIP = None):
-  GenericDevice.__init__(self, aCTX, aID, aIP)
+ def __init__(self, aRT, aID, aIP = None):
+  GenericDevice.__init__(self, aRT, aID, aIP)

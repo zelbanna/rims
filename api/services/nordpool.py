@@ -7,7 +7,7 @@ from datetime import datetime, date, timedelta
 
 #
 #
-def process(aCTX, aArgs):
+def process(aRT, aArgs):
  """Function checks nordpool API, process data and queue reporting to influxDB bucket
 
  Args:
@@ -18,16 +18,16 @@ def process(aCTX, aArgs):
  """
  ret = {'status':'OK','function':'nordpool_process'}
 
- state = aCTX.cache.get('nordpool',{'running':aCTX.debug})
+ state = aRT.cache.get('nordpool',{'running':aRT.debug})
  if state['running'] or aArgs.get('isodate'):
-  config = aCTX.config['services']['nordpool']
-  res = sync(aCTX,{'isodate':aArgs.get('isodate')})
+  config = aRT.config['services']['nordpool']
+  res = sync(aRT,{'isodate':aArgs.get('isodate')})
   if res['status'] == 'OK':
    data = res['data']
    tmpl = '{},origin=nordpool,type=pricing,system_id=nordpool,currency={} price=%s %s'.format(config.get('measurement','nordpool'),config.get('currency','EUR'))
    records = [tmpl%(x['price']/1000.0,x['ts']) for x in data]
-   aCTX.influxdb.write(records, config['bucket'])
-   if aCTX.debug:
+   aRT.influxdb.write(records, config['bucket'])
+   if aRT.debug:
     ret['data'] = records
   else:
    ret = res
@@ -39,7 +39,7 @@ def process(aCTX, aArgs):
 ########################################################################################
 #
 #
-def status(aCTX, aArgs):
+def status(aRT, aArgs):
  """Function retrives the forecast 24h market prices
 
  Args:
@@ -51,16 +51,16 @@ def status(aCTX, aArgs):
  ret = {}
  isodate = date.today() + timedelta(days = 1)
  date_string = f'{isodate.day:02d}-{isodate.month:02d}-{isodate.year}'
- config = aCTX.config['services']['nordpool']
- state = aCTX.cache.get("nordpool",{})
+ config = aRT.config['services']['nordpool']
+ state = aRT.cache.get("nordpool",{})
  if not state:
-  state = aCTX.cache['nordpool'] = {'running':False,'tomorrow':None,'prices':None,'next':None}
+  state = aRT.cache['nordpool'] = {'running':False,'tomorrow':None,'prices':None,'next':None}
  return {'status':'OK','url':f"https://www.nordpoolgroup.com/api/marketdata/page/10/?entityName={config['entity']}&endDate={date_string}&currency={config['currency']}", 'state':state}
 
 
 #
 #
-def sync(aCTX, aArgs):
+def sync(aRT, aArgs):
  """ Syncronizes entity market data from nordpool, possible historic values
 
  Args:
@@ -72,10 +72,10 @@ def sync(aCTX, aArgs):
   - status. (operation result)
  """
  ret = {}
- config = aCTX.config['services']['nordpool']
- state = aCTX.cache.get("nordpool",{})
+ config = aRT.config['services']['nordpool']
+ state = aRT.cache.get("nordpool",{})
  if not state:
-  state = aCTX.cache['nordpool'] = {'running':False,'tomorrow':None,'prices':None,'next':None}
+  state = aRT.cache['nordpool'] = {'running':False,'tomorrow':None,'prices':None,'next':None}
 
  today = date.today()
  isodate = today + timedelta(days = 1) if not aArgs.get('isodate') else datetime.fromisoformat(aArgs['isodate'])
@@ -83,7 +83,7 @@ def sync(aCTX, aArgs):
  url = f"https://www.nordpoolgroup.com/api/marketdata/page/10/?entityName={config['entity']}&endDate={date_string}&currency={config['currency']}"
 
  try:
-  prices = aCTX.rest_call(url, aSSL = aCTX.ssl, aMethod = 'GET')
+  prices = aRT.rest_call(url, aSSL = aRT.ssl, aMethod = 'GET')
  except Exception as e:
   ret['info'] = str(e)
   ret['status'] = 'NOT_OK'
@@ -119,7 +119,7 @@ def sync(aCTX, aArgs):
 
 #
 #
-def restart(aCTX, aArgs):
+def restart(aRT, aArgs):
  """Function provides restart capabilities of service
 
  Args:
@@ -133,7 +133,7 @@ def restart(aCTX, aArgs):
 
 #
 #
-def parameters(aCTX, aArgs):
+def parameters(aRT, aArgs):
  """ Function provides parameter mapping of anticipated config vs actual
 
  Args:
@@ -142,13 +142,13 @@ def parameters(aCTX, aArgs):
   - status
   - parameters
  """
- settings = aCTX.config['services'].get('nordpool',{})
+ settings = aRT.config['services'].get('nordpool',{})
  params = ['measurement','bucket','entity','currency']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
 #
-def start(aCTX, aArgs):
+def start(aRT, aArgs):
  """ Function provides start behavior and schedules readout every 2h (so most of the time it won't do anything), this is a one way startup model without stop
 
  Args:
@@ -157,19 +157,19 @@ def start(aCTX, aArgs):
   - status
  """
  ret = {}
- if aCTX.cache.get('nordpool',{}).get('running'):
+ if aRT.cache.get('nordpool',{}).get('running'):
   ret['status'] = 'NOT_OK'
   ret['info'] = 'active'
  else:
   ret['status'] = 'OK'
   ret['info'] = 'scheduled_nordpool'
-  aCTX.cache['nordpool'] = {'running':True,'tomorrow':None,'prices':None,'next':None}
-  aCTX.schedule_api_periodic(process,'nordpool_process', 7200, args = aArgs, output = aCTX.debug)
+  aRT.cache['nordpool'] = {'running':True,'tomorrow':None,'prices':None,'next':None}
+  aRT.schedule_api_periodic(process,'nordpool_process', 7200, args = aArgs, output = aRT.debug)
  return ret
 
 #
 #
-def stop(aCTX, aArgs):
+def stop(aRT, aArgs):
  """ Function provides stop behavior
 
  Args:
@@ -181,7 +181,7 @@ def stop(aCTX, aArgs):
 
 #
 #
-def close(aCTX, aArgs):
+def close(aRT, aArgs):
  """ Function provides closing behavior, wrapping up data and file handlers before closing
 
  Args:

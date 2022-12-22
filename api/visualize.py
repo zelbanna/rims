@@ -4,7 +4,7 @@ __add_globals__ = lambda x: globals().update(x)
 
 #
 #
-def list(aCTX, aArgs):
+def list(aRT, aArgs):
  """ Function produces a list of available map/network entries
 
  Args:
@@ -13,14 +13,14 @@ def list(aCTX, aArgs):
   - maps: list of (id,name)
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['count'] = db.query("SELECT id,name FROM visualize")
   ret['data']  = db.get_rows()
  return ret
 
 #
 #
-def delete(aCTX, aArgs):
+def delete(aRT, aArgs):
  """ Deletes a map
 
  Args:
@@ -30,13 +30,13 @@ def delete(aCTX, aArgs):
   - deleted
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['deleted'] = db.execute("DELETE FROM visualize WHERE id = %(id)s"%aArgs)
  return ret
 
 #
 #
-def show(aCTX, aArgs):
+def show(aRT, aArgs):
  """ Get map data from name or id
 
  Args:
@@ -49,7 +49,7 @@ def show(aCTX, aArgs):
   - nodes
  """
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   ret['found'] = (db.query("SELECT * FROM visualize WHERE id = %(id)s"%aArgs) > 0)
   if ret['found']:
    from json import loads
@@ -62,7 +62,7 @@ def show(aCTX, aArgs):
 
 #
 #
-def network(aCTX, aArgs):
+def network(aRT, aArgs):
  """ Function to view or update information for specific network map id or generate a network map for device id/ip
 
  Args:
@@ -91,7 +91,7 @@ def network(aCTX, aArgs):
  id = int(args.get('id',0))
  type = args.pop('type','map')
  ret = {}
- with aCTX.db as db:
+ with aRT.db as db:
   if op == 'update':
    for tp in ['options','nodes','edges']:
     args[tp] = dumps(args[tp])
