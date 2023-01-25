@@ -24,7 +24,7 @@ args = parser.parse_args()
 
 try:
  with open(ospath.abspath(ospath.join(ospath.dirname(__file__), args.config))) as f:
-  config = load(f)['services']['influxdb']
+  config = load(f)['influxdb']
 except Exception as e:
  print(f'Error opening config file: {str(e)}')
  exit(1)

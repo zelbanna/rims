@@ -69,8 +69,8 @@ class RunTime():
 
   database   = self.config.get('database')
   self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
-  if self.config.get('services',{}).get('influxdb'):
-   config = self.config['services']['influxdb']
+  if self.config.get('influxdb'):
+   config = self.config['influxdb']
    self.influxdb = InfluxDB(config['url'],config['org'],config['token'],config['bucket'])
   else:
    self.influxdb = InfluxDummy()
