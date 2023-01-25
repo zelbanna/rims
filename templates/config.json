@@ -1,104 +1,185 @@
 {
+ "database": {
+  "host": "<IP-OF-HOST>",
+  "name": "rims",
+  "password": "rims",
+  "username": "rims"
+ },
  "id": "master",
- "master": "http://127.0.0.1:8080",
+ "master": "http://<IP-OF-HOST>:8080",
+ "startupdelay":20,
  "port": 8080,
  "ssl": {
   "port": 8081,
-  "certfile": "",
-  "keyfile": "",
-  "password": ""
+  "certfile": "/usr/local/sbin/rims/ssl/rims.crt",
+  "keyfile": "/usr/local/sbin/rims/ssl/rims.key",
+  "password": "<PASSWORD-IF-NEEDED>"
  },
- "database": {
-  "host": "172.18.0.2",
-  "name": "rims",
-  "password": "CHANGEME",
-  "username": "rims"
- },
- "blocklist":{
-  "urls":[
-   "http://cinsscore.com/list/ci-badguys.txt",
-   "https://www.dan.me.uk/torlist/"
-  ]
+ "influxdb": {
+  "url":"http://<IP-OF-HOST>:8086",
+  "org":"<ORG>",
+  "bucket":"<BUCKET>",
+  "token":"<TOKEN>"
  },
  "salt":"WBEUAHfO",
- "token": "INTERNALTOKEN",
- "workers": 30,
+ "files": {
+  "certs": "/usr/local/sbin/rims/ssl"
+ },
+ "token": "ABCD1234",
+ "template": "engine.init",
+ "workers": 100,
  "logging": {
   "rest": {
-   "enabled":true,
-   "file": "/var/log/rims_rest.log"
+   "enabled": true,
+   "file": "/var/log/rims.rest.log"
   },
   "system": {
    "enabled": true,
-   "file": "/var/log/rims_system.log"
+   "file": "/var/log/rims.system.log"
   }
- },
- "tasks": [
-  {
-   "module":"device",
-   "function": "system_info_discover",
-   "args": {"lookup": true},
-   "frequency": 7200,
-   "output": true
-  }
- ],
- "powerdns": {
-  "recursor": {
-   "url":"http://172.18.0.4:8082",
-   "key":"CHANGEME",
-   "reload": "/usr/bin/docker restart pdns-recursor"
-  },
-  "server": {
-   "url":"http://172.18.0.5:8081",
-   "key":"CHANGEME",
-   "nameserver": "server.local.",
-   "endpoint": "172.18.0.5:53",
-   "reload": "/usr/bin/docker restart pdns-server"
-  }
- },
- "nodns": {
-  "file":"/var/tmp/nodns.conf"
- },
- "influxdb": {
-  "version":2,
-  "url":"http://172.18.0.3:8086",
-  "org":"<ORG>",
-  "token":"<TOKEN>"
- },
- "esxi": {
-  "password": "PASSWORD",
-  "username": "USERNAME"
- },
- "netconf": {
-  "password": "PASSWORD",
-  "username": "USERNAME",
-  "anonftp": "127.0.0.1",
-  "dns": "127.0.0.1",
-  "encrypted": "<encrypted password>",
-  "ntp": "127.0.0.1",
-  "tacplus": "127.0.0.1"
- },
- "oui": {
-  "location": "http://standards-oui.ieee.org/oui.txt"
  },
  "snmp": {
   "read": "public",
   "write": "private",
   "timeout": "500000"
  },
+ "netconf": {
+  "password": "<PASSWORD>",
+  "username": "root",
+  "anonftp": "<IP-OF-HOST>",
+  "dns": "<IP-OF-HOST>",
+  "encrypted": "<ENCRYPTED PASSWORD>",
+  "ntp": "<NTP SERVER>",
+  "tacplus": "<TACPLUS SERVER>"
+ },
+ "tasks": [
+  {
+   "module":"ipam",
+   "function":"check",
+   "args":{ "repeat":300 }
+  },
+  {
+   "module": "system",
+   "function": "database_backup",
+   "args": { "filename": "/var/log/rims.backup" },
+   "frequency": 86400
+  },
+  {
+   "module":"services.nibe",
+   "function":"start"
+  },
+  {
+   "module":"services.airthings",
+   "function":"start"
+  },
+  {
+   "module":"services.smartthings",
+   "function":"start"
+  },
+  {
+   "module":"services.openweathermap",
+   "function":"start"
+  },
+  {
+   "module":"services.smhi",
+   "function":"start"
+  },
+  {
+   "module":"services.nordpool",
+   "function":"start"
+  },
+  {
+   "module":"services.influxdb",
+   "function":"process",
+   "frequency":150
+  }
+ ],
+ "services": {
+  "nodns":{
+   "file":"/var/log/rims.nodns",
+   "endpoint":"127.0.0.1:53"
+  },
+  "nibe":{
+   "client_id":"<ID>",
+   "client_secret":"<SECRET>",
+   "redirect_uri":"http://<IP-OF-HOST>:8080/api/services/nibe/auth",
+   "system_id":"SYSTEM_ID",
+   "bucket":"<BUCKET>",
+   "measurement":"nibe",
+   "frequency":60,
+   "state":"ABCD1234",
+   "token_file":"/var/local/rims.nibe.token"
+  },
+  "airthings":{
+   "client_id":"<ID>",
+   "client_secret":"<SECRET>",
+   "bucket":"<BUCKET>",
+   "measurement":"airthings",
+   "frequency":120
+  },
+  "smartthings":{
+   "token":"<TOKEN>",
+   "measurement":"smartthings",
+   "frequency":60,
+   "bucket":"<BUCKET>"
+  },
+  "openweathermap":{
+   "token":"<TOKEN>",
+   "measurement":"weather",
+   "frequency":600,
+   "bucket":"<BUCKET>",
+   "latitude":"59.46167",
+   "longitude":"17.94362"
+  },
+  "smhi":{
+   "measurement":"weather",
+   "bucket":"<BUCKET>",
+   "latitude":"59.46167",
+   "longitude":"17.94362",
+   "forecasting":12
+  },
+  "nordpool":{
+   "measurement":"pricing",
+   "bucket":"<BUCKET>",
+   "entity":"<WHICH-AREA>",
+   "currency":"<CURRENCY>"
+  },
+  "oui": {
+   "location": "http://standards-oui.ieee.org/oui.txt"
+  },
+  "iscdhcp": {
+   "active": "/var/lib/docker/volumes/dhcpd/_data/dhcpd.leases",
+   "reload": "/usr/bin/docker restart dhcpd",
+   "static": "/var/lib/docker/volumes/dhcpd/_data/rest.conf"
+  },
+  "powerdns": {
+   "recursor": {
+    "url":"http://172.18.0.4:8082",
+    "key":"ABCD1234",
+    "reload": "/usr/bin/docker restart pdns-recursor"
+   },
+   "server": {
+    "url":"http://172.18.0.5:8081",
+    "key":"ABCD1234",
+    "nameserver": "server.local.",
+    "endpoint": "172.18.0.5:53",
+    "reload": "/usr/bin/docker restart pdns-server"
+   }
+  }
+ },
  "site":{
   "portal": {
-   "message": "Management portal",
+   "message": "Management Portal Login",
    "title":"Management",
-   "start": "device",
+   "start": "devices",
    "theme": "light"
   },
   "menuitem": {
-   "activity": {
+   "activities": {
     "module":  "activity",
     "function": "Main"
    },
-   "device": {
+   "devices": {
     "module": "device",
     "function": "Main"
    },
@@ -106,30 +187,29 @@
     "module": "hypervisor",
     "function": "Main"
    },
-   "inventory": {
-    "module": "inventory",
+   "resources": {
+    "module": "resource",
+    "function": "Main"
+   }
+  },
+  "resource": {
+   "influxdb": {
+    "tab": "http://<IP-OF-HOST>:8086"
+   },
+   "gitHub": {
+    "tab": "https://github.com/zelbanna"
+   },
+   "visualize": {
+    "module": "visualize",
     "function": "Main"
    },
    "rack": {
     "module": "rack",
     "function": "Main"
    },
-   "resource": {
-    "module": "resource",
+   "inventory": {
+    "module": "inventory",
     "function": "Main"
-   },
-   "visualize": {
-    "module": "visualize",
-    "function": "Main"
-   }
-  },
-  "resource": {
-   "images": {
-    "module": "system",
-    "function": "FileList"
-   },
-   "gitHub": {
-    "tab": "https://github.com"
    }
   }
  }
