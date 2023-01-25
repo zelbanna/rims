@@ -76,7 +76,7 @@ if config.get('influxdb'):
   import influxdb_client
  except ImportError as e:
   res['info']['influxdb'] = f'installing ({e})'
-  pipmain(['install','-q','influxdb_client'])
+  pipmain(['install','-q','influxdb-client'])
  else:
   res['modules']['influxdb'] = 'Installed'
 
@@ -115,16 +115,6 @@ if config.get('services',{}).get('sun2000'):
   pipmain(["install","-q","huawei-solar"])
  else:
   res['modules']['huawei-solar'] = 'Installed'
-
-if config.get('services',{}).get('influxdb'):
- try:
-  import influxdb-client
- except ImportError as e:
-  res['info']['influxdb'] = f'installing ({e})'
-  pipmain(["install","-q","influxdb-client"])
- else:
-  res['modules']['influxdb-client'] = 'Installed'
-
 
 ############################################ MASTER ###########################################
 #
