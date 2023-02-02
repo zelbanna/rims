@@ -100,7 +100,7 @@ def parameters(aRT, aArgs):
   - status
   - parameters
  """
- settings = aRT.config['services'].get('influxdb',{})
+ settings = aRT.config.get('influxdb',{})
  params = ['url','org','token','bucket']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
