@@ -20,7 +20,7 @@ def process(aRT, aArgs):
  url = 'https://api.smartthings.com/v1/devices/{0}/status'
  config = aRT.config['services']['smartthings']
  hdr = {'Authorization': 'Bearer {0}'.format(config['token'])}
- tmpl = '{0},origin=smartthings,type=iot,system_id=%s,label=%s %s {1}'.format(config.get('measurement','smartthings'),int(time()))
+ tmpl = 'sensor__%s,origin=smartthings,system_id=%s,entity_id=%s value=%s {0}'.format(int(time()))
  records = []
  state = aRT.cache.get('smartthings')
  if not state:
@@ -41,7 +41,6 @@ def process(aRT, aArgs):
    ret['info'] = str(e)
    return False
   else:
-   tagvalue = []
    for cap, measure in res['components']['main'].items():
     if cap in dev[0]:
      value = measure[xlate[cap][0]]['value']
@@ -54,8 +53,7 @@ def process(aRT, aArgs):
       value = 1 if value == 'active' else 0
      elif value is None:
       value = 0
-     tagvalue.append("%s=%s"%(xlate[cap][1],value))
-   records.append(tmpl%(id,dev[1],",".join(tagvalue)))
+     records.append(tmpl%(xlate[cap][1],id,dev[1],value))
    return True
 
  aRT.queue_block(__check_call, state['devices'].items())

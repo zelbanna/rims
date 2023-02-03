@@ -6,6 +6,10 @@ State machine updates phase variable to represent state ok token, always schedul
 
 'state': keep track of names and S/N for data gathering
 
+{
+  "module":"services.airthings",
+  "function":"start"
+},
 """
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
@@ -77,7 +81,7 @@ def process(aRT, aArgs):
  """
  state = aRT.cache.get('airthings',{})
  config = aRT.config['services']['airthings']
- tmpl = '{0},origin=airthings,type=iot,system_id=%s,label=%s %s %s'.format(config.get('measurement','airthings'))
+ tmpl = 'sensor__%s,origin=airthings,system_id=%s,entity_id=%s value=%s %s'
  timestamp = int(time())
 
  if not state:
@@ -101,7 +105,8 @@ def process(aRT, aArgs):
    if not ts:
     ts = timestamp
    res['data'].pop('relayDeviceType',None)
-   records.append( tmpl%( dev['id'], dev['label'], ','.join(["%s=%s"%(state['translate'].get(k,k),v) for k,v in res['data'].items()]), ts))
+   for k,v in res['data'].items():
+    records.append( tmpl%( state['translate'].get(k,k), dev['id'], dev['label'],v,ts))
 
  if records:
   aRT.influxdb.write(records, config['bucket'])

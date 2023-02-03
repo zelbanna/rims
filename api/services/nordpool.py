@@ -24,7 +24,7 @@ def process(aRT, aArgs):
   res = sync(aRT,{'isodate':aArgs.get('isodate')})
   if res['status'] == 'OK':
    data = res['data']
-   tmpl = '{},origin=nordpool,type=pricing,system_id=nordpool,currency={} price=%s %s'.format(config.get('measurement','nordpool'),config.get('currency','EUR'))
+   tmpl = '{},origin=nordpool,currency={} value=%s %s'.format(config.get('measurement','nordpool'),config.get('currency','EUR'))
    records = [tmpl%(x['price']/1000.0,x['ts']) for x in data]
    aRT.influxdb.write(records, config['bucket'])
    if aRT.debug:
