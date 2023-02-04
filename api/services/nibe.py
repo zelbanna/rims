@@ -97,7 +97,7 @@ def process(aRT, aArgs):
  ret = {'status':'OK','function':'nibe_process'}
  config = aRT.config['services']['nibe']
  sys_id = config['system_id']
- tmpl = 'sensor__%s,origin=nibe,parameter=%s,designation=%s,entity_id={0}_%s value=%s {1}'.format(sys_id,timestamp)
+ tmpl = 'sensor__%s,origin=nibe,parameter=%s,designation=%s,system_id={0},entity_id=%s value=%s {1}'.format(sys_id,timestamp)
  url = f'https://api.nibeuplink.com/api/v1/systems/{sys_id}/serviceinfo/categories/%s'
 
  def __check_call(aParam):

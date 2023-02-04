@@ -27,7 +27,7 @@ def process(aRT, aArgs):
    id = data.pop('serial_number',{'value':'N/A'})['value']
    data['storage_charge_discharge_power']['value'] = -1 * data['storage_charge_discharge_power']['value']
    data['power_meter_active_power']['value'] = -1 * data['power_meter_active_power']['value']
-   tmpl = 'sensor__%s,origin=sun2000,entity_id=%s_%s value=%s {0}'.format(int(time()))
+   tmpl = 'sensor__%s,origin=sun2000,system_id=%s,entity_id=%s value=%s {0}'.format(int(time()))
    records = []
    for k,v in data.items():
     if v['value'] is not None:
