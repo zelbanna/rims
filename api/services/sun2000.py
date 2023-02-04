@@ -27,8 +27,11 @@ def process(aRT, aArgs):
    id = data.pop('serial_number',{'value':'N/A'})['value']
    data['storage_charge_discharge_power']['value'] = -1 * data['storage_charge_discharge_power']['value']
    data['power_meter_active_power']['value'] = -1 * data['power_meter_active_power']['value']
-   tmpl = '{0},origin=sun2000,type=solar,system_id=%s,label=%s %s=%s {1}'.format(config.get('measurement','sun2000'),int(time()))
-   records = [tmpl%(id,k,v['unit'],v['value']) for k,v in data.items() if v['value'] is not None]
+   tmpl = 'sensor__%s,origin=sun2000,system_id=%s,entity_id=%s value=%s {0}'.format(int(time()))
+   records = []
+   for k,v in data.items():
+    if v['value'] is not None:
+     records.append(tmpl%(v['unit'],id,k,v['value']))
    aRT.influxdb.write(records, config['bucket'])
    if aRT.debug:
     ret['data'] = records
