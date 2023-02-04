@@ -97,7 +97,7 @@ def process(aRT, aArgs):
  ret = {'status':'OK','function':'nibe_process'}
  config = aRT.config['services']['nibe']
  sys_id = config['system_id']
- tmpl = '{0},origin=nibe,type=heater,system_id={1},parameter=%s,designation=%s,label=%s %s=%s {2}'.format(config.get('measurement','nibe'),sys_id,timestamp)
+ tmpl = 'sensor__%s,origin=nibe,parameter=%s,designation=%s,entity_id={0}_%s value=%s {1}'.format(sys_id,timestamp)
  url = f'https://api.nibeuplink.com/api/v1/systems/{sys_id}/serviceinfo/categories/%s'
 
  def __check_call(aParam):
@@ -116,8 +116,8 @@ def process(aRT, aArgs):
   for x in [40067,40071,43161,47212,47214]:
    parameters.pop(x,None)
   for k,v in parameters.items():
-   label = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
-   records.append(tmpl%(k, v['designation'] if v['designation'] else k, label, mapping.get(v['unit'],"unit"), v['rawValue']/scaling.get(k,10) ))
+   entity_id = v['title'].replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
+   records.append(tmpl%(mapping.get(v['unit'],"unit"), k, v['designation'] if v['designation'] else k, entity_id, v['rawValue']/scaling.get(k,10) ))
   aRT.influxdb.write(records, config['bucket'])
  return ret
 

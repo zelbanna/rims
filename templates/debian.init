@@ -68,6 +68,7 @@ case "$1" in
  restart)
   clear
   stop
+  sleep 2
   start
   ;;
  clear)
