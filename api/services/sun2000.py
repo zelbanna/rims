@@ -174,7 +174,7 @@ def sync(aRT, aArgs):
    probes.extend([con.get(x) for x in singles])
    output = await asyncio.gather(*probes)
   except Exception as e:
-   raise Exception(f'SUN2000 Error: {str(e)}')
+   raise Exception(f'main error => {str(e)}')
   else:
    flatten = output[3:]
    flatten.extend([item for sublist in output[:3] for item in sublist])
@@ -187,6 +187,7 @@ def sync(aRT, aArgs):
  except Exception as e:
   ret['status'] = 'NOT_OK'
   ret['info'] = str(e)
+  aRT.log("SUN2000 error: %s"%str(e))
  else:
   ret['status'] = 'OK'
   ret['data'] = data
