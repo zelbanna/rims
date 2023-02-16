@@ -1,4 +1,8 @@
-"""Smartthings API module. Implements logics to reuse scheduler and influxdb handler for Smartthings statistics """
+"""Smartthings API module. Implements logics to reuse scheduler and influxdb handler for Smartthings statistics 
+
+- Use 'start' to run scheduled with X frequency
+
+"""
 __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "TELEMETRY"

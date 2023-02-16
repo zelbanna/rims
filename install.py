@@ -26,7 +26,6 @@ parser = ArgumentParser(prog='install',formatter_class=RawDescriptionHelpFormatt
 parser.add_argument('-c','--config', help = 'Config file',default = 'config.json', required=False)
 parser.add_argument('-s','--schema', help = 'Database Schema file',default = 'schema.db', required=False)
 parser.add_argument('-t','--startup', help = 'Startup template file',default = 'debian.init', required=False)
-# parser.add_argument('-e','--esxi', help = 'Add pyVMOmi',default = None, required=False)
 parsedinput = parser.parse_args()
 
 if not parsedinput.config:
@@ -88,15 +87,6 @@ if config.get('netconf') or config.get('esxi'):
   pipmain(["install", "-q","paramiko"])
  else:
   res['modules']['ssh'] = 'Installed'
-
-if config.get('esxi'):
- try:
-  import pyVmomi
- except ImportError as e:
-  res['info']['pyVmomi'] = f'installing ({e})'
-  pipmain(["install","-q","pyVmomi"])
- else:
-  res['modules']['pyVmomi'] = 'Installed'
 
 if config.get('snmp'):
  try:
