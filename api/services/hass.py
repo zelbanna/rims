@@ -1,4 +1,4 @@
-"""HomeAssistant API module. Implements logics to reuse scheduler and influxdb handler for statistics
+"""hass API module. Implements logics to reuse scheduler and influxdb handler for statistics
 
 - Use 'start' to run scheduled with X frequency
 
@@ -12,7 +12,7 @@ from time import time
 #
 #
 def process(aRT, aArgs):
- """Function checks homeassistant API, process data and queue reporting to influxDB bucket
+ """Function checks hass API, process data and queue reporting to influxDB bucket
 
  Args:
 
@@ -29,8 +29,8 @@ def process(aRT, aArgs):
  config = aRT.config['services']['hass']
  url = config['endpoint']
  hdr = {'Authorization': 'Bearer {0}'.format(config['token'])}
- tmpl = '%s,origin=ha,entity_id=%s,friendly_name=%s value=%s {0}'.format(int(time()))
-
+ tmpl = '%s,origin=ha,prefix=%s,entity=%s,friendly_name=%s value=%s {0}'.format(int(time()))
+ count = 0
  #####
  try:
   res = aRT.rest_call(url + "/api/states", aHeader = hdr, aMethod = 'GET')
@@ -38,15 +38,47 @@ def process(aRT, aArgs):
   return {'status':'NOT_OK','info':str(e)}
  else:
   # Start pulling measurements :-)
-  data = [dev for dev in res if dev['attributes'].get('unit_of_measurement') and is_float(dev['state'])]
-  records = [tmpl%(dev['attributes'].get('device_class','unit'),dev['entity_id'],dev['attributes'].get('friendly_name','None').replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower(), dev['state']) for dev in data]
+  def parser(dev):
+   dclss = dev['attributes'].get('device_class','unit')
+   fname = dev['attributes'].get('friendly_name','None').replace(" ", "_").replace("/", "-").replace(":", "").replace(".", "").lower()
+   value = dev['state']
+   parts = dev['entity_id'][7:].split('_')
+   type = parts[0]
+   if type != 'nibe':
+    start = 1
+    end = None
+    if type == 'power' and parts[1] =='meter':
+     type = 'power_meter'
+     start = 2
+    elif type == 'multiple' and parts[1] == 'sound':
+     type = 'multiple_sound'
+     start = 2
+    items = len(parts) - start
+
+    if dclss == parts[-1] and (items - 1) > 0:
+     end = -1
+    elif dclss == 'battery' and parts[-1] == 'level' and (items - 2) > 0:
+     end = -2
+    eid = '_'.join(parts[start:end])
+   else:
+    eid = parts[2]
+    if eid == "43084":
+     dclss = "power"
+     value = float(value) * 1000.0
+
+   yield tmpl%(dclss, type, eid, fname, value)
+   #print(dclss,type,parts,' => ',eid)
+   #return tmpl%(dclss, type, eid, fname, value)
+
+  records = (parser(dev) for dev in res if dev['attributes'].get('unit_of_measurement') and is_float(dev['state']))
+  #records = [parser(dev) for dev in res if dev['attributes'].get('unit_of_measurement') and is_float(dev['state'])]
   aRT.influxdb.write(records, config['bucket'])
-  return {'status':'OK','function':'homeassistant_process','records':len(records)}
+  return {'status':'OK','function':'hass_process'}
 
 #
 #
 def entity(aRT, aArgs):
- """Function does a simple homeassistant entity check
+ """Function does a simple hass entity check
 
  Args:
   - entity_id (required)
@@ -69,7 +101,7 @@ def entity(aRT, aArgs):
 #
 #
 def states(aRT, aArgs):
- """Function returns homeassistant entites
+ """Function returns hass entites
 
  Args:
 
@@ -92,7 +124,7 @@ def states(aRT, aArgs):
 #
 #
 def status(aRT, aArgs):
- """Function does a simple homeassistant check to verify working connectivity
+ """Function does a simple hass check to verify working connectivity
 
  Args:
   - type (required)
@@ -166,8 +198,8 @@ def start(aRT, aArgs):
   - status
  """
  config = aRT.config['services']['hass']
- aRT.schedule_api_periodic(process,'homeassistant_process',int(config.get('frequency',60)), args = aArgs, output = aRT.debug)
- return {'status':'OK','info':'scheduled_homeassistant'}
+ aRT.schedule_api_periodic(process,'hass_process',int(config.get('frequency',60)), args = aArgs, output = aRT.debug)
+ return {'status':'OK','info':'scheduled_hass'}
 
 #
 #

@@ -125,19 +125,18 @@ class InfluxDB():
  # Synchronizes writes against DB
  def sync(self):
   if not self._active:
-   return -1
-  size = 0
+   return False
   with self._lock:
    try:
     with self._client.write_api(write_options=self._write_mode) as write_api:
-     for k,v in self._buckets.items():
-      size += len(v)
-      write_api.write(bucket = k, write_precision = self._precision, record = v)
+     for k,l in self._buckets.items():
+      for g in l:
+       write_api.write(bucket = k, write_precision = self._precision, record = g)
    except Exception as e:
     raise Exception(e)
    finally:
     self._buckets = {}
-  return size
+  return True
 
  #
  def query(self, aQuery):
@@ -151,9 +150,9 @@ class InfluxDB():
    bucket_id = self._bucket if not aBucket else aBucket
    bucket = self._buckets.get(bucket_id)
    if not bucket:
-    self._buckets[bucket_id] = aRecords
+    self._buckets[bucket_id] = [aRecords]
    else:
-    bucket.extend(aRecords)
+    bucket.append(aRecords)
   return True
 
 ##### Dummy class #####

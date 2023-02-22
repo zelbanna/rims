@@ -14,16 +14,17 @@ __type__ = "TSDB"
 #
 #
 def process(aRT, aArgs):
+ """
+ - expected records as lists or generators... hence no length output
+
+ """
  try:
   res = aRT.influxdb.sync()
  except Exception as e:
   aRT.log(f"influxdb error: {str(e)}")
   ret = {'status':'NOT_OK','function':'influxdb_process','output':str(e)}
  else:
-  if res >= 0:
-   ret = {'status':'OK','function':'influxdb_process','output':res}
-  else:
-   ret = {'status':'NOT_OK','function':'influxdb_process','output':'inactive'}
+  ret = {'status':'OK','function':'influxdb_process','output':res}
  return ret
 
 #
