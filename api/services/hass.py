@@ -70,8 +70,8 @@ def process(aRT, aArgs):
    #print(dclss,type,parts,' => ',eid)
    #return tmpl%(dclss, type, eid, fname, value)
 
-  records = (parser(dev) for dev in res if dev['attributes'].get('unit_of_measurement') and is_float(dev['state']))
-  #records = [parser(dev) for dev in res if dev['attributes'].get('unit_of_measurement') and is_float(dev['state'])]
+  records = (parser(dev) for dev in res if dev['attributes'].get('unit_of_measurement') is not None and is_float(dev['state']))
+  #records = [parser(dev) for dev in res if dev['attributes'].get('unit_of_measurement') is not None and is_float(dev['state'])]
   aRT.influxdb.write(records, config['bucket'])
   return {'status':'OK','function':'hass_process'}
 
