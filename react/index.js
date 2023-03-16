@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useEffect, Component } from 'react';
+import { createRoot } from 'react-dom/client';
 import { auth_call } from './infra/Functions.js';
 import { Portal, Login, RimsContext } from './infra/UI.jsx';
 import * as serviceWorker from './serviceWorker';
@@ -73,4 +73,16 @@ class RIMS extends Component {
    </RimsContext.Provider>
  }
 }
-ReactDOM.render(<RIMS />, document.getElementById('root'))
+
+// New root compatible renderer
+function RenderRIMS() {
+ useEffect(() => {
+  console.log("Rendered RIMS");
+ });
+
+ return <RIMS tab="home" />
+}
+
+const container = document.getElementById('root')
+const root = createRoot(container);
+root.render(<RenderRIMS />);
