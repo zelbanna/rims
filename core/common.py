@@ -171,7 +171,7 @@ class InfluxDummy():
  def active(self, aState = None):
   return False
 
- def sync(self)
+ def sync(self):
   return True
 
  def write(self, aRecords, aBucket = None):
