@@ -90,6 +90,7 @@ case "$1" in
   else
    echo "System not running"
   fi
+  ;;
  *)
   echo "Usage: $0 <start|stop|force-reload|restart|clear|install|status>"
   exit 1
