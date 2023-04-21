@@ -17,16 +17,16 @@ alias rims_mysql='mysql -urims -prims rims'
 apt-get update
 apt-get upgrade
 apt-get install -y sudo nano net-tools git mariadb-client libsnmp-dev libxslt-dev apt-transport-https ca-certificates curl gnupg-agent software-properties-common
-apt-get install python3 python3-pip python3-pymysql python3-paramiko
+apt-get install python3 python3-pip
 
-mysql -h 172.18.0.2 -uroot -p$mariadbpassword << `END`
+mysql -h 127.0.0.1 -uroot -p$mariadbpassword << `END`
 CREATE DATABASE rims;
 CREATE USER 'rims'@'%' IDENTIFIED BY 'rims';
 GRANT ALL PRIVILEGES ON rims.* TO 'rims'@'%';
 FLUSH PRIVILEGES;
 `END`
 
-mysql -h 172.18.0.2 -uroot -p$mariadbpassword << END
+mysql -h 127.0.0.1 -uroot -p$mariadbpassword << END
 CREATE DATABASE pdns;
 CREATE USER 'pdns'@'%' IDENTIFIED BY 'pdns';
 GRANT ALL PRIVILEGES ON pdns.* TO pdns@'%';

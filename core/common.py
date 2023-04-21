@@ -162,13 +162,19 @@ class InfluxDummy():
  def __init__(self):
   pass
 
- def write(self, aRecords, aBucket = None):
-  return False
+ def status(self):
+  return "InfluxDB Dummy"
 
  def buffer(self):
   return 0
 
  def active(self, aState = None):
+  return False
+
+ def sync(self)
+  return True
+
+ def write(self, aRecords, aBucket = None):
   return False
 
 ######################################## Scheduler ######################################
