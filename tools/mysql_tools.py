@@ -10,7 +10,7 @@ from sys import path as syspath, exit as sysexit
 from os import path as ospath, getcwd
 syspath.append(ospath.abspath(ospath.join(ospath.dirname(__file__), '..','..')))
 from rims.api import mysql
-from rims.core.engine import Context
+from rims.core.engine import RunTime
 parser = ArgumentParser(prog='mysql_tools', description = 'MySQL interworking tool')
 parser.add_argument('-d','--diff',    help = 'Compare database schema with schema file', required = False, nargs = 1)
 parser.add_argument('-b','--backup',  help = 'Dumps full database',   required = False, action = 'store_true')
@@ -22,7 +22,7 @@ parser.add_argument('-c','--config',  help = 'Config file unless config.json', d
 parsedinput = parser.parse_args()
 with open(ospath.abspath(ospath.join(ospath.dirname(__file__), parsedinput.config))) as f:
  config = load(f)
-ctx = Context(config)
+ctx = RunTime(config)
 
 if   parsedinput.diff:
  res= mysql.diff(ctx, {"schema_file":ospath.abspath(ospath.join(getcwd(),parsedinput.diff[0]))})

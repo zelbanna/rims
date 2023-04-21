@@ -1,7 +1,5 @@
 #!/bin/sh
 #
-# chkconfig: - 20 80
-#
 ### BEGIN INIT INFO
 # Provides:    rims
 # Required-Start:   $network
@@ -62,7 +60,7 @@ case "$1" in
  stop)
   stop
   ;;
- reload)
+ force-reload)
   reload
   ;;
  restart)
@@ -86,8 +84,14 @@ case "$1" in
   echo "Installing server startup file"
   mv $0 /etc/init.d/$SERVICE
   ;;
+ status)
+  if [ -f $PIDFILE ]; then
+   echo "Service handler @`cat $PIDFILE`"
+  else
+   echo "System not running"
+  fi
  *)
-  echo "Usage: $0 <start|stop|reload|restart|clear|install>"
+  echo "Usage: $0 <start|stop|force-reload|restart|clear|install|status>"
   exit 1
   ;;
 esac
