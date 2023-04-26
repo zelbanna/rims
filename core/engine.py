@@ -503,7 +503,7 @@ class SessionHandler(BaseHTTPRequestHandler):
    return 'internal'
   else:
    try:
-    cookies = dict([c.split('=') for c in self.headers['Cookie'].split('; ')])
+    cookies = dict([c.split('=',1) for c in self.headers['Cookie'].split('; ')])
     return self._rt.tokens[cookies['rims']]['id']
    except:
     return None
