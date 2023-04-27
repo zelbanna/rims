@@ -43,6 +43,8 @@ def list(aRT, aArgs):
   elif sfield == 'type':
    joins.append("device_types AS dt ON dt.id = devices.type_id")
    where.append("dt.name = '%s'"%srch)
+  elif sfield == 'model':
+   where.append("devices.model LIKE '%%%s%%'"%srch)
   elif sfield == 'base':
    joins.append("device_types AS dt ON dt.id = devices.type_id")
    where.append("dt.base = '%s'"%srch)
@@ -86,7 +88,7 @@ def list(aRT, aArgs):
    fields.append('devices.class')
 
  with aRT.db as db:
-  ret['count'] = db.query("SELECT DISTINCT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort))
+  ret['count'] = db.query("SELECT DISTINCT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort), True)
   ret['data'] = db.get_rows() if 'dict' not in aArgs else db.get_dict(aArgs['dict'])
   if extras and any(i in extras for i in ['mac','mgmtmac']):
    sys = 'mac' in extras
