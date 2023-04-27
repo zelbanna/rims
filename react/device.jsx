@@ -111,7 +111,7 @@ class Search extends Component {
 }
 // ************** List **************
 //
-// Uses mountUpdate withing ContentDate to do a late binding of changeContent to avoid re-render of entire list for each changeContent
+// Uses mountUpdate withing ContentData to do a late binding of changeContent to avoid re-render of entire list for each changeContent
 //
 class List extends Component {
  constructor(props){
@@ -734,6 +734,20 @@ export class Report extends Component {
 
  render(){
   return (!this.state) ? <Spinner /> : <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','Class','IP','MAC','OUI','Type','OID','Serial','State']} trows={this.state.data} listItem={this.listItem} />
+ }
+}
+
+// ************** Software Report **************
+//
+export class ReportSoftware extends Component {
+ componentDidMount(){
+  post_call('api/device/list', { extra:['model','version']}).then(result => this.setState(result))
+ }
+
+ listItem = (row) => [row.id,row.hostname,row.ip,row.model,row.version,<StateLeds key={'dr_'+row.id} state={row.ip_state} />]
+
+ render(){
+  return (!this.state) ? <Spinner /> : <ContentReport key='dev_cr' header='Devices' thead={['ID','Hostname','IP','Model','Version','State']} trows={this.state.data} listItem={this.listItem} />
  }
 }
 
