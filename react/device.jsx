@@ -95,6 +95,7 @@ class Search extends Component {
     <optgroup label='Group'>
      <option value='hostname'>Hostname</option>
      <option value='type'>Type</option>
+     <option value='model'>Model</option>
     </optgroup>
     <optgroup label='Unique'>
      <option value='id'>ID</option>
@@ -169,6 +170,7 @@ class List extends Component {
       <optgroup label='Group'>
        <option value='hostname'>Hostname</option>
        <option value='type'>Type</option>
+       <option value='model'>Model</option>
       </optgroup>
       <optgroup label='Unique'>
        <option value='id'>ID</option>
