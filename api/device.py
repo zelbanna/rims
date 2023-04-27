@@ -77,6 +77,8 @@ def list(aRT, aArgs):
    fields.append('devices.url')
   if 'model' in extras:
    fields.append('devices.model')
+  if 'version' in extras:
+   fields.append('devices.version')
   if any(i in extras for i in ['mac','oui']):
    fields.append('LPAD(hex(devices.mac),12,0) AS mac')
    if 'oui' in extras:
@@ -88,7 +90,7 @@ def list(aRT, aArgs):
    fields.append('devices.class')
 
  with aRT.db as db:
-  ret['count'] = db.query("SELECT DISTINCT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort), True)
+  ret['count'] = db.query("SELECT DISTINCT %s FROM devices LEFT JOIN %s WHERE %s %s"%(','.join(fields),' LEFT JOIN '.join(joins),' AND '.join(where),sort))
   ret['data'] = db.get_rows() if 'dict' not in aArgs else db.get_dict(aArgs['dict'])
   if extras and any(i in extras for i in ['mac','mgmtmac']):
    sys = 'mac' in extras
