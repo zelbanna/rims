@@ -84,7 +84,7 @@ def execute(aIP, aSNMP, aBasic = False):
     info['oid'] = enterprise
     if enterprise == '12325':
      info['type'] = 'pfsense'
-     info['type'] = 'N/A'
+     info['model'] = 'N/A'
      info['version'] = infolist[2]
     elif enterprise == '2636':
      # Juniper
