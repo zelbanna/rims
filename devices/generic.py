@@ -58,7 +58,8 @@ class Device(object):
    "- Password: %s"%self._rt.config['netconf']['password'],
    "- Domain:   %s"%argdict['domain'],
    "- Gateway: %s"%argdict['gateway'],
-   "- Network/Mask: %s/%s"%(argdict['network'],argdict['mask']),
+   "- Network/Mask: %s/%s"%(argdict['ip'],argdict['mask']),
+   "- SNMP network: %s"%self._rt.config['snmp']['network'],
    "- SNMP read community: %s"%self._rt.config['snmp']['read'],
    "- SNMP write community: %s"%self._rt.config['snmp']['write']]
 
