@@ -42,7 +42,7 @@ class Junos(GenericDevice):
               '%s system commit persist-groups-inheritance'%base,
               '%s routing-options static route 0.0.0.0/0 next-hop %s'%(base,argdict['gateway']),
               '%s routing-options static route 0.0.0.0/0 no-readvertise'%base,
-              '%s snmp community %s clients %s/%s'%(base,self._rt.config['snmp']['read'],self._rt.config['snmp']['network']),
+              '%s snmp community %s clients %s'%(base,self._rt.config['snmp']['read'],self._rt.config['snmp']['network']),
               '%s protocols lldp port-description-type interface-description'%base,
               '%s protocols lldp port-id-subtype interface-name'%base,
               '%s protocols lldp neighbour-port-info-display port-id'%base,
