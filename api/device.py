@@ -632,6 +632,7 @@ def configuration_template(aRT, aArgs):
   ret['status'] = 'OK'
  return ret
 
+
 #
 #
 def system_info_discover(aRT, aArgs):
