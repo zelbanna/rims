@@ -539,7 +539,7 @@ def server_macs(aRT, aArgs):
 
  Output:
  """
- tmpl = "ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM ipam_addresses AS ia JOIN ipam_networks AS ine ON ia.network_id = ine.id"
+ tmpl = "ia.hostname, ia.id, LPAD(hex(di.mac),12,0) AS mac, INET6_NTOA(ia.ip) AS ip, ia.network_id AS network FROM ipam_addresses AS ia JOIN ipam_networks AS ine ON ia.network_id = ine.id"
  ret = {'status':'OK'}
  with aRT.db as db:
   ret['count']  = db.query("SELECT %s INNER JOIN interfaces AS di ON di.ipam_id = ia.id WHERE di.mac > 0 AND ine.server_id = %s"%(tmpl, aArgs['server_id']))
