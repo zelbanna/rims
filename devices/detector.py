@@ -99,7 +99,7 @@ def execute(aIP, aSNMP, aBasic = False):
        info['model'] = ("%s" if info['model'] != 'virtual' else "%s (VC)")%infolist[3].lower()
      except: pass
      else:
-      for tp in [ 'ex', 'srx', 'qfx', 'mx' ]:
+      for tp in [ 'ex', 'srx', 'qfx', 'mx', 'ptx', 'acx' ]:
        if tp in info['model']:
         info['type'] = tp
         break
