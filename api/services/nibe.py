@@ -19,6 +19,7 @@ def bootstrap(aRT, aArgs):
  """ Function provides start behavior, i.e. bootstrap authentication and token handling process
 
  Args:
+  - mode: READ/WRITE Defaults to "READ"
 
  Output:
   - status
@@ -29,7 +30,7 @@ def bootstrap(aRT, aArgs):
  state['phase'] = 'init'
  config = aRT.config['services']['nibe']
  redirect_uri = quote_plus(config['redirect_uri'])
- return {"status":"OK", "callstring":f"https://api.nibeuplink.com/oauth/authorize?response_type=code&client_id={config['client_id']}&scope=READSYSTEM&redirect_uri={redirect_uri}&state={config['state']}"}
+ return {"status":"OK", "callstring":f"https://api.nibeuplink.com/oauth/authorize?response_type=code&client_id={config['client_id']}&scope={aArgs.get('mode','READ')}SYSTEM&redirect_uri={redirect_uri}&state={config['state']}"}
 
 #
 #
@@ -134,7 +135,9 @@ def get(aRT, aArgs):
  """
  ret = {}
  state = aRT.cache.get('nibe',{})
- url = 'https://api.nibeuplink.com/api/v1/{0}'.format(aArgs['api'])
+ config = aRT.config['services']['nibe']
+ sys_id = config['system_id']
+ url = 'https://api.nibeuplink.com/api/v1/systems/{0}/{1}'.format(sys_id,aArgs['api'])
  hdr = {'Authorization': 'Bearer %s'%state['access_token']}
  try:
   res = aRT.rest_call(url, aSSL = aRT.ssl, aHeader = hdr, aDebug = aArgs.get('debug',False), aMethod = 'GET')
