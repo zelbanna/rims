@@ -7,8 +7,12 @@ __oid__     = 6876
 from select import select
 from time import sleep, strftime
 from rims.devices.generic import Device as GenericDevice
-from rims.core.common import VarList, Session
+from easysnmp import Session
 from paramiko import SSHClient, AutoAddPolicy, AuthenticationException
+
+def mac_bin_to_hex(inc_bin_mac_address):
+  octets = [ord(c) for c in inc_bin_mac_address]
+  return "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}".format(*octets)
 
 ########################################### ESXi ############################################
 #
@@ -129,10 +133,9 @@ class Device(GenericDevice):
   ret = {'id':aID,'status':'OK'}
   try:
    if aUUID:
-    session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-    uuidobj = VarList('.1.3.6.1.4.1.6876.2.1.1.10.%s'%aID)
-    session.get(uuidobj)
-    if uuidobj[0].val.decode() !=  aUUID:
+    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+    uuidobj = session.get('.1.3.6.1.4.1.6876.2.1.1.10.%s'%aID)
+    if uuidobj[0].value !=  aUUID:
      raise Exception('UUID_NOT_MATCHING')
    if aOP in ['on','off','reboot','shutdown','suspend']:
     self._command("vim-cmd vmsvc/power.%s %s"%(aOP,aID))
@@ -193,22 +196,20 @@ class Device(GenericDevice):
  def get_info(self, aID):
   vm = {'interfaces':{},'vm':None}
   try:
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
    # Name, Config file, State, Device UUID (ISO 11578)
-   vmobj = VarList('.1.3.6.1.4.1.6876.2.1.1.2.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.3.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.6.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.10.%s'%aID)
+   vmobj = session.get(['.1.3.6.1.4.1.6876.2.1.1.2.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.3.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.6.%s'%aID,'.1.3.6.1.4.1.6876.2.1.1.10.%s'%aID])
    # Name, portgroup, MAC
-   vminterfaces = VarList('.1.3.6.1.4.1.6876.2.4.1.3.%s'%aID,'.1.3.6.1.4.1.6876.2.4.1.4.%s'%aID,'.1.3.6.1.4.1.6876.2.4.1.7.%s'%aID)
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.get(vmobj)
-   session.walk(vminterfaces)
-   vm = {'name':vmobj[0].val.decode(),'config':vmobj[1].val.decode(),'state':Device.get_state_str(vmobj[2].val.decode()),'bios_uuid':vmobj[3].val.decode(),'interfaces':{}}
+   vminterfaces = session.walk(['.1.3.6.1.4.1.6876.2.4.1.3.%s'%aID,'.1.3.6.1.4.1.6876.2.4.1.4.%s'%aID,'.1.3.6.1.4.1.6876.2.4.1.7.%s'%aID])
+   vm = {'name':vmobj[0].value,'config':vmobj[1].value,'state':Device.get_state_str(vmobj[2].value),'bios_uuid':vmobj[3].value,'interfaces':{}}
    for obj in vminterfaces:
-    tag,_,_ = obj.tag.rpartition('.')
+    tag,_,_ = obj.oid.rpartition('.')
     if   tag == '.1.3.6.1.4.1.6876.2.4.1.3':
-     vm['interfaces'][obj.iid] = {'name':obj.val.decode()}
+     vm['interfaces'][obj.oid_index] = {'name':obj.value}
     elif tag == '.1.3.6.1.4.1.6876.2.4.1.4':
-     vm['interfaces'][obj.iid]['port'] = obj.val.decode()
+     vm['interfaces'][obj.oid_index]['port'] = obj.value
     elif tag == '.1.3.6.1.4.1.6876.2.4.1.7':
-     vm['interfaces'][obj.iid]['mac'] = ':'.join(obj.val.hex()[i:i+2] for i in [0,2,4,6,8,10]).upper()
+     vm['interfaces'][obj.oid_index]['mac'] = mac_bin_to_hex(obj.value)
   except: pass
   return vm
 
@@ -217,10 +218,9 @@ class Device(GenericDevice):
  def get_vm_state(self, aID):
   ret = {}
   try:
-   vmstateobj = VarList('.1.3.6.1.4.1.6876.2.1.1.6.%s'%aID)
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.get(vmstateobj)
-   ret['state'] = Device.get_state_str(vmstateobj[0].val.decode())
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   vmstateobj = session.get('.1.3.6.1.4.1.6876.2.1.1.6.%s'%aID)
+   ret['state'] = Device.get_state_str(vmstateobj[0].value)
   except:
    ret['state'] = 'unknown'
   return ret
@@ -231,13 +231,11 @@ class Device(GenericDevice):
   # aSort = 'id' or 'name'
   statelist=[]
   try:
-   vmnameobjs = VarList('.1.3.6.1.4.1.6876.2.1.1.2')
-   vmstateobjs = VarList('.1.3.6.1.4.1.6876.2.1.1.6')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.walk(vmnameobjs)
-   session.walk(vmstateobjs)
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   vmnameobjs = session.walk('.1.3.6.1.4.1.6876.2.1.1.2')
+   vmstateobjs = session.walk('.1.3.6.1.4.1.6876.2.1.1.6')
    for indx,result in enumerate(vmnameobjs):
-    statelist.append({'id':result.iid, 'name':result.val.decode(),'state':Device.get_state_str(vmstateobjs[indx].val.decode())})
+    statelist.append({'id':result.oid_index, 'name':result.value,'state':Device.get_state_str(vmstateobjs[indx].value)})
   except: pass
   if aSort:
    statelist.sort(key = lambda x: x[aSort])
@@ -247,27 +245,25 @@ class Device(GenericDevice):
  def get_inventory(self):
   vms = {}
   try:
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
    # Name, Config file, Device UUID (ISO 11578)
-   vmobjs = VarList('.1.3.6.1.4.1.6876.2.1.1.2','.1.3.6.1.4.1.6876.2.1.1.3','.1.3.6.1.4.1.6876.2.1.1.10')
+   vmobjs = session.walk(['.1.3.6.1.4.1.6876.2.1.1.2','.1.3.6.1.4.1.6876.2.1.1.3','.1.3.6.1.4.1.6876.2.1.1.10'])
    # Name, portgroup, MAC (not ':'-expanded)
-   vminterfaces = VarList('.1.3.6.1.4.1.6876.2.4.1.3','.1.3.6.1.4.1.6876.2.4.1.4','.1.3.6.1.4.1.6876.2.4.1.7')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.walk(vmobjs)
-   session.walk(vminterfaces)
+   vminterfaces = session.walk(['.1.3.6.1.4.1.6876.2.4.1.3','.1.3.6.1.4.1.6876.2.4.1.4','.1.3.6.1.4.1.6876.2.4.1.7'])
    for obj in vmobjs:
-    if   obj.tag == '.1.3.6.1.4.1.6876.2.1.1.2':
-     vms[obj.iid] = {'interfaces':{},'vm':obj.val.decode()}
-    elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.3':
-     vms[obj.iid]['config'] = obj.val.decode()
-    elif obj.tag == '.1.3.6.1.4.1.6876.2.1.1.10':
-     vms[obj.iid]['bios_uuid'] = obj.val.decode()
+    if   obj.oid == '.1.3.6.1.4.1.6876.2.1.1.2':
+     vms[obj.oid_index] = {'interfaces':{},'vm':obj.value}
+    elif obj.oid == '.1.3.6.1.4.1.6876.2.1.1.3':
+     vms[obj.oid_index]['config'] = obj.value
+    elif obj.oid == '.1.3.6.1.4.1.6876.2.1.1.10':
+     vms[obj.oid_index]['bios_uuid'] = obj.value
    for obj in vminterfaces:
-    tag,_,iid = obj.tag.rpartition('.')
+    tag,_,iid = obj.oid.rpartition('.')
     if   tag == '.1.3.6.1.4.1.6876.2.4.1.3':
-     vms[iid]['interfaces'][obj.iid] = {'name':obj.val.decode()}
+     vms[iid]['interfaces'][obj.oid_index] = {'name':obj.value}
     elif tag == '.1.3.6.1.4.1.6876.2.4.1.4':
-     vms[iid]['interfaces'][obj.iid]['port'] = obj.val.decode()
+     vms[iid]['interfaces'][obj.oid_index]['port'] = obj.value
     elif tag == '.1.3.6.1.4.1.6876.2.4.1.7':
-     vms[iid]['interfaces'][obj.iid]['mac'] = ("%s"%obj.val.hex()).upper()
+     vms[iid]['interfaces'][obj.oid_index]['mac'] = mac_bin_to_hex(obj.value)
   except: pass
   return vms

@@ -61,14 +61,6 @@ res['data']['engine']= {'startup':parsedinput.startup,'install':check_call([engi
 #
 # Modules
 #
-if config.get('database'):
- try:
-  import pymysql
- except ImportError as e:
-  res['info']['pymysql'] = f'installing ({e})'
-  pipmain(["install", "-q","pymysql"])
- else:
-  res['modules']['pymysql'] = 'Installed'
 
 if config.get('influxdb'):
  try:
@@ -78,24 +70,6 @@ if config.get('influxdb'):
   pipmain(['install','-q','influxdb-client'])
  else:
   res['modules']['influxdb'] = 'Installed'
-
-if config.get('netconf') or config.get('esxi'):
- try:
-  import paramiko
- except ImportError as e:
-  res['info']['ssh'] = f'installing ({e})'
-  pipmain(["install", "-q","paramiko"])
- else:
-  res['modules']['ssh'] = 'Installed'
-
-if config.get('snmp'):
- try:
-  import netsnmp
- except ImportError as e:
-  res['info']['netsnmp'] = f'installing ({e})'
-  pipmain(["install","-q","python3-netsnmp"])
- else:
-  res['modules']['netsnmp'] = 'Installed'
 
 if config.get('services',{}).get('sun2000'):
  try:

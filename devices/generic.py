@@ -3,7 +3,7 @@
 Relies on SNMP configuration:
  - snmp/read: read community
  - snmp/write: write community
- - snmp/timeout: timeout in microseconds, default to 100000 micro seconds
+ - snmp/timeout: timeout in seconds, default to 3 seconds
 
 """
 __author__  = "Zacharias El Banna"
@@ -11,8 +11,12 @@ __type__    = "generic"
 __icon__    = "viz-generic.png"
 __oid__     = 8072
 
-from rims.core.common import VarList, VarBind, Session
+from easysnmp import Session
 from os import system
+
+def mac_bin_to_hex(inc_bin_mac_address):
+  octets = [ord(c) for c in inc_bin_mac_address]
+  return "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}".format(*octets)
 
 ########################################### Device ########################################
 class Device(object):
@@ -76,43 +80,39 @@ class Device(object):
  #
  def interfaces(self):
   interfaces = {}
-  try:
-   objs = VarList('.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.walk(objs)
-   if (session.ErrorInd != 0):
-    raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
-   for entry in objs:
-    if   entry.tag == '.1.3.6.1.2.1.2.2.1.6':
-     interfaces[int(entry.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(entry.val.hex())]*2)).upper() if entry.val else "00:00:00:00:00:00", 'name':"None",'description':"None",'state':'unknown'}
-    elif entry.tag == '.1.3.6.1.2.1.2.2.1.2':
-     interfaces[int(entry.iid)]['name'] = entry.val.decode()
-    elif entry.tag == '.1.3.6.1.2.1.2.2.1.8':
-     interfaces[int(entry.iid)]['state'] = 'up' if entry.val.decode() == '1' else 'down'
-    elif entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
-     interfaces[int(entry.iid)]['description'] = entry.val.decode() if entry.val.decode() != '' else 'None'
-  except: pass
+
+  session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+
+  objs = session.walk(['.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18'])
+
+  for entry in objs:
+   if   entry.tag == '.1.3.6.1.2.1.2.2.1.6':
+    interfaces[int(entry.oid_index)] = {'mac':mac_bin_to_hex(entry.value) if entry.value else "00:00:00:00:00:00", 'name':"None",'description':"None",'state':'unknown'}
+   elif entry.tag == '.1.3.6.1.2.1.2.2.1.2':
+    interfaces[int(entry.oid_index)]['name'] = entry.value
+   elif entry.tag == '.1.3.6.1.2.1.2.2.1.8':
+    interfaces[int(entry.oid_index)]['state'] = 'up' if entry.value == '1' else 'down'
+   elif entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
+    interfaces[int(entry.oid_index)]['description'] = entry.value if entry.value != '' else 'None'
   return interfaces
 
  #
  def interface(self,aIndex):
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   ifoid   = VarList('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex)
-   session.get(ifoid)
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   ifoid   = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex])
   except: return {'name':None,'description':None, 'mac':None}
-  else:   return {'name':ifoid[0].val.decode(),'description':ifoid[1].val.decode() if ifoid[1].val.decode() != "" else "None", 'mac':':'.join("%s%s"%x for x in zip(*[iter(ifoid[2].val.hex())]*2)).upper()}
+  else:   return {'name':ifoid[0].value,'description':ifoid[1].value if ifoid[1].value != "" else "None", 'mac':mac_bin_to_hex(ifoid[2].value)}
 
  #
  def interfaces_state(self):
   try:
-   objs = VarList('.1.3.6.1.2.1.2.2.1.8')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.walk(objs)
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   objs = session.walk('.1.3.6.1.2.1.2.2.1.8')
   except:
    return {}
   else:
-   return {int(entry.iid):'up' if entry.val.decode() == '1' else 'down' for entry in objs if entry.iid} if (session.ErrorInd == 0) else {}
+   return {int(entry.oid_index):'up' if entry.value == '1' else 'down' for entry in objs if entry.oid_index}
 
  #
  def data_points(self, aGeneric, aInterfaces, aRemove = True):
@@ -125,34 +125,26 @@ class Device(object):
   ret = {}
   remove = []
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
    for iif in aInterfaces:
-    ifentry = VarList('.1.3.6.1.2.1.2.2.1.10.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.11.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.16.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.17.%i'%iif['snmp_index'])
-    session.get(ifentry)
-    if (session.ErrorInd != 0):
-     raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
-    else:
-     try:
-      iif.update({'in8s':int(ifentry[0].val),'inUPs':int(ifentry[1].val),'out8s':int(ifentry[2].val),'outUPs':int(ifentry[3].val)})
-     except Exception as e:
-      if ifentry[0].type == 'NOSUCHINSTANCE':
-       self.log(f"generic_data_point => {iif['snmp_index']} scheduled for removal (NOSUCHINSTANCE)")
-       remove.append(iif)
-      else:
-       self.log(f"generic_data_point =>  convertion not ok for index {iif['snmp_index']}")
-      iif.update({'in8s':0,'inUPs':0,'out8s':0,'outUPs':0})
+    ifentry = session.get(['.1.3.6.1.2.1.2.2.1.10.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.11.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.16.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.17.%i'%iif['snmp_index']])
+    try:
+     iif.update({'in8s':int(ifentry[0].value),'inUPs':int(ifentry[1].value),'out8s':int(ifentry[2].value),'outUPs':int(ifentry[3].value)})
+    except Exception as e:
+     if ifentry[0].type == 'NOSUCHINSTANCE':
+      self.log(f"generic_data_point => {iif['snmp_index']} scheduled for removal (NOSUCHINSTANCE)")
+      remove.append(iif)
+     else:
+      self.log(f"generic_data_point =>  convertion not ok for index {iif['snmp_index']}")
+     iif.update({'in8s':0,'inUPs':0,'out8s':0,'outUPs':0})
    if aRemove:
     for iif in remove:
      aInterfaces.remove(iif)
    for measurement in aGeneric:
     # Wrap all data with the same tag into the same session object
-    objs = VarList(*[o['oid'] for o in measurement['values']])
-    session.get(objs)
-    if (session.ErrorInd != 0):
-     raise Exception("SNMP_ERROR_%s"%session.ErrorInd)
-    else:
-     for i,o in enumerate(measurement['values']):
-      o['value'] = objs[i].val.decode() if objs[i].val else None
+    objs = session.get([o['oid'] for o in measurement['values']])
+    for i,o in enumerate(measurement['values']):
+     o['value'] = objs[i].value if objs[i].value else None
   except Exception as e:
    ret['status'] = 'NOT_OK'
    ret['info'] = str(e)
@@ -160,7 +152,7 @@ class Device(object):
    ret['status'] = 'OK'
   return ret
 
- #
+#
  def lldp(self):
   def hex2ascii(aHex):
    return ':'.join("%s%s"%x for x in zip(*[iter(aHex.hex())]*2))
@@ -170,13 +162,11 @@ class Device(object):
 
   neighbors = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   locoid = VarList('.1.0.8802.1.1.2.1.3.7.1.3')
-   remoid = VarList('.1.0.8802.1.1.2.1.4.1.1')
-   session.walk(locoid)
-   session.walk(remoid)
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   locoid = session.walk('.1.0.8802.1.1.2.1.3.7.1.3')
+   remoid = session.walk('.1.0.8802.1.1.2.1.4.1.1')
    for x in locoid:
-    neighbors[x.iid] = {'snmp_name':x.val.decode(),'snmp_index':x.iid}
+    neighbors[x.oid_index] = {'snmp_name':x.value,'snmp_index':x.oid_index}
    for entry in remoid:
     # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
     # Types defined in 802.1AB-2005
@@ -184,29 +174,29 @@ class Device(object):
     n = neighbors.get(parts[-1],{})
     t = parts[11]
     if   t == '4':
-     n['chassis_type'] = int(entry.val.decode())
+     n['chassis_type'] = int(entry.value)
     elif t == '5':
      # Check length - ascii encoded hex?
      if n['chassis_type'] == 4:
-      if len(entry.val) == 6:
-       n['chassis_id'] = hex2ascii(entry.val)
+      if len(entry.value) == 6:
+       n['chassis_id'] = hex2ascii(entry.value)
       else:
-       n['chassis_id'] = entry.val.decode().lower().replace('-',':')
+       n['chassis_id'] = entry.value.lower().replace('-',':')
      elif n['chassis_type'] == 5:
-      n['chassis_id'] = hex2ip(entry.val[1:])
+      n['chassis_id'] = hex2ip(entry.value[1:])
      else:
-      n['chassis_id'] = entry.val.decode()
+      n['chassis_id'] = entry.value
     elif t == '6':
-     n['port_type'] = int(entry.val.decode())
+     n['port_type'] = int(entry.value)
     elif t == '7':
      if n['port_type'] == 3:
-      n['port_id'] = hex2ascii(entry.val)
+      n['port_id'] = hex2ascii(entry.value)
      else:
-      n['port_id'] = entry.val.decode()
+      n['port_id'] = entry.value
     elif t == '8':
-      n['port_desc'] = "".join(i for i in entry.val.decode() if ord(i)<128)
+      n['port_desc'] = "".join(i for i in entry.value if ord(i)<128)
     elif t == '9':
-     n['sys_name'] = entry.val.decode()
+     n['sys_name'] = entry.value
   except:
    pass
   finally:
@@ -218,27 +208,23 @@ class Device(object):
  #
  def fdb(self):
   try:
-   fdb_objs = VarList('.1.3.6.1.2.1.17.7.1.2.2.1.2')
-   int_objs = VarList('.1.3.6.1.2.1.17.1.4.1.2')
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   session.walk(fdb_objs)
-   session.walk(int_objs)
-  except Exception as e: return {'status':'NOT_OK','info':str(e)}
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   fdb_objs = session.walk('.1.3.6.1.2.1.17.7.1.2.2.1.2')
+   int_objs = session.walk('.1.3.6.1.2.1.17.1.4.1.2')
+  except Exception as e:
+   return {'status':'NOT_OK','info':str(e)}
   else:
-   if (session.ErrorInd == 0):
-    # Map dot1dBasePortIfIndex - interfaces to SNMP index
-    baseport = {obj.iid:int(obj.val.decode()) for obj in int_objs}
-    # Map dot1qTpFdbPort - vlan,mac to BasePort
-    fdb = []
-    for obj in fdb_objs:
-     entry = obj.tag[28:].split('.')
-     val = 0
-     for i in range(1,6):
-      val += int(entry[i])
-      val = val << 8
-     val += int(obj.iid)
-     bp = obj.val.decode()
-     fdb.append({'vlan':int(entry[0]),'mac':val,'snmp':baseport.get(bp,int(bp))})
-    return {'status':'OK','FDB':fdb}
-   else:
-    return {'status':'NOT_OK','info':'SNMP error: %s'%session.ErrorInd}
+   # Map dot1dBasePortIfIndex - interfaces to SNMP index
+   baseport = {obj.oid_index:int(obj.value) for obj in int_objs}
+   # Map dot1qTpFdbPort - vlan,mac to BasePort
+   fdb = []
+   for obj in fdb_objs:
+    entry = obj.tag[28:].split('.')
+    val = 0
+    for i in range(1,6):
+     val += int(entry[i])
+     val = val << 8
+    val += int(obj.oid_index)
+    bp = obj.value
+    fdb.append({'vlan':int(entry[0]),'mac':val,'snmp':baseport.get(bp,int(bp))})
+   return {'status':'OK','FDB':fdb}

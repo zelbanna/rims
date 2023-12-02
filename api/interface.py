@@ -292,6 +292,7 @@ def snmp(aRT, aArgs):
  with aRT.db as db:
   db.query("SELECT INET6_NTOA(ia.ip) AS ip, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aArgs['device_id'])
   info = db.get_row()
+  ret['type'] = info['type']
   try:
    module  = import_module("rims.devices.%s"%(info['type']))
    dev = getattr(module,'Device',lambda x,y: None)(aRT, aArgs['device_id'], info['ip'])

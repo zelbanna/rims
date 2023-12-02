@@ -5,7 +5,11 @@ __icon__    = "viz-ex.png"
 __oid__     = 8072
 
 from rims.devices.generic import Device as GenericDevice
-from rims.core.common import Session, VarList
+from easysnmp import Session
+
+def mac_bin_to_hex(inc_bin_mac_address):
+  octets = [ord(c) for c in inc_bin_mac_address]
+  return "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}".format(*octets)
 
 class Device(GenericDevice):
 
@@ -24,26 +28,26 @@ class Device(GenericDevice):
   else:
    return ' '.join(name)
 
+
  def interfaces(self):
   interfaces = {}
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   macs  = VarList('.1.3.6.1.2.1.2.2.1.6')
-   session.walk(macs)
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   macs = session.walk('.1.3.6.1.2.1.2.2.1.6')
    for mac in macs:
-    entry = VarList('.1.3.6.1.2.1.2.2.1.2.%s'%mac.iid,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.iid,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.iid)
-    session.get(entry)
-    interfaces[int(mac.iid)] = {'mac':':'.join("%s%s"%x for x in zip(*[iter(mac.val.hex())]*2)).upper() if mac.val else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].val.decode()),'state':'up' if entry[1].val.decode() == '1' else 'down','description':entry[2].val.decode() if entry[2].val.decode() != "" else "None"}
-  except: pass
+    entry = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%mac.oid_index,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.oid_index,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.oid_index])
+    interfaces[int(mac.oid_index)] = {'mac':mac_bin_to_hex(mac.value) if mac.value else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].value),'state':'up' if entry[1].value == '1' else 'down','description':entry[2].value if entry[2].snmp_type != 'NOSUCHINSTANCE' else "None"}
+  except Exception as e:
+   self.log(str(e))
+  print(interfaces)
   return interfaces
 
  def interface(self, aIndex):
   try:
-   session = Session(Version = 2, DestHost = self._ip, Community = self._rt.config['snmp']['read'], UseNumeric = 1, Timeout = int(self._rt.config['snmp'].get('timeout',100000)), Retries = 2)
-   entry  = VarList('.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex)
-   session.get(entry)
+   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
+   entry = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%mac.oid_index,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.oid_index,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.oid_index])
   except Exception as e:
    ret = {'status':'NOT_OK','info':repr(e)}
   else:
-   ret = {'status':'OK','data':{'mac':':'.join("%s%s"%x for x in zip(*[iter(entry[2].val.hex())]*2)).upper() if entry[2].val else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].val.decode()), 'description':entry[1].val.decode() if entry[1].val.decode() != "" else "None"}}
+   ret = {'status':'OK','data':{'mac':mac_bin_to_hex(entry[2].value) if entry[2].value else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].value), 'description':entry[1].value if entry[1].value != "" else "None"}}
   return ret
