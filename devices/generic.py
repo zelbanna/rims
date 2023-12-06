@@ -86,13 +86,13 @@ class Device(object):
   objs = session.walk(['.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18'])
 
   for entry in objs:
-   if   entry.tag == '.1.3.6.1.2.1.2.2.1.6':
+   if   entry.oid == '.1.3.6.1.2.1.2.2.1.6':
     interfaces[int(entry.oid_index)] = {'mac':mac_bin_to_hex(entry.value) if entry.value else "00:00:00:00:00:00", 'name':"None",'description':"None",'state':'unknown'}
-   elif entry.tag == '.1.3.6.1.2.1.2.2.1.2':
+   elif entry.oid == '.1.3.6.1.2.1.2.2.1.2':
     interfaces[int(entry.oid_index)]['name'] = entry.value
-   elif entry.tag == '.1.3.6.1.2.1.2.2.1.8':
+   elif entry.oid == '.1.3.6.1.2.1.2.2.1.8':
     interfaces[int(entry.oid_index)]['state'] = 'up' if entry.value == '1' else 'down'
-   elif entry.tag == '.1.3.6.1.2.1.31.1.1.1.18':
+   elif entry.oid == '.1.3.6.1.2.1.31.1.1.1.18':
     interfaces[int(entry.oid_index)]['description'] = entry.value if entry.value != '' else 'None'
   return interfaces
 
@@ -131,7 +131,7 @@ class Device(object):
     try:
      iif.update({'in8s':int(ifentry[0].value),'inUPs':int(ifentry[1].value),'out8s':int(ifentry[2].value),'outUPs':int(ifentry[3].value)})
     except Exception as e:
-     if ifentry[0].type == 'NOSUCHINSTANCE':
+     if ifentry[0].snmp_type == 'NOSUCHINSTANCE':
       self.log(f"generic_data_point => {iif['snmp_index']} scheduled for removal (NOSUCHINSTANCE)")
       remove.append(iif)
      else:
@@ -170,7 +170,7 @@ class Device(object):
    for entry in remoid:
     # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
     # Types defined in 802.1AB-2005
-    parts = entry.tag.split('.')
+    parts = entry.oid.split('.')
     n = neighbors.get(parts[-1],{})
     t = parts[11]
     if   t == '4':
@@ -219,7 +219,7 @@ class Device(object):
    # Map dot1qTpFdbPort - vlan,mac to BasePort
    fdb = []
    for obj in fdb_objs:
-    entry = obj.tag[28:].split('.')
+    entry = obj.oid[28:].split('.')
     val = 0
     for i in range(1,6):
      val += int(entry[i])
