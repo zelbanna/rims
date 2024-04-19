@@ -154,6 +154,8 @@ class Device(object):
 
 #
  def lldp(self):
+  # types = {4:"ChassisSubType", 6:"PortIdSubType", 5:"Chassis Id",7:"PortId", 9:"SysName", 8: "PortDesc"}
+  # Types defined in 802.1AB-2005
   def hex2ascii(aHex):
    return ':'.join("%s%s"%x for x in zip(*[iter(aHex.hex())]*2))
 
@@ -168,18 +170,15 @@ class Device(object):
    for x in locoid:
     neighbors[x.oid_index] = {'snmp_name':x.value,'snmp_index':x.oid_index}
    for entry in remoid:
-    # 4: ChassisSubType, 6: PortIdSubType, 5: Chassis Id, 7: PortId, 9: SysName, 8: PortDesc,10,11,12.. forget
-    # Types defined in 802.1AB-2005
     parts = entry.oid.split('.')
     n = neighbors.get(parts[-1],{})
     t = parts[11]
     if   t == '4':
      n['chassis_type'] = int(entry.value)
     elif t == '5':
-     # Check length - ascii encoded hex?
      if n['chassis_type'] == 4:
-      if len(entry.value) == 6:
-       n['chassis_id'] = hex2ascii(entry.value)
+      if entry.snmp_type == 'OCTETSTR':
+       n['chassis_id'] = mac_bin_to_hex(entry.value)
       else:
        n['chassis_id'] = entry.value.lower().replace('-',':')
      elif n['chassis_type'] == 5:
@@ -190,7 +189,7 @@ class Device(object):
      n['port_type'] = int(entry.value)
     elif t == '7':
      if n['port_type'] == 3:
-      n['port_id'] = hex2ascii(entry.value)
+      n['port_id'] = mac_bin_to_hex(entry.value)
      else:
       n['port_id'] = entry.value
     elif t == '8':
