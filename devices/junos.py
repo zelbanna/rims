@@ -18,7 +18,13 @@ class Junos(GenericDevice):
   ]
 
  def interfaces(self):
-  return {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla','fxp','em0','vme']}
+  # Sort out interesting interfaces
+  interfaces = {k:v for k,v in super(Junos,self).interfaces().items() if v['name'][:3] in [ 'ge-', 'fe-', 'xe-', 'et-','st0','ae-','irb','vla','fxp','em0','vme']}
+  # Change them to logical if they are
+  for intf in interfaces.values():
+   if '.' in intf['name']:
+    intf['class'] = 'logical'
+  return interfaces
 
  def configuration(self,argdict):
   base  = "set groups default_system"
@@ -34,6 +40,7 @@ class Junos(GenericDevice):
               '%s system domain-search %s'%(base,argdict['domain']),
               '%s system login message \"Welcome, this is device %s\"'%(base,argdict['hostname']),
               '%s system services rest http'%base,
+              '%s system services ssh'%base,
               '%s system syslog user * any emergency'%base,
               '%s system syslog file messages any notice'%base,
               '%s system syslog file messages authorization info'%base,

@@ -90,6 +90,7 @@ class Device(object):
     interfaces[int(entry.oid_index)] = {'mac':mac_bin_to_hex(entry.value) if entry.value else "00:00:00:00:00:00", 'name':"None",'description':"None",'state':'unknown'}
    elif entry.oid == '.1.3.6.1.2.1.2.2.1.2':
     interfaces[int(entry.oid_index)]['name'] = entry.value
+    interfaces[int(entry.oid_index)]['class'] = "wired"
    elif entry.oid == '.1.3.6.1.2.1.2.2.1.8':
     interfaces[int(entry.oid_index)]['state'] = 'up' if entry.value == '1' else 'down'
    elif entry.oid == '.1.3.6.1.2.1.31.1.1.1.18':

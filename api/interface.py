@@ -314,16 +314,16 @@ def snmp(aRT, aArgs):
       return int(aMAC.replace(':',""),16)
      except:
       return 0
-    db.query("SELECT interface_id, snmp_index, name, description, mac FROM interfaces WHERE device_id = %s"%aArgs['device_id'])
+    db.query("SELECT interface_id, snmp_index, name, class, description, mac FROM interfaces WHERE device_id = %s"%aArgs['device_id'])
     for con in db.get_rows():
      entry = data.pop(con['snmp_index'],None)
      if entry:
       mac = mac2int(entry.get('mac','0'))
       if not ((entry['name'] == con['name']) and (entry['description'] == con['description']) and (mac == con['mac'])):
-       ret['update'] += db.execute("UPDATE interfaces SET name = '%s', description = '%s', mac = %s WHERE interface_id = %s"%(entry['name'][:24],entry['description'][:24],mac,con['interface_id']))
+       ret['update'] += db.execute("UPDATE interfaces SET name = '%s', description = '%s', mac = %s, class = '%s' WHERE interface_id = %s"%(entry['name'][:24],entry['description'][:24],mac,entry['class'],con['interface_id']))
     for key, entry in data.items():
      if entry['state'] == 'up':
-      ret['insert'] += db.execute("INSERT INTO interfaces (device_id,name,description,snmp_index,mac) VALUES (%s,'%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][:24],entry['description'][:24],key,mac2int(entry['mac'])))
+      ret['insert'] += db.execute("INSERT INTO interfaces (device_id,name,class,description,snmp_index,mac) VALUES (%s,'%s','%s','%s',%s,%s)"%(aArgs['device_id'],entry['name'][:24],entry['class'],entry['description'][:24],key,mac2int(entry['mac'])))
      else:
       ret['skip'] += 1
  return ret

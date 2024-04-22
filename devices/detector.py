@@ -68,7 +68,6 @@ def execute(aIP, aSNMP, aBasic = False):
    pass
   else:
    raise Exception('MAC_MATCHING_TODO')
-
   if sysoid[1].value:
    try:
     info['oid'] = int(sysoid[1].value.split('.')[7])
@@ -102,10 +101,16 @@ def execute(aIP, aSNMP, aBasic = False):
        info['model'] = 'unknown'
       if (info['model']) in ['switch','internet','unknown','virtual']:
        info['model'] = ("%s" if info['model'] != 'virtual' else "%s (VC)")%infolist[3].lower()
+      if info['model'] == "jnp48y8c-chas":
+       info['model'] = 'qfx5120-48y'
+      elif info['model'] == "jnp204":
+       info['model'] = 'mx204'
+      elif info['model'] == "jnp10003":
+       info['model'] = 'mx10003'
      except:
       pass
      else:
-      for tp in [ 'ex', 'srx', 'qfx', 'mx', 'ptx', 'acx' ]:
+      for tp in [ 'ex', 'srx', 'qfx', 'mx', 'ptx', 'acx']:
        if tp in info['model']:
         info['type'] = tp
         break
