@@ -34,7 +34,7 @@ from rims.core.common import DB, rest_call, Scheduler, RestException, InfluxDB, 
 #
 class RunTime():
 
- def __init__(self,aConfig, aDebug = False):
+ def __init__(self,aConfig, aDebug = False, aHard = False):
   """ RunTime init - create the infrastructure but populate later
   - Consume config file
   - Set node ID
@@ -61,6 +61,7 @@ class RunTime():
   self.path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.site  = ospath.join(self.path,'site')
   self.debug = aDebug
+  self.hardstop = aHard
   self.cache = {}
   self.nodes = {}
   self.tokens = {}
@@ -203,7 +204,8 @@ class RunTime():
 
   self._abort.set()
 
-  self.log("Shutting down RIMS service (%s)"%getpid())
+  self.log("Shutting down RIMS service / CLOSE (%s)"%getpid())
+  self.influxdb.close()
 
   # Gently shutdown services
   for id,svc in self.services.items():
@@ -214,15 +216,20 @@ class RunTime():
     if res and res['status'] == 'OK':
      self.log(f"{svc['service']} => {res}")
 
-  iter = 0
-  while self.workers_alive() and iter < 70:
-   # range is implicitly >= 0
-   for x in range(self.workers_alive() - self._queue.qsize()):
-    self._queue.put((shutdown_dummy,False,None,False,[x],{}))
-   while self.workers_alive() and not self._queue.empty():
-    sleep(0.2)
-    iter += 1
-    self._workers = [x for x in self._workers if x.is_alive()]
+  self.log("Shutting down RIMS service / FILL QUEUE (%s)"%getpid())
+
+  if not self.hardstop:
+   iter = 0
+   while self.workers_alive() and iter < 30:
+    # range is implicitly >= 0
+    for x in range(self.workers_alive() - self._queue.qsize()):
+     self._queue.put((shutdown_dummy,False,None,False,[x],{}))
+    while self.workers_alive() and not self._queue.empty():
+     sleep(0.2)
+     iter += 1
+     self._workers = [x for x in self._workers if x.is_alive()]
+
+  self.log("Shutting down RIMS service / Sockets (%s)"%getpid())
 
   try:
    self._sock.close()

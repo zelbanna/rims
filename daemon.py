@@ -13,6 +13,7 @@ pid = getpid()
 parser = ArgumentParser(prog='rims',description='RIMS engine bootstrap')
 parser.add_argument('-c','--config', help = 'Config file',default = 'config.json', required=False)
 parser.add_argument('-d','--debug', help = 'Debug output', required = False, action='store_true')
+parser.add_argument('-k','--hard', help = 'Hard kill on close', required = False, action='store_true')
 input = parser.parse_args()
 
 # syslog = open('/var/log/rims.daemon.log','a+')
@@ -33,7 +34,7 @@ with open(input.config,'r') as file:
 stderr.write("daemon: creating RunTime\n")
 try:
  from core.engine import RunTime
- rt = RunTime(config,input.debug)
+ rt = RunTime(config,input.debug,input.hard)
 except Exception as e:
  stderr.write(f"daemon: creating RunTime failed: {str(e)}\n")
  sysexit(2)

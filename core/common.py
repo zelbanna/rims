@@ -101,6 +101,10 @@ class InfluxDB():
   self._lock = Lock()
 
  #
+ def close(self):
+  self._active = False
+
+ #
  def status(self):
   try:
    return self._client.health().to_dict()
@@ -130,7 +134,8 @@ class InfluxDB():
     with self._client.write_api(write_options=self._write_mode) as write_api:
      for k,l in self._buckets.items():
       for g in l:
-       write_api.write(bucket = k, write_precision = self._precision, record = g)
+       if self._active:
+        write_api.write(bucket = k, write_precision = self._precision, record = g)
    except Exception as e:
     raise Exception(e)
    finally:

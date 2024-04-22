@@ -8,6 +8,11 @@ def mac_bin_to_hex(inc_bin_mac_address):
   octets = [ord(c) for c in inc_bin_mac_address]
   return "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}".format(*octets)
 
+def mac_bin_to_int(inc_bin_mac_address):
+  octets = [ord(c) for c in inc_bin_mac_address]
+  return int("{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}".format(*octets),16)
+
+
 ################################################### Hardware ###################################################
 #
 #
@@ -56,7 +61,7 @@ def execute(aIP, aSNMP, aBasic = False):
 
   if sysoid[0].snmp_type == 'OCTETSTR':
    try:
-    info['mac'] = int(sysoid[0].value.replace('-',""),16)
+    info['mac'] = mac_bin_to_int(sysoid[0].value)
    except:
     pass
   elif sysoid[0].snmp_type == 'NOSUCHOBJECT':

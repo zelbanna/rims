@@ -14,6 +14,15 @@ def debug_decorator(func_name):
 
 ################################### Generics ##################################
 
+def mac_bin_to_hex(inc_bin_mac_address):
+  octets = [ord(c) for c in inc_bin_mac_address]
+  return "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}".format(*octets)
+
+def mac_bin_to_int(inc_bin_mac_address):
+  octets = [ord(c) for c in inc_bin_mac_address]
+  return int("{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}".format(*octets),16)
+
+
 def random_string(aLength):
  import string
  import random
