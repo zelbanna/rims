@@ -24,6 +24,8 @@ class Junos(GenericDevice):
   for intf in interfaces.values():
    if '.' in intf['name']:
     intf['class'] = 'logical'
+   if intf['name'] == 'irb':
+    intf['class'] = 'virtual'
   return interfaces
 
  def configuration(self,argdict):
@@ -67,6 +69,11 @@ class Junos(GenericDevice):
    ret.append('%s system ntp server %s routing-instance mgmt_junos'%(base,self._rt.config['netconf']['ntp']))
   if self._rt.config.get('tacplus'):
    pass
+  if self._rt.config.get('user-ca'):
+   ret.append('set system services ssh authorized-principals root')
+   if self._rt.config['netconf']['username'] != 'root':
+    ret.append('set system services ssh authorized-principals %s'%(self._rt.config['netconf']['username']))
+   ret.append('set system services ssh cert-based-auth trusted-user-ca-keys "%s"'%(self._rt.config['user-ca']))
 
   return ret
 
