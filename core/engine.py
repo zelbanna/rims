@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "8.1"
-__build__ = 402
+__version__ = "8.2"
+__build__ = 403
 __all__ = ['RunTime']
 
 from copy import copy
@@ -16,7 +16,7 @@ from os import path as ospath, getpid, walk, stat as osstat
 from random import choice
 from signal import signal, SIGINT, SIGUSR1, SIGUSR2, SIGTRAP
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
-from ssl import SSLContext, PROTOCOL_SSLv23
+from ssl import SSLContext, PROTOCOL_TLS_SERVER
 from string import ascii_uppercase, digits
 from sys import stdout, modules as sys_modules, version, _current_frames as current_frames
 from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
@@ -182,7 +182,7 @@ class RunTime():
    if self.config.get('ssl'):
     ssl_config = self.config['ssl']
     self.log(f"Starting 'HTTPS' server at: {ssl_config['port']}")
-    context = SSLContext(PROTOCOL_SSLv23)
+    context = SSLContext(PROTOCOL_TLS_SERVER)
     context.load_cert_chain(ssl_config['certfile'], keyfile=ssl_config['keyfile'], password=ssl_config.get('password'))
     addr,ssock = create_socket(int(ssl_config['port']))
     self._ssock = context.wrap_socket(ssock, server_side=True)
