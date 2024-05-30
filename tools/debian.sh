@@ -16,7 +16,7 @@ alias rims_mysql='mysql -urims -prims rims'
 
 apt-get update
 apt-get upgrade
-apt-get install -y net-tools git mariadb-client libsnmp-dev python3-pip python3-easysnmp python3-paramiko python3-pymysql
+apt-get install -y git mariadb-client python3-pip python3-easysnmp python3-paramiko python3-pymysql
 
 mysql -h 127.0.0.1 -uroot -p$mariadbpassword << `END`
 CREATE DATABASE rims;

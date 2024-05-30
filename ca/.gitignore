@@ -1,6 +1,0 @@
-# No CA files should be pushed
-*.crt
-*.pem
-*.key
-*.pub
-*.srl
