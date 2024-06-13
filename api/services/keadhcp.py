@@ -39,7 +39,7 @@ def sync(aRT, aArgs):
  settings = aRT.config['services']['isckea']
  try:
   current = aRT.rest_call('http://%s'%settings['endpoint'], aMethod = 'POST', aHeader = basic_auth(settings['username'],settings['password']), aArgs = {'command':'config-get','service':['dhcp4']})
-  entries = aRT.node_function('master','ipam','server_macs')(aArgs = {'server_id':17,'alternatives':True})
+  entries = aRT.node_function('master','ipam','server_macs')(aArgs = {'server_id':aArgs['id'],'alternatives':True})
  except Exception as e:
   ret['info'] = str(e)
  else:
