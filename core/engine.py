@@ -5,7 +5,7 @@ __build__ = 403
 __all__ = ['RunTime']
 
 from copy import copy
-from crypt import crypt
+from hashlib import sha256
 from datetime import datetime, timedelta, timezone
 from functools import partial
 from gc import collect as garbage_collect
@@ -733,7 +733,9 @@ class SessionHandler(BaseHTTPRequestHandler):
       output['status'] = 'OK'
       self._headers['X-Code'] = 200
     else:
-     passcode = crypt(password, f"$1${self._rt.config['salt']}$").split('$')[3]
+     passhash = sha256()
+     passhash.update(password.encode('utf-8'))
+     passcode = passhash.hexdigest()
      with self._rt.db as db:
       if db.query(f"SELECT id, class, theme FROM users WHERE alias = '{username}' and password = '{passcode}'"):
        expires = datetime.now(timezone.utc) + timedelta(days=5)

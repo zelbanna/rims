@@ -118,7 +118,8 @@ if config['id'] == 'master':
    try:
     mod = import_module(f'rims.api.services.{pyfile}')
     tp = getattr(mod,'__type__',None)
-   except: pass
+   except Exception as e:
+    print('error',str(e))
    else:
     if tp:
      service_types.append({'service':pyfile, 'type':tp})
@@ -129,7 +130,7 @@ if config['id'] == 'master':
  # Common config and user - for master...
  #
  from rims.api.mysql import diff, patch
- from crypt import crypt
+ from hashlib import sha256
  try:
   settings = config['database']
   database,host,username,password = settings['name'],settings['host'],settings['username'],settings['password']
@@ -153,7 +154,10 @@ if config['id'] == 'master':
 
   db = DB(database,host,username,password)
   db.connect()
-  passcode = crypt('changeme', f"$1${config.get('salt','WBEUAHfO')}$").split('$')[3]
+  #passcode = crypt('changeme', f"$1${config.get('salt','WBEUAHfO')}$").split('$')[3]
+  passhash = sha256()
+  passhash.update(b'changeme')
+  passcode = passhash.hexdigest()
   res['data']['create_admin_user'] = (db.execute(f"INSERT users (id,name,alias,password,class) VALUES(1,'Administrator','admin','{passcode}','admin') ON DUPLICATE KEY UPDATE id = id, class='admin', password = '{passcode}'") > 0)
   res['data']['create_master_node'] = (db.execute(f"INSERT nodes (node,url) VALUES('{config['id']}','{config['master']}') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
   res['data']['master_node_id']  = db.get_last_id()

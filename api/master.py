@@ -3,7 +3,7 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __node__ = 'master'
 
-from crypt import crypt
+from hashlib import sha256
 from datetime import date
 from time import localtime
 
@@ -135,7 +135,7 @@ def user_list(aRT, aArgs):
 #
 #
 def user_encrypt(aRT, aArgs):
- """Function encrypts 'data' with password encryption techniques, providing entire encryption string (method,salt,code)
+ """Function encrypts 'data' with password hash technique
 
  Args:
   - data
@@ -144,7 +144,9 @@ def user_encrypt(aRT, aArgs):
   - encrypted
  """
  ret = {}
- ret['data'] = crypt(aArgs['data'],"$1$%s$"%aRT.config['salt'])
+ passhash = sha256()
+ passhash.update(aArgs['data'].encode('utf-8'))
+ ret['data'] = passhash.hexdigest()
  return ret
 
 #
@@ -171,14 +173,18 @@ def user_info(aRT, aArgs):
   if op == 'update':
    # Password at least 6 characters
    if len(aArgs.get('password','')) > 5:
-    aArgs['password'] = crypt(aArgs['password'],'$1$%s$'%aRT.config['salt']).split('$')[3]
+    passhash = sha256()
+    passhash.update(aArgs['password'].encode('utf-8'))
+    aArgs['password'] = passhash.hexdigest()
    else:
     ret['password_check'] = 'OK' if (aArgs.pop('password',None) is None) else 'NOT_OK'
    if id != 'new':
     ret['update'] = (db.update_dict('users',aArgs,"id=%s"%id) == 1)
    else:
     if 'password' not in aArgs:
-     aArgs['password'] = crypt('changeme','$1$%s$'%aRT.config['salt']).split('$')[3]
+     passhash = sha256()
+     passhash.update(b'changeme')
+     aArgs['password'] = passhash.hexdigest()
     ret['update'] = (db.insert_dict('users',aArgs) == 1)
     id = db.get_last_id() if ret['update'] > 0 else 'new'
 

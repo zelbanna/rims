@@ -16,7 +16,8 @@ def __write_file(aFile,aEntries):
   config_file.write("# Modified: %s\n"%( strftime('%Y-%m-%d %H:%M:%S', localtime()) ))
   for entry in aEntries:
    if ip_address(entry['ip']).version == 4:
-    config_file.write('host {0: <10} {{ hardware ethernet {1}; fixed-address {2}; option host-name "{4}"; }} # Network: {3}\n'.format(entry['id'],entry['mac'],entry['ip'],entry['network'],entry['hostname']))
+    #config_file.write('host {0: <10} {{ hardware ethernet {1}; fixed-address {2}; option host-name "{4}"; }} # Network: {3}\n'.format(entry['id'],entry['mac'],entry['ip'],entry['network'],entry['hostname']))
+    config_file.write('host {0: <10} {{ hardware ethernet {1}; fixed-address {2}; }} # Network: {3}\n'.format(entry['id'],entry['mac'],entry['ip'],entry['network']))
  return True
 
 #

@@ -40,6 +40,8 @@ def list(aRT, aArgs):
 #
 def info(aRT, aArgs):
  """Show or update a specific interface for a device
+ 
+ TODO - schedule an update of DHCP server
 
  Args:
   - interface_id (required) 'new'/<if-id>
@@ -178,6 +180,8 @@ def info(aRT, aArgs):
 #
 def delete(aRT, aArgs):
  """Delete device interfaces using either id of interface or device (the latter where interfaces are not up or bound to ip addresses)
+
+ TODO: Call DHCP update
 
  Args:
   - interface_id (optional required)
