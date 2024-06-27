@@ -16,23 +16,32 @@ def mac_bin_to_int(inc_bin_mac_address):
 ################################################### Hardware ###################################################
 #
 #
-def oid41112(aSession, aInfo, aDescription):
- if aDescription[0][0:3] == 'UAP':
-  aInfo['type'] = 'unifi_ap'
- else:
+def ubnt41112(aSession, aInfo, aDescription):
+ if aDescription[0][0:3] == 'USW':
   aInfo['type'] = 'unifi_switch'
- try:
-  extobj = aSession.get(['.1.3.6.1.4.1.41112.1.6.3.3.0','.1.3.6.1.4.1.41112.1.6.3.6.0'])
-  aInfo['model']  = extobj[0].value if extobj[0].snmp_type !='NOSUCHOBJECT' else aDescription[0]
-  if extobj[1].snmp_type != 'NOSUCHOBJECT':
-   aInfo['version'] = extobj[1].value
+  try:
+   pos = aDescription.index('firmware')
+  except:
+   aInfo['version'] = aDescription[1]
   else:
-   for c,f in enumerate(aDescription):
-    if f == 'firmware':
-     aInfo['version'] = aDescription[c + 1]
-     break
+   aInfo['version'] = aDescription[pos+1]
+  aInfo['model'] = aDescription[0]
+  return
+ else:
+  aInfo['type'] = 'unifi_ap'
+  aInfo['version'] = aDescription[1]
+  aInfo['model'] = aDescription[0]
+
+def ubnt8072(aSession, aInfo, aDescription):
+ aInfo['type'] = 'unifi_switch'
+ try:
+  pos = aDescription.index('firmware')
  except:
-  pass
+  aInfo['version'] = None if aDescription[1] == 'UBNT' else aDescription[1]
+ else:
+  aInfo['version'] = aDescription[pos+1]
+ aInfo['model'] = None if aDescription[0] == 'Linux' else aDescription[0]
+
 
 ################################################### Hardware ###################################################
 #
@@ -147,14 +156,13 @@ def execute(aIP, aSNMP, aBasic = False):
       pass
     elif enterprise == '41112':
      # Unifi
-     oid41112(session, info, infolist)
+     ubnt41112(session, info, infolist)
     elif enterprise == '8072':
      # Basic linux, could be any other device...
-     info['model'] = ' '.join(infolist[0:4])
-     print(devoid[2].value)
-     if infolist[0][0:3] == 'UAP':
-      oid41112(session, info, infolist)
+     if infolist[0][0:3] == 'USW' or infolist[1] == 'UBNT':
+      ubnt8072(session, info, infolist)
      else:
+      info['model'] = ' '.join(infolist[0:4])
       os = {'8':'freebsd','10':'linux','13':'win32','16':'macosx'}.get(devoid[2].value.split('.')[10],'unknown')
       info['type'] = os
     elif enterprise == '4413':
