@@ -133,7 +133,7 @@ class Device(object):
      iif.update({'in8s':int(ifentry[0].value),'inUPs':int(ifentry[1].value),'out8s':int(ifentry[2].value),'outUPs':int(ifentry[3].value)})
     except Exception as e:
      if ifentry[0].snmp_type == 'NOSUCHINSTANCE':
-      self.log(f"generic_data_point => {iif['snmp_index']} scheduled for removal (NOSUCHINSTANCE)")
+      self.log(f"generic_data_point => {iif['snmp_index']} scheduled for removal (NOSUCHINSTANCE & {str(e)})")
       remove.append(iif)
      else:
       self.log(f"generic_data_point =>  convertion not ok for index {iif['snmp_index']}")

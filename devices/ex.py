@@ -51,6 +51,11 @@ class Device(Junos):
    ret.append('%s system ntp server %s'%(base,self._rt.config['netconf']['ntp']))
   if self._rt.config.get('tacplus'):
    pass
+  if self._rt.config.get('user-ca'):
+   ret.append('set system services ssh authorized-principals root')
+   if self._rt.config['netconf']['username'] != 'root':
+    ret.append('set system services ssh authorized-principals %s'%(self._rt.config['netconf']['username']))
+   ret.append('set system services ssh cert-based-auth trusted-user-ca-keys "%s"'%(self._rt.config['user-ca']))
 
   return ret
 
