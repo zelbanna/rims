@@ -163,7 +163,7 @@ class RecordList extends Component {
 
  listItem = (row) => [row.name,row.content,row.type,row.ttl,<>
    <ConfigureButton key='info' onClick={() => this.changeContent(<RecordInfo key='record_info' domain_id={this.props.domain_id} op='info' {...row} />)} title='Configure record' />
-   {['A','AAAA','CNAME','PTR'].includes(row.type) && <DeleteButton key='del' onClick={() => this.deleteList(row.name,row.type)} title='Delete record' />}
+   {['A','AAAA','CNAME','PTR','DHCID'].includes(row.type) && <DeleteButton key='del' onClick={() => this.deleteList(row.name,row.type)} title='Delete record' />}
   </>]
 
  deleteList = (name,type) => (window.confirm('Delete record?') && post_call('api/dns/record_delete', {domain_id:this.props.domain_id,name:name,type:type}).then(result => result.deleted && this.setState({data:this.state.data.filter(row => !(row.name === name && row.type === type))})))
