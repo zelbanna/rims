@@ -1,4 +1,4 @@
-# docker build -t rims:latest .
+# docker build -t zelbanna/rims:latest .
 # Use Python 3.11 as base image, -slim
 FROM python:3.11
 
