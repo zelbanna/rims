@@ -32,7 +32,7 @@ GRANT ALL PRIVILEGES ON pdns.* TO pdns@'%';
 FLUSH PRIVILEGES;
 END
 
-cd /usr/local/sbin
+cd /
 git init
 git clone git@github.com:zelbanna/rims.git
 # git clone http://github.com/azlux/log2ram.git

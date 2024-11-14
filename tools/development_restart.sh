@@ -2,8 +2,6 @@
 #
 # Redirect all libs
 #
-SRCDIR=/usr/local/sbin/rims
-PKGDIR=/usr/local/sbin/rims-frontend
-rm -fR $PKGDIR/src;    mkdir $PKGDIR/src;    mount -B $SRCDIR/react $PKGDIR/src
-rm -fR $PKGDIR/build;  mkdir $PKGDIR/build;  mount -B $SRCDIR/site  $PKGDIR/build
-rm -fR $PKGDIR/public; mkdir $PKGDIR/public; mount -B $SRCDIR/static $PKGDIR/public
+rm -fR /usr/local/sbin/rims-frontend/src;    mkdir /usr/local/sbin/rims-frontend/src;    mount -B /rims/react /usr/local/sbin/rims-frontend/src
+rm -fR /usr/local/sbin/rims-frontend/build;  mkdir /usr/local/sbin/rims-frontend/build;  mount -B /rims/site  /usr/local/sbin/rims-frontend/build
+rm -fR /usr/local/sbin/rims-frontend/public; mkdir /usr/local/sbin/rims-frontend/public; mount -B /rims/static /usr/local/sbin/rims-frontend/public

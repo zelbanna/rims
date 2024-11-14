@@ -255,6 +255,7 @@ CREATE TABLE `ipam_addresses` (
   `ip` varbinary(16) NOT NULL,
   `hostname` varchar(40) DEFAULT 'unknown',
   `state` enum('unknown','up','down') NOT NULL,
+  `monitor` enum('off','on') DEFAULT 'on',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip_network` (`ip`,`network_id`),
   KEY `network_id` (`network_id`),

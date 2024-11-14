@@ -4,7 +4,7 @@ After=docker.service
 
 [Service]
 User=root
-WorkingDirectory=/usr/local/sbin
+WorkingDirectory=/rims
 ExecStart=/etc/init.d/rims start
 ExecStop=/etc/init.d/rims stop
 ExecReload=/etc/init.d/rims restart

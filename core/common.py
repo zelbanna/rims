@@ -172,6 +172,9 @@ class InfluxDummy():
  def buffer(self):
   return 0
 
+ def close(self):
+  pass
+
  def active(self, aState = None):
   return False
 

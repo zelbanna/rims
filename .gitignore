@@ -13,6 +13,7 @@
 
 # Settings should never be pushed to central repo
 *.json
+*.json.old
 
 # Setuptools distribution folder.
 /dist/
