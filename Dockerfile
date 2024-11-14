@@ -1,4 +1,4 @@
-# docker build -t rims:9.0 .
+# docker build -t rims:latest .
 # Use Python 3.11 as base image, -slim
 FROM python:3.11
 

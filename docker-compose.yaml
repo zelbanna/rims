@@ -1,0 +1,17 @@
+services:
+
+ rims:
+  container_name: rims
+  ports:
+   - 8079:8079/tcp
+   - 8080:8080/tcp
+  image: rims:latest
+  restart: unless-stopped
+  volumes:
+   - rims:/etc/rims/
+   - /var/log/rims:/var/log/rims
+
+volumes:
+ rims:
+  name: rims
+
