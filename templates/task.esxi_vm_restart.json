@@ -1,7 +1,0 @@
-{
- "module":"esxi",
- "function":"control",
- "args":{"ip":"127.0.0.1","op":"reload","id":1},
- "frequency":172800,
- "output":true
-}

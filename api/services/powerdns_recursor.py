@@ -3,9 +3,6 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "RECURSOR"
 
-from subprocess import check_output, CalledProcessError
-
-
 ############################### Tools #################################
 #
 #
@@ -99,21 +96,7 @@ def restart(aRT, aArgs):
   - output
   - result 'OK'/'NOT_OK'
  """
- ret = {}
- settings = aRT.config['services']['powerdns']['recursor']
- try:
-  ret['output'] = check_output(settings.get('reload','service pdns-recursor restart').split()).decode()
-  ret['code'] = 0
-  ret['output'] = 'OK'
- except CalledProcessError as c:
-  ret['code'] = c.returncode
-  ret['output'] = c.output.decode('utf-8')
-  ret['status'] = 'NOT_OK'
- except Exception as e:
-  ret['code'] = 5
-  ret['output'] = str(e)
-  ret['status'] = 'NOT_OK'
- return ret
+ return { 'output':'N/A', 'code':0, 'status':'OK' }
 
 #
 #

@@ -291,7 +291,6 @@ def snmp(aRT, aArgs):
 
  Output:
  """
-
  ret = {}
  with aRT.db as db:
   db.query("SELECT INET6_NTOA(ia.ip) AS ip, device_types.name AS type FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN device_types ON type_id = device_types.id  WHERE devices.id = %s"%aArgs['device_id'])

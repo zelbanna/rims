@@ -1,6 +1,6 @@
 ############# RIMS - REST based Infrastructure Management System ###############
 
-RIMS is an API first based system to manage infrastructure: racks, pdus, consoles, devices, services etc.
+RIMS is an API first based system to manage infrastructure
 
 The system uses a concept of nodes and servers (i.e. services on nodes).
 - A node is any REST base interface to a system, all nodes have an ID and a URL
@@ -18,7 +18,7 @@ Everything centers around the 'engine', it uses a config to bootstart itself. In
 - devices: contains modules for device handling 
 - core: Generic lib and core (engine) modules
 - tools: various tools for interaction with engine or database
-- templates: various templates for config, site layout, tasks
+- templates: various templates for tasks
 
 ################################### Guidelines ##################################
 
@@ -30,9 +30,6 @@ a request is routed to the function by calling URL/<api>/<file>/func with argume
 ################################## Good to know #################################
 
 Run install.py with config.json (using appropriate values)
-
-- Don't forget:
-To be able to reload different services, please add something similar to /etc/sudoers (actually limit for pdns and isc-dhcp-server)
 
 - Debian
 (extended)

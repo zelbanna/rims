@@ -14,7 +14,7 @@ parser.add_argument('api', metavar='module/function', help = 'API module/functio
 parser.add_argument('arguments', help = 'API argument', nargs='?')
 parser.add_argument('-u','--url', help = 'URL', required = False, default='http://127.0.0.1:8080')
 parser.add_argument('-n','--node', help = 'Node unless local (X-Route)', required = False)
-parser.add_argument('-c','--config', help = 'Config unless config.json', default='../config.json')
+parser.add_argument('-c','--config', help = 'Config unless config.json', default='/etc/rims/rims.json')
 args = parser.parse_args()
 timestamp = int(time())
 try:
@@ -23,7 +23,7 @@ except:
  arguments = {}
 header = {'X-Route':args.node} if args.node else {}
 try:
- with open(ospath.abspath(ospath.join(ospath.dirname(__file__), args.config))) as f:
+ with open(args.config) as f:
   header['X-Token'] = load(f).get('token',None)
 except:
  header['X-Token'] = None

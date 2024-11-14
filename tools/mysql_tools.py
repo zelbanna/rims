@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 __author__ = "Zacharias El Banna"
 
@@ -18,7 +18,7 @@ parser.add_argument('-s','--schema',  help = 'Dumps database schema', required =
 parser.add_argument('-v','--values',  help = 'Dumps database values', required = False, action = 'store_true')
 parser.add_argument('-r','--restore', help = 'Restore with schema and/or values from restore_file', required = False, nargs = 1)
 parser.add_argument('-p','--patch',   help = 'Patch database schema with new schema file', required = False, nargs = 1)
-parser.add_argument('-c','--config',  help = 'Config file unless config.json', default='../config.json')
+parser.add_argument('-c','--config',  help = 'Config file unless config.json', default='/etc/rims/rims.json')
 parsedinput = parser.parse_args()
 with open(ospath.abspath(ospath.join(ospath.dirname(__file__), parsedinput.config))) as f:
  config = load(f)

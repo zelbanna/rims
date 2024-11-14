@@ -1,8 +1,15 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
-"""Installer"""
+""" Obsolete Installer
+
+TODO
+- assume DB is installed
+- install devices and services from 'engine'
+- if not master, detect this in engine and auto-register 
+
+"""
 __author__ = "Zacharias El Banna"
-__version__ = "7.5"
+__version__ = "X.X"
 
 from sys import path as syspath, exit as sysexit
 from json import load,dumps
@@ -23,9 +30,7 @@ parser = ArgumentParser(prog='install',formatter_class=RawDescriptionHelpFormatt
 3a) tools/mysql_tools </path/config json file> -r <schema>  (first time install)
 3b) tools/mysql_tools </path/config json file> -p <schema>  (subsequent install)
 """)
-parser.add_argument('-c','--config', help = 'Config file',default = 'config.json', required=False)
-parser.add_argument('-s','--schema', help = 'Database Schema file',default = 'schema.db', required=False)
-parser.add_argument('-t','--startup', help = 'Startup template file',default = 'debian.init', required=False)
+parser.add_argument('-c','--config', help = 'Config file',default = '/etc/rims/rims.json', required=False)
 parsedinput = parser.parse_args()
 
 if not parsedinput.config:
@@ -42,43 +47,6 @@ with open(config_file,'r') as sfile:
  config = load(sfile)
 config['config_file'] = config_file
 config['salt'] = config.get('salt','WBEUAHfO')
-
-############################################### ALL #################################################
-#
-# Write OS dependent startup file and call 'install' upon it
-#
-with open(ospath.abspath(ospath.join(pkgdir,'templates',parsedinput.startup)),'r') as f:
- template = f.read()
-template = template.replace("%PKGDIR%",pkgdir)
-template = template.replace("%CFGFILE%",config_file)
-engine_run = ospath.abspath(ospath.join(pkgdir,parsedinput.startup))
-with open(engine_run,'w+') as f:
- f.write(template)
-chmod(engine_run,0o755)
-res['data']['engine']= {'startup':parsedinput.startup,'install':check_call([engine_run,"install"])}
-
-############################################### ALL #################################################
-#
-# Modules
-#
-
-if config.get('influxdb'):
- try:
-  import influxdb_client
- except ImportError as e:
-  res['info']['influxdb'] = f'installing ({e})'
-  pipmain(['install','-q','influxdb-client'])
- else:
-  res['modules']['influxdb'] = 'Installed'
-
-if config.get('services',{}).get('sun2000'):
- try:
-  import huawei_solar
- except ImportError as e:
-  res['info']['huawei-solar'] = f'installing ({e})'
-  pipmain(["install","-q","huawei-solar"])
- else:
-  res['modules']['huawei-solar'] = 'Installed'
 
 ############################################ MASTER ###########################################
 #
@@ -134,27 +102,8 @@ if config['id'] == 'master':
  try:
   settings = config['database']
   database,host,username,password = settings['name'],settings['host'],settings['username'],settings['password']
-  database_args = {'host':host, 'username':username, 'password':password, 'database':database, 'schema_file':ospath.join(pkgdir,parsedinput.schema)}
-  res['data']['database']= {}
-  res['data']['database']['diff'] = diff(None, database_args)
-  if res['data']['database']['diff']['diffs'] > 0:
-   res['data']['database']['patch'] = patch(None, database_args)
-   if res['data']['database']['patch']['status'] == 'NOT_OK':
-    print("Database patching failed")
-    if res['data']['database']['patch'].get('database_restore_result') == 'OK':
-     print("Restore should be OK - please check schema.db schema file")
-    else:
-     print("Restore failed too!")
-     print("- Restore manually case needed")
-     print("- Make sure that configured user has access to database:")
-     print(f"CREATE USER '{settings['username']}'@'localhost' IDENTIFIED BY '{settings['password']}';")
-     print(f"GRANT ALL PRIVILEGES ON {settings['name']}.* TO '{settings['username']}'@'localhost';")
-     print("FLUSH PRIVILEGES;\n\n")
-    sysexit(1)
-
   db = DB(database,host,username,password)
   db.connect()
-  #passcode = crypt('changeme', f"$1${config.get('salt','WBEUAHfO')}$").split('$')[3]
   passhash = sha256()
   passhash.update(b'changeme')
   passcode = passhash.hexdigest()
@@ -178,6 +127,8 @@ if config['id'] == 'master':
  except Exception as e:
   print("Database error: %s"%str(e))
 
+########################################### EXTRA NODES ############################################
+
 else:
  try:
   res['data']['register'] = rest_call("%s/register"%config['master'], aHeader = {'X-Token':config.get('token')}, aArgs = {'id':config['id'],'port':config['port']})
@@ -185,6 +136,7 @@ else:
   res['info']['register'] = str(e)
 
 res['status'] = 'OK' if not res['info'] else 'NOT_OK'
+
 ############################################### ALL #################################################
 #
 # End

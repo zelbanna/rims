@@ -36,10 +36,9 @@ class Device(GenericDevice):
    macs = session.walk('.1.3.6.1.2.1.2.2.1.6')
    for mac in macs:
     entry = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%mac.oid_index,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.oid_index,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.oid_index])
-    interfaces[int(mac.oid_index)] = {'mac':mac_bin_to_hex(mac.value) if mac.value else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].value),'state':'up' if entry[1].value == '1' else 'down','description':entry[2].value if entry[2].snmp_type != 'NOSUCHINSTANCE' else "None"}
+    interfaces[int(mac.oid_index)] = {'class':'wired','mac':mac_bin_to_hex(mac.value) if mac.value else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].value),'state':'up' if entry[1].value == '1' else 'down','description':entry[2].value if entry[2].snmp_type != 'NOSUCHINSTANCE' else "None"}
   except Exception as e:
    self.log(str(e))
-  print(interfaces)
   return interfaces
 
  def interface(self, aIndex):
