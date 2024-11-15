@@ -204,7 +204,7 @@ class Device(object):
     elif t == '9':
      n['sys_name'] = entry.value
   except Exception as e:
-   stderr.write("generic_lldp: Exception -> %s"%str(e))
+   stderr.write("generic_lldp: Exception -> %s\n"%str(e))
   finally:
    for k in list(neighbors.keys()):
     if not neighbors[k].get('chassis_type'):
