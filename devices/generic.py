@@ -12,7 +12,8 @@ __icon__    = "viz-generic.png"
 __oid__     = 8072
 
 from easysnmp import Session
-from os import system
+from pythonping import ping
+from sys import stderr
 
 def mac_bin_to_hex(inc_bin_mac_address):
   octets = [ord(c) for c in inc_bin_mac_address]
@@ -53,7 +54,7 @@ class Device(object):
   return 'NOT_IMPLEMENTED_%s'%aType.upper()
 
  def ping_device(self):
-  return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
+  return ping(self.ip, verbose=False, count=1, timeout=1).success()
 
  def configuration(self,argdict):
   ret = ["No config template for this device type.","",
@@ -202,8 +203,8 @@ class Device(object):
       n['port_desc'] = "".join(i for i in entry.value if ord(i)<128)
     elif t == '9':
      n['sys_name'] = entry.value
-  except:
-   pass
+  except Exception as e:
+   stderr.write("generic_lldp: Exception -> %s"%str(e))
   finally:
    for k in list(neighbors.keys()):
     if not neighbors[k].get('chassis_type'):
