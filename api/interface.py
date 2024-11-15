@@ -3,6 +3,7 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 from importlib import import_module
+from sys import stderr
 
 ############################################### INTERFACES ################################################
 #
@@ -505,7 +506,7 @@ def check(aRT, aArgs):
  devices = []
 
  with aRT.db as db:
-  if db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))) and db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows()))):
+  if db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))) and db.query("SELECT devices.id AS device_id, INET6_NTOA(ia.ip) AS ip FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id WHERE ia.state = 'up' AND ia.network_id IN (%s) ORDER BY ip"%(','.join(str(x['id']) for x in db.get_rows()))):
    for dev in db.get_rows():
     if db.query("SELECT snmp_index,interface_id,state FROM interfaces WHERE device_id = %s AND snmp_index > 0"%dev['device_id']):
      dev['interfaces'] = db.get_rows()
@@ -536,7 +537,9 @@ def process(aRT, aArgs):
  report = aRT.node_function(aRT.node if aRT.db else 'master','interface','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'interface_process','changed':0}
 
- def __check_IF(aDev):
+ # TODO - apparently easysnmp/libsnmp doesn't like parallell stuff when in docker container, 'python -m trace --trace daemon.py -d' just locks
+ # def __check_IF(aDev):
+ for aDev in aArgs['devices']:
   if aDev['interfaces']:
    try:
     device = Device(aRT, aDev['device_id'], aDev['ip'])
@@ -553,7 +556,7 @@ def process(aRT, aArgs):
      # from rims.api.interface import report
      report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
 
- aRT.queue_block(__check_IF,aArgs['devices'])
+ # aRT.queue_block(__check_IF,aArgs['devices'])
  return ret
 
 #

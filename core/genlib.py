@@ -1,13 +1,14 @@
 """Generic Library. Many are for reference, make them 'inline'"""
 __author__ = "Zacharias El Banna"
 
+from sys import stderr
 ##############################################################################
 
 def debug_decorator(func_name):
  def decorator(func):
   def decorated(*args,**kwargs):
    res = func(*args,**kwargs)
-   print(f'DEBUGGER: {func_name}({args},{kwargs}) => {res}')
+   stderr.write(f'DEBUGGER: {func_name}({args},{kwargs}) => {res}\n')
    return res
   return decorated
  return decorator

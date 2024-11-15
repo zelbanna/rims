@@ -14,7 +14,7 @@ from importlib import import_module, reload as reload_module
 from json import loads, dumps
 from os import path as ospath, walk, stat as osstat
 from random import choice
-from signal import signal, SIGTERM
+from signal import signal, SIGTERM, SIGINT
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ssl import SSLContext, PROTOCOL_TLS_SERVER
 from string import ascii_uppercase, digits
@@ -188,7 +188,7 @@ class RunTime():
     self._ssock = context.wrap_socket(ssock, server_side=True)
     self._servers.extend(SocketServer(self, self._abort, n, addr, self._ssock) for n in range(servers,servers+4))
 
-   for sig in [SIGTERM]:
+   for sig in [SIGTERM,SIGINT]:
     signal(sig, self.signal_handler)
   except Exception as e:
    stderr.write(f"engine: Starting error - check IP and SSL settings: {e}\n")
@@ -259,6 +259,9 @@ class RunTime():
   """ Signal handler instantiate OS signalling mechanisms to override standard behavior """
   if sig == SIGTERM:
    stderr.write("engine: Caught SIGTERM\n")
+   self.close()
+  elif sig == SIGINT:
+   stderr.write("engine: Caught SIGINT\n")
    self.close()
 
  ######################## TOOLS #####################
