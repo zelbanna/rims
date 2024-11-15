@@ -25,12 +25,13 @@ def dump(aRT, aArgs):
   db,host,username,password = aArgs['database'],aArgs['host'],aArgs['username'],aArgs['password']
  else:
   db,host,username,password = aRT.config['database']['name'], aRT.config['database']['host'], aRT.config['database']['username'], aRT.config['database']['password']
- try:
-  line_number = 0
-  mode = aArgs.get('mode','schema')
-  cmd  = ["mysqldump", "--hex-blob", "-u" + username, "-p" + password, '-h',host,db]
-  output = []
 
+ line_number = 0
+ mode = aArgs.get('mode','schema')
+ cmd  = ["mysqldump", "--hex-blob", "-u" + username, "-p" + password, '-h',host,db]
+
+ try:
+  output = []
   if   mode == 'schema':
    cmd.extend(['--no-data','--add-drop-database'])
   elif mode == 'database':
@@ -60,7 +61,7 @@ def dump(aRT, aArgs):
  except Exception as e:
   output = ["DumpError(%s)@%s"%(repr(e),line_number)]
   res = 'NOT_OK'
- return {'status':res, 'output':output,'mode':mode,'full':aArgs.get('full',True)}
+ return {'status':res, 'output':output,'mode':mode,'full':aArgs.get('full',True),'cmd':' '.join(cmd)}
 
 #
 #

@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "9.0"
-__build__ = 404
+__build__ = 405
 __all__ = ['RunTime']
 
 from copy import copy
@@ -423,7 +423,7 @@ class RunTime():
    mod = import_module(f"rims.api.{aModule.replace('/','.')}")
    func = getattr(mod, aFunction, None)
   except:
-   self.log(f"WorkerPool ERROR: adding task failed ({aModule}/{aFunction}")
+   self.log(f"WorkerPool ERROR: adding task failed ({aModule}/{aFunction})")
    return False
   else:
    if aFrequency:

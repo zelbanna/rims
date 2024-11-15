@@ -3,12 +3,13 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 from ipaddress import ip_address, ip_network
-from subprocess import run, DEVNULL
 from time import time
+from pythonping import ping
 
-def __detect_state(aIP):
- """ Ping 'IP' once to detect presence """
- return run(['ping','-c','1','-w','1',aIP], stdout=DEVNULL).returncode == 0
+def __ping(aIP):
+ """ Ping 'IP' twice to detect presence """
+ return ping(aIP, verbose=False, count=1, timeout=1).success() or ping(aIP, verbose=False, count=1, timeout=1).success()
+
 ##################################### Networks ####################################
 #
 #
@@ -112,7 +113,7 @@ def network_delete(aRT, aArgs):
 #
 #
 def network_discover(aRT, aArgs):
- """ Function discovers _new_ IP:s that answer to ping within a certain network. A list of such IP:s are returned
+ """ Function discovers _new_ IP:s that answer to icmp probe within a certain network. A list of such IP:s are returned
 
  Args:
   - id (required)
@@ -122,7 +123,7 @@ def network_discover(aRT, aArgs):
   - addresses. list of ip:s (objects) that answer to ping
  """
  def __detect_thread(aIP,aIPs):
-  if __detect_state(aIP) or __detect_state(aIP):
+  if __ping(aIP):
    aIPs.append(aIP)
   return True
 
@@ -461,13 +462,9 @@ def process(aRT, aArgs):
  Output:
  """
  ret = {'status':'OK','function':'ipam_process'}
-
  def __check_IP(aDev):
   aDev['old'] = aDev['state']
-  try:
-   aDev['state'] = 'up' if __detect_state(aDev['ip']) or __detect_state(aDev['ip']) else 'down'
-  except:
-   aDev['state'] = 'unknown'
+  aDev['state'] = 'up' if __ping(aDev['ip']) else 'down'
   return True
 
  aRT.queue_block(__check_IP,aArgs['addresses'])
