@@ -3,5 +3,4 @@
 __pycache__
 .pylintrc
 schema.db
-package.json
 dist

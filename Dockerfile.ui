@@ -1,0 +1,17 @@
+# docker build -f Dockerfile.ui -t zelbanna/rims-frontend:latest .
+FROM node:jod-bookworm
+
+RUN apt-get update && apt-get install -y nano
+
+#COPY ./react /rims/src
+#COPY ./site /rims/build
+#COPY ./static /rims/public
+RUN mkdir /rims
+COPY ./package.json /rims
+
+WORKDIR /rims
+RUN yarn install
+EXPOSE 3000
+
+CMD ["yarn", "start"]
+#CMD ["/bin/bash"]
