@@ -23,8 +23,8 @@ class Device(GenericDevice):
   result = []
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-   portobjs = VarList(
-   session.walk('.1.3.6.1.4.1.25049.17.2.1.2')
+   with self._rt.snmplock:
+    portobjs = session.walk('.1.3.6.1.4.1.25049.17.2.1.2')
    for obj in portobjs:
     result.append({'interface':obj.oid_index,'name':obj.value})
   except Exception as exception_error:

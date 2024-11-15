@@ -537,9 +537,9 @@ def process(aRT, aArgs):
  report = aRT.node_function(aRT.node if aRT.db else 'master','interface','report', aHeader= {'X-Log':'false'})
  ret = {'status':'OK','function':'interface_process','changed':0}
 
- # TODO - apparently easysnmp/libsnmp doesn't like parallell stuff when in docker container, 'python -m trace --trace daemon.py -d' just locks
- # def __check_IF(aDev):
- for aDev in aArgs['devices']:
+ # TODO - apparently easysnmp/libsnmp doesn't like parallell stuff when in docker container, 'python -m trace --trace daemon.py -d' just locks. Implement locks whenever there is a session
+ def __check_IF(aDev):
+# for aDev in aArgs['devices']:
   if aDev['interfaces']:
    try:
     device = Device(aRT, aDev['device_id'], aDev['ip'])
@@ -556,7 +556,7 @@ def process(aRT, aArgs):
      # from rims.api.interface import report
      report(aArgs = {'device_id':aDev['device_id'],'up':[x['interface_id'] for x in changed if x['state'] == 'up'], 'down':[x['interface_id'] for x in changed if x['state'] == 'down']})
 
- # aRT.queue_block(__check_IF,aArgs['devices'])
+ aRT.queue_block(__check_IF,aArgs['devices'])
  return ret
 
 #

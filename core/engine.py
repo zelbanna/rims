@@ -19,7 +19,7 @@ from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ssl import SSLContext, PROTOCOL_TLS_SERVER
 from string import ascii_uppercase, digits
 from sys import stderr, modules as sys_modules, version, _current_frames as current_frames
-from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
+from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate, Lock
 from time import localtime, sleep, strftime, time
 from traceback import format_exc, format_stack
 from types import ModuleType
@@ -66,6 +66,7 @@ class RunTime():
   self.nodes = {}
   self.tokens = {}
   self.services = {}
+  self.snmplock = Lock()
   self.ssl = ssl_context()
 
   database = self.config.get('database')

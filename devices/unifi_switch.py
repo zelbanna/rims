@@ -33,10 +33,11 @@ class Device(GenericDevice):
   interfaces = {}
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-   macs = session.walk('.1.3.6.1.2.1.2.2.1.6')
-   for mac in macs:
-    entry = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%mac.oid_index,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.oid_index,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.oid_index])
-    interfaces[int(mac.oid_index)] = {'class':'wired','mac':mac_bin_to_hex(mac.value) if mac.value else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].value),'state':'up' if entry[1].value == '1' else 'down','description':entry[2].value if entry[2].snmp_type != 'NOSUCHINSTANCE' else "None"}
+   with self._rt.snmplock:
+    macs = session.walk('.1.3.6.1.2.1.2.2.1.6')
+    for mac in macs:
+     entry = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%mac.oid_index,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.oid_index,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.oid_index])
+     interfaces[int(mac.oid_index)] = {'class':'wired','mac':mac_bin_to_hex(mac.value) if mac.value else "00:00:00:00:00:00", 'name':self.name_decode(entry[0].value),'state':'up' if entry[1].value == '1' else 'down','description':entry[2].value if entry[2].snmp_type != 'NOSUCHINSTANCE' else "None"}
   except Exception as e:
    self.log(str(e))
   return interfaces
@@ -44,7 +45,8 @@ class Device(GenericDevice):
  def interface(self, aIndex):
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-   entry = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%mac.oid_index,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.oid_index,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.oid_index])
+   with self._rt.snmplock:
+    entry = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%mac.oid_index,'.1.3.6.1.2.1.2.2.1.8.%s'%mac.oid_index,'.1.3.6.1.2.1.31.1.1.1.18.%s'%mac.oid_index])
   except Exception as e:
    ret = {'status':'NOT_OK','info':repr(e)}
   else:
