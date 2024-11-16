@@ -5,6 +5,8 @@ RIMS is an API first based system to manage infrastructure
 Github: https://github.com/zelbanna/rims.git
 Docker: https://hub.docker.com/zelbanna/rims
 
+git clone git@github.com:zelbanna/rims.git
+
 The system uses a concept of nodes and servers (i.e. services on nodes).
 - A node is any REST base interface to a system, all nodes have an ID and a URL
 - There is a 'master' node that keeps a centralized database for all other (system) nodes.
