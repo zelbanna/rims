@@ -1,4 +1,4 @@
-# docker build -t zelbanna/rims:latest -t zelbanna/rims:9.0 .
+# docker build -t zelbanna/rims:latest -t zelbanna/rims:9.0.1 .
 
 # Compile and add easysnmp required libs 
 FROM python:3.12.6-bookworm AS compile-rims-dependencies
