@@ -4,8 +4,8 @@ services:
   container_name: rims
   image: zelbanna/rims:latest
   ports:
-   - 8079:8079/tcp
    - 8080:8080/tcp
+   - 8081:8081/tcp
   restart: unless-stopped
   volumes:
    - rims:/etc/rims/
@@ -14,7 +14,20 @@ services:
    infra_net:
     ipv4_address: 172.18.0.80
 
-#Extra
+# Frontend development
+frontend:
+  image: zelbanna/rims-frontend:latest
+  ports:
+   - 3000:3000/tcp
+  restart: no
+  volumes:
+   - /usr/local/sbin/rims/react:/rims/src
+   - /usr/local/sbin/rims/site:/rims/build
+   - /usr/local/sbin/rims/static:/rims/public
+  networks:
+   infra_net:
+    ipv4_address: 172.18.0.79
+
 networks:
  infra_net:
   external: true
