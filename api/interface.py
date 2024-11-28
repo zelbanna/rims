@@ -29,7 +29,7 @@ def list(aRT, aArgs):
    tables.append('devices ON di.device_id = devices.id')
   if 'filter' in aArgs:
    if 'connected' in aArgs['filter']:
-    flter.append('di.connection_id IS NULL')
+    flter.append('di.connection_id IS NULL and di.class = "wired"')
   ret['count'] = db.query(f"SELECT {','.join(columns)} FROM interfaces AS di LEFT JOIN {' LEFT JOIN '.join(tables)} WHERE {' AND '.join(flter)} ORDER BY {aArgs.get('sort','snmp_index')}")
   ret['data'] = db.get_rows()
   for row in ret['data']:
