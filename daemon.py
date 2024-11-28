@@ -15,7 +15,6 @@ parser.add_argument('-d','--debug', help = 'Debug output', required = False, act
 parser.add_argument('-k','--hard', help = 'Hard kill on close', required = False, action='store_true')
 input = parser.parse_args()
 
-# syslog = open('/var/log/rims.daemon.log','a+')
 stderr.write(f'Starting RIMS daemon\n')
 
 if not input.config:

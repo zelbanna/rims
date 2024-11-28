@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "9.0"
-__build__ = 405
+__version__ = "9.1"
+__build__ = 407
 __all__ = ['RunTime']
 
 from copy import copy
@@ -155,7 +155,7 @@ class RunTime():
  #
  def start(self):
   """ Start "moving" parts of RunTime and workers to start processing incoming requests and scheduled tasks """
-  stderr.write("engine: Attempting to start environment\n")
+  stderr.write(f"engine: Attempting to start environment version {__version__}\n")
 
   def create_socket(port):
    """ Create a (secure) socket """
