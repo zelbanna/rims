@@ -3,8 +3,6 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 __type__ = "NAMESERVER"
 
-from subprocess import check_output, CalledProcessError
-
 #################################### Domains #######################################
 #
 #
@@ -266,11 +264,7 @@ def restart(aRT, aArgs):
   - output
   - result 'OK'/'NOT_OK'
  """
- ret = {}
- settings = aRT.config['services']['powerdns']
- try: ret = {'output':check_output(settings.get('reload','service pdns restart').split()).decode(), 'code':0, 'status':'OK' }
- except CalledProcessError as c: ret = {'output':c.output, 'code':c.returncode, 'status':'NOT_OK'}
- return ret
+ return { 'output':'N/A', 'code':0, 'status':'OK' }
 
 #
 #

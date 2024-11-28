@@ -12,7 +12,8 @@ __icon__    = "viz-generic.png"
 __oid__     = 8072
 
 from easysnmp import Session
-from os import system
+from pythonping import ping
+from sys import stderr
 
 def mac_bin_to_hex(inc_bin_mac_address):
   octets = [ord(c) for c in inc_bin_mac_address]
@@ -53,7 +54,7 @@ class Device(object):
   return 'NOT_IMPLEMENTED_%s'%aType.upper()
 
  def ping_device(self):
-  return system("ping -c 1 -w 1 " + self._ip + " > /dev/null 2>&1") == 0
+  return ping(self.ip, verbose=False, count=1, timeout=1).success()
 
  def configuration(self,argdict):
   ret = ["No config template for this device type.","",
@@ -82,8 +83,8 @@ class Device(object):
   interfaces = {}
 
   session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-
-  objs = session.walk(['.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18'])
+  with self._rt.snmplock:
+   objs = session.walk(['.1.3.6.1.2.1.2.2.1.6','.1.3.6.1.2.1.2.2.1.2','.1.3.6.1.2.1.2.2.1.8','.1.3.6.1.2.1.31.1.1.1.18'])
 
   for entry in objs:
    if   entry.oid == '.1.3.6.1.2.1.2.2.1.6':
@@ -101,7 +102,8 @@ class Device(object):
  def interface(self,aIndex):
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-   ifoid   = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex])
+   with self._rt.snmplock:
+    ifoid   = session.get(['.1.3.6.1.2.1.2.2.1.2.%s'%aIndex,'.1.3.6.1.2.1.31.1.1.1.18.%s'%aIndex,'.1.3.6.1.2.1.2.2.1.6.%s'%aIndex])
   except: return {'name':None,'description':None, 'mac':None}
   else:   return {'name':ifoid[0].value,'description':ifoid[1].value if ifoid[1].value != "" else "None", 'mac':mac_bin_to_hex(ifoid[2].value)}
 
@@ -109,7 +111,8 @@ class Device(object):
  def interfaces_state(self):
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-   objs = session.walk('.1.3.6.1.2.1.2.2.1.8')
+   with self._rt.snmplock:
+    objs = session.walk('.1.3.6.1.2.1.2.2.1.8')
   except:
    return {}
   else:
@@ -128,7 +131,8 @@ class Device(object):
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
    for iif in aInterfaces:
-    ifentry = session.get(['.1.3.6.1.2.1.2.2.1.10.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.11.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.16.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.17.%i'%iif['snmp_index']])
+    with self._rt.snmplock:
+     ifentry = session.get(['.1.3.6.1.2.1.2.2.1.10.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.11.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.16.%i'%iif['snmp_index'],'.1.3.6.1.2.1.2.2.1.17.%i'%iif['snmp_index']])
     try:
      iif.update({'in8s':int(ifentry[0].value),'inUPs':int(ifentry[1].value),'out8s':int(ifentry[2].value),'outUPs':int(ifentry[3].value)})
     except Exception as e:
@@ -143,7 +147,8 @@ class Device(object):
      aInterfaces.remove(iif)
    for measurement in aGeneric:
     # Wrap all data with the same tag into the same session object
-    objs = session.get([o['oid'] for o in measurement['values']])
+    with self._rt.snmplock:
+     objs = session.get([o['oid'] for o in measurement['values']])
     for i,o in enumerate(measurement['values']):
      o['value'] = objs[i].value if objs[i].value else None
   except Exception as e:
@@ -166,8 +171,9 @@ class Device(object):
   neighbors = {}
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-   locoid = session.walk('.1.0.8802.1.1.2.1.3.7.1.3')
-   remoid = session.walk('.1.0.8802.1.1.2.1.4.1.1')
+   with self._rt.snmplock:
+    locoid = session.walk('.1.0.8802.1.1.2.1.3.7.1.3')
+    remoid = session.walk('.1.0.8802.1.1.2.1.4.1.1')
    for x in locoid:
     neighbors[x.oid_index] = {'snmp_name':x.value,'snmp_index':x.oid_index}
    for entry in remoid:
@@ -197,8 +203,8 @@ class Device(object):
       n['port_desc'] = "".join(i for i in entry.value if ord(i)<128)
     elif t == '9':
      n['sys_name'] = entry.value
-  except:
-   pass
+  except Exception as e:
+   stderr.write("generic_lldp: Exception -> %s\n"%str(e))
   finally:
    for k in list(neighbors.keys()):
     if not neighbors[k].get('chassis_type'):
@@ -209,8 +215,9 @@ class Device(object):
  def fdb(self):
   try:
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['read'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
-   fdb_objs = session.walk('.1.3.6.1.2.1.17.7.1.2.2.1.2')
-   int_objs = session.walk('.1.3.6.1.2.1.17.1.4.1.2')
+   with self._rt.snmplock:
+    fdb_objs = session.walk('.1.3.6.1.2.1.17.7.1.2.2.1.2')
+    int_objs = session.walk('.1.3.6.1.2.1.17.1.4.1.2')
   except Exception as e:
    return {'status':'NOT_OK','info':str(e)}
   else:

@@ -11,10 +11,10 @@ basedir = ospath.abspath(ospath.join(ospath.dirname(__file__),'..','..'))
 syspath.insert(1, basedir)
 res = {}
 parser = ArgumentParser(prog='erd', description = 'Generate ERD diagram')
-parser.add_argument('-c','--config',  help = 'Config unless config.json', default='../config.json')
+parser.add_argument('-c','--config',  help = 'Config unless config.json', default='/etc/rims/rims.json')
 parsedinput = parser.parse_args()
 try:
- with open(ospath.abspath(ospath.join(ospath.dirname(__file__), parsedinput.config))) as f:
+ with open(parsedinput.config) as f:
   config = load(f)['database']
  database,host,username,password = config['name'],config['host'],config['username'],config['password']
 except:

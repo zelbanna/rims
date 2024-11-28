@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { post_call, rnd, int2ip, ip2int } from './infra/Functions.js';
 import { Spinner, Article, InfoArticle, InfoColumns, StateLeds, Result, ContentList, ContentData, ContentReport } from './infra/UI.jsx';
-import { TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
+import { CheckboxInput, TextInput, TextLine, SelectInput } from './infra/Inputs.jsx';
 import { AddButton, BackButton, DeleteButton, ViewButton, LogButton, ConfigureButton, ItemsButton, ReloadButton, CheckButton, SaveButton, IpamGreenButton, IpamRedButton, IpamGreyButton } from './infra/Buttons.jsx';
 // import styles from './infra/ui.module.css';
 
@@ -177,7 +177,7 @@ class AddressList extends Component{
  changeContent = (elem) => this.props.changeSelf(elem)
 
  listItem = (row) => [row.id,row.ip,row.hostname,row.domain,<>
-   <StateLeds key='state' state={row.state} />
+   { (row.monitor === 'true') ? <StateLeds key='state' state={row.state} /> : '' }
    <ConfigureButton key='info' onClick={() => this.changeContent(<AddressInfo key={'address_info_'+row.id} id={row.id} changeSelf={this.changeContent} />)} title='Edit address entry' />
    <DeleteButton key='del' onClick={() => this.deleteList(row.id)} title='Delete address entry' />
   </>]
@@ -200,7 +200,7 @@ export class AddressInfo extends Component {
   this.state = {data:null};
  }
 
- onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target.value}});
+ onChange = (e) => this.setState({data:{...this.state.data, [e.target.name]:e.target[(e.target.type !== 'checkbox') ? 'value' : 'checked']}})
 
  updateInfo = () => {
   this.setState({status:undefined});
@@ -228,6 +228,7 @@ export class AddressInfo extends Component {
       <TextInput key='ip' id='ip' label='IP'  value={this.state.data.ip} onChange={this.onChange} />
       <TextInput key='hostname' id='hostname' value={this.state.data.hostname} onChange={this.onChange} title='Hostname when creating FQDN for DNS entry' />
       <SelectInput key='a_domain_id' id='a_domain_id' label='Domain' value={this.state.data.a_domain_id} onChange={this.onChange}>{this.state.domains.map((row,idx) => <option key={idx} value={row.id}>{row.name}</option>)}</SelectInput>
+      <CheckboxInput key='monitor' id='monitor' value={this.state.data.monitor} onChange={this.onChange} />
      </InfoColumns>
      <SaveButton key='ip_btn_save' onClick={() => this.updateInfo()} title='Save' />
      <Result key='ip_operation' result={result} />

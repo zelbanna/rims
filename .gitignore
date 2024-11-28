@@ -13,9 +13,13 @@
 
 # Settings should never be pushed to central repo
 *.json
+*.json.old
 
 # Setuptools distribution folder.
 /dist/
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
+
+# Python folder
+/__pycache__/

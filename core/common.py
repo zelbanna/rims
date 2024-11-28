@@ -172,6 +172,9 @@ class InfluxDummy():
  def buffer(self):
   return 0
 
+ def close(self):
+  pass
+
  def active(self, aState = None):
   return False
 
@@ -293,13 +296,13 @@ class DB():
 
  def query(self,aQuery, aPrint = False):
   if aPrint:
-   print(f"SQL: {aQuery}")
+   stderr.write(f"SQL: {aQuery}\n")
   self.count['QUERY'] += 1
   return self._curs.execute(aQuery)
 
  def execute(self,aQuery, aPrint = False):
   if aPrint:
-   print(f"SQL: {aQuery}")
+   stderr.write(f"SQL: {aQuery}\n")
   self.count['EXECUTE'] += 1
   self._dirty = True
   return self._curs.execute(aQuery)

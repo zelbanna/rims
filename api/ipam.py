@@ -3,12 +3,13 @@ __author__ = "Zacharias El Banna"
 __add_globals__ = lambda x: globals().update(x)
 
 from ipaddress import ip_address, ip_network
-from subprocess import run, DEVNULL
 from time import time
+from pythonping import ping
 
-def __detect_state(aIP):
- """ Ping 'IP' once to detect presence """
- return run(['ping','-c','1','-w','1',aIP], stdout=DEVNULL).returncode == 0
+def __ping(aIP):
+ """ Ping 'IP' twice to detect presence """
+ return ping(aIP, verbose=False, count=1, timeout=1).success() or ping(aIP, verbose=False, count=1, timeout=1).success()
+
 ##################################### Networks ####################################
 #
 #
@@ -112,7 +113,7 @@ def network_delete(aRT, aArgs):
 #
 #
 def network_discover(aRT, aArgs):
- """ Function discovers _new_ IP:s that answer to ping within a certain network. A list of such IP:s are returned
+ """ Function discovers _new_ IP:s that answer to icmp probe within a certain network. A list of such IP:s are returned
 
  Args:
   - id (required)
@@ -122,7 +123,7 @@ def network_discover(aRT, aArgs):
   - addresses. list of ip:s (objects) that answer to ping
  """
  def __detect_thread(aIP,aIPs):
-  if __detect_state(aIP) or __detect_state(aIP):
+  if __ping(aIP):
    aIPs.append(aIP)
   return True
 
@@ -175,7 +176,7 @@ def address_list(aRT, aArgs):
    ret['status'] = 'OK'
    net = ip_network(f"{ret['network']}/{ret['mask']}")
    ret['size'] = net.num_addresses
-   fields = ['INET6_NTOA(ia.ip) AS ip','ia.id','ia.state']
+   fields = ['INET6_NTOA(ia.ip) AS ip','ia.id','ia.state','ia.monitor']
    joins = ['ipam_addresses AS ia']
    extras = aArgs.get('extra')
    if extras:
@@ -226,12 +227,12 @@ def address_info(aRT, aArgs):
  with aRT.db as db:
   if op:
    if id != 'new':
-    if db.query("SELECT INET6_NTOA(ia.ip) AS ip, network_id, a_domain_id, hostname, reverse_zone_id AS ptr_domain_id, IF(IS_IPV4(INET6_NTOA(ia.ip)),'v4','v6') AS class FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id):
+    if db.query("SELECT INET6_NTOA(ia.ip) AS ip, network_id, a_domain_id, hostname, monitor, reverse_zone_id AS ptr_domain_id, IF(IS_IPV4(INET6_NTOA(ia.ip)),'v4','v6') AS class FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id):
      old = db.get_row()
     else:
      return {'status':'NOT_OK', 'info':'Illegal id'}
    else:
-    old = {'ip':'0.0.0.0','network_id':None,'a_domain_id':None,'hostname':'unknown','ptr_domain_id':None, 'class':None }
+    old = {'ip':'0.0.0.0','network_id':None,'a_domain_id':None,'hostname':'unknown','ptr_domain_id':None, 'class':None,'monitor':True }
    ret = {'status':'OK','info':None}
    # Save for DNS
    ip  = ip_address(aArgs.get('ip',old['ip']))
@@ -254,12 +255,16 @@ def address_info(aRT, aArgs):
     aArgs['hostname'] = address_sanitize(aRT, {'hostname':aArgs.get('hostname',old['hostname'])})['sanitized']
     aArgs['a_domain_id'] = aArgs.get('a_domain_id',old['a_domain_id'])
     if id != 'new':
-     try: ret['update'] = (db.execute("UPDATE ipam_addresses SET network_id = %s, a_domain_id = %s, hostname = '%s', ip = INET6_ATON('%s') WHERE id = %s"%(aArgs['network_id'],aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL', aArgs['hostname'], ip,id)) == 1)
-     except:
+     if not aArgs['monitor']:
+      aArgs['state'] = 'unknown'
+     try:
+      ret['update'] = (db.execute("UPDATE ipam_addresses SET network_id = %s, a_domain_id = %s, hostname = '%s', ip = INET6_ATON('%s'), monitor = '%s', state = '%s' WHERE id = %s"%(aArgs['network_id'],aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL', aArgs['hostname'], ip,'true' if aArgs.get('monitor') else 'false', aArgs.get('state','unknown'), id)) == 1)
+     except Exception as e:
       ret['status'] = 'NOT_OK'
-      ret['info']   = "IPAM update failed"
+      ret['info']   = "IPAM update failed (%s)"%str(e)
     else:
-     try: ret['insert'] = (db.execute("INSERT INTO ipam_addresses SET network_id = %s, a_domain_id = %s, hostname = '%s', ip = INET6_ATON('%s')"%(aArgs['network_id'], aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL', aArgs['hostname'], ip)) == 1)
+     try:
+      ret['insert'] = (db.execute("INSERT INTO ipam_addresses SET network_id = %s, a_domain_id = %s, hostname = '%s', ip = INET6_ATON('%s'), monitor = '%s'"%(aArgs['network_id'], aArgs['a_domain_id'] if aArgs.get('a_domain_id') else 'NULL', aArgs['hostname'], ip, 'true' if aArgs.get('monitor') else 'false')) == 1)
      except Exception as e:
       ret['status'] = 'NOT_OK'
       ret['info']   = 'IPAM insert failed (%s)'%repr(e)
@@ -295,8 +300,9 @@ def address_info(aRT, aArgs):
   if op and op == 'update_only':
    ret['id'] = id
    ret['ip'] = str(ip)
-  elif id != 'new' and (db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state, network_id, INET6_NTOA(ine.network) AS network, a_domain_id, ine.reverse_zone_id AS ptr_domain_id, hostname FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) == 1):
+  elif id != 'new' and (db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state, ia.monitor, network_id, INET6_NTOA(ine.network) AS network, a_domain_id, ine.reverse_zone_id AS ptr_domain_id, hostname FROM ipam_addresses AS ia LEFT JOIN ipam_networks AS ine ON ia.network_id = ine.id WHERE ia.id = %s"%id) == 1):
    ret['data'] = db.get_row()
+   ret['data']['monitor'] = (ret['data']['monitor'] == 'true')
    ret['extra']= {'network':ret['data'].pop('network',None), 'ptr_domain_id': ret['data'].pop('ptr_domain_id',None)}
   else:
    if aArgs.get('network_id') and (db.query("SELECT INET6_NTOA(network) AS network FROM ipam_networks WHERE id = %s"%aArgs['network_id']) > 0):
@@ -304,7 +310,7 @@ def address_info(aRT, aArgs):
     network_id = int(aArgs['network_id'])
    else:
     network,network_id = 'N/A', None
-   ret['data'] = {'id':id,'network_id':network_id,'ip':network,'a_domain_id':None, 'hostname':'unknown','state':'unknown'}
+   ret['data'] = {'id':id,'network_id':network_id,'ip':network,'a_domain_id':None, 'hostname':'unknown','state':'unknown','monitor':True}
    ret['extra']= {'network':network, 'ptr_domain_id':None}
  return ret
 
@@ -428,7 +434,7 @@ def check(aRT, aArgs):
  with aRT.db as db:
   if db.query("SELECT id FROM ipam_networks" if 'networks' not in aArgs else "SELECT id FROM ipam_networks WHERE ipam_networks.id IN (%s)"%(','.join(str(x) for x in aArgs['networks']))):
    networks = db.get_rows()
-   db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia WHERE network_id IN (%s)"%(','.join(str(x['id']) for x in networks)))
+   db.query("SELECT ia.id, INET6_NTOA(ia.ip) AS ip, ia.state FROM ipam_addresses AS ia WHERE ia.monitor = 'true' AND network_id IN (%s)"%(','.join(str(x['id']) for x in networks)))
    addresses = db.get_rows()
 
  if addresses:
@@ -456,13 +462,9 @@ def process(aRT, aArgs):
  Output:
  """
  ret = {'status':'OK','function':'ipam_process'}
-
  def __check_IP(aDev):
   aDev['old'] = aDev['state']
-  try:
-   aDev['state'] = 'up' if __detect_state(aDev['ip']) or __detect_state(aDev['ip']) else 'down'
-  except:
-   aDev['state'] = 'unknown'
+  aDev['state'] = 'up' if __ping(aDev['ip']) else 'down'
   return True
 
  aRT.queue_block(__check_IP,aArgs['addresses'])

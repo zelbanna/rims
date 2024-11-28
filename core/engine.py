@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "8.2"
-__build__ = 403
+__version__ = "9.0"
+__build__ = 405
 __all__ = ['RunTime']
 
 from copy import copy
@@ -12,14 +12,14 @@ from gc import collect as garbage_collect
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from importlib import import_module, reload as reload_module
 from json import loads, dumps
-from os import path as ospath, getpid, walk, stat as osstat
+from os import path as ospath, walk, stat as osstat
 from random import choice
-from signal import signal, SIGINT, SIGUSR1, SIGUSR2, SIGTRAP
+from signal import signal, SIGTERM, SIGINT
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ssl import SSLContext, PROTOCOL_TLS_SERVER
 from string import ascii_uppercase, digits
-from sys import stdout, modules as sys_modules, version, _current_frames as current_frames
-from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate
+from sys import stderr, modules as sys_modules, version, _current_frames as current_frames
+from threading import Thread, Event, BoundedSemaphore, enumerate as thread_enumerate, Lock
 from time import localtime, sleep, strftime, time
 from traceback import format_exc, format_stack
 from types import ModuleType
@@ -60,16 +60,17 @@ class RunTime():
   self.token = self.config.get('token')
   self.path  = ospath.abspath(ospath.join(ospath.dirname(__file__), '..'))
   self.site  = ospath.join(self.path,'site')
-  self.debug = aDebug
+  self.debug = (aDebug or self.config.get('debug'))
   self.hardstop = aHard
   self.cache = {}
   self.nodes = {}
   self.tokens = {}
   self.services = {}
+  self.snmplock = Lock()
   self.ssl = ssl_context()
 
-  database   = self.config.get('database')
-  self.db    = DB(database['name'],database['host'],database['username'],database['password']) if database else None
+  database = self.config.get('database')
+  self.db = DB(database['name'],database['host'],database['username'],database['password']) if database else None
   if self.config.get('influxdb'):
    config = self.config['influxdb']
    self.influxdb = InfluxDB(config['url'],config['org'],config['token'],config['bucket'])
@@ -134,12 +135,10 @@ class RunTime():
   try:
    env = self.environment(self.node)
   except Exception as e:
-   stdout.write(f"Load environment error: {e}\n")
+   stderr.write(f"Load environment error: {e}\n")
    return False
   else:
    self.log(f"______ Loading system environment _____")
-   self.log(f"OS PID: {getpid()}")
-   self.log("Available signals: SIGINT, SIGUSR1, SIGUSR2, SIGTRAP")
    self.log(f"Version: {__build__}")
    self.log(f"Debug: {self.debug}")
    self.nodes.update(env['nodes'])
@@ -155,7 +154,8 @@ class RunTime():
 
  #
  def start(self):
-  """ Start "moving" parts of RunTime, workers and signal handlers to start processing incoming requests and scheduled tasks """
+  """ Start "moving" parts of RunTime and workers to start processing incoming requests and scheduled tasks """
+  stderr.write("engine: Attempting to start environment\n")
 
   def create_socket(port):
    """ Create a (secure) socket """
@@ -167,6 +167,7 @@ class RunTime():
    return (addr,sock)
 
   try:
+   stderr.write("engine: Creating workers\n")
    self._workers = [Worker(self, self._abort, n, self._queue) for n in range(self.config['workers'])]
    self._house_keeping = HouseKeeping(self, self._abort)
    self._abort.clear()
@@ -174,37 +175,40 @@ class RunTime():
 
    servers = 0
    if self.config.get('port'):
-    self.log(f"Starting 'HTTP' server at: {self.config['port']}")
+    stderr.write(f"engine: Starting 'HTTP' server at: {self.config['port']}\n")
     addr,sock = create_socket(int(self.config['port']))
     self._sock = sock
     self._servers.extend(SocketServer(self, self._abort, n, addr, sock) for n in range(servers,servers+4))
     servers = 4
    if self.config.get('ssl'):
     ssl_config = self.config['ssl']
-    self.log(f"Starting 'HTTPS' server at: {ssl_config['port']}")
+    stderr.write(f"engine: Starting 'HTTPS' server at: {ssl_config['port']}\n")
     context = SSLContext(PROTOCOL_TLS_SERVER)
     context.load_cert_chain(ssl_config['certfile'], keyfile=ssl_config['keyfile'], password=ssl_config.get('password'))
     addr,ssock = create_socket(int(ssl_config['port']))
     self._ssock = context.wrap_socket(ssock, server_side=True)
     self._servers.extend(SocketServer(self, self._abort, n, addr, self._ssock) for n in range(servers,servers+4))
 
-   for sig in [SIGINT, SIGTRAP, SIGUSR1, SIGUSR2]:
+   for sig in [SIGTERM,SIGINT]:
     signal(sig, self.signal_handler)
   except Exception as e:
-   stdout.write(f"Starting error - check IP and SSL settings: {e}\n")
+   stderr.write(f"engine: Starting error - check IP and SSL settings: {e}\n")
    return False
   else:
+   stderr.write(f"engine: Started engine\n")
    return True
 
  #
  def close(self):
   """ Abort set abort state and inject dummy tasks to kill off workers. There might be running tasks so don't add more than enough. Finally set kill to inform that we are done """
+  stderr.write(f"engine: Initiate close sequence\n")
+  self.log("Shutting down RIMS service / CLOSE")
+
   def shutdown_dummy(n):
    return False
 
   self._abort.set()
 
-  self.log("Shutting down RIMS service / CLOSE (%s)"%getpid())
   self.influxdb.close()
 
   # Gently shutdown services
@@ -216,7 +220,7 @@ class RunTime():
     if res and res['status'] == 'OK':
      self.log(f"{svc['service']} => {res}")
 
-  self.log("Shutting down RIMS service / FILL QUEUE (%s)"%getpid())
+  self.log("Shutting down RIMS service / FILL QUEUE")
 
   if not self.hardstop:
    iter = 0
@@ -229,7 +233,7 @@ class RunTime():
      iter += 1
      self._workers = [x for x in self._workers if x.is_alive()]
 
-  self.log("Shutting down RIMS service / Sockets (%s)"%getpid())
+  self.log("Shutting down RIMS service / Sockets")
 
   try:
    self._sock.close()
@@ -244,6 +248,7 @@ class RunTime():
   finally:
    self._ssock = None
   self._kill.set()
+  stderr.write(f"engine: Close sequence completed\n")
 
  #
  def wait(self):
@@ -252,27 +257,13 @@ class RunTime():
 
  #
  def signal_handler(self, sig, frame):
-  """ Signal handler instantiate OS signalling mechanisms to override standard behavior
-   - SIGINT: close system
-   - SIGTRAP: traceback of threads
-   - SIGUSR1: reload system modules and cache files
-   - SIGUSR2: report system state through stdout
-  """
-  if   sig == SIGINT:
+  """ Signal handler instantiate OS signalling mechanisms to override standard behavior """
+  if sig == SIGTERM:
+   stderr.write("engine: Caught SIGTERM\n")
    self.close()
-  elif sig == SIGTRAP:
-   for tid,stack in current_frames().items():
-    stdout.write(f'Thread ID:{tid}\n')
-    stdout.write(''.join(format_stack(stack)))
-    stdout.write('\n')
-  elif sig == SIGUSR1:
-   stdout.write('\n'.join(self.module_reload()))
-  elif sig == SIGUSR2:
-   data = self.report()
-   data.update(self.config)
-   data['services'] = self.services
-   data['tokens'] = {k:{'id':v['id'],'alias':v['alias'],'ip':v['ip'],'class':v['class'],'expires':v['expires'].strftime('%a, %d %b %Y %H:%M:%S %Z')} for k,v in self.tokens.items()}
-   stdout.write(f"System Info:\n_____________________________\n{dumps(data,indent=2, sort_keys=True)}\n_____________________________\n")
+  elif sig == SIGINT:
+   stderr.write("engine: Caught SIGINT\n")
+   self.close()
 
  ######################## TOOLS #####################
  #
@@ -282,7 +273,7 @@ class RunTime():
   if syslog['enabled']:
    logstring = f"{strftime('%Y-%m-%d %H:%M:%S', localtime())}: {aMsg}\n"
    if self.debug:
-    stdout.write(logstring)
+    stderr.write(logstring)
    else:
     with open(syslog['file'], 'a') as f:
      f.write(logstring)
@@ -359,8 +350,7 @@ class RunTime():
    'TSDB buffer':self.influxdb.buffer(),
    'TSDB state':self.influxdb.active(),
    'Active Tokens':len(self.tokens),
-   'Database':', '.join(f"{k.lower()}:{v}" for k,v in db_counter.items()),
-   'OS pid':getpid()}
+   'Database':', '.join(f"{k.lower()}:{v}" for k,v in db_counter.items())}
   output.update(dict((w[0],f'{w[1]} / {w[2]}') for w in self.workers_active()))
   if self.config.get('database'):
    with self.db as db:
@@ -376,15 +366,6 @@ class RunTime():
     for i,c in item.items():
      output[f'Access: {group}/{i}'] = c
   return output
-
- ################# AUTHENTICATION ################
- #
- def auth_exec(self, aAlias, aIP, aOP):
-  """ 'authenticate' or 'invalidate' alias and ip with external services, use 2 hours as a timeout and rely on house_keeping to update regularly """
-  for infra in [{'service':v['service'],'node':v['node']} for v in self.services.values() if v['type'] == 'AUTHENTICATION']:
-   res = self.node_function(infra['node'], f"services.{infra['service']}", aOP)(aArgs = {'alias':aAlias, 'ip': aIP, 'timeout':7200})
-   self.log(f"Authentication service for '{aAlias}' ({aOP} {infra['service']}@{infra['node']}) => {res['status']} ({res.get('info','N/A')})")
-  return True
 
  #################### QUEUE #####################
  #
@@ -446,7 +427,7 @@ class RunTime():
    mod = import_module(f"rims.api.{aModule.replace('/','.')}")
    func = getattr(mod, aFunction, None)
   except:
-   self.log(f"WorkerPool ERROR: adding task failed ({aModule}/{aFunction}")
+   self.log(f"WorkerPool ERROR: adding task failed ({aModule}/{aFunction})")
    return False
   else:
    if aFrequency:
@@ -677,7 +658,7 @@ class SessionHandler(BaseHTTPRequestHandler):
   if restlog['enabled'] and self.headers.get('X-Log','true') == 'true':
    logstring = f"%s: {api} '%s' {token_id}@{self._headers['X-Route']}\n"%(strftime('%Y-%m-%d %H:%M:%S', localtime()), dumps(args) if api != "system/worker" else "N/A")
    if self._rt.debug:
-    stdout.write(logstring)
+    stderr.write(logstring)
    else:
     with open(restlog['file'], 'a') as f:
      f.write(logstring)
@@ -726,7 +707,6 @@ class SessionHandler(BaseHTTPRequestHandler):
     elif 'destroy' in args:
      info = self._rt.tokens.pop(token,None)
      if info:
-      self._rt.queue_function(self._rt.auth_exec, info['alias'], info['ip'], 'invalidate')
       with self._rt.db as db:
        if not db.execute(f"DELETE FROM user_tokens WHERE token = '{token}'"):
         self._rt.log(f"Authentication: destroying non-existent token requested from {self.client_address[0]}")
@@ -753,7 +733,6 @@ class SessionHandler(BaseHTTPRequestHandler):
         output['token'] = self.__randomizer(16)
         db.execute("INSERT INTO user_tokens (user_id,token,source_ip) VALUES(%(id)s,'%(token)s',INET6_ATON('%(ip)s'))"%output)
         self._rt.tokens[output['token']] = {'id':output['id'],'alias':username,'expires':expires,'ip':output['ip'],'class':output['class']}
-        self._rt.queue_function(self._rt.auth_exec, username, output['ip'], 'authenticate')
        output['status'] = 'OK'
        self._headers['X-Code'] = 200
       else:
@@ -823,14 +802,14 @@ class Worker(Thread):
     idle.clear()
     self.func = repr(func)
     if ctx.debug:
-     # stdout.write(f"{self.name} - {self.func} => starting\n")
+     # stderr.write(f"{self.name} - {self.func} => starting\n")
      self._time = int(time())
     result = func(*args,**kwargs) if not api else func(ctx, args)
    except Exception as e:
     ctx.log(f"{self.name} - ERROR: {self.func} => {e}")
     if ctx.debug:
      for n,v in enumerate(format_exc().split('\n')):
-      stdout.write(f"{self.name} - DEBUG-{n:02} => {v}\n")
+      stderr.write(f"{self.name} - DEBUG-{n:02} => {v}\n")
    else:
     if output:
      parts = self.func.split()
@@ -840,7 +819,7 @@ class Worker(Thread):
     if sema:
      sema.release()
     if ctx.debug:
-     # stdout.write(f"{self.name} - {self.func} => finished ({int(time()) - self._time}s)\n")
+     # stderr.write(f"{self.name} - {self.func} => finished ({int(time()) - self._time}s)\n")
      self._time = None
   return False
 
@@ -872,7 +851,7 @@ class SocketServer(Thread):
     httpd.handle_request()
    except:
     pass
-   #except Exception as e: stdout.write(f"Error: {self.name} => {e}")
+   #except Exception as e: stderr.write(f"Error: {self.name} => {e}")
   return False
 
 ########################################### House Keeping ###########################################
@@ -896,7 +875,7 @@ class HouseKeeping(Thread):
    try:
     self.house_keeping()
    except Exception as e:
-    stdout.write(f'House keeping error: {str(e)}')
+    stderr.write(f'House keeping error: {str(e)}')
    finally:
     sleep(1800)
   return False
@@ -925,15 +904,6 @@ class HouseKeeping(Thread):
   for t in expired:
    ctx.tokens.pop(t,None)
 
-  # Authentication management, centralized
-  if ctx.node == 'master' and remain:
-   with ctx.db as db:
-    db.query(f"SELECT id,alias FROM users WHERE id IN ({','.join([str(v['id']) for v in remain])})")
-    alias = {x['id']:x['alias'] for x in db.get_rows()}
-   users = [{'ip':v['ip'],'alias':alias[v['id']],'timeout':min(int((v['expires']-now).total_seconds()),7200)} for v in remain]
-   ctx.log(f"Resyncing {len(users)} users")
-   for infra in [{'service':v['service'],'node':v['node'],'id':k} for k,v in ctx.services.items() if v['type'] == 'AUTHENTICATION']:
-    ctx.node_function(infra['node'], f"services.{infra['service']}", 'sync')(aArgs = {'id':infra['id'],'users':users})
   garbage_collect()
   ctx.log(f"House keeping => OK ({active})")
   return True

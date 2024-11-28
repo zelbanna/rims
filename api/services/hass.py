@@ -67,7 +67,6 @@ def process(aRT, aArgs):
      value = float(value) * 1000.0
 
    yield tmpl%(dclss, type, eid, fname, value)
-   #print(dclss,type,parts,' => ',eid)
    #return tmpl%(dclss, type, eid, fname, value)
 
   records = (parser(dev) for dev in res if dev['attributes'].get('unit_of_measurement') is not None and is_float(dev['state']))

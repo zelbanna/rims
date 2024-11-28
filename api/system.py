@@ -272,7 +272,9 @@ def database_backup(aRT, aArgs):
  """
  from rims.api.mysql import dump
  ret  = {'filename':aArgs['filename']}
- data = dump(aRT, {'mode':'database'})['output']
+ res = dump(aRT, {'mode':'database'})
+ data = res.pop('output',[])
+ ret['mysql'] = res
  try:
   with open(ret['filename'],'w+') as f:
    output = "\n".join(data)
