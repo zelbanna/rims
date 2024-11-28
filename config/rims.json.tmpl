@@ -12,8 +12,8 @@
  "debug": false,
  "ssl": {
   "port": 8081,
-  "certfile": "/rims/ssl/rims.crt",
-  "keyfile": "/rims/ssl/rims.key",
+  "certfile": "/rims/rims.crt",
+  "keyfile": "/rims/rims.key",
   "password": "<PASSWORD-IF-NEEDED>"
  },
  "influxdb": {
@@ -66,27 +66,7 @@
    "frequency": 86400
   },
   {
-   "module":"services.nibe",
-   "function":"start"
-  },
-  {
-   "module":"services.airthings",
-   "function":"start"
-  },
-  {
-   "module":"services.smartthings",
-   "function":"start"
-  },
-  {
-   "module":"services.openweathermap",
-   "function":"start"
-  },
-  {
-   "module":"services.smhi",
-   "function":"start"
-  },
-  {
-   "module":"services.nordpool",
+   "module":"services.hass",
    "function":"start"
   },
   {
@@ -111,60 +91,24 @@
    "state":"ABCD1234",
    "token_file":"/var/local/rims.nibe.token"
   },
-  "airthings":{
-   "client_id":"<ID>",
-   "client_secret":"<SECRET>",
-   "bucket":"<BUCKET>",
-   "measurement":"airthings",
-   "frequency":120
-  },
-  "smartthings":{
-   "token":"<TOKEN>",
-   "measurement":"smartthings",
-   "frequency":60,
-   "bucket":"<BUCKET>"
-  },
-  "openweathermap":{
-   "token":"<TOKEN>",
-   "measurement":"weather",
-   "frequency":600,
-   "bucket":"<BUCKET>",
-   "latitude":"59.46167",
-   "longitude":"17.94362"
-  },
-  "smhi":{
-   "measurement":"weather",
-   "bucket":"<BUCKET>",
-   "latitude":"59.46167",
-   "longitude":"17.94362",
-   "forecasting":12
-  },
-  "nordpool":{
-   "measurement":"pricing",
-   "bucket":"<BUCKET>",
-   "entity":"<WHICH-AREA>",
-   "currency":"<CURRENCY>"
-  },
   "oui": {
    "location": "http://standards-oui.ieee.org/oui.txt"
   },
   "iscdhcp": {
-   "active": "/var/lib/docker/volumes/dhcpd/_data/dhcpd.leases",
+   "active": "/rims/dhcpd.leases",
    "reload": "/usr/bin/docker restart dhcpd",
-   "static": "/var/lib/docker/volumes/dhcpd/_data/rest.conf"
+   "static": "/rims/rest.conf"
   },
   "powerdns": {
    "recursor": {
-    "url":"http://172.18.0.4:8082",
-    "key":"ABCD1234",
-    "reload": "/usr/bin/docker restart pdns-recursor"
+    "url":"http://pdns-recursor-1:8082",
+    "key":"ABCD1234"
    },
    "server": {
-    "url":"http://172.18.0.5:8081",
+    "url":"http://pdns-authorative-1:8081",
     "key":"ABCD1234",
     "nameserver": "server.local.",
-    "endpoint": "172.18.0.5:53",
-    "reload": "/usr/bin/docker restart pdns-server"
+    "endpoint": "172.18.0.5:53"
    }
   }
  },
@@ -196,9 +140,6 @@
   "resource": {
    "influxdb": {
     "tab": "http://<IP-OF-HOST>:8086"
-   },
-   "gitHub": {
-    "tab": "https://github.com/zelbanna"
    },
    "visualize": {
     "module": "visualize",
