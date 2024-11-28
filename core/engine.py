@@ -342,6 +342,7 @@ class RunTime():
    'Uptime': int(time()) - self._start_time,
    'Node URL':node_url,
    'Package path':self.path,
+   'RIMS version':__version__,
    'Python version':version.replace('\n',''),
    'Worker pool':self.workers_alive(),
    'Worker idle':self.workers_idle(),
