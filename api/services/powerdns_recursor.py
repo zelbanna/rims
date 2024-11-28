@@ -115,7 +115,7 @@ def parameters(aRT, aArgs):
   - parameters
  """
  settings = aRT.config['services'].get('powerdns',{}).get('recursor',{})
- params = ['url','key','reload']
+ params = ['url','key']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #

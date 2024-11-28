@@ -274,7 +274,6 @@ def parameters(aRT, aArgs):
  Settings:
  - url - API url (http:/x.y.z.a:<port>)
  - key - API key
- - reload - command line command to reload service
  - nameserver - For SOA records, add trailing . (dot) to be 'canonical'
  - endpoint (ip:port for nameserver, not REST API)
 
@@ -285,7 +284,7 @@ def parameters(aRT, aArgs):
   - parameters
  """
  settings = aRT.config['services'].get('powerdns',{}).get('server',{})
- params = ['url','key','reload','nameserver','endpoint']
+ params = ['url','key','nameserver','endpoint']
  return {'status':'OK' if all(p in settings for p in params) else 'NOT_OK','parameters':{p:settings.get(p) for p in params}}
 
 #
