@@ -15,7 +15,7 @@ export const Flex = (props) => <div className={uiStyles.flex} style={props.style
 
 export const Spinner = () => <div className={uiStyles.spinOverlay}><div className={uiStyles.loader}></div></div>
 
-const Led = (props) => <div className={{on:uiStyles.stateGreen, off:uiStyles.stateRed, unknown:uiStyles.stateGrey, up:uiStyles.stateGreen, down:uiStyles.stateRed, undefined:uiStyles.stateOrange, null:uiStyles.stateOrange}[props.state] || uiStyles.stateOrange} title={props.state} />
+const Led = (props) => <div className={{on:uiStyles.stateGreen, off:uiStyles.stateRed, unknown:uiStyles.stateEmpty, up:uiStyles.stateGreen, down:uiStyles.stateRed, undefined:uiStyles.stateEmpty, null:uiStyles.stateEmpty}[props.state] || uiStyles.stateOrange} title={props.state} />
 
 export const StateLeds = (props) => <div title={props.title} className={uiStyles.stateLeds}>{(Array.isArray(props.state)) ? props.state.map((val,idx) => <Led key={idx} state={val} />) : <Led key='led' state={props.state} />}</div>
 

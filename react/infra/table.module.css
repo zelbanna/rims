@@ -22,4 +22,4 @@
 .th { color:var(--std-txt-color); display:table-cell; padding: 3px 2px 6px 2px; vertical-align:middle; font-size:1.2rem; white-space:pre-line; word-wrap:anywhere; font-weight:bold; text-align: center; text-transform:capitalize; }
 .th * { font-size:1.2rem; font-weight: bold; }
 .td { color:var(--std-txt-color); display:table-cell; padding: 2px 2px 2px 2px; vertical-align:middle; font-size:1rem;   white-space:pre-line; word-wrap:anywhere; }
-.td:last-child{ min-width:max-content; white-space:nowrap; }
+.td:last-child{ min-width:max-content; white-space:nowrap; text-align:right; }

@@ -62,6 +62,7 @@
 .stateGreen {  border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; background-color:#26CB20!important; }
 .stateGrey {   border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; background-color:#9CA6B0!important; }
 .stateOrange { border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; background-color:orange!important;  }
+.stateEmpty {  border-radius:50%; height:1.5rem; width:1.5rem; display:inline-block; margin: 0 2px 0 2px; }
 
 /******* Extra *******/
 .flex { display:flex; flex-wrap:wrap; width:100%; }
