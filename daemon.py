@@ -8,14 +8,13 @@ from os import path as ospath
 from sys import path as syspath, exit as sysexit, stderr
 from time import sleep
 
-
 parser = ArgumentParser(prog='rims',description='RIMS engine bootstrap')
 parser.add_argument('-c','--config', help = 'Config file',default = '/etc/rims/rims.json', required=False)
 parser.add_argument('-d','--debug', help = 'Debug output', required = False, action='store_true')
 parser.add_argument('-k','--hard', help = 'Hard kill on close', required = False, action='store_true')
 input = parser.parse_args()
 
-stderr.write(f'Starting RIMS daemon\n')
+stderr.write(f'daemon: Starting\n')
 
 if not input.config:
  parser.print_help()
@@ -47,7 +46,7 @@ except Exception as e:
 
 if rt.start():
  rt.wait()
- stderr.write("daemon: Clean closing of environment\n")
+ stderr.write("daemon: Stopped - Clean close of environment\n")
  sysexit(0)
 else:
  rt.close()

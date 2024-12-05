@@ -24,3 +24,6 @@ Everything centers around the 'engine', it uses a config to bootstart itself. In
 - core: Generic lib and core (engine) modules
 - tools: various tools for interaction with engine or database
 - templates: various templates for tasks
+- react: react-JS source code for dynamic piece of the site
+- static: static content for the site
+- site: built site content for the internal web server
