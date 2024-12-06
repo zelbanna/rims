@@ -618,7 +618,7 @@ def configuration_template(aRT, aArgs):
  """
  ret = {}
  with aRT.db as db:
-  db.query("SELECT ine.mask,INET6_NTOA(ine.gateway) AS gateway,INET6_NTOA(ine.network) AS network, INET6_NTOA(ia.ip) AS ip, devices.hostname, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_domain_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aArgs['id'])
+  db.query("SELECT ine.mask,INET6_NTOA(ine.gateway) AS gateway,INET6_NTOA(ine.network) AS network, INET6_NTOA(ia.ip) AS ip, devices.hostname, devices.model, devices.version, device_types.name AS type, domains.name AS domain FROM devices LEFT JOIN ipam_addresses AS ia ON devices.ipam_id = ia.id LEFT JOIN ipam_networks AS ine ON ine.id = ia.network_id LEFT JOIN domains ON domains.id = devices.a_domain_id LEFT JOIN device_types ON device_types.id = devices.type_id WHERE devices.id = '%s'"%aArgs['id'])
   data = db.get_row()
  ip = data['ip']
  try:

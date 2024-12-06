@@ -71,7 +71,7 @@ class Device(GenericDevice):
    tag = '.1.3.6.1.4.1.10418.17.2.5.5.1.4.1.%s.%s'%(slot,unit)
    session = Session(version = 2, hostname = self._ip, community = self._rt.config['snmp']['write'], use_numeric = True, timeout = int(self._rt.config['snmp'].get('timeout',3)), retries = 2)
    with self._rt.snmplock:
-    ret['info'] = session.set(tag , name, "OPAQUE"))
+    ret['info'] = session.set(tag , name, "OPAQUE")
    ret['status'] = 'OK'
   except Exception as e:
    ret['info'] = repr(e)

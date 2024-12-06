@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
-__version__ = "9.1"
-__build__ = 409
+__version__ = "9.1.3"
+__build__ = 410
 __all__ = ['RunTime']
 
 from copy import copy
@@ -12,7 +12,7 @@ from gc import collect as garbage_collect
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from importlib import import_module, reload as reload_module
 from json import loads, dumps
-from os import path as ospath, walk, stat as osstat
+from os import path as ospath, walk, stat as osstat, listdir
 from random import choice
 from signal import signal, SIGTERM, SIGINT
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
@@ -367,6 +367,66 @@ class RunTime():
     for i,c in item.items():
      output[f'Access: {group}/{i}'] = c
   return output
+
+ #
+ #
+ def reinit(self, aArgs):
+  """ Former install function """
+  res = {}
+  devdir = ospath.abspath(ospath.join(self.path,'devices'))
+  device_types = []
+  for file in listdir(devdir):
+   pyfile = file[:-3]
+   if file[-3:] == ".py" and pyfile[:2] != "__":
+    try:
+     mod = import_module(f'rims.devices.{pyfile}')
+     tp = getattr(mod,'__type__',None)
+     icon = getattr(mod,'__icon__','viz-generic.png')
+     oid = getattr(mod,'__oid__',0)
+     dev = getattr(mod,'Device',None)
+     fun = dev.get_functions()
+    except Exception as e:
+     stderr.write(f'engine: reinit ERROR -> {pyfile}:{str(e)}\n')
+    else:
+     if tp:
+      device_types.append({'name':pyfile, 'base':tp, 'functions':",".join(fun),'icon':icon,'oid':oid })
+     else:
+      stderr.write(f'engine: reinit ISSUE -> {pyfile}\n')
+  res['devices'] = {'found':len(device_types),'new':0}
+
+  srvdir = ospath.abspath(ospath.join(self.path,'api','services'))
+  service_types = []
+  for file in listdir(srvdir):
+   pyfile = file[:-3]
+   if file[-3:] == ".py" and pyfile[:2] != "__":
+    try:
+     mod = import_module(f'rims.api.services.{pyfile}')
+     tp = getattr(mod,'__type__',None)
+    except Exception as e:
+     stderr.write(f'engine: reinit ERROR -> {pyfile}:{str(e)}\n')
+    else:
+     if tp:
+      service_types.append({'service':pyfile, 'type':tp})
+     else:
+      stderr.write(f'engine: reinit ISSUE -> {pyfile}\n')
+  res['services'] = {'found':len(service_types),'new':0}
+
+  with self.db as db:
+   sql ="INSERT device_types (name,base,icon,functions,oid) VALUES ('%(name)s','%(base)s','images/%(icon)s','%(functions)s','%(oid)s') ON DUPLICATE KEY UPDATE oid = %(oid)s, icon = 'images/%(icon)s', functions = '%(functions)s'"
+   for tp in device_types:
+    try:
+     res['devices']['new'] += db.execute(sql%tp)
+    except Exception as err:
+     stderr.write(f"engine: reinit ISSUE -> {tp['name']} -> {str(err)}\n")
+
+   sql = "INSERT service_types (service,type) VALUES ('%(service)s','%(type)s') ON DUPLICATE KEY UPDATE id = id"
+   for tp in service_types:
+    try:
+     res['services']['new'] += db.execute(sql%tp)
+    except Exception as err:
+     stderr.write(f"engine: reinit ISSUE -> {tp['service']} -> {str(err)}\n")
+
+  return res
 
  #################### QUEUE #####################
  #

@@ -15,18 +15,6 @@ def traceback(aRT, aArgs):
 
 #
 #
-def memory_usage(aRT, aArgs):
- """Function memory usage retrieves currently used memory
-
- Args:
-
- Output:
-  - memory
- """
- return None
-
-#
-#
 def memory_objects(aRT, aArgs):
  """Function memory objects retrieves number of allocated memory objects
 
@@ -100,6 +88,18 @@ def reload(aRT, aArgs):
  Output:
  """
  return {'node':aRT.node, 'modules':aRT.module_reload(),'status':'OK'}
+
+#
+#
+def reinit(aRT, aArgs):
+ """ Function installs new services and device type
+
+ Args: None
+
+ Output:
+  <status>
+ """
+ return {'status':'OK','res':aRT.reinit(aArgs)}
 
 ################################# AUTH #############################
 #
