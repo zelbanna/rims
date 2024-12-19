@@ -77,7 +77,7 @@ class RIMS extends Component {
 // New root compatible renderer
 function RenderRIMS() {
  useEffect(() => {
-  console.log("Rendered RIMS 8.x");
+  console.log("Rendered RIMS 9.1.3");
  });
 
  return <RIMS tab="home" />

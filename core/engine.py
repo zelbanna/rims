@@ -1,7 +1,7 @@
 """System engine"""
 __author__ = "Zacharias El Banna"
 __version__ = "9.1.3"
-__build__ = 410
+__build__ = 411
 __all__ = ['RunTime']
 
 from copy import copy
@@ -14,7 +14,7 @@ from importlib import import_module, reload as reload_module
 from json import loads, dumps
 from os import path as ospath, walk, stat as osstat, listdir
 from random import choice
-from signal import signal, SIGTERM, SIGINT
+from signal import signal, SIGTERM, SIGINT, SIGUSR1
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ssl import SSLContext, PROTOCOL_TLS_SERVER
 from string import ascii_uppercase, digits
@@ -189,7 +189,8 @@ class RunTime():
     self._ssock = context.wrap_socket(ssock, server_side=True)
     self._servers.extend(SocketServer(self, self._abort, n, addr, self._ssock) for n in range(servers,servers+4))
 
-   for sig in [SIGTERM,SIGINT]:
+   for sig in [SIGTERM,SIGINT,SIGUSR1]:
+    stderr.write(f"engine: Installing signal handlers for SIGTERM, SIGINT, SIGUSR1\n")
     signal(sig, self.signal_handler)
   except Exception as e:
    stderr.write(f"engine: Starting error - check IP and SSL settings: {e}\n")
@@ -264,6 +265,10 @@ class RunTime():
   elif sig == SIGINT:
    stderr.write("engine: Caught SIGINT\n")
    self.close()
+  elif sig == SIGUSR1:
+   stderr.write("engine: Caught SIGUSR1, reload daemons\n")
+   self.module_reload()
+   return True
 
  ######################## TOOLS #####################
  #

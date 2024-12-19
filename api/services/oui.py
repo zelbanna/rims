@@ -54,7 +54,9 @@ def status(aRT, aArgs):
  Output:
   - data
  """
- return {'data':None, 'status':'OK' }
+ with aRT.db as db:
+  ret = {'data':db.get_row() if db.query("SELECT count(*) as row_count FROM oui") else None, 'status':'OK'}
+ return ret
 
 #
 #
@@ -73,7 +75,7 @@ def sync(aRT, aArgs):
  """
  ret = {'output':0,'status':'NOT_OK'}
  try:
-  req = Request(aRT.config['services']['oui']['location'])
+  req = Request(aRT.config['services']['oui']['location'], headers = {'Content-Type':'text', 'User-Agent':'RIMS'})
   sock = urlopen(req, timeout = 120)
   data = sock.read().decode()
   sock.close()
