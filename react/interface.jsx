@@ -89,13 +89,15 @@ export class Report extends Component {
 export class Info extends Component {
  constructor(props){
   super(props)
-  this.state = {op:this.props.op, connect:{name:'<N/A>',map:false}}
+  this.state = {op:this.props.op, connect:{name:'<N/A>',map:false}, domains:undefined, networks:undefined}
  }
 
  changeContent = (elem) => this.props.changeSelf(elem);
 
  componentDidMount(){
   post_call('api/interface/info',{interface_id:this.props.interface_id, mac:this.props.mac, name:this.props.name, description:this.props.description, device_id:this.props.device_id, class:this.props.class, extra:['classes','ip']}).then(result => this.setState({...result, update:undefined}));
+  post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data}));
+  post_call('api/ipam/network_list').then(result => this.setState({networks:result.data}));
  }
 
  componentDidUpdate(prevProps){
@@ -109,11 +111,7 @@ export class Info extends Component {
 
  // IPAM
  stateIpam = () => {
-  this.setState({op:(this.state.domains && this.state.networks) ? 'ipam' : 'wait', ipam:{ip:'<N/A>'}})
-  if (!this.state.domains)
-   post_call('api/dns/domain_list',{filter:'forward'}).then(result => this.setState({domains:result.data,op:(this.state.networks) ? 'ipam':'wait'}));
-  if (!this.state.networks)
-   post_call('api/ipam/network_list').then(result => this.setState({networks:result.data,op:(this.state.domains) ? 'ipam':'wait'}));
+  this.setState({op:'ipam', ipam:{ip:'<N/A>'}})
  }
  ipamSearchIP = () => {
   if (this.state.ipam.network_id)
