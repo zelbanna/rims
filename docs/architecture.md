@@ -20,6 +20,13 @@ daemon.py
  └─ rt.wait()      block until the kill event is set
 ```
 
+The retry loop around `load()` is the engine's only concession to a dependency that is
+not ready: a master whose database is unreachable, or a satellite whose master is not
+answering, writes `Load environment error: …` and tries again every 10 seconds,
+indefinitely. It is a *wait*, not a bootstrap — the engine never creates a database,
+tables or rows of its own, so a missing schema keeps the loop spinning until someone
+applies `config/schema.db`. Storage is assumed to exist and to be running.
+
 `RunTime.__init__` only builds structure; nothing moves yet. It stores the config,
 derives `self.node` from `config['id']`, computes `self.path` (the package directory)
 and `self.site` (`<path>/site`), creates the queue, the abort/kill events, the
@@ -67,6 +74,13 @@ with a **fresh `DB` instance**. That is the whole concurrency story: config, nod
 table and caches are shared; database connections are not. Inside `DB`, an `RLock`
 serialises statements, so a thread can re-enter its own connection (nested `with
 aRT.db as db`) while other threads wait.
+
+A `DB` handle connects lazily on `__enter__` and disconnects on `__exit__` once the
+last nested user has left (`_conn_waiting` back to zero), so an idle worker holds no
+connection. There is no ping, no reconnect and no retry: if the server is down or has
+dropped the connection, the statement raises and the API call answers `X-Code: 600`.
+A failed connect also leaves the handle's bookkeeping unbalanced — see
+[code review C13](code-review.md).
 
 Signals: `SIGTERM`/`SIGINT` trigger `close()`; `SIGUSR1` triggers `module_reload()`,
 which re-imports every loaded `rims.*` module. That is how code is refreshed without

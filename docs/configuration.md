@@ -37,6 +37,11 @@ REST instead.
 All four keys are required when the object is present. Connections are MySQL/MariaDB
 via `pymysql`; each thread gets its own connection through `RunTime.clone()`.
 
+The database and its schema must already exist — the engine creates neither. A master
+whose database is unreachable retries `load()` every 10 seconds instead of starting, so
+a server that comes up late is tolerated but a missing schema is not. See
+[deployment](deployment.md#the-database-comes-first).
+
 ## `logging`
 
 ```json

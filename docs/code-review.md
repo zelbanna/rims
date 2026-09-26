@@ -33,6 +33,10 @@ The weak spots are concentrated and mostly not architectural:
   different exception than intended (`daemon.py` init, satellite login, `rest_call`'s
   content-type guard), so a failure surfaces as a crash or a dropped connection rather
   than the intended message.
+* **The database is assumed, not managed.** The engine creates no database, no tables
+  and no migrations, and its handle has no reconnect. Worse, the retry loop that waits
+  for a slow database leaks a lock acquisition per attempt (C13), so the ordinary cold
+  start leaves the master's handle holding a connection it will never close.
 * **48 docstrings are `TBD` placeholders.** Since `system/rest_information` serves
   docstrings to the UI, they are user-visible documentation, not just comments.
 
@@ -242,6 +246,99 @@ service is used, at which point it raises `KeyError`. Pick one name (`keadhcp`, 
 consistency with the `servers`/`service_types` rows built from the filename) and add it
 to the template.
 
+### C13 — `DB.connect()` failure leaks the connection lock (`core/common.py:271`)
+
+```python
+def __enter__(self):
+ self.connect()
+ return self
+
+def connect(self):
+ with self._wait_lock:
+  self._conn_waiting += 1
+ self._conn_lock.acquire()
+ self.count['CONNECT'] += 1
+ if not self._conn:
+  self._conn = self._mods[0](host=…)
+```
+
+`connect()` increments `_conn_waiting` and acquires `_conn_lock` *before* it opens the
+connection. When `pymysql.connect` raises, `__enter__` never returns, so Python does
+not call `__exit__` — and `close()`, which is the only thing that decrements the
+counter and releases the lock, never runs. Each failed attempt therefore leaks one
+count and one un-released acquire. Reproduced with the real control flow and a stub
+driver:
+
+```
+attempt 1: Can't connect to MySQL server  -> waiting=1 lock_held=True
+attempt 2: Can't connect to MySQL server  -> waiting=2 lock_held=True
+attempt 3: Can't connect to MySQL server  -> waiting=3 lock_held=True
+after success: waiting=3 lock_held=True conn_open=True
+```
+
+This is exactly the path a normal cold start takes: `daemon.py` retries `load()` every
+10 seconds while the database comes up, and each retry leaks another count on
+`RunTime.db`. Once the server answers, `_conn_waiting` can never return to zero, so
+`close()` stops closing the connection: that handle holds one connection open for the
+life of the process and keeps the re-entrant lock owned at depth ≥ 1. Since the lock is
+re-entrant and the affected handle belongs to the main thread, work continues — but the
+connection is never recycled, and there is no ping or reconnect anywhere in `DB`, so
+when the server eventually drops it on `wait_timeout` every statement on that handle
+fails until the process restarts. A database outage after 100 failed retries also leaves
+a handle whose counter needs 100 matching closes.
+
+Fix: only account for a connection once it exists, and unwind on failure:
+
+```python
+def connect(self):
+ with self._wait_lock:
+  self._conn_waiting += 1
+ self._conn_lock.acquire()
+ self.count['CONNECT'] += 1
+ try:
+  if not self._conn:
+   self._conn = self._mods[0](host=…)
+   self._curs = self._conn.cursor()
+ except Exception:
+  with self._wait_lock:
+   self._conn_waiting -= 1
+  self._conn_lock.release()
+  raise
+```
+
+Run against the same stub harness, that version keeps `waiting=0` and the lock
+unowned across failures, and still closes the connection exactly once after nested
+re-entry — so the re-entrancy the class relies on is preserved. It is left unapplied
+here because it changes locking discipline and could not be exercised against a real
+server in this environment.
+
+A `self._conn.ping(reconnect=True)` on an existing connection would also close the gap
+on dropped connections.
+
+### C14 — Storage is assumed, never bootstrapped (`daemon.py:35`, `core/engine.py:133`)
+
+Nothing in the tree creates a database or its tables. `--init` inserts three rows and
+assumes `users`, `nodes` and `device_types` exist; `config/schema.db` has to be applied
+by hand; `api/mysql.patch` can apply a schema *diff* but only to a database that is
+already there. Combined with the retry loop in `daemon.py:64`, a first start against an
+empty database does not fail loudly — it writes `Load environment error: …` every 10
+seconds indefinitely, which reads like a connectivity problem rather than a missing
+schema.
+
+This is a documentation and operability gap rather than a defect, and it is now written
+down in [deployment](deployment.md#the-database-comes-first). Two cheap improvements if
+you want the engine to be more self-sufficient:
+
+* Have `--init` detect an empty or missing schema and apply `config/schema.db` itself
+  (it already holds the credentials and `CREATE DATABASE`), or at least exit with a
+  message naming the missing table.
+* Distinguish "cannot connect" from "connected but schema missing" in `load()`, so the
+  retry loop only retries the first and fails fast on the second.
+
+Neither `docker-compose.yaml` nor the image includes a database service, so a Compose
+deployment needs an external server on `infra_net` — worth stating in the compose file
+itself, since that is where an operator looks first.
+
 ## Robustness and clarity
 
 ### R1 — `queue_block` concurrency is the opposite of its comment (`core/engine.py:455`)
@@ -346,8 +443,10 @@ is the accurate list.
 
 1. S1 and S2 — the two remotely exploitable issues. S1 is pre-authentication.
 2. S3 and S4 — credential handling, and the `--init` password reset.
-3. C4, C7, C10 — error paths that drop connections or crash on legitimate configurations.
-4. C5, C11, C12 — endpoints and registrations that cannot work as shipped.
-5. R1 — pool starvation under fan-out.
-6. R7 and R8 — documentation that the product itself serves.
-7. R10 — the import/attribute smoke test, to keep 4 from recurring.
+3. C13 — the connection-lock leak, which every cold start against a slow database hits.
+4. C4, C7, C10 — error paths that drop connections or crash on legitimate configurations.
+5. C5, C11, C12 — endpoints and registrations that cannot work as shipped.
+6. R1 — pool starvation under fan-out.
+7. R7 and R8 — documentation that the product itself serves.
+8. C14 and R10 — schema bootstrap and the import/attribute smoke test, to keep 5 from
+   recurring.

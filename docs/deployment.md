@@ -8,6 +8,37 @@
 * Optionally InfluxDB 2.x for statistics
 * Optionally Node 20+ and yarn for frontend development
 
+## The database comes first
+
+**The engine assumes an existing, running database.** It does not create one, it does
+not create tables, and it does not carry migrations. Nothing in RIMS bootstraps
+storage — `config/schema.db` has to be applied out of band before the engine is
+started for the first time, and the database server has to be up and reachable
+whenever the master node is running.
+
+What that means in practice:
+
+| Situation | What the engine does |
+| --- | --- |
+| Database up, schema applied | `RunTime.load()` succeeds and the engine starts |
+| Database up, schema missing or incomplete | `load()` fails on the missing table, `daemon.py` writes `Load environment error: …` and **retries every 10 seconds forever** — it never bootstraps the schema, so this spins until someone applies it |
+| Database not reachable yet | the same retry loop, which resolves on its own once the server answers |
+| `--init` against a missing schema | fails immediately with exit code 2 — `--init` only inserts three rows, it does not create tables |
+| Database dies while the engine runs | the engine stays up; every call that touches storage raises and returns `X-Code: 600` until the server is back. There is no reconnect or health check in `DB` (see [code review C13](code-review.md)) |
+
+So the engine tolerates a database that is merely *late*, but not one that is
+*missing*. Ordering matters only for the schema.
+
+A satellite node — one with no `database` block — needs no database of its own, but it
+needs a reachable master, and it behaves the same way: `load()` retries every 10
+seconds until the master answers.
+
+Neither `docker-compose.yaml` nor the image ships a database service; both assume a
+MariaDB or MySQL server you run yourself, reachable from the engine's network. If you
+want one in the same Compose project, add it as a service and point `config['database']
+['host']` at it — then let the engine's retry loop handle the startup ordering, since
+it will wait for the server on its own.
+
 ## Database
 
 Create the schema from the packaged file. It starts with `DROP DATABASE IF EXISTS
@@ -25,16 +56,24 @@ GRANT ALL PRIVILEGES ON rims.* TO 'rims'@'%';
 FLUSH PRIVILEGES;
 ```
 
-Seed the three rows the engine needs with the init pass, which is idempotent:
+The schema file creates the database itself, so it needs an account that may
+`CREATE DATABASE`; the engine's own user only needs rights on `rims`.
+
+Seed the three rows the engine needs with the init pass. It requires the schema to be
+in place already — it only inserts into `users`, `nodes` and `device_types`:
 
 ```bash
 ./daemon.py -c /etc/rims/rims.json --init
 ```
 
-It inserts (or resets) user `admin` with the password `changeme`, the master node row
-from `config['id']` and `config['master']`, and the `generic` device type. **Change
-the admin password immediately** — log in and use `api/master.user_info`, or update
+It inserts user `admin` with the password `changeme`, the master node row from
+`config['id']` and `config['master']`, and the `generic` device type. **Change the
+admin password immediately** — log in and use `api/master.user_info`, or update
 `users.password` with a SHA-256 hex digest of the new password.
+
+The pass is written to be idempotent (`ON DUPLICATE KEY UPDATE`), so it is safe to
+re-run against an existing schema — with one caveat: it *resets* the admin password
+back to `changeme` every time, so do not use it as a routine start-up step.
 
 Two more steps populate the type tables from the code on disk, and should be repeated
 after adding a driver or a service:

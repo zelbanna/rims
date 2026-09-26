@@ -61,22 +61,30 @@ and database connection. See [docs/architecture.md](docs/architecture.md).
 
 ## Quick start
 
+The master node assumes an existing, running MariaDB/MySQL database: the engine never
+creates one, creates no tables and carries no migrations, so apply the packaged schema
+before the first start. A database that is merely *late* is fine — `daemon.py` retries
+loading its environment every 10 seconds — but a missing schema never resolves on its
+own.
+
 ```bash
 git clone git@github.com:zelbanna/rims.git
 cd rims
 
-# 1. database (MariaDB/MySQL), from the packaged schema
+# 1. database (MariaDB/MySQL), from the packaged schema — required before anything else
 mysql -h <db-host> -u root -p < config/schema.db
 
 # 2. configuration
 cp config/rims.json.tmpl /etc/rims/rims.json   # then edit it
 
-# 3. first run: create the admin user, master node row and generic device type
+# 3. first run: seed the admin user, master node row and generic device type
 ./daemon.py -c /etc/rims/rims.json --init
 ```
 
 The `--init` run seeds user `admin` with password `changeme` — change it immediately.
-Full instructions, including Docker and Compose, are in
+It expects the schema to be in place, since all it does is insert three rows. Nodes
+other than the master need no database of their own, only a reachable master. Full
+instructions, including Docker and Compose, are in
 [docs/deployment.md](docs/deployment.md).
 
 The engine listens on `config['port']` (8080 in the template) for HTTP and on

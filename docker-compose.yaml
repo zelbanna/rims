@@ -1,3 +1,6 @@
+# The engine assumes an existing, running MariaDB/MySQL server reachable on this
+# network, with config/schema.db already applied - no database service is started here
+# and the engine creates neither database nor tables. See docs/deployment.md.
 services:
 
  daemon:
