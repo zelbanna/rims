@@ -339,6 +339,20 @@ Neither `docker-compose.yaml` nor the image includes a database service, so a Co
 deployment needs an external server on `infra_net` — worth stating in the compose file
 itself, since that is where an operator looks first.
 
+### C15 — `Device.ping_device()` reads an attribute that does not exist (`devices/generic.py:57`)
+
+```python
+def ping_device(self):
+ return ping(self.ip, verbose=False, count=1, timeout=1).success()
+```
+
+The management address is `self._ip` throughout the class (and exposed as `get_ip()`);
+`self.ip` is defined nowhere in `devices/`, so this method raises `AttributeError` for
+every driver. Latent rather than live — nothing in the tree calls it today, and
+`core/genlib.ping_os()` is likewise unused — but it is published as part of the driver
+base class, so the first caller inherits the bug. `self._ip` fixes it; alternatively
+drop both helpers, since liveness is currently established elsewhere.
+
 ## Robustness and clarity
 
 ### R1 — `queue_block` concurrency is the opposite of its comment (`core/engine.py:455`)
@@ -424,8 +438,10 @@ There is no test suite and no CI configuration. The dynamic dispatch means a typ
 module name or a missing attribute only surfaces when the endpoint is called — C5 and
 C11 are exactly that class of defect. A cheap first step needs no database: import
 every module under `api/` and `devices/`, assert each driver declares `__type__`,
-`__icon__` and `__oid__` and that `Device.get_functions()` names methods that exist,
-and assert that every function named in `config['tasks']` resolves. `pylint --rcfile=.pylintrc`
+`__icon__` and `__oid__` and that `Device.get_functions()` names methods that exist
+(excluding the reserved `manage` sentinel — a static version of this check run while
+reviewing flags `avocent`, `esxi`, `opengear` and `proxmox` otherwise), and assert that
+every function named in `config['tasks']` resolves. `pylint --rcfile=.pylintrc`
 in CI would catch the `NameError`/`KeyError` class of bug in C1 and C2 directly.
 
 ### R11 — Root `__all__` names packages that do not exist (`__init__.py:1`)
@@ -439,6 +455,60 @@ no `__init__.py`. `from rims import *` fails on both. Only a cosmetic problem to
 because nothing does that, but it misdescribes the package layout — `['api','core','devices','tools']`
 is the accurate list.
 
+### R12 — `rest_explore` cannot see the sub-packages (`api/system.py:155`)
+
+```python
+restdir = ospath.abspath(ospath.join(ospath.dirname(__file__)))
+for restfile in listdir(restdir):
+ if restfile[-3:] == '.py':
+  ret['data'].append(__analyze(restfile[0:-3]))
+```
+
+The scan is flat, so the 12 modules under `api/services/` and the 3 under
+`api/devices/` never appear in the API explorer — roughly a third of the REST surface
+is invisible to the tool meant to enumerate it. (`rest_information` handles them fine
+when asked directly, e.g. `{"api":"services.hass","function":"status"}`.) Walking one
+level deeper and reporting the dotted name would close the gap.
+
+### R13 — `--init` never updates the master node URL (`daemon.py:46`)
+
+```sql
+INSERT nodes (node,url) VALUES('…','…') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)
+```
+
+The conflict branch touches only `id`, so re-running `--init` after changing
+`config['master']` leaves the old URL in the table — every node that fetches its
+environment then keeps pointing at the previous address. `/register` does update the
+URL on conflict (`engine.py:707`), so the two paths disagree. `ON DUPLICATE KEY UPDATE
+url = '<url>'` would make init match.
+
+### R14 — `mac_bin_to_hex` is copied five times
+
+Identical bodies in `core/genlib.py:18`, `devices/generic.py:18`,
+`devices/detector.py:7`, `devices/esxi.py:13` and `devices/unifi_switch.py:10`. The
+helper already lives in `core/genlib.py`, which the drivers import from for
+`strToHex`, so the four copies can import it instead.
+
+### R15 — Dead accumulator in house keeping (`core/engine.py:964`)
+
+`house_keeping()` builds a `remain` list of unexpired tokens and never reads it. Either
+report it (a token count per pass would be useful in the log line it already writes) or
+drop it.
+
+### R16 — `environment()` docstring inverts its own condition (`core/engine.py:106`)
+
+"…for a certain node, or itself if node is given" — the local-summary branch is the one
+taken when `aNode` is *falsy*, and passing a node name goes to the database or the
+master. Worth correcting since this is the method that defines what "environment" means
+for the whole cluster.
+
+### R17 — Task template disagrees with the config template
+
+`templates/task.database_backup.json` writes to `/var/log/rims.backup` while the same
+task in `config/rims.json.tmpl` uses `/var/log/rims/rims.backup` — the directory the
+Compose file mounts. Copying the template as-is puts the backup somewhere the container
+does not persist.
+
 ## Suggested order of work
 
 1. S1 and S2 — the two remotely exploitable issues. S1 is pre-authentication.
@@ -450,3 +520,6 @@ is the accurate list.
 7. R7 and R8 — documentation that the product itself serves.
 8. C14 and R10 — schema bootstrap and the import/attribute smoke test, to keep 5 from
    recurring.
+9. The rest of the R list, cheapest first: R12 and R16 (introspection and a docstring
+   that describe the system wrongly), R13 and R17 (bootstrap and template drift), then
+   C15, R5, R14 and R15 as cleanups.

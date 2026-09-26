@@ -20,9 +20,12 @@ Device class contract:
 
  __init__(self, aRT, aID, aIP = None)  Resolves the management IP through
                                        'device.management' when aIP is None.
- get_functions()    classmethod. Operations the UI may offer; each name must exist
+ get_functions()    classmethod. Operations the UI may offer. Each name must exist
                     as a zero-argument method, since 'api/device.function' calls it
-                    as getattr(dev, op)().
+                    as getattr(dev, op)() - except the reserved name 'manage', which
+                    is a UI sentinel: react/device.jsx renders a Manage button
+                    routing to the React module named by __type__, and filters the
+                    name out of the per-function navigation.
  get_data_points()  classmethod. SNMP statistics to collect, as
                     (measurement, tags, name, oid) tuples - inserted into
                     'device_statistics' by 'api/statistics.lookup'.

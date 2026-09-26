@@ -139,7 +139,11 @@ Inherit from `devices/generic.py` — it resolves the management IP through
 `operation()`, the configuration-template renderer and the context-manager protocol.
 Override `operation(aType)` for power and reboot control, and add `vm_operation()` on
 hypervisors. Anything named in `get_functions()` must exist as a zero-argument method,
-since `api/device.function` calls it as `getattr(dev, op)()`.
+since `api/device.function` calls it as `getattr(dev, op)()`. The one reserved name is
+`manage`: `react/device.jsx` treats it as a sentinel — it renders a Manage button that
+routes to the React module named by the type's `__type__`, and filters the name out of
+the generic per-function navigation — so drivers that declare it (`avocent`, `esxi`,
+`opengear`, `proxmox`) implement no `manage` method.
 
 To make a new device detectable, add a handler to `devices/detector.py` named after the
 vendor and OID (`ubnt8072`, `juniper2636`, …); it receives the SNMP session, the info

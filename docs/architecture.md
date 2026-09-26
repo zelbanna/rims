@@ -232,7 +232,9 @@ Each module in `devices/` is one device type and declares:
 | `__oid__` | SNMP enterprise OID used for auto-detection |
 | `Device` | the driver class, usually subclassing `devices.generic.Device` |
 
-`Device.get_functions()` lists the operations the UI may offer for the type and
+`Device.get_functions()` lists the operations the UI may offer for the type — each one
+a zero-argument method on the driver, except the reserved sentinel `manage`, which the
+frontend turns into a Manage button routing to the React module named by `__type__` — and
 `get_data_points()` the SNMP statistics to collect. `RunTime.reinit()` (exposed as
 `/api/system/reinit`) imports every module, reads those attributes and upserts
 `device_types` — so registering a new driver means dropping in a file and calling
