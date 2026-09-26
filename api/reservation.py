@@ -46,14 +46,13 @@ def new(aRT, aArgs):
 #
 #
 def delete(aRT, aArgs):
- """ Function creates a new reservation
+ """ Function deletes the reservation of a device
 
  Args:
  - device_id (required)
- - user_id (required)
 
  Output:
- - status
+ - deleted. True if a reservation was removed
  """
  ret = {}
  with aRT.db as db:

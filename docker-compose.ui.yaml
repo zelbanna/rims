@@ -4,7 +4,7 @@ services:
   image: zelbanna/rims-frontend:latest
   ports:
    - 3000:3000/tcp
-  restart: no
+  restart: "no"
   volumes:
    - /usr/local/sbin/rims/react:/rims/src
    - /usr/local/sbin/rims/site:/rims/build

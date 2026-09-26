@@ -14,12 +14,12 @@ services:
    infra_net:
     ipv4_address: 172.18.0.80
 
-# Frontend development
-frontend:
+ # Frontend development
+ frontend:
   image: zelbanna/rims-frontend:latest
   ports:
    - 3000:3000/tcp
-  restart: no
+  restart: "no"
   volumes:
    - /usr/local/sbin/rims/react:/rims/src
    - /usr/local/sbin/rims/site:/rims/build

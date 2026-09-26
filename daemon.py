@@ -46,10 +46,10 @@ if input.init:
    res['master'] = (db.execute(f"INSERT nodes (node,url) VALUES('{config['id']}','{config['master']}') ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)") > 0)
    res['generic'] = (db.execute("INSERT device_types (id,name,base) VALUES (0,'generic','generic') ON DUPLICATE KEY UPDATE id = 0") > 0)
  except Exception as e:
-  stderr.write(f"daemon: Init failed: {str(err)}\n")
+  stderr.write(f"daemon: Init failed: {str(e)}\n")
   sysexit(2)
  else:
-  stderr.write(f"daemon: Init success: admin:{res['admin']}, master node:{res['maste']}, generic device: {res['generic']}\n")
+  stderr.write(f"daemon: Init success: admin:{res['admin']}, master node:{res['master']}, generic device: {res['generic']}\n")
 
 stderr.write("daemon: Creating RunTime\n")
 try:
